@@ -16,11 +16,19 @@ function addDays(date, amount) {
   return next;
 }
 
+function readStoredValue(key, legacyKey) {
+  return localStorage.getItem(key) ?? localStorage.getItem(legacyKey);
+}
+
+function loadSchedule() {
+  return JSON.parse(readStoredValue('nourally-schedule', 'fuel-schedule') || '[]');
+}
+
 function loadDailyLogs() {
-  const saved = JSON.parse(localStorage.getItem('fuel-daily-logs') || 'null');
+  const saved = JSON.parse(readStoredValue('nourally-daily-logs', 'fuel-daily-logs') || 'null');
   if (saved) return saved;
 
-  const legacy = JSON.parse(localStorage.getItem('fuel-entries') || '[]');
+  const legacy = JSON.parse(readStoredValue('nourally-entries', 'fuel-entries') || '[]');
   const userEntries = legacy.filter((entry) => !(
     (entry.id === 1 && entry.name === 'Breakfast') ||
     (entry.id === 2 && entry.name === 'Chicken rice bowl')
@@ -28,24 +36,26 @@ function loadDailyLogs() {
 
   return userEntries.length ? {
     [getDateKey()]: {
-      goal: Number(localStorage.getItem('fuel-goal')) || 2400,
+      goal: Number(readStoredValue('nourally-goal', 'fuel-goal')) || 2400,
       entries: userEntries,
     },
   } : {};
 }
 
 function App() {
-  const [step, setStep] = useState(() => localStorage.getItem('fuel-step') || 'account');
+  const [step, setStep] = useState(() => readStoredValue('nourally-step', 'fuel-step') || 'account');
   const [view, setView] = useState('today');
   const [todayKey, setTodayKey] = useState(getDateKey);
-  const [goal, setGoal] = useState(() => Number(localStorage.getItem('fuel-goal')) || 2400);
-  const [waterGoal, setWaterGoal] = useState(() => Number(localStorage.getItem('fuel-water-goal')) || 80);
+  const [goal, setGoal] = useState(() => Number(readStoredValue('nourally-goal', 'fuel-goal')) || 2400);
+  const [waterGoal, setWaterGoal] = useState(() => Number(readStoredValue('nourally-water-goal', 'fuel-water-goal')) || 80);
   const [dailyLogs, setDailyLogs] = useState(loadDailyLogs);
+  const [schedule, setSchedule] = useState(loadSchedule);
 
-  useEffect(() => localStorage.setItem('fuel-step', step), [step]);
-  useEffect(() => localStorage.setItem('fuel-goal', goal), [goal]);
-  useEffect(() => localStorage.setItem('fuel-water-goal', waterGoal), [waterGoal]);
-  useEffect(() => localStorage.setItem('fuel-daily-logs', JSON.stringify(dailyLogs)), [dailyLogs]);
+  useEffect(() => localStorage.setItem('nourally-step', step), [step]);
+  useEffect(() => localStorage.setItem('nourally-goal', goal), [goal]);
+  useEffect(() => localStorage.setItem('nourally-water-goal', waterGoal), [waterGoal]);
+  useEffect(() => localStorage.setItem('nourally-daily-logs', JSON.stringify(dailyLogs)), [dailyLogs]);
+  useEffect(() => localStorage.setItem('nourally-schedule', JSON.stringify(schedule)), [schedule]);
   useEffect(() => {
     const timer = window.setInterval(() => setTodayKey(getDateKey()), 60000);
     return () => window.clearInterval(timer);
@@ -88,11 +98,12 @@ function App() {
   if (step === 'goal') return <GoalScreen goal={goal} setGoal={setGoal} onContinue={saveGoal} />;
   if (view === 'history') return <History dailyLogs={dailyLogs} todayKey={todayKey} fallbackWaterGoal={waterGoal} onBack={() => setView('today')} />;
   if (view === 'weekly') return <WeeklyProgress dailyLogs={dailyLogs} todayKey={todayKey} fallbackGoal={goal} fallbackWaterGoal={waterGoal} onBack={() => setView('today')} />;
-  return <Dashboard goal={todayLog.goal || goal} entries={todayLog.entries} setEntries={setTodayEntries} water={todayLog.water || 0} waterGoal={todayLog.waterGoal || waterGoal} setHydration={setTodayHydration} onSetWaterGoal={updateWaterGoal} onEditGoal={() => setStep('goal')} onHistory={() => setView('history')} onWeekly={() => setView('weekly')} />;
+  if (view === 'calendar') return <ScheduleCalendar events={schedule} setEvents={setSchedule} todayKey={todayKey} onBack={() => setView('today')} />;
+  return <Dashboard goal={todayLog.goal || goal} entries={todayLog.entries} setEntries={setTodayEntries} water={todayLog.water || 0} waterGoal={todayLog.waterGoal || waterGoal} setHydration={setTodayHydration} onSetWaterGoal={updateWaterGoal} onEditGoal={() => setStep('goal')} onHistory={() => setView('history')} onWeekly={() => setView('weekly')} onCalendar={() => setView('calendar')} />;
 }
 
-function Shell({ children, eyebrow = 'FUEL / DAILY NUTRITION' }) {
-  return <main className="shell"><div className="brand"><span className="brand-mark">↗</span><span>fuel</span></div><div className="eyebrow">{eyebrow}</div>{children}<footer>Built for athletes in motion <span>·</span> Your data stays on this device</footer></main>;
+function Shell({ children, eyebrow = 'NOURALLY / DAILY NUTRITION' }) {
+  return <main className="shell"><div className="brand"><span className="brand-mark">↗</span><span>nourally</span></div><div className="eyebrow">{eyebrow}</div>{children}<footer>Your ally from school to sport <span>·</span> Your data stays on this device</footer></main>;
 }
 
 function AccountScreen({ onContinue }) {
@@ -106,13 +117,13 @@ function AccountScreen({ onContinue }) {
 
 function GoalScreen({ goal, setGoal, onContinue }) {
   const options = [2000, 2200, 2400, 2800];
-  return <Shell eyebrow="FUEL / YOUR STARTING POINT">
+  return <Shell eyebrow="NOURALLY / YOUR STARTING POINT">
     <section className="intro"><p className="kicker">YOUR DAILY TARGET</p><h1>How much fuel<br /><em>do you need today?</em></h1><p className="intro-copy wide">Choose a starting goal. You can adjust it anytime as your training changes.</p></section>
     <section className="card goal-card"><div className="section-label">02 / DAILY CALORIE GOAL</div><div className="goal-input-wrap"><input aria-label="Daily calorie goal" type="number" min="1000" max="6000" step="50" value={goal} onChange={(event) => setGoal(Number(event.target.value))} /><span>CALORIES / DAY</span></div><div className="quick-options">{options.map((option) => <button type="button" className={goal === option ? 'selected' : ''} key={option} onClick={() => setGoal(option)}>{option.toLocaleString()}</button>)}</div><button className="primary" onClick={onContinue}>Save goal & continue <span>→</span></button><p className="fine-print">Your goal is a starting estimate, not medical advice. Talk with a qualified professional for personalized nutrition guidance.</p></section>
   </Shell>;
 }
 
-function Dashboard({ goal, entries, setEntries, water, waterGoal, setHydration, onSetWaterGoal, onEditGoal, onHistory, onWeekly }) {
+function Dashboard({ goal, entries, setEntries, water, waterGoal, setHydration, onSetWaterGoal, onEditGoal, onHistory, onWeekly, onCalendar }) {
   const [showForm, setShowForm] = useState(false);
   const [showScanner, setShowScanner] = useState(false);
   const [editingId, setEditingId] = useState(null);
@@ -172,11 +183,142 @@ function Dashboard({ goal, entries, setEntries, water, waterGoal, setHydration, 
     setShowScanner(false);
   }
 
-  return <Shell eyebrow="FUEL / TODAY">
-    <section className="dashboard-head"><div><p className="kicker">{date.toUpperCase()}</p><h1>Keep your <em>momentum.</em></h1></div><div className="head-actions"><button className="text-button" onClick={onWeekly}>Weekly ↗</button><button className="text-button" onClick={onHistory}>History ↗</button><button className="text-button" onClick={onEditGoal}>Edit goal ↗</button></div></section>
+  return <Shell eyebrow="NOURALLY / TODAY">
+    <section className="dashboard-head"><div><p className="kicker">{date.toUpperCase()}</p><h1>Keep your <em>momentum.</em></h1></div><div className="head-actions"><button className="text-button" onClick={onCalendar}>Calendar ↗</button><button className="text-button" onClick={onWeekly}>Weekly ↗</button><button className="text-button" onClick={onHistory}>History ↗</button><button className="text-button" onClick={onEditGoal}>Edit goal ↗</button></div></section>
     <section className="dashboard-grid"><div className="card tracker-card"><div className="section-label">CALORIE TRACKER</div><div className="tracker-content"><div className="progress-ring" style={{ '--progress': `${progress * 3.6}deg` }}><div><strong>{total.toLocaleString()}</strong><span>of {goal.toLocaleString()}</span></div></div><div><p className="kicker">TODAY’S PROGRESS</p><h2>{status}</h2><p className="muted">Log meals and snacks as you go. Small entries add up.</p></div></div><div className="progress-bar"><span style={{ width: `${progress}%` }} /></div></div><div className="card summary-card"><div className="section-label">AT A GLANCE</div><div className="summary-row"><span>Daily goal</span><strong>{goal.toLocaleString()} <small>kcal</small></strong></div><div className="summary-row"><span>Logged</span><strong>{total.toLocaleString()} <small>kcal</small></strong></div><div className="summary-row"><span>Remaining</span><strong>{remaining.toLocaleString()} <small>kcal</small></strong></div></div></section>
     <HydrationTracker water={water} waterGoal={waterGoal} setHydration={setHydration} onSetWaterGoal={onSetWaterGoal} />
     <section className="entries-section"><div className="section-heading"><div><p className="kicker">TODAY’S LOG</p><h2>What have you eaten?</h2></div><div className="entry-buttons"><button className="scan-button small" onClick={() => { resetForm(); setShowScanner(!showScanner); }}>{showScanner ? 'Close scanner' : '▣ Scan barcode'}</button><button className="primary small" onClick={() => { setShowScanner(false); if (showForm) resetForm(); else setShowForm(true); }}>{showForm ? 'Cancel' : '+ Add calories'}</button></div></div>{showScanner && <BarcodeScanner onAdd={addScannedProduct} onClose={() => setShowScanner(false)} />}{showForm && <form className="add-form card" onSubmit={submitEntry}><input required value={name} onChange={(event) => setName(event.target.value)} placeholder="Meal or snack name" /><input required min="1" type="number" value={calories} onChange={(event) => setCalories(event.target.value)} placeholder="Calories" /><button className="primary small" type="submit">{editingId ? 'Save' : 'Add'}</button></form>}{entries.length === 0 ? <div className="empty-state"><span>＋</span><h3>No calories logged yet.</h3><p>Your first meal or snack will appear here.</p></div> : <div className="entries">{entries.map((entry) => <div className="entry" key={entry.id}><div className="entry-icon">{entry.source === 'barcode' ? '▣' : '✦'}</div><div className="entry-copy"><strong>{entry.name}</strong><span>{entry.time}{entry.source === 'barcode' ? ` · ${entry.servingGrams}g serving` : ''}</span></div><b>{entry.calories.toLocaleString()} <small>kcal</small></b><div className="entry-actions"><button onClick={() => editEntry(entry)} aria-label={`Edit ${entry.name}`}>Edit</button><button className="danger" onClick={() => deleteEntry(entry.id)} aria-label={`Delete ${entry.name}`}>Delete</button></div></div>)}</div>}</section>
+  </Shell>;
+}
+
+function ScheduleCalendar({ events, setEvents, todayKey, onBack }) {
+  const today = new Date(`${todayKey}T12:00:00`);
+  const [selectedKey, setSelectedKey] = useState(todayKey);
+  const [monthCursor, setMonthCursor] = useState(new Date(today.getFullYear(), today.getMonth(), 1));
+  const [showForm, setShowForm] = useState(false);
+  const [editingId, setEditingId] = useState(null);
+  const [type, setType] = useState('practice');
+  const [title, setTitle] = useState('');
+  const [startTime, setStartTime] = useState('16:00');
+  const [endTime, setEndTime] = useState('17:30');
+  const [intensity, setIntensity] = useState('medium');
+  const [formError, setFormError] = useState('');
+  const monthStart = new Date(monthCursor.getFullYear(), monthCursor.getMonth(), 1);
+  const gridStart = addDays(monthStart, -monthStart.getDay());
+  const calendarDays = Array.from({ length: 42 }, (_, index) => addDays(gridStart, index));
+  const selectedDate = new Date(`${selectedKey}T12:00:00`);
+  const selectedEvents = events.filter((event) => event.date === selectedKey).sort((a, b) => a.startTime.localeCompare(b.startTime));
+
+  function formatTime(value) {
+    const [hours, minutes] = value.split(':').map(Number);
+    return new Intl.DateTimeFormat('en-US', { hour: 'numeric', minute: '2-digit' }).format(new Date(2000, 0, 1, hours, minutes));
+  }
+
+  function formatDuration(start, end) {
+    const [startHour, startMinute] = start.split(':').map(Number);
+    const [endHour, endMinute] = end.split(':').map(Number);
+    const minutes = endHour * 60 + endMinute - startHour * 60 - startMinute;
+    const hours = Math.floor(minutes / 60);
+    const remainder = minutes % 60;
+    if (!hours) return `${remainder} min`;
+    return remainder ? `${hours} hr ${remainder} min` : `${hours} hr`;
+  }
+
+  function resetForm() {
+    setEditingId(null);
+    setType('practice');
+    setTitle('');
+    setStartTime('16:00');
+    setEndTime('17:30');
+    setIntensity('medium');
+    setFormError('');
+    setShowForm(false);
+  }
+
+  function selectDay(date) {
+    setSelectedKey(getDateKey(date));
+    if (date.getMonth() !== monthCursor.getMonth() || date.getFullYear() !== monthCursor.getFullYear()) {
+      setMonthCursor(new Date(date.getFullYear(), date.getMonth(), 1));
+    }
+    resetForm();
+  }
+
+  function goToToday() {
+    setSelectedKey(todayKey);
+    setMonthCursor(new Date(today.getFullYear(), today.getMonth(), 1));
+    resetForm();
+  }
+
+  function saveEvent(event) {
+    event.preventDefault();
+    if (endTime <= startTime) {
+      setFormError('End time must be later than start time.');
+      return;
+    }
+    const scheduledEvent = {
+      id: editingId || Date.now(),
+      date: selectedKey,
+      type,
+      title: title.trim() || type[0].toUpperCase() + type.slice(1),
+      startTime,
+      endTime,
+      intensity,
+    };
+    setEvents((current) => editingId
+      ? current.map((item) => item.id === editingId ? scheduledEvent : item)
+      : [...current, scheduledEvent]);
+    resetForm();
+  }
+
+  function editEvent(event) {
+    setEditingId(event.id);
+    setType(event.type);
+    setTitle(event.title);
+    setStartTime(event.startTime);
+    setEndTime(event.endTime);
+    setIntensity(event.intensity);
+    setFormError('');
+    setShowForm(true);
+  }
+
+  function deleteEvent(id) {
+    setEvents((current) => current.filter((event) => event.id !== id));
+    if (editingId === id) resetForm();
+  }
+
+  return <Shell eyebrow="NOURALLY / CALENDAR">
+    <section className="calendar-head"><div><p className="kicker">TRAINING SCHEDULE</p><h1>Plan your<br /><em>month in motion.</em></h1></div><button className="text-button" onClick={onBack}>← Back to today</button></section>
+    <section className="calendar-layout">
+      <div className="card month-calendar">
+        <div className="calendar-toolbar">
+          <div className="calendar-month-controls"><button onClick={() => setMonthCursor(new Date(monthCursor.getFullYear(), monthCursor.getMonth() - 1, 1))} aria-label="Previous month">‹</button><button onClick={() => setMonthCursor(new Date(monthCursor.getFullYear(), monthCursor.getMonth() + 1, 1))} aria-label="Next month">›</button></div>
+          <h2>{new Intl.DateTimeFormat('en-US', { month: 'long', year: 'numeric' }).format(monthCursor)}</h2>
+          <button className="today-button" onClick={goToToday}>Today</button>
+        </div>
+        <div className="weekday-row">{['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'].map((day) => <span key={day}>{day}</span>)}</div>
+        <div className="calendar-grid">{calendarDays.map((date) => {
+          const key = getDateKey(date);
+          const dayEvents = events.filter((event) => event.date === key).sort((a, b) => a.startTime.localeCompare(b.startTime));
+          const outsideMonth = date.getMonth() !== monthCursor.getMonth();
+          return <button type="button" className={`calendar-day${outsideMonth ? ' outside' : ''}${key === todayKey ? ' today' : ''}${key === selectedKey ? ' selected' : ''}`} key={key} onClick={() => selectDay(date)} aria-label={new Intl.DateTimeFormat('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }).format(date)}>
+            <span className="day-number">{date.getDate()}</span>
+            <span className="day-events">{dayEvents.slice(0, 3).map((event) => <span className={`calendar-event-chip ${event.type}`} key={event.id}><i />{event.title}</span>)}{dayEvents.length > 3 && <span className="more-events">+{dayEvents.length - 3} more</span>}</span>
+          </button>;
+        })}</div>
+      </div>
+      <aside className="card day-agenda">
+        <div className="agenda-head"><div><span>{new Intl.DateTimeFormat('en-US', { weekday: 'long' }).format(selectedDate)}</span><strong>{new Intl.DateTimeFormat('en-US', { month: 'long', day: 'numeric' }).format(selectedDate)}</strong></div><button className="primary small" onClick={() => showForm ? resetForm() : setShowForm(true)}>{showForm ? 'Cancel' : '+ Add'}</button></div>
+        {showForm && <form className="schedule-form" onSubmit={saveEvent}>
+          <label>Activity type<select value={type} onChange={(event) => setType(event.target.value)}><option value="workout">Workout</option><option value="practice">Practice</option><option value="game">Game</option></select></label>
+          <label>Activity name<input value={title} onChange={(event) => setTitle(event.target.value)} placeholder={type[0].toUpperCase() + type.slice(1)} /></label>
+          <div className="time-fields"><label>Starts<input required type="time" value={startTime} onChange={(event) => setStartTime(event.target.value)} /></label><label>Ends<input required type="time" value={endTime} onChange={(event) => setEndTime(event.target.value)} /></label></div>
+          <fieldset><legend>Activity level</legend><div className="intensity-options">{['low', 'medium', 'high'].map((level) => <button type="button" className={intensity === level ? 'selected' : ''} onClick={() => setIntensity(level)} key={level}>{level}</button>)}</div></fieldset>
+          {formError && <p className="schedule-error">{formError}</p>}
+          <button className="primary" type="submit">{editingId ? 'Save changes' : 'Add to calendar'} <span>→</span></button>
+        </form>}
+        {!showForm && (selectedEvents.length ? <div className="agenda-events">{selectedEvents.map((event) => <article className={`agenda-event ${event.type}`} key={event.id}><div className="event-time"><strong>{formatTime(event.startTime)}</strong><span>{formatTime(event.endTime)}</span></div><div className="event-details"><span>{event.type} · {event.intensity} activity</span><h3>{event.title}</h3><p>{formatDuration(event.startTime, event.endTime)}</p></div><div className="event-actions"><button onClick={() => editEvent(event)} aria-label={`Edit ${event.title}`}>Edit</button><button className="danger" onClick={() => deleteEvent(event.id)} aria-label={`Delete ${event.title}`}>Delete</button></div></article>)}</div> : <div className="agenda-empty"><span>＋</span><h3>Nothing scheduled.</h3><p>Add a workout, practice, or game to this day.</p></div>)}
+      </aside>
+    </section>
   </Shell>;
 }
 
@@ -386,7 +528,7 @@ function WeeklyProgress({ dailyLogs, todayKey, fallbackGoal, fallbackWaterGoal, 
     streakDate = addDays(streakDate, -1);
   }
 
-  return <Shell eyebrow="FUEL / WEEKLY PROGRESS">
+  return <Shell eyebrow="NOURALLY / WEEKLY PROGRESS">
     <section className="dashboard-head weekly-head"><div><p className="kicker">YOUR SEVEN-DAY VIEW</p><h1>Progress you<br /><em>can build on.</em></h1></div><button className="text-button" onClick={onBack}>← Back to today</button></section>
     <section className="week-toolbar"><button className="week-arrow" onClick={() => setWeekOffset((offset) => offset - 1)} aria-label="Previous seven days">←</button><div><strong>{weekOffset === 0 ? 'Last 7 days' : range}</strong><span>{range}</span></div><button className="week-arrow" disabled={weekOffset === 0} onClick={() => setWeekOffset((offset) => Math.min(offset + 1, 0))} aria-label="Next seven days">→</button></section>
     <section className="weekly-stats"><article className="card weekly-stat"><span>Calorie average</span><strong>{average.toLocaleString()}</strong><small>kcal</small></article><article className="card weekly-stat"><span>Calorie goals</span><strong>{goalsReached}<i>/7</i></strong><small>days</small></article><article className="card weekly-stat"><span>Water average</span><strong>{waterAverage}</strong><small>oz/day</small></article><article className="card weekly-stat"><span>Hydration goals</span><strong>{waterGoalsReached}<i>/7</i></strong><small>days</small></article><article className="card weekly-stat"><span>Logging streak</span><strong>{streak}</strong><small>{streak === 1 ? 'day' : 'days'}</small></article><article className="card weekly-stat"><span>Days logged</span><strong>{loggedDays}</strong><small>last 7 days</small></article></section>
@@ -403,7 +545,7 @@ function WeeklyProgress({ dailyLogs, todayKey, fallbackGoal, fallbackWaterGoal, 
 
 function History({ dailyLogs, todayKey, fallbackWaterGoal, onBack }) {
   const dates = Object.keys(dailyLogs).filter((date) => date !== todayKey).sort().reverse();
-  return <Shell eyebrow="FUEL / HISTORY">
+  return <Shell eyebrow="NOURALLY / HISTORY">
     <section className="dashboard-head history-head"><div><p className="kicker">YOUR DAILY RECORD</p><h1>Look back.<br /><em>Keep moving.</em></h1></div><button className="text-button" onClick={onBack}>← Back to today</button></section>
     {dates.length === 0 ? <section className="card history-empty"><div className="section-label">PREVIOUS DAYS</div><h2>Your history starts tomorrow.</h2><p className="muted">Today’s entries will stay saved on this device and appear here on the next calendar day.</p></section> : <section className="history-list">{dates.map((date) => {
       const log = dailyLogs[date];

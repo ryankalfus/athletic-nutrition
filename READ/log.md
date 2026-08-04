@@ -73,3 +73,23 @@ Verified the WebAssembly scanner with a successful production build and an error
 Initialized the project as a Git repository with main as the default branch. 2026.08.01
 Created the private GitHub repository ryankalfus/athletic-nutrition. 2026.08.01
 Pushed the complete project to the GitHub main branch. 2026.08.01
+Reviewed the completed prototype and identified the practice and game scheduler as the next MVP priority. 2026.08.04
+Created a comprehensive comparative research report covering the current implementation, competitors, originality, market need, safety, privacy, technical architecture, positioning, validation, and roadmap. 2026.08.04
+Documented a recommendation to reposition the product around school-day fueling logistics and parent coordination instead of a generic AI calorie tracker. 2026.08.04
+Verified the existing React prototype with a successful production build before completing the research report. 2026.08.04
+Added an iPhone-style monthly calendar with previous-month, next-month, and Today navigation. 2026.08.04
+Added selectable calendar days with scheduled activity indicators and a detailed daily agenda. 2026.08.04
+Added locally saved workout, practice, and game entries with editable names, start times, end times, and low, medium, or high activity levels. 2026.08.04
+Added calendar event editing, deletion, time validation, and automatic duration display. 2026.08.04
+Added responsive calendar and daily agenda styling for desktop and mobile screens. 2026.08.04
+Verified the calendar and schedule feature with a successful production build. 2026.08.04
+Launched the updated app in the local in-app browser. 2026.08.04
+Updated the comparative research report to include the newly added manual workout, practice, and game calendar while distinguishing it from schedule-aware nutrition guidance. 2026.08.04
+Refreshed the report’s production bundle measurements after successfully rebuilding the calendar-enabled prototype. 2026.08.04
+Selected Nourally as the new product name after web, app-store, trademark, and domain screening. 2026.08.04
+Replaced Fuel product branding with Nourally across the app title, interface labels, and package metadata. 2026.08.04
+Added backward-compatible reads from former fuel-prefixed browser storage keys so existing prototype data migrates safely. 2026.08.04
+Created NAMING_ORIGINALITY.md with the Nourally rationale, web and app-store screening, official USPTO results, domain checks, and limitations. 2026.08.04
+Updated the comparative report’s title, scorecard, comparison matrix, naming assessment, and conclusion for the Nourally rename. 2026.08.04
+Replaced remaining project-specific references to the former Fuel name while preserving competitor names and historical collision evidence. 2026.08.04
+Verified the Nourally rename and backward-compatible storage migration with a successful production build. 2026.08.04
