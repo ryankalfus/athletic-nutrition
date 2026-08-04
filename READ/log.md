@@ -93,3 +93,15 @@ Created NAMING_ORIGINALITY.md with the Nourally rationale, web and app-store scr
 Updated the comparative report’s title, scorecard, comparison matrix, naming assessment, and conclusion for the Nourally rename. 2026.08.04
 Replaced remaining project-specific references to the former Fuel name while preserving competitor names and historical collision evidence. 2026.08.04
 Verified the Nourally rename and backward-compatible storage migration with a successful production build. 2026.08.04
+Added persistent browser storage for an optional school-year calendar schedule. 2026.08.04
+Added a School calendar control with editable school-year dates, daily hours, and active weekdays. 2026.08.04
+Imported recurring school days into the monthly calendar and daily agenda alongside workouts, practices, and games. 2026.08.04
+Added a global school-calendar visibility toggle without deleting saved school settings. 2026.08.04
+Added per-date school cancellation and restoration controls for holidays, closures, and absences. 2026.08.04
+Added responsive visual styling for school setup, visibility controls, school calendar events, and canceled-school notices. 2026.08.04
+Reframed the READ product vision around Nourally as a school-and-sport nutrition-logistics assistant. 2026.08.04
+Updated the READ problem, users, needs, solution, MVP features, technology, learning needs, and safety challenges to match schedule-aware planning and family support. 2026.08.04
+Prevented canceled-school notices from appearing while the entire school calendar is hidden. 2026.08.04
+Verified school-year import, recurring weekday events, single-day cancellation, global visibility, and error-free browser behavior. 2026.08.04
+Verified the complete school-calendar update with a successful production build. 2026.08.04
+Reformatted the READ MVP feature list to remove trailing whitespace while preserving its structure. 2026.08.04

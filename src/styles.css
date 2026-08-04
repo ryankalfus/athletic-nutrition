@@ -199,6 +199,27 @@ footer { margin-top: auto; padding-top: 60px; color: #a1aaa5; font: 11px 'DM Mon
 
 .calendar-head { display: flex; align-items: end; justify-content: space-between; margin: 82px 0 39px; }
 .calendar-head h1 { font-size: clamp(40px, 5vw, 60px); }
+.calendar-head-actions { display: flex; align-items: center; gap: 18px; }
+.school-button { padding: 11px 15px; border: 1px solid #a8c8d1; border-radius: 6px; background: #edf7f8; color: #286b73; font-size: 12px; font-weight: 600; }
+.school-button:hover { border-color: #4f9ba5; background: #dff1f3; }
+.school-schedule-card { margin: -17px 0 16px; padding: 22px 24px; }
+.school-schedule-summary { display: flex; align-items: center; justify-content: space-between; gap: 24px; }
+.school-schedule-summary h2 { margin: 10px 0 5px; font-size: 20px; }
+.school-schedule-summary p { margin: 0; color: var(--muted); font-size: 11px; }
+.school-summary-actions { display: flex; align-items: center; gap: 16px; }
+.school-toggle { display: flex; align-items: center; gap: 7px; padding: 7px 10px; border: 1px solid var(--line); border-radius: 50px; background: #f1f2ef; color: var(--muted); font-size: 10px; }
+.school-toggle span { display: block; width: 8px; height: 8px; border-radius: 50%; background: #a9b1ad; }
+.school-toggle.on { border-color: #9bc7cd; background: #e7f6f7; color: #286b73; }
+.school-toggle.on span { background: #4ba7b1; }
+.school-form { grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 22px; padding-top: 22px; border-top: 1px solid var(--line); }
+.school-form > label:first-child, .school-form > fieldset, .school-form > .schedule-error, .school-form > .primary { grid-column: 1 / -1; }
+.school-date-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.school-form input { padding: 11px 12px; }
+.school-form fieldset { min-width: 0; margin: 0; padding: 0; border: 0; }
+.school-form legend { margin-bottom: 9px; color: #53655d; font-size: 13px; }
+.school-weekdays { display: grid; grid-template-columns: repeat(7, 1fr); gap: 7px; }
+.school-weekdays button { height: 36px; border: 1px solid var(--line); border-radius: 50%; background: #fbfcfa; color: var(--muted); font-size: 11px; }
+.school-weekdays button.selected { border-color: #4f9ba5; background: #dff1f3; color: #245f67; font-weight: 700; }
 .calendar-layout { display: grid; grid-template-columns: minmax(0, 1.7fr) minmax(290px, .75fr); gap: 16px; align-items: start; }
 .month-calendar { padding: 24px; overflow: hidden; }
 .calendar-toolbar { display: grid; grid-template-columns: 100px 1fr 100px; align-items: center; margin-bottom: 22px; }
@@ -225,6 +246,8 @@ footer { margin-top: auto; padding-top: 60px; color: #a1aaa5; font: 11px 'DM Mon
 .calendar-event-chip.workout i { background: #55aeb7; }
 .calendar-event-chip.game { background: #fff0ea; color: #a44f37; }
 .calendar-event-chip.game i { background: var(--orange); }
+.calendar-event-chip.school { background: #e6f3f5; color: #2d6c74; }
+.calendar-event-chip.school i { background: #4fa4ae; }
 .more-events { padding-left: 5px; color: var(--muted); font-size: 9px; }
 .day-agenda { padding: 24px; min-height: 520px; }
 .agenda-head { display: flex; justify-content: space-between; align-items: center; padding-bottom: 20px; border-bottom: 1px solid var(--line); }
@@ -245,6 +268,7 @@ footer { margin-top: auto; padding-top: 60px; color: #a1aaa5; font: 11px 'DM Mon
 .agenda-event:before { content: ''; position: absolute; top: 22px; bottom: 20px; left: 0; width: 3px; border-radius: 4px; background: #8ba62d; }
 .agenda-event.workout:before { background: #55aeb7; }
 .agenda-event.game:before { background: var(--orange); }
+.agenda-event.school:before { background: #4fa4ae; }
 .event-time { display: grid; align-content: start; gap: 4px; }
 .event-time strong { font-size: 11px; }
 .event-time span { color: var(--muted); font-size: 10px; }
@@ -256,6 +280,8 @@ footer { margin-top: auto; padding-top: 60px; color: #a1aaa5; font: 11px 'DM Mon
 .event-actions button { padding: 0; border: 0; border-bottom: 1px solid var(--line); background: transparent; color: var(--muted); font-size: 10px; }
 .event-actions button:hover { color: var(--ink); border-color: var(--ink); }
 .event-actions .danger:hover { color: #bd4d39; border-color: #d56d58; }
+.school-canceled { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 18px; padding: 12px; border-radius: 6px; background: #f1f2ef; color: var(--muted); font-size: 11px; }
+.school-canceled button { padding: 0; border: 0; border-bottom: 1px solid #8b9993; background: transparent; color: var(--ink); font-size: 10px; }
 .agenda-empty { padding: 74px 12px; color: var(--muted); text-align: center; }
 .agenda-empty > span { display: inline-grid; place-items: center; width: 42px; height: 42px; border-radius: 50%; background: #eef7d5; color: var(--ink); font-size: 20px; }
 .agenda-empty h3 { margin: 14px 0 6px; color: var(--ink); }
@@ -271,7 +297,15 @@ footer { margin-top: auto; padding-top: 60px; color: #a1aaa5; font: 11px 'DM Mon
   .product-result { grid-template-columns: 72px 1fr; gap: 12px; }
   .product-result > img, .product-placeholder { width: 72px; height: 92px; }
   .calendar-head { display: block; margin: 72px 0 30px; }
-  .calendar-head .text-button { margin-top: 18px; }
+  .calendar-head-actions { justify-content: space-between; margin-top: 18px; }
+  .calendar-head .text-button { margin-top: 0; }
+  .school-schedule-card { margin-top: -12px; padding: 18px; }
+  .school-schedule-summary { align-items: start; }
+  .school-summary-actions { display: grid; justify-items: end; gap: 10px; }
+  .school-form { grid-template-columns: 1fr; }
+  .school-date-fields { grid-template-columns: 1fr; }
+  .school-weekdays { gap: 4px; }
+  .school-weekdays button { height: 32px; }
   .calendar-layout { grid-template-columns: 1fr; }
   .month-calendar { padding: 17px 10px; }
   .calendar-toolbar { grid-template-columns: 78px 1fr 66px; }

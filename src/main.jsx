@@ -24,6 +24,10 @@ function loadSchedule() {
   return JSON.parse(readStoredValue('nourally-schedule', 'fuel-schedule') || '[]');
 }
 
+function loadSchoolSchedule() {
+  return JSON.parse(localStorage.getItem('nourally-school-schedule') || 'null');
+}
+
 function loadDailyLogs() {
   const saved = JSON.parse(readStoredValue('nourally-daily-logs', 'fuel-daily-logs') || 'null');
   if (saved) return saved;
@@ -50,12 +54,14 @@ function App() {
   const [waterGoal, setWaterGoal] = useState(() => Number(readStoredValue('nourally-water-goal', 'fuel-water-goal')) || 80);
   const [dailyLogs, setDailyLogs] = useState(loadDailyLogs);
   const [schedule, setSchedule] = useState(loadSchedule);
+  const [schoolSchedule, setSchoolSchedule] = useState(loadSchoolSchedule);
 
   useEffect(() => localStorage.setItem('nourally-step', step), [step]);
   useEffect(() => localStorage.setItem('nourally-goal', goal), [goal]);
   useEffect(() => localStorage.setItem('nourally-water-goal', waterGoal), [waterGoal]);
   useEffect(() => localStorage.setItem('nourally-daily-logs', JSON.stringify(dailyLogs)), [dailyLogs]);
   useEffect(() => localStorage.setItem('nourally-schedule', JSON.stringify(schedule)), [schedule]);
+  useEffect(() => localStorage.setItem('nourally-school-schedule', JSON.stringify(schoolSchedule)), [schoolSchedule]);
   useEffect(() => {
     const timer = window.setInterval(() => setTodayKey(getDateKey()), 60000);
     return () => window.clearInterval(timer);
@@ -98,7 +104,7 @@ function App() {
   if (step === 'goal') return <GoalScreen goal={goal} setGoal={setGoal} onContinue={saveGoal} />;
   if (view === 'history') return <History dailyLogs={dailyLogs} todayKey={todayKey} fallbackWaterGoal={waterGoal} onBack={() => setView('today')} />;
   if (view === 'weekly') return <WeeklyProgress dailyLogs={dailyLogs} todayKey={todayKey} fallbackGoal={goal} fallbackWaterGoal={waterGoal} onBack={() => setView('today')} />;
-  if (view === 'calendar') return <ScheduleCalendar events={schedule} setEvents={setSchedule} todayKey={todayKey} onBack={() => setView('today')} />;
+  if (view === 'calendar') return <ScheduleCalendar events={schedule} setEvents={setSchedule} schoolSchedule={schoolSchedule} setSchoolSchedule={setSchoolSchedule} todayKey={todayKey} onBack={() => setView('today')} />;
   return <Dashboard goal={todayLog.goal || goal} entries={todayLog.entries} setEntries={setTodayEntries} water={todayLog.water || 0} waterGoal={todayLog.waterGoal || waterGoal} setHydration={setTodayHydration} onSetWaterGoal={updateWaterGoal} onEditGoal={() => setStep('goal')} onHistory={() => setView('history')} onWeekly={() => setView('weekly')} onCalendar={() => setView('calendar')} />;
 }
 
@@ -191,11 +197,13 @@ function Dashboard({ goal, entries, setEntries, water, waterGoal, setHydration, 
   </Shell>;
 }
 
-function ScheduleCalendar({ events, setEvents, todayKey, onBack }) {
+function ScheduleCalendar({ events, setEvents, schoolSchedule, setSchoolSchedule, todayKey, onBack }) {
   const today = new Date(`${todayKey}T12:00:00`);
+  const schoolYearStart = today.getMonth() >= 6 ? today.getFullYear() : today.getFullYear() - 1;
   const [selectedKey, setSelectedKey] = useState(todayKey);
   const [monthCursor, setMonthCursor] = useState(new Date(today.getFullYear(), today.getMonth(), 1));
   const [showForm, setShowForm] = useState(false);
+  const [showSchoolForm, setShowSchoolForm] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [type, setType] = useState('practice');
   const [title, setTitle] = useState('');
@@ -203,11 +211,46 @@ function ScheduleCalendar({ events, setEvents, todayKey, onBack }) {
   const [endTime, setEndTime] = useState('17:30');
   const [intensity, setIntensity] = useState('medium');
   const [formError, setFormError] = useState('');
+  const [schoolName, setSchoolName] = useState(schoolSchedule?.name || 'School');
+  const [schoolStartDate, setSchoolStartDate] = useState(schoolSchedule?.startDate || `${schoolYearStart}-08-15`);
+  const [schoolEndDate, setSchoolEndDate] = useState(schoolSchedule?.endDate || `${schoolYearStart + 1}-06-15`);
+  const [schoolStartTime, setSchoolStartTime] = useState(schoolSchedule?.startTime || '08:00');
+  const [schoolEndTime, setSchoolEndTime] = useState(schoolSchedule?.endTime || '15:00');
+  const [schoolWeekdays, setSchoolWeekdays] = useState(schoolSchedule?.weekdays || [1, 2, 3, 4, 5]);
+  const [schoolError, setSchoolError] = useState('');
   const monthStart = new Date(monthCursor.getFullYear(), monthCursor.getMonth(), 1);
   const gridStart = addDays(monthStart, -monthStart.getDay());
   const calendarDays = Array.from({ length: 42 }, (_, index) => addDays(gridStart, index));
   const selectedDate = new Date(`${selectedKey}T12:00:00`);
-  const selectedEvents = events.filter((event) => event.date === selectedKey).sort((a, b) => a.startTime.localeCompare(b.startTime));
+  const selectedEvents = getEventsForDay(selectedDate);
+  const selectedSchoolCanceled = schoolSchedule?.enabled && isConfiguredSchoolDay(selectedDate) && schoolSchedule.excludedDates?.includes(selectedKey);
+
+  function isConfiguredSchoolDay(date) {
+    if (!schoolSchedule || getDateKey(date) < schoolSchedule.startDate || getDateKey(date) > schoolSchedule.endDate) return false;
+    return schoolSchedule.weekdays.includes(date.getDay());
+  }
+
+  function getSchoolEvent(date) {
+    const key = getDateKey(date);
+    if (!schoolSchedule?.enabled || !isConfiguredSchoolDay(date) || schoolSchedule.excludedDates?.includes(key)) return null;
+    return {
+      id: `school-${key}`,
+      date: key,
+      type: 'school',
+      title: schoolSchedule.name,
+      startTime: schoolSchedule.startTime,
+      endTime: schoolSchedule.endTime,
+      intensity: 'school day',
+      recurring: true,
+    };
+  }
+
+  function getEventsForDay(date) {
+    const key = getDateKey(date);
+    const dayEvents = events.filter((event) => event.date === key);
+    const schoolEvent = getSchoolEvent(date);
+    return (schoolEvent ? [...dayEvents, schoolEvent] : dayEvents).sort((a, b) => a.startTime.localeCompare(b.startTime));
+  }
 
   function formatTime(value) {
     const [hours, minutes] = value.split(':').map(Number);
@@ -286,8 +329,81 @@ function ScheduleCalendar({ events, setEvents, todayKey, onBack }) {
     if (editingId === id) resetForm();
   }
 
+  function saveSchoolSchedule(event) {
+    event.preventDefault();
+    if (schoolEndDate < schoolStartDate) {
+      setSchoolError('The school year must end after it starts.');
+      return;
+    }
+    if (schoolEndTime <= schoolStartTime) {
+      setSchoolError('The school day must end after it starts.');
+      return;
+    }
+    if (!schoolWeekdays.length) {
+      setSchoolError('Choose at least one school day.');
+      return;
+    }
+    setSchoolSchedule({
+      enabled: true,
+      name: schoolName.trim() || 'School',
+      startDate: schoolStartDate,
+      endDate: schoolEndDate,
+      startTime: schoolStartTime,
+      endTime: schoolEndTime,
+      weekdays: [...schoolWeekdays].sort(),
+      excludedDates: schoolSchedule?.excludedDates || [],
+    });
+    setSchoolError('');
+    setShowSchoolForm(false);
+  }
+
+  function openSchoolForm() {
+    if (schoolSchedule) {
+      setSchoolName(schoolSchedule.name);
+      setSchoolStartDate(schoolSchedule.startDate);
+      setSchoolEndDate(schoolSchedule.endDate);
+      setSchoolStartTime(schoolSchedule.startTime);
+      setSchoolEndTime(schoolSchedule.endTime);
+      setSchoolWeekdays(schoolSchedule.weekdays);
+    }
+    setSchoolError('');
+    setShowSchoolForm(true);
+    resetForm();
+  }
+
+  function toggleSchoolDay(day) {
+    setSchoolWeekdays((days) => days.includes(day) ? days.filter((item) => item !== day) : [...days, day]);
+  }
+
+  function toggleSchoolSchedule() {
+    if (!schoolSchedule) {
+      openSchoolForm();
+      return;
+    }
+    setSchoolSchedule((current) => ({ ...current, enabled: !current.enabled }));
+  }
+
+  function cancelSchoolDay(dateKey) {
+    setSchoolSchedule((current) => ({ ...current, excludedDates: [...new Set([...(current.excludedDates || []), dateKey])] }));
+  }
+
+  function restoreSchoolDay(dateKey) {
+    setSchoolSchedule((current) => ({ ...current, excludedDates: (current.excludedDates || []).filter((date) => date !== dateKey) }));
+  }
+
   return <Shell eyebrow="NOURALLY / CALENDAR">
-    <section className="calendar-head"><div><p className="kicker">TRAINING SCHEDULE</p><h1>Plan your<br /><em>month in motion.</em></h1></div><button className="text-button" onClick={onBack}>← Back to today</button></section>
+    <section className="calendar-head"><div><p className="kicker">SCHOOL + TRAINING SCHEDULE</p><h1>Plan your<br /><em>whole day.</em></h1></div><div className="calendar-head-actions"><button className="school-button" onClick={openSchoolForm}>▤ School</button><button className="text-button" onClick={onBack}>← Back to today</button></div></section>
+    {(schoolSchedule || showSchoolForm) && <section className="card school-schedule-card">
+      <div className="school-schedule-summary"><div><div className="section-label">SCHOOL CALENDAR</div><h2>{schoolSchedule?.name || 'Import your school schedule'}</h2>{schoolSchedule && <p>{new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).format(new Date(`${schoolSchedule.startDate}T12:00:00`))} – {new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).format(new Date(`${schoolSchedule.endDate}T12:00:00`))} · {formatTime(schoolSchedule.startTime)}–{formatTime(schoolSchedule.endTime)}</p>}</div><div className="school-summary-actions">{schoolSchedule && <button className={`school-toggle ${schoolSchedule.enabled ? 'on' : ''}`} onClick={toggleSchoolSchedule} aria-pressed={schoolSchedule.enabled}><span />{schoolSchedule.enabled ? 'Shown' : 'Hidden'}</button>}<button className="text-button" onClick={() => showSchoolForm ? setShowSchoolForm(false) : openSchoolForm()}>{showSchoolForm ? 'Close' : schoolSchedule ? 'Edit' : 'Set up'}</button></div></div>
+      {showSchoolForm && <form className="school-form" onSubmit={saveSchoolSchedule}>
+        <label>School name<input value={schoolName} onChange={(event) => setSchoolName(event.target.value)} placeholder="School" /></label>
+        <div className="school-date-fields"><label>School year starts<input required type="date" value={schoolStartDate} onChange={(event) => setSchoolStartDate(event.target.value)} /></label><label>School year ends<input required type="date" value={schoolEndDate} onChange={(event) => setSchoolEndDate(event.target.value)} /></label></div>
+        <div className="school-date-fields"><label>School starts<input required type="time" value={schoolStartTime} onChange={(event) => setSchoolStartTime(event.target.value)} /></label><label>School ends<input required type="time" value={schoolEndTime} onChange={(event) => setSchoolEndTime(event.target.value)} /></label></div>
+        <fieldset><legend>School days</legend><div className="school-weekdays">{[['S', 0], ['M', 1], ['T', 2], ['W', 3], ['T', 4], ['F', 5], ['S', 6]].map(([label, day]) => <button type="button" className={schoolWeekdays.includes(day) ? 'selected' : ''} onClick={() => toggleSchoolDay(day)} key={day}>{label}</button>)}</div></fieldset>
+        {schoolError && <p className="schedule-error">{schoolError}</p>}
+        <button className="primary" type="submit">Import school year <span>→</span></button>
+      </form>}
+    </section>}
     <section className="calendar-layout">
       <div className="card month-calendar">
         <div className="calendar-toolbar">
@@ -298,7 +414,7 @@ function ScheduleCalendar({ events, setEvents, todayKey, onBack }) {
         <div className="weekday-row">{['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'].map((day) => <span key={day}>{day}</span>)}</div>
         <div className="calendar-grid">{calendarDays.map((date) => {
           const key = getDateKey(date);
-          const dayEvents = events.filter((event) => event.date === key).sort((a, b) => a.startTime.localeCompare(b.startTime));
+          const dayEvents = getEventsForDay(date);
           const outsideMonth = date.getMonth() !== monthCursor.getMonth();
           return <button type="button" className={`calendar-day${outsideMonth ? ' outside' : ''}${key === todayKey ? ' today' : ''}${key === selectedKey ? ' selected' : ''}`} key={key} onClick={() => selectDay(date)} aria-label={new Intl.DateTimeFormat('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }).format(date)}>
             <span className="day-number">{date.getDate()}</span>
@@ -307,7 +423,7 @@ function ScheduleCalendar({ events, setEvents, todayKey, onBack }) {
         })}</div>
       </div>
       <aside className="card day-agenda">
-        <div className="agenda-head"><div><span>{new Intl.DateTimeFormat('en-US', { weekday: 'long' }).format(selectedDate)}</span><strong>{new Intl.DateTimeFormat('en-US', { month: 'long', day: 'numeric' }).format(selectedDate)}</strong></div><button className="primary small" onClick={() => showForm ? resetForm() : setShowForm(true)}>{showForm ? 'Cancel' : '+ Add'}</button></div>
+        <div className="agenda-head"><div><span>{new Intl.DateTimeFormat('en-US', { weekday: 'long' }).format(selectedDate)}</span><strong>{new Intl.DateTimeFormat('en-US', { month: 'long', day: 'numeric' }).format(selectedDate)}</strong></div><button className="primary small" onClick={() => { setShowSchoolForm(false); showForm ? resetForm() : setShowForm(true); }}>{showForm ? 'Cancel' : '+ Add'}</button></div>
         {showForm && <form className="schedule-form" onSubmit={saveEvent}>
           <label>Activity type<select value={type} onChange={(event) => setType(event.target.value)}><option value="workout">Workout</option><option value="practice">Practice</option><option value="game">Game</option></select></label>
           <label>Activity name<input value={title} onChange={(event) => setTitle(event.target.value)} placeholder={type[0].toUpperCase() + type.slice(1)} /></label>
@@ -316,7 +432,7 @@ function ScheduleCalendar({ events, setEvents, todayKey, onBack }) {
           {formError && <p className="schedule-error">{formError}</p>}
           <button className="primary" type="submit">{editingId ? 'Save changes' : 'Add to calendar'} <span>→</span></button>
         </form>}
-        {!showForm && (selectedEvents.length ? <div className="agenda-events">{selectedEvents.map((event) => <article className={`agenda-event ${event.type}`} key={event.id}><div className="event-time"><strong>{formatTime(event.startTime)}</strong><span>{formatTime(event.endTime)}</span></div><div className="event-details"><span>{event.type} · {event.intensity} activity</span><h3>{event.title}</h3><p>{formatDuration(event.startTime, event.endTime)}</p></div><div className="event-actions"><button onClick={() => editEvent(event)} aria-label={`Edit ${event.title}`}>Edit</button><button className="danger" onClick={() => deleteEvent(event.id)} aria-label={`Delete ${event.title}`}>Delete</button></div></article>)}</div> : <div className="agenda-empty"><span>＋</span><h3>Nothing scheduled.</h3><p>Add a workout, practice, or game to this day.</p></div>)}
+        {!showForm && <>{selectedSchoolCanceled && <div className="school-canceled"><span>School canceled for this day.</span><button onClick={() => restoreSchoolDay(selectedKey)}>Restore</button></div>}{selectedEvents.length ? <div className="agenda-events">{selectedEvents.map((event) => <article className={`agenda-event ${event.type}`} key={event.id}><div className="event-time"><strong>{formatTime(event.startTime)}</strong><span>{formatTime(event.endTime)}</span></div><div className="event-details"><span>{event.type}{event.recurring ? ' · recurring school day' : ` · ${event.intensity} activity`}</span><h3>{event.title}</h3><p>{formatDuration(event.startTime, event.endTime)}</p></div><div className="event-actions">{event.recurring ? <><button onClick={openSchoolForm}>Edit schedule</button><button className="danger" onClick={() => cancelSchoolDay(selectedKey)} aria-label={`Cancel school on ${selectedKey}`}>Cancel this day</button></> : <><button onClick={() => editEvent(event)} aria-label={`Edit ${event.title}`}>Edit</button><button className="danger" onClick={() => deleteEvent(event.id)} aria-label={`Delete ${event.title}`}>Delete</button></>}</div></article>)}</div> : !selectedSchoolCanceled && <div className="agenda-empty"><span>＋</span><h3>Nothing scheduled.</h3><p>Add a workout, practice, or game—or import your school year.</p></div>}</>}
       </aside>
     </section>
   </Shell>;
