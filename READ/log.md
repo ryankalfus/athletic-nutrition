@@ -105,3 +105,9 @@ Prevented canceled-school notices from appearing while the entire school calenda
 Verified school-year import, recurring weekday events, single-day cancellation, global visibility, and error-free browser behavior. 2026.08.04
 Verified the complete school-calendar update with a successful production build. 2026.08.04
 Reformatted the READ MVP feature list to remove trailing whitespace while preserving its structure. 2026.08.04
+Added editable lunch, optional morning and afternoon snack, and commute-time fields to School setup. 2026.08.04
+Added cafeteria, refrigerator, microwave, and classroom-eating access controls to School setup. 2026.08.04
+Persisted school food-window and access details with validation for times and commute duration. 2026.08.04
+Updated the READ product concept to include school food windows and access constraints. 2026.08.04
+Added responsive styling for school food windows, commute details, and selectable food-access controls. 2026.08.04
+Verified the school food-access setup update with a successful production build and clean diff validation. 2026.08.04

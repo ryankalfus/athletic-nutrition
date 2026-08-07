@@ -48,6 +48,7 @@
 **Feature 1: Whole-Day Schedule**
 
 - School-year import with start and end dates, school-day hours, and active weekdays
+- School lunch window, optional snack times, commute duration, and cafeteria, refrigerator, microwave, or classroom eating access
 - Workout, practice, and game scheduling with time, duration, and intensity
 - Global school-calendar visibility and per-day school cancellation
 - Future import or sync from school and team calendar sources

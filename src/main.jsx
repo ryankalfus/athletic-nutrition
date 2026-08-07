@@ -217,6 +217,12 @@ function ScheduleCalendar({ events, setEvents, schoolSchedule, setSchoolSchedule
   const [schoolStartTime, setSchoolStartTime] = useState(schoolSchedule?.startTime || '08:00');
   const [schoolEndTime, setSchoolEndTime] = useState(schoolSchedule?.endTime || '15:00');
   const [schoolWeekdays, setSchoolWeekdays] = useState(schoolSchedule?.weekdays || [1, 2, 3, 4, 5]);
+  const [lunchStartTime, setLunchStartTime] = useState(schoolSchedule?.lunchStartTime || '11:30');
+  const [lunchEndTime, setLunchEndTime] = useState(schoolSchedule?.lunchEndTime || '12:00');
+  const [morningSnackTime, setMorningSnackTime] = useState(schoolSchedule?.morningSnackTime || '');
+  const [afternoonSnackTime, setAfternoonSnackTime] = useState(schoolSchedule?.afternoonSnackTime || '');
+  const [commuteMinutes, setCommuteMinutes] = useState(String(schoolSchedule?.commuteMinutes ?? 20));
+  const [foodAccess, setFoodAccess] = useState(schoolSchedule?.foodAccess || { cafeteria: true, refrigerator: false, microwave: false, eatInClass: false });
   const [schoolError, setSchoolError] = useState('');
   const monthStart = new Date(monthCursor.getFullYear(), monthCursor.getMonth(), 1);
   const gridStart = addDays(monthStart, -monthStart.getDay());
@@ -343,6 +349,19 @@ function ScheduleCalendar({ events, setEvents, schoolSchedule, setSchoolSchedule
       setSchoolError('Choose at least one school day.');
       return;
     }
+    if (lunchEndTime <= lunchStartTime || lunchStartTime < schoolStartTime || lunchEndTime > schoolEndTime) {
+      setSchoolError('Lunch must fit inside the school day and end after it starts.');
+      return;
+    }
+    if ([morningSnackTime, afternoonSnackTime].some((time) => time && (time < schoolStartTime || time > schoolEndTime))) {
+      setSchoolError('Optional snack times must fall inside the school day.');
+      return;
+    }
+    const parsedCommuteMinutes = Number(commuteMinutes);
+    if (!Number.isFinite(parsedCommuteMinutes) || parsedCommuteMinutes < 0 || parsedCommuteMinutes > 180) {
+      setSchoolError('Commute time must be between 0 and 180 minutes.');
+      return;
+    }
     setSchoolSchedule({
       enabled: true,
       name: schoolName.trim() || 'School',
@@ -351,6 +370,12 @@ function ScheduleCalendar({ events, setEvents, schoolSchedule, setSchoolSchedule
       startTime: schoolStartTime,
       endTime: schoolEndTime,
       weekdays: [...schoolWeekdays].sort(),
+      lunchStartTime,
+      lunchEndTime,
+      morningSnackTime,
+      afternoonSnackTime,
+      commuteMinutes: parsedCommuteMinutes,
+      foodAccess,
       excludedDates: schoolSchedule?.excludedDates || [],
     });
     setSchoolError('');
@@ -365,6 +390,12 @@ function ScheduleCalendar({ events, setEvents, schoolSchedule, setSchoolSchedule
       setSchoolStartTime(schoolSchedule.startTime);
       setSchoolEndTime(schoolSchedule.endTime);
       setSchoolWeekdays(schoolSchedule.weekdays);
+      setLunchStartTime(schoolSchedule.lunchStartTime || '11:30');
+      setLunchEndTime(schoolSchedule.lunchEndTime || '12:00');
+      setMorningSnackTime(schoolSchedule.morningSnackTime || '');
+      setAfternoonSnackTime(schoolSchedule.afternoonSnackTime || '');
+      setCommuteMinutes(String(schoolSchedule.commuteMinutes ?? 20));
+      setFoodAccess(schoolSchedule.foodAccess || { cafeteria: true, refrigerator: false, microwave: false, eatInClass: false });
     }
     setSchoolError('');
     setShowSchoolForm(true);
@@ -373,6 +404,10 @@ function ScheduleCalendar({ events, setEvents, schoolSchedule, setSchoolSchedule
 
   function toggleSchoolDay(day) {
     setSchoolWeekdays((days) => days.includes(day) ? days.filter((item) => item !== day) : [...days, day]);
+  }
+
+  function toggleFoodAccess(option) {
+    setFoodAccess((access) => ({ ...access, [option]: !access[option] }));
   }
 
   function toggleSchoolSchedule() {
@@ -394,12 +429,19 @@ function ScheduleCalendar({ events, setEvents, schoolSchedule, setSchoolSchedule
   return <Shell eyebrow="NOURALLY / CALENDAR">
     <section className="calendar-head"><div><p className="kicker">SCHOOL + TRAINING SCHEDULE</p><h1>Plan your<br /><em>whole day.</em></h1></div><div className="calendar-head-actions"><button className="school-button" onClick={openSchoolForm}>▤ School</button><button className="text-button" onClick={onBack}>← Back to today</button></div></section>
     {(schoolSchedule || showSchoolForm) && <section className="card school-schedule-card">
-      <div className="school-schedule-summary"><div><div className="section-label">SCHOOL CALENDAR</div><h2>{schoolSchedule?.name || 'Import your school schedule'}</h2>{schoolSchedule && <p>{new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).format(new Date(`${schoolSchedule.startDate}T12:00:00`))} – {new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).format(new Date(`${schoolSchedule.endDate}T12:00:00`))} · {formatTime(schoolSchedule.startTime)}–{formatTime(schoolSchedule.endTime)}</p>}</div><div className="school-summary-actions">{schoolSchedule && <button className={`school-toggle ${schoolSchedule.enabled ? 'on' : ''}`} onClick={toggleSchoolSchedule} aria-pressed={schoolSchedule.enabled}><span />{schoolSchedule.enabled ? 'Shown' : 'Hidden'}</button>}<button className="text-button" onClick={() => showSchoolForm ? setShowSchoolForm(false) : openSchoolForm()}>{showSchoolForm ? 'Close' : schoolSchedule ? 'Edit' : 'Set up'}</button></div></div>
+      <div className="school-schedule-summary"><div><div className="section-label">SCHOOL CALENDAR</div><h2>{schoolSchedule?.name || 'Import your school schedule'}</h2>{schoolSchedule && <><p>{new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).format(new Date(`${schoolSchedule.startDate}T12:00:00`))} – {new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).format(new Date(`${schoolSchedule.endDate}T12:00:00`))} · {formatTime(schoolSchedule.startTime)}–{formatTime(schoolSchedule.endTime)}</p>{schoolSchedule.lunchStartTime && <p className="school-food-summary">Lunch {formatTime(schoolSchedule.lunchStartTime)}–{formatTime(schoolSchedule.lunchEndTime)} · {schoolSchedule.commuteMinutes ?? 20} min commute</p>}</>}</div><div className="school-summary-actions">{schoolSchedule && <button className={`school-toggle ${schoolSchedule.enabled ? 'on' : ''}`} onClick={toggleSchoolSchedule} aria-pressed={schoolSchedule.enabled}><span />{schoolSchedule.enabled ? 'Shown' : 'Hidden'}</button>}<button className="text-button" onClick={() => showSchoolForm ? setShowSchoolForm(false) : openSchoolForm()}>{showSchoolForm ? 'Close' : schoolSchedule ? 'Edit' : 'Set up'}</button></div></div>
       {showSchoolForm && <form className="school-form" onSubmit={saveSchoolSchedule}>
         <label>School name<input value={schoolName} onChange={(event) => setSchoolName(event.target.value)} placeholder="School" /></label>
         <div className="school-date-fields"><label>School year starts<input required type="date" value={schoolStartDate} onChange={(event) => setSchoolStartDate(event.target.value)} /></label><label>School year ends<input required type="date" value={schoolEndDate} onChange={(event) => setSchoolEndDate(event.target.value)} /></label></div>
         <div className="school-date-fields"><label>School starts<input required type="time" value={schoolStartTime} onChange={(event) => setSchoolStartTime(event.target.value)} /></label><label>School ends<input required type="time" value={schoolEndTime} onChange={(event) => setSchoolEndTime(event.target.value)} /></label></div>
         <fieldset><legend>School days</legend><div className="school-weekdays">{[['S', 0], ['M', 1], ['T', 2], ['W', 3], ['T', 4], ['F', 5], ['S', 6]].map(([label, day]) => <button type="button" className={schoolWeekdays.includes(day) ? 'selected' : ''} onClick={() => toggleSchoolDay(day)} key={day}>{label}</button>)}</div></fieldset>
+        <div className="school-food-section">
+          <div><div className="section-label">FOOD WINDOWS & ACCESS</div><p>Tell Nourally what is realistically available during your school day.</p></div>
+          <div className="school-date-fields"><label>Lunch starts<input required type="time" value={lunchStartTime} onChange={(event) => setLunchStartTime(event.target.value)} /></label><label>Lunch ends<input required type="time" value={lunchEndTime} onChange={(event) => setLunchEndTime(event.target.value)} /></label></div>
+          <div className="school-date-fields"><label>Morning snack <span>Optional</span><input type="time" value={morningSnackTime} onChange={(event) => setMorningSnackTime(event.target.value)} /></label><label>Afternoon snack <span>Optional</span><input type="time" value={afternoonSnackTime} onChange={(event) => setAfternoonSnackTime(event.target.value)} /></label></div>
+          <label>Commute from school<input type="number" min="0" max="180" step="5" value={commuteMinutes} onChange={(event) => setCommuteMinutes(event.target.value)} /><small>Minutes from school to home, practice, or your usual next stop.</small></label>
+          <fieldset><legend>Food access at school</legend><div className="food-access-options">{[['cafeteria', 'Cafeteria'], ['refrigerator', 'Refrigerator'], ['microwave', 'Microwave'], ['eatInClass', 'Can eat in class']].map(([option, label]) => <button type="button" className={foodAccess[option] ? 'selected' : ''} aria-pressed={Boolean(foodAccess[option])} onClick={() => toggleFoodAccess(option)} key={option}><span>{foodAccess[option] ? '✓' : '+'}</span>{label}</button>)}</div></fieldset>
+        </div>
         {schoolError && <p className="schedule-error">{schoolError}</p>}
         <button className="primary" type="submit">Import school year <span>→</span></button>
       </form>}

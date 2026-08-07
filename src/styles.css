@@ -206,13 +206,14 @@ footer { margin-top: auto; padding-top: 60px; color: #a1aaa5; font: 11px 'DM Mon
 .school-schedule-summary { display: flex; align-items: center; justify-content: space-between; gap: 24px; }
 .school-schedule-summary h2 { margin: 10px 0 5px; font-size: 20px; }
 .school-schedule-summary p { margin: 0; color: var(--muted); font-size: 11px; }
+.school-schedule-summary .school-food-summary { margin-top: 4px; color: #4b777c; }
 .school-summary-actions { display: flex; align-items: center; gap: 16px; }
 .school-toggle { display: flex; align-items: center; gap: 7px; padding: 7px 10px; border: 1px solid var(--line); border-radius: 50px; background: #f1f2ef; color: var(--muted); font-size: 10px; }
 .school-toggle span { display: block; width: 8px; height: 8px; border-radius: 50%; background: #a9b1ad; }
 .school-toggle.on { border-color: #9bc7cd; background: #e7f6f7; color: #286b73; }
 .school-toggle.on span { background: #4ba7b1; }
 .school-form { grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 22px; padding-top: 22px; border-top: 1px solid var(--line); }
-.school-form > label:first-child, .school-form > fieldset, .school-form > .schedule-error, .school-form > .primary { grid-column: 1 / -1; }
+.school-form > label:first-child, .school-form > fieldset, .school-form > .school-food-section, .school-form > .schedule-error, .school-form > .primary { grid-column: 1 / -1; }
 .school-date-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .school-form input { padding: 11px 12px; }
 .school-form fieldset { min-width: 0; margin: 0; padding: 0; border: 0; }
@@ -220,6 +221,16 @@ footer { margin-top: auto; padding-top: 60px; color: #a1aaa5; font: 11px 'DM Mon
 .school-weekdays { display: grid; grid-template-columns: repeat(7, 1fr); gap: 7px; }
 .school-weekdays button { height: 36px; border: 1px solid var(--line); border-radius: 50%; background: #fbfcfa; color: var(--muted); font-size: 11px; }
 .school-weekdays button.selected { border-color: #4f9ba5; background: #dff1f3; color: #245f67; font-weight: 700; }
+.school-food-section { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 5px; padding: 20px; border-radius: 8px; background: #f2f8f7; }
+.school-food-section > div:first-child, .school-food-section > fieldset { grid-column: 1 / -1; }
+.school-food-section > div:first-child p { margin: 7px 0 2px; color: var(--muted); font-size: 11px; }
+.school-food-section label > span { justify-self: end; margin-top: -21px; color: #94a09b; font: 8px 'DM Mono', monospace; text-transform: uppercase; }
+.school-food-section label small { color: #8b9893; font-size: 9px; line-height: 1.4; }
+.food-access-options { display: grid; grid-template-columns: repeat(4, 1fr); gap: 7px; }
+.food-access-options button { display: flex; align-items: center; gap: 7px; min-height: 42px; padding: 9px; border: 1px solid var(--line); border-radius: 6px; background: #fbfcfa; color: var(--muted); font-size: 10px; text-align: left; }
+.food-access-options button span { display: grid; flex: 0 0 auto; place-items: center; width: 18px; height: 18px; border-radius: 50%; background: #edf0ec; font-size: 10px; }
+.food-access-options button.selected { border-color: #69aeb5; background: #e3f3f4; color: #245f67; font-weight: 600; }
+.food-access-options button.selected span { background: #58a9b1; color: white; }
 .calendar-layout { display: grid; grid-template-columns: minmax(0, 1.7fr) minmax(290px, .75fr); gap: 16px; align-items: start; }
 .month-calendar { padding: 24px; overflow: hidden; }
 .calendar-toolbar { display: grid; grid-template-columns: 100px 1fr 100px; align-items: center; margin-bottom: 22px; }
@@ -306,6 +317,9 @@ footer { margin-top: auto; padding-top: 60px; color: #a1aaa5; font: 11px 'DM Mon
   .school-date-fields { grid-template-columns: 1fr; }
   .school-weekdays { gap: 4px; }
   .school-weekdays button { height: 32px; }
+  .school-food-section { grid-template-columns: 1fr; padding: 16px; }
+  .school-food-section > div:first-child, .school-food-section > fieldset { grid-column: 1; }
+  .food-access-options { grid-template-columns: repeat(2, 1fr); }
   .calendar-layout { grid-template-columns: 1fr; }
   .month-calendar { padding: 17px 10px; }
   .calendar-toolbar { grid-template-columns: 78px 1fr 66px; }
