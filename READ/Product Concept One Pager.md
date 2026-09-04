@@ -30,7 +30,7 @@ Coaches may provide schedule information, but the MVP should not expose unnecess
 
 ## Solution Overview
 
-Nourally starts with the athlete’s calendar and real-life constraints. A transparent, deterministic recommendation layer identifies the current fueling moment—regular meal window, pre-activity, during activity, recovery, or travel—and filters practical food examples accordingly.
+Nourally starts with the athlete’s calendar and real-life constraints. The core workflow moves directly from school and sports scheduling to upcoming-activity detection, timely reminders, matched meal suggestions, preparation, food logging, and activity-aware groceries. A transparent, deterministic recommendation layer identifies the current fueling moment—regular meal window, pre-activity, during activity, recovery, or travel—and filters practical food examples accordingly.
 
 For the MVP, the system does not independently prescribe a teen’s calorie needs. It provides general fueling education, common examples, and reminders, with clear boundaries for allergies, medical conditions, eating concerns, and individualized guidance. Future AI may explain the app’s existing options in more natural language, but it should not invent medical-style targets.
 
@@ -42,6 +42,7 @@ For the MVP, the system does not independently prescribe a teen’s calorie need
 - Cafeteria, refrigerator, microwave, and classroom-eating access.
 - One-time or weekly practice, workout, and game scheduling with intensity, home/away status, travel time, series editing, and single-day exceptions.
 - School-day exceptions for holidays, closures, and absences.
+- A redesigned Today view separates the school block, next sports activity, and current preparation status while keeping one next action visually dominant.
 
 ### 2. “What Should I Eat Now?”
 
@@ -61,7 +62,7 @@ For the MVP, the system does not independently prescribe a teen’s calorie need
 
 - A dedicated Groceries tab remembers the shopping budget, goal, last grocery date, pantry, active list, cart, and recent purchases on the device.
 - Quick pantry entry and quantity controls make it easy to record what is already at home.
-- Generated lists filter out pantry items, follow dietary needs, adapt to school/practice/travel goals, and use rough prices to stay within budget when possible.
+- Generated lists filter out pantry items, follow dietary needs, use the next seven days of practices, games, intensity, and travel, and apply rough prices to stay within budget when possible.
 - List items can move into an in-app cart or be marked bought, which updates the pantry and shopping history automatically.
 
 ### 5. Practical Reflection
@@ -83,6 +84,7 @@ The defensible product learning is not merely which foods to recommend. It is un
 - General education and practical examples, not diagnosis, treatment, weight-loss coaching, or independently generated calorie prescriptions.
 - No unnecessary collection of weight, body measurements, or medical history in the MVP.
 - Local-device storage in the current prototype, with clear disclosure.
+- A device-local account-entry prototype supports signed-out, create-account, and returning-user demonstrations without collecting or storing passwords; production authentication requires a server-backed identity system.
 
 ## Technology Stack
 

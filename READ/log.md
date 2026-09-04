@@ -180,3 +180,31 @@ Fixed pantry quick-add matching and added stable keys to generated grocery and c
 Preserved in-cart items when regenerating a grocery list and excluded cart contents from duplicate recommendations. 2026.09.03
 Updated both product one-pagers with the new grocery continuity workflow and device-local data behavior. 2026.09.03
 Verified the complete Groceries tab with a successful production build, whitespace validation, source sanity check, and live local response. 2026.09.03
+Added a signed-out account entry with separate create-account and sign-in paths for the local prototype. 2026.09.04
+Persisted only account name, email, and creation metadata while explicitly avoiding local password collection. 2026.09.04
+Added signed-out URL handling so a fresh account tab can open without clearing or damaging existing Nourally data. 2026.09.04
+Redesigned Today as a command center with one dominant recommended action and separate school, sport, and preparation signals. 2026.09.04
+Added a six-step core workflow rail connecting schedule, upcoming activities, fueling, preparation, logging, and groceries. 2026.09.04
+Clarified meal planning so each choice visibly creates both a meal plan and preparation tasks and shows its completed state. 2026.09.04
+Reframed the timeline around school-to-sport handoffs and made pre-practice preparation a distinct visual action. 2026.09.04
+Clarified reminder state, lead time, and schedule-driven behavior without adding new reminder features. 2026.09.04
+Connected grocery recommendations to the next seven days of practices, games, workouts, travel, and intensity. 2026.09.04
+Added activity-based grocery reasons for pre-practice fuel, away-day packing, recovery meals, and the selected shopping goal. 2026.09.04
+Added a grocery activity context panel that shows which upcoming sports are shaping the generated list. 2026.09.04
+Unified the app palette around deep navy, active teal, fueling lime, and sports orange with cleaner surfaces, borders, radii, shadows, and focus states. 2026.09.04
+Added a high-contrast next-action hero, compact status cards, and responsive workflow navigation to establish stronger visual hierarchy. 2026.09.04
+Added distinct visual treatments for meals, timeline, preparation, tomorrow, reminders, hydration, logging, accounts, and activity-aware groceries. 2026.09.04
+Raised the readability of primary dashboard labels, meal details, preparation tasks, and key controls. 2026.09.04
+Updated both product one-pagers to document the polished schedule-to-fueling workflow, activity-aware groceries, and device-local account prototype. 2026.09.04
+Updated the comparative report’s implementation note to reflect the September 4 core-workflow redesign. 2026.09.04
+Verified the polished core workflow, account entry, and activity-aware grocery changes with a successful production build and whitespace validation. 2026.09.04
+Restarted the local Nourally preview at http://127.0.0.1:5173/ for the completed interface. 2026.09.04
+Opened and preserved a fresh signed-out Nourally tab showing the device-local create-account and sign-in entry. 2026.09.04
+Removed the numbered Schedule-to-Groceries workflow strip from the Today view. 2026.09.04
+Added the full Today, Groceries, Schedule, Weekly, History, and Profile navigation switcher to every main app page. 2026.09.04
+Removed the enclosing card-style background, border, padding, and shadow from the main tab switcher. 2026.09.04
+Removed the Built around filter strip from meal suggestions. 2026.09.04
+Removed the Familiar works fallback card from meal suggestions. 2026.09.04
+Converted Profile editing into a navigable main tab while preserving the first-run setup flow. 2026.09.04
+Removed the School, Next Sport, and Prep summary-card column from Today and expanded the next recommended action across the available width. 2026.09.04
+Added a consistent 16-pixel gap between the next recommended action and meal suggestions without changing responsive widths or breakpoints. 2026.09.04

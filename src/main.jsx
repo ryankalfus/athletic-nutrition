@@ -51,6 +51,10 @@ function loadGroceryState() {
   };
 }
 
+function loadAccount() {
+  return JSON.parse(localStorage.getItem('nourally-account') || 'null');
+}
+
 const DEFAULT_PROFILE = {
   name: '',
   budget: 'save',
@@ -283,10 +287,6 @@ function getFuelingGuidance({ now, todayKey, events, schoolSchedule, profile }) 
     return true;
   });
 
-  const sourceLabel = inSchool
-    ? schoolSchedule.foodAccess?.cafeteria ? 'cafeteria or packed food' : 'packed food'
-    : travelMode ? 'portable food for travel' : availableSources.map((source) => ({ packed: 'packed food', cafeteria: 'cafeteria', home: 'home kitchen', store: 'nearby store' }[source])).filter(Boolean).join(', ');
-
   return {
     label,
     title,
@@ -294,7 +294,6 @@ function getFuelingGuidance({ now, todayKey, events, schoolSchedule, profile }) 
     timing,
     ideas: ideas.slice(0, 3),
     alternates: ideas.slice(3, 9),
-    sourceLabel: sourceLabel || 'what is available now',
     travelMode,
     event: focusEvent,
     schoolToday,
@@ -332,6 +331,8 @@ function App() {
   const [dayPlans, setDayPlans] = useState(loadDayPlans);
   const [reminderSettings, setReminderSettings] = useState(loadReminderSettings);
   const [groceryState, setGroceryState] = useState(loadGroceryState);
+  const [account, setAccount] = useState(loadAccount);
+  const [signedOut, setSignedOut] = useState(() => new URLSearchParams(window.location.search).get('signedOut') === '1');
 
   useEffect(() => localStorage.setItem('nourally-step', step), [step]);
   useEffect(() => localStorage.setItem('nourally-daily-logs', JSON.stringify(dailyLogs)), [dailyLogs]);
@@ -341,6 +342,9 @@ function App() {
   useEffect(() => localStorage.setItem('nourally-day-plans', JSON.stringify(dayPlans)), [dayPlans]);
   useEffect(() => localStorage.setItem('nourally-reminders', JSON.stringify(reminderSettings)), [reminderSettings]);
   useEffect(() => localStorage.setItem('nourally-groceries', JSON.stringify(groceryState)), [groceryState]);
+  useEffect(() => {
+    if (account) localStorage.setItem('nourally-account', JSON.stringify(account));
+  }, [account]);
   useEffect(() => {
     const timer = window.setInterval(() => {
       setNow(new Date());
@@ -401,19 +405,69 @@ function App() {
     });
   }
 
+  function finishAccountEntry(nextAccount, isNew) {
+    setAccount(nextAccount);
+    setProfile((current) => ({ ...current, name: nextAccount.name || current.name }));
+    setSignedOut(false);
+    const url = new URL(window.location.href);
+    url.searchParams.delete('signedOut');
+    window.history.replaceState({}, '', `${url.pathname}${url.search}${url.hash}`);
+    if (isNew) setStep('setup');
+  }
+
+  if (signedOut) return <AccountEntry savedAccount={account} onComplete={finishAccountEntry} />;
   if (step === 'setup') return <ProfileSetup profile={profile} onSave={saveProfile} />;
-  if (view === 'history') return <History dailyLogs={dailyLogs} todayKey={todayKey} onBack={() => setView('today')} />;
-  if (view === 'weekly') return <WeeklyProgress dailyLogs={dailyLogs} todayKey={todayKey} onBack={() => setView('today')} />;
-  if (view === 'calendar') return <ScheduleCalendar events={schedule} setEvents={setSchedule} schoolSchedule={schoolSchedule} setSchoolSchedule={setSchoolSchedule} todayKey={todayKey} onBack={() => setView('today')} />;
-  if (view === 'groceries') return <GroceryHub groceryState={groceryState} setGroceryState={setGroceryState} profile={profile} setProfile={setProfile} todayKey={todayKey} onBack={() => setView('today')} />;
-  return <Dashboard now={now} todayKey={todayKey} events={schedule} schoolSchedule={schoolSchedule} profile={profile} entries={todayLog.entries} setEntries={setTodayEntries} water={todayLog.water || 0} setHydration={setTodayHydration} dayPlans={dayPlans} setDayPlans={setDayPlans} reminderSettings={reminderSettings} setReminderSettings={setReminderSettings} onEditProfile={() => setStep('setup')} onHistory={() => setView('history')} onWeekly={() => setView('weekly')} onCalendar={() => setView('calendar')} onGroceries={() => setView('groceries')} />;
+  if (view === 'profile') return <ProfileSetup profile={profile} onSave={saveProfile} onNavigate={setView} tabbed />;
+  if (view === 'history') return <History dailyLogs={dailyLogs} todayKey={todayKey} onNavigate={setView} />;
+  if (view === 'weekly') return <WeeklyProgress dailyLogs={dailyLogs} todayKey={todayKey} onNavigate={setView} />;
+  if (view === 'calendar') return <ScheduleCalendar events={schedule} setEvents={setSchedule} schoolSchedule={schoolSchedule} setSchoolSchedule={setSchoolSchedule} todayKey={todayKey} onNavigate={setView} />;
+  if (view === 'groceries') return <GroceryHub groceryState={groceryState} setGroceryState={setGroceryState} profile={profile} setProfile={setProfile} events={schedule} todayKey={todayKey} onNavigate={setView} />;
+  return <Dashboard now={now} todayKey={todayKey} events={schedule} schoolSchedule={schoolSchedule} profile={profile} entries={todayLog.entries} setEntries={setTodayEntries} water={todayLog.water || 0} setHydration={setTodayHydration} dayPlans={dayPlans} setDayPlans={setDayPlans} reminderSettings={reminderSettings} setReminderSettings={setReminderSettings} onNavigate={setView} />;
 }
 
 function Shell({ children, eyebrow = 'NOURALLY / DAILY NUTRITION' }) {
   return <main className="shell"><div className="brand"><span className="brand-mark">↗</span><span>nourally</span></div><div className="eyebrow">{eyebrow}</div>{children}<footer>Your ally from school to sport <span>·</span> Your data stays on this device</footer></main>;
 }
 
-function ProfileSetup({ profile, onSave }) {
+function AppNavigation({ active, onNavigate }) {
+  const tabs = [['today', 'Today'], ['groceries', 'Groceries'], ['calendar', 'Schedule'], ['weekly', 'Weekly'], ['history', 'History'], ['profile', 'Profile']];
+  return <nav className="app-tabs" aria-label="Nourally sections">{tabs.map(([id, label]) => <button className={`text-button${active === id ? ' active-nav' : ''}`} aria-current={active === id ? 'page' : undefined} onClick={() => onNavigate(id)} key={id}>{label}</button>)}</nav>;
+}
+
+function AccountEntry({ savedAccount, onComplete }) {
+  const [mode, setMode] = useState(savedAccount ? 'signin' : 'create');
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState(savedAccount?.email || '');
+  const [error, setError] = useState('');
+
+  function submit(event) {
+    event.preventDefault();
+    const cleanEmail = email.trim().toLowerCase();
+    if (!cleanEmail || !cleanEmail.includes('@')) {
+      setError('Enter a valid email address.');
+      return;
+    }
+    if (mode === 'signin') {
+      if (!savedAccount || savedAccount.email !== cleanEmail) {
+        setError('No saved account matches this email on this device.');
+        return;
+      }
+      onComplete(savedAccount, false);
+      return;
+    }
+    if (!name.trim()) {
+      setError('Add a first name.');
+      return;
+    }
+    onComplete({ id: `local-${Date.now()}`, name: name.trim(), email: cleanEmail, createdAt: new Date().toISOString() }, true);
+  }
+
+  return <Shell eyebrow="NOURALLY / ACCOUNT">
+    <section className="auth-layout"><div className="auth-intro"><p className="kicker">SCHOOL-TO-SPORT FUELING</p><h1>One clear plan<br /><em>for the whole day.</em></h1><div className="auth-flow"><span><b>1</b> Add school and sports</span><span><b>2</b> Get the next fueling action</span><span><b>3</b> Plan meals and groceries</span></div></div><article className="card auth-card"><div className="auth-tabs"><button className={mode === 'create' ? 'active' : ''} onClick={() => { setMode('create'); setError(''); }}>Create account</button><button className={mode === 'signin' ? 'active' : ''} onClick={() => { setMode('signin'); setError(''); }}>Sign in</button></div><div className="section-label">{mode === 'create' ? 'NEW ACCOUNT' : 'WELCOME BACK'}</div><h2>{mode === 'create' ? 'Set up your Nourally profile.' : 'Continue your saved plan.'}</h2><form onSubmit={submit}>{mode === 'create' && <label>First name<input autoFocus value={name} onChange={(event) => setName(event.target.value)} placeholder="First name" /></label>}<label>Email<input autoFocus={mode === 'signin'} type="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="name@example.com" /></label>{error && <p className="auth-error">{error}</p>}<button className="primary" type="submit">{mode === 'create' ? 'Create account' : 'Sign in'} <span>→</span></button></form><p className="auth-note"><strong>Prototype account.</strong> This creates a private profile on this device only. No password is collected or stored.</p></article></section>
+  </Shell>;
+}
+
+function ProfileSetup({ profile, onSave, onNavigate, tabbed = false }) {
   const [draft, setDraft] = useState(profile);
   const needs = [['vegetarian', 'Vegetarian'], ['vegan', 'Vegan'], ['dairyFree', 'Dairy-free'], ['glutenFree', 'Gluten-free'], ['nutFree', 'Nut-free']];
   const sources = [['packed', 'Packed from home'], ['cafeteria', 'School cafeteria'], ['home', 'Home kitchen'], ['store', 'Nearby store']];
@@ -423,7 +477,7 @@ function ProfileSetup({ profile, onSave }) {
   }
 
   return <Shell eyebrow="NOURALLY / YOUR REAL DAY">
-    <section className="intro split-intro"><div><p className="kicker">FUELING THAT FITS REAL LIFE</p><h1>School to sport,<br /><em>without the guesswork.</em></h1></div><p className="intro-copy">Nourally turns your schedule, food access, budget, and dietary needs into a practical next step—not a rigid prescription.</p></section>
+    <section className="intro split-intro"><div><p className="kicker">FUELING THAT FITS REAL LIFE</p><h1>School to sport,<br /><em>without the guesswork.</em></h1></div><div className="profile-intro-side">{tabbed && <AppNavigation active="profile" onNavigate={onNavigate} />}<p className="intro-copy">Nourally turns your schedule, food access, budget, and dietary needs into a practical next step—not a rigid prescription.</p></div></section>
     <section className="card profile-card"><div className="section-label">SET YOUR FOOD REALITY</div><h2>Set what works in real life.</h2><p className="muted">These details stay on this device and only filter the examples you see.</p><form onSubmit={(event) => { event.preventDefault(); onSave(draft); }}>
       <label>First name <span className="optional-label">Optional</span><input value={draft.name} onChange={(event) => setDraft({ ...draft, name: event.target.value })} placeholder="First name" /></label>
       <fieldset className="choice-field"><legend>Usual food budget</legend><div className="choice-grid three">{[['save', 'Save where possible'], ['standard', 'Everyday'], ['flexible', 'Flexible']].map(([value, label]) => <button type="button" className={draft.budget === value ? 'selected' : ''} onClick={() => setDraft({ ...draft, budget: value })} key={value}>{label}</button>)}</div></fieldset>
@@ -435,7 +489,7 @@ function ProfileSetup({ profile, onSave }) {
   </Shell>;
 }
 
-function Dashboard({ now, todayKey, events, schoolSchedule, profile, entries, setEntries, water, setHydration, dayPlans, setDayPlans, reminderSettings, setReminderSettings, onEditProfile, onHistory, onWeekly, onCalendar, onGroceries }) {
+function Dashboard({ now, todayKey, events, schoolSchedule, profile, entries, setEntries, water, setHydration, dayPlans, setDayPlans, reminderSettings, setReminderSettings, onNavigate }) {
   const [showForm, setShowForm] = useState(false);
   const [showScanner, setShowScanner] = useState(false);
   const [editingId, setEditingId] = useState(null);
@@ -451,6 +505,8 @@ function Dashboard({ now, todayKey, events, schoolSchedule, profile, entries, se
   const earlyTomorrow = tomorrowEvents.find((event) => timeToMinutes(event.startTime) <= 600);
   const todayPlan = dayPlans[todayKey] || [];
   const tomorrowPlan = dayPlans[tomorrowKey] || [];
+  const primaryIdea = guidance.ideas[0] || null;
+  const plannedFoodIds = new Set(todayPlan.map((item) => item.foodId).filter(Boolean));
   const timeline = [
     ...(guidance.schoolToday ? [{ id: 'school', type: 'school', title: schoolSchedule.name, startTime: schoolSchedule.startTime, endTime: schoolSchedule.endTime }] : []),
     ...todayEvents,
@@ -545,20 +601,23 @@ function Dashboard({ now, todayKey, events, schoolSchedule, profile, entries, se
   }
 
   return <Shell eyebrow="NOURALLY / TODAY">
-    <section className="dashboard-head"><div><p className="kicker">{date.toUpperCase()}</p><h1>{profile.name ? `${profile.name}, here’s` : 'Here’s'} your<br /><em>next move.</em></h1></div><div className="head-actions"><button className="text-button grocery-nav" onClick={onGroceries}>Groceries ↗</button><button className="text-button" onClick={onCalendar}>Calendar ↗</button><button className="text-button" onClick={onWeekly}>Weekly ↗</button><button className="text-button" onClick={onHistory}>History ↗</button><button className="text-button" onClick={onEditProfile}>Food reality ↗</button></div></section>
+    <section className="dashboard-head today-head"><div><p className="kicker">TODAY · {date.toUpperCase()}</p><h1>{profile.name ? `${profile.name}’s` : 'Your'} daily<br /><em>fueling plan.</em></h1></div><AppNavigation active="today" onNavigate={onNavigate} /></section>
+    <section className="today-command">
+      <article className="action-hero"><div className="action-hero-top"><span className="step-badge">NEXT RECOMMENDED ACTION</span><strong>{guidance.timing}</strong></div><div><span className="context-pill">{guidance.label}</span><h2>{guidance.title}</h2><p>{guidance.explanation}</p></div><div className="action-hero-actions">{primaryIdea ? <button className="action-primary" disabled={plannedFoodIds.has(primaryIdea.id)} onClick={() => pickIdea(primaryIdea)}>{plannedFoodIds.has(primaryIdea.id) ? 'Added to today’s prep list ✓' : `Plan ${primaryIdea.name}`}<span>→</span></button> : <button className="action-primary" onClick={() => onNavigate('calendar')}>Add today’s schedule <span>→</span></button>}<button className="action-secondary" onClick={() => onNavigate('calendar')}>View full schedule</button></div></article>
+    </section>
     <section className="guidance-layout">
-      <article className="card now-card"><div className="now-card-top"><div><div className="section-label">WHAT SHOULD I EAT NOW?</div><span className="context-pill">{guidance.label}</span></div><span className="now-time">{guidance.timing}</span></div><h2>{guidance.title}</h2><p className="guidance-explanation">{guidance.explanation}</p><div className="reality-strip"><span>Built around</span><strong>{guidance.sourceLabel}</strong>{profile.dietaryNeeds.length > 0 && <strong>{profile.dietaryNeeds.map((need) => ({ dairyFree: 'dairy-free', glutenFree: 'gluten-free', nutFree: 'nut-free' }[need] || need)).join(' · ')}</strong>}<strong>{profile.budget === 'save' ? 'lower-cost picks' : `${profile.budget} budget`}</strong></div>
-        <div className="idea-grid">{guidance.ideas.length ? guidance.ideas.map((idea) => <article className="idea-card" key={idea.id}><span>{idea.portable ? 'PACKABLE' : 'MEAL WINDOW'}</span><h3>{idea.name}</h3><p>{idea.note}</p><div className="idea-actions"><button onClick={() => pickIdea(idea)}>Add to plan +</button>{guidance.alternates.length > 0 && <button className="swap-button" onClick={() => setSwapFor(swapFor === idea.id ? '' : idea.id)}>{swapFor === idea.id ? 'Close swaps' : 'See swaps'}</button>}</div></article>) : <article className="idea-card fallback"><span>FAMILIAR WORKS</span><h3>Choose a food you already tolerate well.</h3><p>Use a carb-forward snack before activity or a regular meal after it. Check ingredient labels for your dietary needs.</p></article>}</div>
+      <article className="card now-card"><div className="now-card-top"><div><div className="section-label">MEAL SUGGESTIONS</div><h2 className="section-title">Options for the next fueling window</h2></div><span className="now-time">{guidance.timing}</span></div><p className="guidance-explanation">Each choice already matches the current schedule, food access, budget style, and dietary settings.</p>
+        <div className="idea-grid">{guidance.ideas.map((idea) => { const isPlanned = plannedFoodIds.has(idea.id); return <article className={`idea-card${isPlanned ? ' planned' : ''}`} key={idea.id}><span>{idea.portable ? 'PACKABLE' : 'MEAL WINDOW'}</span><h3>{idea.name}</h3><p>{idea.note}</p><div className="idea-actions"><button disabled={isPlanned} onClick={() => pickIdea(idea)}>{isPlanned ? 'Added to prep list ✓' : 'Add meal + prep →'}</button>{guidance.alternates.length > 0 && <button className="swap-button" onClick={() => setSwapFor(swapFor === idea.id ? '' : idea.id)}>{swapFor === idea.id ? 'Close swaps' : 'See swaps'}</button>}</div></article>; })}</div>
         {swapFor && <div className="swap-tray"><div><span>SWAP IT</span><strong>Same moment, different food</strong></div>{guidance.alternates.slice(0, 4).map((idea) => <button key={idea.id} onClick={() => { pickIdea(idea); setSwapFor(''); }}><span>{idea.name}</span><small>{idea.portable ? 'Packable' : 'Meal option'} →</small></button>)}</div>}
         <p className="guidance-disclaimer">General fueling education, not a calorie target or medical plan. Check labels and follow guidance from your qualified care team.</p>
       </article>
-      <aside className="card day-plan-card"><div className="section-label">TODAY’S HANDOFFS</div>{timeline.length ? <div className="mini-timeline">{timeline.map((event) => <div className={event.type} key={event.id}><span>{formatClock(event.startTime)}</span><i /><div><strong>{event.title}</strong><small>{event.type === 'school' ? `Lunch ${formatClock(schoolSchedule.lunchStartTime)}` : `${event.type}${event.location === 'away' ? ' · away' : ''}`}</small></div></div>)}</div> : <div className="timeline-empty"><span>＋</span><h3>Add today’s schedule.</h3><p>Nourally gets more useful when it knows when school and training happen.</p><button className="primary small" onClick={onCalendar}>Open calendar <span>→</span></button></div>}<div className="prep-callout"><span>{guidance.travelMode ? 'PACK BEFORE YOU GO' : 'MAKE THE NEXT STEP EASY'}</span><p>{guidance.travelMode ? 'Choose shelf-stable options, pack water, and avoid relying on an unfamiliar away venue.' : profile.familyPrep ? 'If someone at home can help, share what needs packing before the busy part of the day.' : 'Set aside the next snack or meal before the busy part of the day.'}</p></div></aside>
+      <aside className="card day-plan-card"><div className="section-label">TODAY’S TIMELINE</div><h2 className="section-title">School to sport</h2>{timeline.length ? <div className="mini-timeline">{timeline.map((event) => <div className={event.type} key={event.id}><span>{formatClock(event.startTime)}</span><i /><div><strong>{event.title}</strong><small>{event.type === 'school' ? `Lunch ${formatClock(schoolSchedule.lunchStartTime)}` : `${event.type}${event.location === 'away' ? ' · away' : ''}`}</small></div></div>)}</div> : <div className="timeline-empty"><span>＋</span><h3>Add today’s schedule.</h3><p>Nourally gets more useful when it knows when school and training happen.</p><button className="primary small" onClick={() => onNavigate('calendar')}>Open calendar <span>→</span></button></div>}<div className="prep-callout"><span>{guidance.travelMode ? 'PRE-PRACTICE · PACK BEFORE YOU GO' : 'PRE-PRACTICE · MAKE IT EASY'}</span><p>{guidance.travelMode ? 'Choose shelf-stable options, pack water, and avoid relying on an unfamiliar away venue.' : profile.familyPrep ? 'Share the packing list with whoever can help before the busy part of the day.' : 'Set aside the next snack or meal before the busy part of the day.'}</p></div></aside>
     </section>
     <section className="planning-layout">
-      <PrepChecklist title="TODAY’S PACK + PREP LIST" dateLabel="Today" items={todayPlan} empty="Choose a food above and Nourally will build the packing steps." onToggle={(id) => togglePlanTask(todayKey, id)} onRemove={(id) => removePlanTask(todayKey, id)} />
+      <PrepChecklist title="PACK + PREP" dateLabel="Today’s preparation" items={todayPlan} empty="Choose a meal above. Nourally will turn it into clear packing and preparation steps." onToggle={(id) => togglePlanTask(todayKey, id)} onRemove={(id) => removePlanTask(todayKey, id)} />
       <article className="card tomorrow-card"><div className="section-label">PREPARE TONIGHT</div>{earlyTomorrow ? <><div className="tomorrow-event"><span>{formatClock(earlyTomorrow.startTime)} tomorrow</span><h2>{earlyTomorrow.title}</h2><p>{earlyTomorrow.location === 'away' || earlyTomorrow.location === 'travel' ? `Early travel day · ${earlyTomorrow.travelMinutes || 0} min travel` : 'Early activity · make the morning easier tonight'}</p></div>{tomorrowPlan.length === 0 && <button className="primary small" onClick={() => addPlanTasks(tomorrowKey, tomorrowPrepTasks(earlyTomorrow))}>Build tomorrow’s list <span>→</span></button>}<PrepChecklist compact title="TOMORROW’S CHECKLIST" dateLabel="Tomorrow" items={tomorrowPlan} empty="Build the list to set out food, water, and gear." onToggle={(id) => togglePlanTask(tomorrowKey, id)} onRemove={(id) => removePlanTask(tomorrowKey, id)} /></> : <div className="tomorrow-empty"><span>✓</span><h2>No early event tomorrow.</h2><p>If you add one before 10:00 AM, Nourally will offer a prepare-tonight checklist here.</p></div>}</article>
     </section>
-    <section className="card reminder-card"><div><div className="section-label">OPTIONAL REMINDERS</div><h2>Get a nudge before practice or a game.</h2><p>Browser notifications work while Nourally is open. Your schedule stays on this device.</p>{reminderStatus && <span className="reminder-status">{reminderStatus}</span>}</div><div className="reminder-controls">{reminderSettings.enabled ? <button className="reminder-toggle on" onClick={() => setReminderSettings((settings) => ({ ...settings, enabled: false }))}><span /> On</button> : <button className="reminder-toggle" onClick={enableReminders}><span /> Turn on</button>}<label>Remind me<select value={reminderSettings.leadMinutes} onChange={(event) => setReminderSettings((settings) => ({ ...settings, leadMinutes: Number(event.target.value) }))}><option value="30">30 min before</option><option value="60">60 min before</option><option value="90">90 min before</option></select></label><label className="check-row reminder-check"><input type="checkbox" checked={reminderSettings.eveningPrep} onChange={(event) => setReminderSettings((settings) => ({ ...settings, eveningPrep: event.target.checked }))} /><span>Evening reminder for early events</span></label></div></section>
+    <section className="card reminder-card"><div><div className="section-label">TIMELY REMINDERS</div><h2>{reminderSettings.enabled ? 'Fueling reminders are active.' : 'Turn on pre-activity reminders.'}</h2><p>Nourally uses the schedule above to send the next useful prompt while the app is open.</p>{reminderStatus && <span className="reminder-status">{reminderStatus}</span>}</div><div className="reminder-controls">{reminderSettings.enabled ? <button className="reminder-toggle on" onClick={() => setReminderSettings((settings) => ({ ...settings, enabled: false }))}><span /> Reminders on</button> : <button className="reminder-toggle" onClick={enableReminders}><span /> Turn on</button>}<label>Lead time<select value={reminderSettings.leadMinutes} onChange={(event) => setReminderSettings((settings) => ({ ...settings, leadMinutes: Number(event.target.value) }))}><option value="30">30 min before</option><option value="60">60 min before</option><option value="90">90 min before</option></select></label><label className="check-row reminder-check"><input type="checkbox" checked={reminderSettings.eveningPrep} onChange={(event) => setReminderSettings((settings) => ({ ...settings, eveningPrep: event.target.checked }))} /><span>Evening preparation reminder for early events</span></label></div></section>
     <HydrationTracker water={water} setHydration={setHydration} guidance={guidance} />
     <section className="entries-section"><div className="section-heading"><div><p className="kicker">TODAY’S CHECK-INS</p><h2>Food logged today.</h2></div><div className="entry-buttons"><button className="scan-button small" onClick={() => { resetForm(); setShowScanner(!showScanner); }}>{showScanner ? 'Close scanner' : '▣ Barcode helper'}</button><button className="primary small" onClick={() => { setShowScanner(false); if (showForm) resetForm(); else setShowForm(true); }}>{showForm ? 'Cancel' : '+ Food check-in'}</button></div></div><p className="log-intro">Logging is for reflection, not judgment. Calories are optional and only shown when you enter them or scan a label.</p>{showScanner && <BarcodeScanner onAdd={addScannedProduct} onClose={() => setShowScanner(false)} />}{showForm && <form className="add-form card" onSubmit={submitEntry}><input required value={name} onChange={(event) => setName(event.target.value)} placeholder="Meal or snack" /><input min="1" type="number" value={calories} onChange={(event) => setCalories(event.target.value)} placeholder="Calories (optional)" /><button className="primary small" type="submit">{editingId ? 'Save' : 'Check in'}</button></form>}{entries.length === 0 ? <div className="empty-state"><span>＋</span><h3>No food check-ins yet.</h3><p>Your first meal or snack will appear here.</p></div> : <div className="entries">{entries.map((entry) => <div className="entry" key={entry.id}><div className="entry-icon">{entry.source === 'barcode' ? '▣' : entry.source === 'guidance' ? '↗' : '✦'}</div><div className="entry-copy"><strong>{entry.name}</strong><span>{entry.time}{entry.source === 'barcode' ? ` · ${entry.servingGrams}g label serving` : entry.source === 'guidance' ? ' · planned from guidance' : ''}</span></div>{entry.calories > 0 && <b>{entry.calories.toLocaleString()} <small>kcal</small></b>}<div className="entry-actions"><button onClick={() => editEntry(entry)} aria-label={`Edit ${entry.name}`}>Edit</button><button className="danger" onClick={() => deleteEntry(entry.id)} aria-label={`Delete ${entry.name}`}>Delete</button></div></div>)}</div>}</section>
   </Shell>;
@@ -580,7 +639,7 @@ function groceryFitsProfile(item, profile) {
   );
 }
 
-function GroceryHub({ groceryState, setGroceryState, profile, setProfile, todayKey, onBack }) {
+function GroceryHub({ groceryState, setGroceryState, profile, setProfile, events, todayKey, onNavigate }) {
   const [pantryName, setPantryName] = useState('');
   const [listName, setListName] = useState('');
   const [listPrice, setListPrice] = useState('');
@@ -593,6 +652,14 @@ function GroceryHub({ groceryState, setGroceryState, profile, setProfile, todayK
   const budgetRemaining = budgetAmount - plannedEstimate;
   const budgetPercent = budgetAmount ? Math.min((plannedEstimate / budgetAmount) * 100, 100) : 0;
   const selectedGoal = GROCERY_GOALS.find((goal) => goal.id === groceryState.goal) || GROCERY_GOALS[0];
+  const upcomingActivities = Array.from({ length: 7 }, (_, index) => {
+    const dateKey = getDateKey(addDays(new Date(`${todayKey}T12:00:00`), index));
+    return eventsForDate(events, dateKey).map((event) => ({ ...event, dateKey, dayOffset: index }));
+  }).flat();
+  const hasAwayActivity = upcomingActivities.some((event) => event.location === 'away' || event.location === 'travel' || Number(event.travelMinutes || 0) >= 30);
+  const hasHardActivity = upcomingActivities.some((event) => event.intensity === 'high' || event.type === 'game');
+  const activityFocus = hasAwayActivity ? 'away-game' : upcomingActivities.length >= 3 ? 'school-week' : upcomingActivities.length ? 'practice-fuel' : groceryState.goal;
+  const activityFocusLabel = GROCERY_GOALS.find((goal) => goal.id === activityFocus)?.label || selectedGoal.label;
   const pantryKeys = new Set(groceryState.pantry.flatMap((item) => [item.catalogId, item.name.trim().toLowerCase()].filter(Boolean)));
   const quickPantry = GROCERY_CATALOG.filter((item) => !pantryKeys.has(item.id) && !pantryKeys.has(item.name.toLowerCase())).slice(0, 8);
 
@@ -642,17 +709,29 @@ function GroceryHub({ groceryState, setGroceryState, profile, setProfile, todayK
       const cart = current.items.filter((item) => item.status === 'cart');
       const inCart = new Set(cart.flatMap((item) => [item.catalogId, item.name.toLowerCase()].filter(Boolean)));
       const cartTotal = cart.reduce((sum, item) => sum + Number(item.price || 0) * Number(item.quantity || 1), 0);
+      const activeGoals = new Set([current.goal, activityFocus, ...(hasHardActivity ? ['recovery-meals'] : [])]);
       const candidates = GROCERY_CATALOG
-        .filter((item) => item.goals.includes(current.goal) && groceryFitsProfile(item, profile))
+        .filter((item) => item.goals.some((goal) => activeGoals.has(goal)) && groceryFitsProfile(item, profile))
         .filter((item) => !inPantry.has(item.id) && !inPantry.has(item.name.toLowerCase()))
         .filter((item) => !inCart.has(item.id) && !inCart.has(item.name.toLowerCase()))
-        .sort((a, b) => a.price - b.price);
+        .sort((a, b) => {
+          const aPriority = a.goals.includes(current.goal) ? 0 : 1;
+          const bPriority = b.goals.includes(current.goal) ? 0 : 1;
+          return aPriority - bPriority || a.price - b.price;
+        });
       const chosen = [];
       let estimate = cartTotal;
       for (const item of candidates) {
         if (chosen.length >= 12) break;
         if (budgetAmount > 0 && estimate + item.price > budgetAmount && chosen.length >= 3) continue;
-        chosen.push({ ...item, id: `grocery-${item.id}-${Date.now()}`, catalogId: item.id, quantity: 1, status: 'list' });
+        const reason = hasAwayActivity && item.goals.includes('away-game')
+          ? 'For upcoming travel or away activity'
+          : hasHardActivity && item.goals.includes('recovery-meals')
+            ? 'For recovery after a hard session'
+            : upcomingActivities.length && item.goals.includes('practice-fuel')
+              ? 'For pre-practice fueling'
+              : `For ${selectedGoal.label.toLowerCase()}`;
+        chosen.push({ ...item, id: `grocery-${item.id}-${Date.now()}`, catalogId: item.id, quantity: 1, status: 'list', reason });
         estimate += item.price;
       }
       return { ...current, items: [...cart, ...chosen] };
@@ -708,12 +787,13 @@ function GroceryHub({ groceryState, setGroceryState, profile, setProfile, todayK
   }
 
   return <Shell eyebrow="NOURALLY / GROCERIES">
-    <section className="grocery-head"><div><p className="kicker">FOOD AT HOME + NEXT SHOP</p><h1>Plan the shop.<br /><em>Fuel the week.</em></h1></div><button className="text-button" onClick={onBack}>← Back to today</button></section>
+    <section className="grocery-head"><div><p className="kicker">FOOD AT HOME + NEXT SHOP</p><h1>Plan the shop.<br /><em>Fuel the week.</em></h1></div><AppNavigation active="groceries" onNavigate={onNavigate} /></section>
     <section className="grocery-summary">
       <article className="card grocery-summary-card"><span>Weekly budget</span><strong>${budgetAmount.toFixed(0)}</strong><small>{profile.budget === 'save' ? 'saving-focused choices' : `${profile.budget} food budget`}</small></article>
       <article className="card grocery-summary-card"><span>Last grocery trip</span><strong>{lastShopLabel()}</strong><small>{groceryState.pantry.length} pantry items tracked</small></article>
       <article className="card grocery-summary-card"><span>Planned estimate</span><strong>${plannedEstimate.toFixed(2)}</strong><small className={budgetRemaining < 0 ? 'over-budget' : ''}>{budgetRemaining >= 0 ? `$${budgetRemaining.toFixed(2)} left` : `$${Math.abs(budgetRemaining).toFixed(2)} over`}</small></article>
     </section>
+    <section className="grocery-activity-context"><div><span className="section-label">NEXT 7 DAYS</span><strong>{upcomingActivities.length ? `${upcomingActivities.length} sports ${upcomingActivities.length === 1 ? 'activity' : 'activities'} shaping this list` : 'Add sports to make this list activity-aware'}</strong><small>{upcomingActivities.length ? `Suggested focus: ${activityFocusLabel}${hasHardActivity ? ' + recovery meals' : ''}` : 'The selected shopping goal and dietary settings will still be used.'}</small></div><div className="activity-chips">{upcomingActivities.slice(0, 4).map((event) => <span key={`${event.id}-${event.dateKey}`}><b>{event.dayOffset === 0 ? 'Today' : event.dayOffset === 1 ? 'Tomorrow' : new Intl.DateTimeFormat('en-US', { weekday: 'short' }).format(new Date(`${event.dateKey}T12:00:00`))}</b>{event.title} · {formatClock(event.startTime)}</span>)}{upcomingActivities.length > 4 && <span><b>+{upcomingActivities.length - 4}</b>more activities</span>}</div></section>
     <section className="card grocery-controls">
       <div className="grocery-control"><div className="section-label">BUDGET</div><label>Amount for this shop<div className="money-input"><span>$</span><input type="number" min="0" step="5" value={groceryState.budgetAmount} onChange={(event) => updateState({ budgetAmount: event.target.value })} /></div></label><div className="budget-style">{[['save', 'Save'], ['standard', 'Everyday'], ['flexible', 'Flexible']].map(([value, label]) => <button className={profile.budget === value ? 'selected' : ''} onClick={() => setProfile({ ...profile, budget: value })} key={value}>{label}</button>)}</div></div>
       <div className="grocery-control"><div className="section-label">LAST SHOP</div><strong className="control-value">{lastShopLabel()}</strong><div className="shop-recency"><button onClick={() => setLastShopDaysAgo(0)}>Today</button><button onClick={() => setLastShopDaysAgo(3)}>This week</button><button onClick={() => setLastShopDaysAgo(10)}>10+ days</button></div><label>Exact date<input type="date" max={todayKey} value={groceryState.lastShopDate} onChange={(event) => updateState({ lastShopDate: event.target.value })} /></label></div>
@@ -731,10 +811,10 @@ function GroceryHub({ groceryState, setGroceryState, profile, setProfile, todayK
 }
 
 function GroceryItemRow({ item, onQuantity, onPrimary, primaryLabel, onBought, onRemove }) {
-  return <div className="grocery-item" key={item.id}><div className="grocery-item-copy"><span>{item.category}</span><strong>{item.name}</strong><small>${(Number(item.price || 0) * Number(item.quantity || 1)).toFixed(2)} estimated</small></div><div className="quantity-stepper"><button onClick={() => onQuantity(item.id, -1)} aria-label={`Decrease ${item.name}`}>−</button><span>{item.quantity || 1}</span><button onClick={() => onQuantity(item.id, 1)} aria-label={`Increase ${item.name}`}>+</button></div><div className="grocery-item-actions"><button onClick={onPrimary}>{primaryLabel}</button><button onClick={onBought}>Bought</button><button className="danger" onClick={onRemove}>×</button></div></div>;
+  return <div className="grocery-item" key={item.id}><div className="grocery-item-copy"><span>{item.category}</span><strong>{item.name}</strong>{item.reason && <em>{item.reason}</em>}<small>${(Number(item.price || 0) * Number(item.quantity || 1)).toFixed(2)} estimated</small></div><div className="quantity-stepper"><button onClick={() => onQuantity(item.id, -1)} aria-label={`Decrease ${item.name}`}>−</button><span>{item.quantity || 1}</span><button onClick={() => onQuantity(item.id, 1)} aria-label={`Increase ${item.name}`}>+</button></div><div className="grocery-item-actions"><button onClick={onPrimary}>{primaryLabel}</button><button onClick={onBought}>Bought</button><button className="danger" onClick={onRemove}>×</button></div></div>;
 }
 
-function ScheduleCalendar({ events, setEvents, schoolSchedule, setSchoolSchedule, todayKey, onBack }) {
+function ScheduleCalendar({ events, setEvents, schoolSchedule, setSchoolSchedule, todayKey, onNavigate }) {
   const today = new Date(`${todayKey}T12:00:00`);
   const schoolYearStart = today.getMonth() >= 6 ? today.getFullYear() : today.getFullYear() - 1;
   const [selectedKey, setSelectedKey] = useState(todayKey);
@@ -1018,7 +1098,7 @@ function ScheduleCalendar({ events, setEvents, schoolSchedule, setSchoolSchedule
   }
 
   return <Shell eyebrow="NOURALLY / CALENDAR">
-    <section className="calendar-head"><div><p className="kicker">SCHOOL + TRAINING SCHEDULE</p><h1>Plan your<br /><em>whole day.</em></h1></div><div className="calendar-head-actions"><button className="school-button" onClick={openSchoolForm}>▤ School</button><button className="text-button" onClick={onBack}>← Back to today</button></div></section>
+    <section className="calendar-head"><div><p className="kicker">SCHOOL + TRAINING SCHEDULE</p><h1>Plan your<br /><em>whole day.</em></h1></div><div className="page-head-tools"><AppNavigation active="calendar" onNavigate={onNavigate} /><button className="school-button" onClick={openSchoolForm}>▤ School</button></div></section>
     {(schoolSchedule || showSchoolForm) && <section className="card school-schedule-card">
       <div className="school-schedule-summary"><div><div className="section-label">SCHOOL CALENDAR</div><h2>{schoolSchedule?.name || 'Import your school schedule'}</h2>{schoolSchedule && <><p>{new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).format(new Date(`${schoolSchedule.startDate}T12:00:00`))} – {new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).format(new Date(`${schoolSchedule.endDate}T12:00:00`))} · {formatTime(schoolSchedule.startTime)}–{formatTime(schoolSchedule.endTime)}</p>{schoolSchedule.lunchStartTime && <p className="school-food-summary">Lunch {formatTime(schoolSchedule.lunchStartTime)}–{formatTime(schoolSchedule.lunchEndTime)} · {schoolSchedule.commuteMinutes ?? 20} min commute</p>}</>}</div><div className="school-summary-actions">{schoolSchedule && <button className={`school-toggle ${schoolSchedule.enabled ? 'on' : ''}`} onClick={toggleSchoolSchedule} aria-pressed={schoolSchedule.enabled}><span />{schoolSchedule.enabled ? 'Shown' : 'Hidden'}</button>}<button className="text-button" onClick={() => showSchoolForm ? setShowSchoolForm(false) : openSchoolForm()}>{showSchoolForm ? 'Close' : schoolSchedule ? 'Edit' : 'Set up'}</button></div></div>
       {showSchoolForm && <form className="school-form" onSubmit={saveSchoolSchedule}>
@@ -1240,7 +1320,7 @@ function HydrationTracker({ water, setHydration, guidance }) {
   return <section className="card hydration-card"><div className="hydration-copy"><div className="section-label">HYDRATION CHECK-IN</div><div className="water-title"><div className="water-icon">◒</div><div><h2>{water.toLocaleString()} <small>oz logged today</small></h2><p>{guidance.event ? `Bring fluids for ${guidance.event.title}. Sip regularly and follow your team or clinician’s plan.` : 'Keep water available and drink regularly through the day.'}</p></div></div></div><div className="hydration-actions"><div className="water-quick-add">{[8, 12, 16, 24].map((amount) => <button key={amount} onClick={() => addWater(amount)}>+{amount} oz</button>)}</div><div className="water-secondary"><button onClick={() => addWater(-8)} disabled={water === 0}>Undo 8 oz</button><span>No prescribed target</span></div></div></section>;
 }
 
-function WeeklyProgress({ dailyLogs, todayKey, onBack }) {
+function WeeklyProgress({ dailyLogs, todayKey, onNavigate }) {
   const [weekOffset, setWeekOffset] = useState(0);
   const today = new Date(`${todayKey}T12:00:00`);
   const weekStart = addDays(today, -6 + weekOffset * 7);
@@ -1267,7 +1347,7 @@ function WeeklyProgress({ dailyLogs, todayKey, onBack }) {
   }
 
   return <Shell eyebrow="NOURALLY / WEEKLY PROGRESS">
-    <section className="dashboard-head weekly-head"><div><p className="kicker">YOUR SEVEN-DAY VIEW</p><h1>Patterns, not<br /><em>perfect numbers.</em></h1></div><button className="text-button" onClick={onBack}>← Back to today</button></section>
+    <section className="dashboard-head weekly-head"><div><p className="kicker">YOUR SEVEN-DAY VIEW</p><h1>Patterns, not<br /><em>perfect numbers.</em></h1></div><AppNavigation active="weekly" onNavigate={onNavigate} /></section>
     <section className="week-toolbar"><button className="week-arrow" onClick={() => setWeekOffset((offset) => offset - 1)} aria-label="Previous seven days">←</button><div><strong>{weekOffset === 0 ? 'Last 7 days' : range}</strong><span>{range}</span></div><button className="week-arrow" disabled={weekOffset === 0} onClick={() => setWeekOffset((offset) => Math.min(offset + 1, 0))} aria-label="Next seven days">→</button></section>
     <section className="weekly-stats"><article className="card weekly-stat"><span>Food check-ins</span><strong>{weeklyCheckIns}</strong><small>this period</small></article><article className="card weekly-stat"><span>Days reflected</span><strong>{loggedDays}<i>/7</i></strong><small>days</small></article><article className="card weekly-stat"><span>Hydration check-ins</span><strong>{hydrationDays}<i>/7</i></strong><small>days</small></article><article className="card weekly-stat"><span>Logging streak</span><strong>{streak}</strong><small>{streak === 1 ? 'day' : 'days'}</small></article><article className="card weekly-stat"><span>Water logged</span><strong>{weeklyWater}</strong><small>oz total</small></article></section>
     <section className="card weekly-chart-card"><div className="chart-heading"><div><div className="section-label">FOOD CHECK-INS BY DAY</div><h2>{weeklyCheckIns} <small>moments captured over 7 days</small></h2></div><div className="chart-key"><span><i className="key-fill" /> Check-ins</span></div></div><div className="weekly-chart">{days.map((day) => <div className={`chart-day${day.key === todayKey ? ' today' : ''}`} key={day.key}><div className="bar-value">{day.checkIns || '—'}</div><div className="bar-track"><span style={{ height: `${Math.min((day.checkIns / maxCheckIns) * 100, 100)}%` }} /></div><strong>{new Intl.DateTimeFormat('en-US', { weekday: 'short' }).format(day.date)}</strong><small>{day.date.getDate()}</small></div>)}</div>{weeklyCheckIns === 0 && <p className="chart-empty">Use food check-ins to notice where busy days make fueling harder.</p>}</section>
@@ -1276,10 +1356,10 @@ function WeeklyProgress({ dailyLogs, todayKey, onBack }) {
   </Shell>;
 }
 
-function History({ dailyLogs, todayKey, onBack }) {
+function History({ dailyLogs, todayKey, onNavigate }) {
   const dates = Object.keys(dailyLogs).filter((date) => date !== todayKey).sort().reverse();
   return <Shell eyebrow="NOURALLY / HISTORY">
-    <section className="dashboard-head history-head"><div><p className="kicker">YOUR DAILY RECORD</p><h1>Look back.<br /><em>Keep learning.</em></h1></div><button className="text-button" onClick={onBack}>← Back to today</button></section>
+    <section className="dashboard-head history-head"><div><p className="kicker">YOUR DAILY RECORD</p><h1>Look back.<br /><em>Keep learning.</em></h1></div><AppNavigation active="history" onNavigate={onNavigate} /></section>
     {dates.length === 0 ? <section className="card history-empty"><div className="section-label">PREVIOUS DAYS</div><h2>Your history starts tomorrow.</h2><p className="muted">Today’s check-ins stay on this device and appear here on the next calendar day.</p></section> : <section className="history-list">{dates.map((date) => {
       const log = dailyLogs[date];
       const water = log.water || 0;
