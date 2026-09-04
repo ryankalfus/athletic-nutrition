@@ -9,6 +9,8 @@
 
 > This is a product and market assessment, not medical or legal advice. Competitor capabilities are based on publicly available vendor and app-store claims unless explicitly described as hands-on testing. Pricing and product availability can change.
 
+> **Implementation update — September 3, 2026:** The prototype has now acted on this report’s central recommendation. Its primary dashboard is a schedule-aware “What should I eat now?” flow driven by school and training times. The app filters practical examples by budget, dietary needs, available food sources, cafeteria/refrigerator/microwave access, portability, home/away status, and travel time. It has removed follow-up questionnaires along with user-facing calorie-goal and hydration-target prescriptions. References below to the “current prototype” describe the original August 4 audit snapshot unless a section explicitly notes this update.
+
 ---
 
 ## 1. Executive verdict

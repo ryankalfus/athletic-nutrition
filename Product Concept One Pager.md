@@ -1,88 +1,95 @@
-# **Software & Technology**
+# Software & Technology
 
-# **Product Concept**
+# Product Concept: Nourally
 
-## **Product Vision**
+## Product Vision
 
-### ***A concise 1-2 sentence statement describing what your product is and the core value it will deliver.***
+Nourally is the daily fueling-logistics ally for student-athletes. It turns school, practice, game, and travel schedules into a practical answer to one question: **“What should I eat or prepare now, given what I can actually access?”**
 
-| An AI-powered mobile and web application that helps high school student-athletes optimize their nutrition based on their training schedules, goals, and dietary needs. By providing personalized meal recommendations, reminders, and progress tracking, the app helps athletes improve their performance, recovery, and long-term health. |
-| :---- |
+Unlike a generic calorie tracker, Nourally is designed around the handoffs in a student’s real day—class to lunch, school to practice, and home to an away game.
 
-## 
+## Problem Statement
 
-## **Problem Statement**
+Student-athletes often know that nutrition matters but struggle to act on that knowledge while balancing class periods, short lunch windows, transportation, practices, games, homework, and family schedules. A theoretically ideal meal is not useful when the athlete has 25 minutes before practice, no refrigerator, limited money, or only cafeteria and packed-food options.
 
-## ***Clearly articulate the problem your software/technology will solve. What pain points exist that your solution addresses?***
+Most tracking apps primarily document food after it is eaten. Many athlete-focused products personalize macros or meal plans, but public product descriptions rarely make school-day logistics, food access, budget, and last-mile execution the center of the experience.
 
-| Many student-athletes struggle to maintain healthy nutrition while balancing school, practices, games, and other responsibilities. They often skip meals, eat at the wrong times, or fail to consume enough calories and nutrients to support their training. Existing nutrition apps are typically designed for the general public and do not provide personalized recommendations based on an athlete's sport, training schedule, or performance goals.  |
-| :---- |
+## Target Users
 
-## 
+The primary users are middle- and high-school student-athletes, generally ages 14–18, who need practical fueling support around school and training. Parents and guardians are important secondary users because they often handle groceries, meal preparation, transportation, and packing.
 
-## **Target Users** 
+Coaches may provide schedule information, but the MVP should not expose unnecessary private nutrition or health information to them.
 
-### ***Describe who will use your product and why.***
+## User Needs
 
-| The primary users are middle school and high school student-athletes (ages 14–18) who participate in organized sports and want an easy way to improve their nutrition, energy levels, and recovery. Secondary users may include coaches and parents who want to help athletes develop healthier eating habits. |
-| :---- |
+- A single view of school, lunch, practices, workouts, games, and travel.
+- A realistic next action based on time, food access, budget, dietary needs, and location.
+- Simple packing and preparation cues before a busy school-to-sport transition.
+- A lightweight way to track groceries at home, plan the next shop, and stay within a family-set budget.
+- Reflection tools that support consistency without punitive food judgments or rigid calorie targets.
 
-### ***User Needs: \[List 2-3 key needs your users have\]***
+## Solution Overview
 
-| Personalized nutrition recommendations based on sport, practice schedule, and fitness goals. Easy meal planning and reminders that fit around school and athletic commitments. Progress tracking to build consistent, healthy eating habits and improve performance. Grocery lists and budget-friendly options.   |
-| :---- |
+Nourally starts with the athlete’s calendar and real-life constraints. A transparent, deterministic recommendation layer identifies the current fueling moment—regular meal window, pre-activity, during activity, recovery, or travel—and filters practical food examples accordingly.
 
-### 
+For the MVP, the system does not independently prescribe a teen’s calorie needs. It provides general fueling education, common examples, and reminders, with clear boundaries for allergies, medical conditions, eating concerns, and individualized guidance. Future AI may explain the app’s existing options in more natural language, but it should not invent medical-style targets.
 
-## **Solution Overview** 
+## Key MVP Features
 
-### ***Describe your proposed software/technology solution and how it addresses the problem.***
+### 1. Whole-Day Schedule
 
-| The application uses AI to generate personalized nutrition recommendations based on each athlete's age, sex, height, weight, sport, training schedule, calorie goals, dietary restrictions, and food preferences. Users can log meals, receive reminders before and after practices, track hydration and nutrition goals, and monitor their progress through an interactive dashboard. The main feature will be import of the training schedule into the app, as well as being able to produce a grocery list and budget friendly options.  |
-| :---- |
+- Recurring school year with school hours, lunch, optional snack windows, and commute time.
+- Cafeteria, refrigerator, microwave, and classroom-eating access.
+- One-time or weekly practice, workout, and game scheduling with intensity, home/away status, travel time, series editing, and single-day exceptions.
+- School-day exceptions for holidays, closures, and absences.
 
-### **Key Features (MVP)**
+### 2. “What Should I Eat Now?”
 
-### ***List the essential features that will be included in your Minimum Viable Product.***
+- Guidance changes according to time before, during, or after the next activity.
+- Food examples filter by budget, dietary needs, location, available sources, and portability.
+- Away-game and longer-travel events favor packable options and preparation cues.
+- An expanded 24-option food library and quick substitutions provide more choices without bypassing the athlete’s budget, dietary, access, and timing filters.
+- Each suggestion explains why it fits and can generate a practical pack-and-prep checklist without being mistaken for food already eaten.
 
-**Feature 1**  
-**AI Nutrition Coach**  
-Personalized meal and snack recommendations  
-Pre- and post-workout nutrition guidance  
-Calorie and hydration recommendations  
-Calorie-tracking
+### 3. Pack, Prep, and Remind
 
-**Feature 2**  
-**Practice & Meal Scheduler**  
-Sync practice and game schedules  
-Automated reminders for meals, snacks, and hydration  
-Training-day vs. rest-day nutrition adjustments  
-Grocery-lists and budget friendly options
+- Selected foods generate actionable packing, refrigeration, reheating, water, and bag-placement tasks.
+- Early activities tomorrow trigger a prepare-tonight card and one-tap checklist for breakfast, snacks, fluids, gear, and travel.
+- Optional browser notifications can remind the athlete 30, 60, or 90 minutes before an activity and in the evening before an early event while Nourally is open.
 
-**Feature 3**  
-**Progress Dashboard**  
-Meal logging  
-Daily nutrition goal tracking  
-Streaks and weekly progress summaries
+### 4. Grocery Continuity
 
-## **Technology Stack**
+- A dedicated Groceries tab remembers the shopping budget, goal, last grocery date, pantry, active list, cart, and recent purchases on the device.
+- Quick pantry entry and quantity controls make it easy to record what is already at home.
+- Generated lists filter out pantry items, follow dietary needs, adapt to school/practice/travel goals, and use rough prices to stay within budget when possible.
+- List items can move into an in-app cart or be marked bought, which updates the pantry and shopping history automatically.
 
-| *Frontend: \[E.g., React, Vue.js, HTML/CSS/JavaScript\]*  | React or React Native HTML, CSS, JavaScript Built with assistance from ChatGPT Codex  |
-| :---- | :---- |
-| ***Backend: \[E.g., Node.js, Python/Django, Firebase\]***  | Firebase Node.js (if needed for custom backend functions)  |
-| ***Database: \[E.g., MongoDB, PostgreSQL, MySQL, Firebase Realtime Database\]***  | Firebase Firestore |
-| ***Additional Technologies: \[E.g., APIs, libraries, frameworks\]***  | OpenAI API (for AI-powered nutrition recommendations) ChatGPT Codex (AI-assisted software development) Firebase Authentication USDA FoodData Central API (or another nutrition database) Figma (UI/UX design)  |
-| ***Deployment: \[E.g., Heroku, Netlify, AWS, App Store, Google Play\]*** | Firebase Hosting (web) Google Play Store and/or Apple App Store (future mobile release)  |
+### 5. Practical Reflection
 
-## 
+- Food and hydration check-ins without prescribed calorie or water targets.
+- Barcode lookup remains an optional convenience, not the product’s main value.
+- Weekly views show food, hydration, and consistency patterns without grading intake.
 
-## **Technical Feasibility** 
+## Positioning Versus Competitors
 
-### ***Assess your ability to build this product given your current skills and the project timeline.***
+Nourally should not compete with MyFitnessPal on database size or generic logging. Fueling Champions, ZoneIn, MaxCoach, and AthlEAT already demonstrate demand for schedule-aware or youth-athlete nutrition. Nourally’s narrower wedge is **real-time execution under school-day constraints**:
 
-| *Required Skills: \[List technical skills needed\]*  | HTML, CSS, and JavaScript React or React Native Firebase Authentication and Firestore API integration Prompt engineering for AI Basic UI/UX design Data management and testing  |
-| :---- | :---- |
-| ***Current Experience: \[Describe your relevant experience\]***  | I have experience programming and am interested in technology and AI. I have worked with coding concepts and am motivated to build a full-stack application while learning new development tools throughout this project.  |
-| ***Learning Needs: \[Skills you'll need to acquire\]***  | Building responsive web and mobile interfaces with React Firebase Authentication and Firestore integration Using AI APIs to generate personalized recommendations Designing secure user accounts and data storage Deploying and maintaining a production-ready application  |
-| ***Technical Challenges: \[Potential obstacles\]***  | Creating accurate and personalized nutrition recommendations without replacing professional medical advice. Protecting users' personal and health-related information, especially for minors. Integrating multiple APIs while maintaining fast performance. Ensuring the AI provides reliable and age-appropriate recommendations. Building a user-friendly interface that encourages long-term engagement and consistent use.  |
+> Nourally helps a student-athlete decide what is realistic now—and what must be packed or prepared next—based on the actual school-to-sport day.
 
+The defensible product learning is not merely which foods to recommend. It is understanding where student-athletes’ plans break: time, access, cost, storage, transportation, and family coordination.
+
+## Safety and Privacy Boundaries
+
+- General education and practical examples, not diagnosis, treatment, weight-loss coaching, or independently generated calorie prescriptions.
+- No unnecessary collection of weight, body measurements, or medical history in the MVP.
+- Local-device storage in the current prototype, with clear disclosure.
+
+## Technology Stack
+
+| Area | MVP approach |
+|---|---|
+| Frontend | React, HTML, CSS, JavaScript, Vite |
+| Persistence | Local browser storage for the prototype; Firebase considered after privacy and consent requirements are defined |
+| Recommendation logic | Transparent deterministic timing and constraint rules |
+| Food data | Open Food Facts for optional barcode convenience; USDA FoodData Central may support future food search |
+| Future AI | Explanations and adaptation of approved options, not unrestricted medical or calorie prescriptions |

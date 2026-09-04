@@ -28,6 +28,280 @@ function loadSchoolSchedule() {
   return JSON.parse(localStorage.getItem('nourally-school-schedule') || 'null');
 }
 
+function loadDayPlans() {
+  return JSON.parse(localStorage.getItem('nourally-day-plans') || '{}');
+}
+
+function loadReminderSettings() {
+  return JSON.parse(localStorage.getItem('nourally-reminders') || 'null') || {
+    enabled: false,
+    leadMinutes: 60,
+    eveningPrep: true,
+  };
+}
+
+function loadGroceryState() {
+  return JSON.parse(localStorage.getItem('nourally-groceries') || 'null') || {
+    budgetAmount: 50,
+    goal: 'school-week',
+    lastShopDate: '',
+    pantry: [],
+    items: [],
+    purchases: [],
+  };
+}
+
+const DEFAULT_PROFILE = {
+  name: '',
+  budget: 'save',
+  dietaryNeeds: [],
+  foodSources: ['packed', 'cafeteria', 'home'],
+  familyPrep: true,
+};
+
+const FOOD_IDEAS = [
+  { id: 'banana-pretzels', name: 'Banana + pretzels', moments: ['quick', 'pre', 'regular'], sources: ['packed', 'cafeteria', 'store', 'home'], cost: 'save', portable: true, vegan: true, vegetarian: true, dairyFree: true, glutenFree: false, nutFree: true, note: 'Simple, portable carbs with no prep.' },
+  { id: 'applesauce-rice-cakes', name: 'Applesauce pouch + rice cakes', moments: ['quick', 'pre'], sources: ['packed', 'store', 'home'], cost: 'save', portable: true, vegan: true, vegetarian: true, dairyFree: true, glutenFree: true, nutFree: true, note: 'Easy to pack and usually gentle before activity.' },
+  { id: 'fig-bar-fruit', name: 'Fig bar + fresh fruit', moments: ['quick', 'pre', 'regular'], sources: ['packed', 'cafeteria', 'store', 'home'], cost: 'save', portable: true, vegan: true, vegetarian: true, dairyFree: true, glutenFree: false, nutFree: true, note: 'A shelf-stable option for a bag or locker.' },
+  { id: 'cereal-milk', name: 'Cereal cup + shelf-stable soy milk', moments: ['quick', 'pre', 'regular', 'recovery'], sources: ['packed', 'store', 'home'], cost: 'save', portable: true, vegan: true, vegetarian: true, dairyFree: true, glutenFree: false, nutFree: true, note: 'Easy carbs plus protein without needing a refrigerator.' },
+  { id: 'bagel-jam', name: 'Bagel or toast + jam', moments: ['pre', 'regular', 'recovery'], sources: ['packed', 'cafeteria', 'home'], cost: 'save', portable: true, vegan: true, vegetarian: true, dairyFree: true, glutenFree: false, nutFree: true, note: 'A familiar option when you have a little time.' },
+  { id: 'sunbutter-sandwich', name: 'Sunflower-butter banana sandwich', moments: ['pre', 'regular', 'recovery'], sources: ['packed', 'home'], cost: 'save', portable: true, vegan: true, vegetarian: true, dairyFree: true, glutenFree: false, nutFree: true, note: 'Packable fuel with carbs plus staying power.' },
+  { id: 'oatmeal-fruit', name: 'Oatmeal + fruit', moments: ['regular', 'pre', 'recovery'], sources: ['cafeteria', 'home'], cost: 'save', portable: false, needsHeat: true, vegan: true, vegetarian: true, dairyFree: true, glutenFree: true, nutFree: true, note: 'A lower-cost warm option that can work before or after activity.' },
+  { id: 'hummus-pita', name: 'Hummus + pita + grapes', moments: ['regular', 'recovery'], sources: ['packed', 'store', 'home'], cost: 'save', portable: true, needsCold: true, vegan: true, vegetarian: true, dairyFree: true, glutenFree: false, nutFree: true, note: 'A packable mix of carbs and protein when kept cold.' },
+  { id: 'turkey-sandwich', name: 'Turkey sandwich + fruit', moments: ['regular', 'recovery'], sources: ['packed', 'cafeteria', 'store', 'home'], cost: 'standard', portable: true, needsCold: true, vegan: false, vegetarian: false, dairyFree: true, glutenFree: false, nutFree: true, note: 'A familiar full snack or meal for a busy handoff.' },
+  { id: 'tuna-crackers', name: 'Tuna pouch + crackers + fruit cup', moments: ['regular', 'recovery'], sources: ['packed', 'store', 'home'], cost: 'standard', portable: true, vegan: false, vegetarian: false, dairyFree: true, glutenFree: false, nutFree: true, note: 'Shelf-stable protein and carbs for an away day.' },
+  { id: 'yogurt-cereal', name: 'Yogurt + fruit + cereal', moments: ['regular', 'recovery'], sources: ['cafeteria', 'home', 'store'], cost: 'standard', portable: false, needsCold: true, vegan: false, vegetarian: true, dairyFree: false, glutenFree: false, nutFree: true, note: 'A quick carb-and-protein recovery option when kept cold.' },
+  { id: 'soy-yogurt', name: 'Soy yogurt + berries + granola', moments: ['regular', 'recovery'], sources: ['packed', 'store', 'home'], cost: 'standard', portable: true, needsCold: true, vegan: true, vegetarian: true, dairyFree: true, glutenFree: false, nutFree: true, note: 'A dairy-free recovery option that packs well with an ice pack.' },
+  { id: 'bean-rice-bowl', name: 'Bean-and-rice bowl + fruit', moments: ['regular', 'recovery'], sources: ['cafeteria', 'home'], cost: 'save', portable: false, needsHeat: true, vegan: true, vegetarian: true, dairyFree: true, glutenFree: true, nutFree: true, note: 'Budget-friendly and balanced for a full meal window.' },
+  { id: 'chicken-tofu-bowl', name: 'Chicken or tofu rice bowl', moments: ['regular', 'recovery'], sources: ['cafeteria', 'home'], cost: 'standard', portable: false, needsHeat: true, vegan: false, vegetarian: false, dairyFree: true, glutenFree: true, nutFree: true, note: 'A practical meal with carbs and protein after training.' },
+  { id: 'bean-burrito', name: 'Bean burrito + salsa', moments: ['regular', 'recovery'], sources: ['cafeteria', 'packed', 'home'], cost: 'save', portable: true, needsHeat: true, vegan: true, vegetarian: true, dairyFree: true, glutenFree: false, nutFree: true, note: 'A low-cost meal that can be packed and reheated.' },
+  { id: 'pasta-salad', name: 'Pasta salad + chickpeas', moments: ['regular', 'recovery'], sources: ['packed', 'home'], cost: 'save', portable: true, needsCold: true, vegan: true, vegetarian: true, dairyFree: true, glutenFree: false, nutFree: true, note: 'Make-ahead carbs and protein for school-to-sport days.' },
+  { id: 'eggs-toast', name: 'Eggs + toast + fruit', moments: ['regular', 'recovery'], sources: ['cafeteria', 'home'], cost: 'save', portable: false, needsHeat: true, vegan: false, vegetarian: true, dairyFree: true, glutenFree: false, nutFree: true, note: 'A familiar recovery meal using basic ingredients.' },
+  { id: 'edamame-rice', name: 'Edamame + rice + fruit', moments: ['regular', 'recovery'], sources: ['cafeteria', 'home'], cost: 'save', portable: false, needsHeat: true, vegan: true, vegetarian: true, dairyFree: true, glutenFree: true, nutFree: true, note: 'A plant-based meal with carbs and protein.' },
+  { id: 'milk-banana', name: 'Chocolate milk or soy milk + banana', moments: ['recovery'], sources: ['cafeteria', 'store', 'home'], cost: 'standard', portable: false, needsCold: true, vegan: false, vegetarian: true, dairyFree: false, glutenFree: true, nutFree: true, note: 'Fast recovery fuel when a full meal is still a while away.' },
+  { id: 'fruit-crackers-cheese', name: 'Fruit cup + crackers + cheese', moments: ['regular', 'recovery'], sources: ['cafeteria', 'packed', 'store'], cost: 'standard', portable: true, needsCold: true, vegan: false, vegetarian: true, dairyFree: false, glutenFree: false, nutFree: true, note: 'Easy to find at school or pack from home.' },
+  { id: 'seed-trail-mix', name: 'Nut-free seed mix + dried fruit', moments: ['quick', 'regular', 'during'], sources: ['packed', 'store', 'home'], cost: 'standard', portable: true, vegan: true, vegetarian: true, dairyFree: true, glutenFree: true, nutFree: true, note: 'Compact, shelf-stable fuel for longer days.' },
+  { id: 'smoothie-toast', name: 'Fruit smoothie + toast', moments: ['pre', 'regular', 'recovery'], sources: ['cafeteria', 'store', 'home'], cost: 'standard', portable: false, needsCold: true, vegan: true, vegetarian: true, dairyFree: true, glutenFree: false, nutFree: true, note: 'A drinkable option when solid food is less appealing.' },
+  { id: 'sports-drink-crackers', name: 'Familiar sports drink + crackers', moments: ['during', 'quick'], sources: ['packed', 'store', 'cafeteria'], cost: 'standard', portable: true, vegan: true, vegetarian: true, dairyFree: true, glutenFree: false, nutFree: true, note: 'Most useful during longer or harder sessions; water is fine for many shorter ones.' },
+  { id: 'juice-applesauce', name: 'Juice box + applesauce pouch', moments: ['quick', 'during'], sources: ['packed', 'cafeteria', 'store', 'home'], cost: 'save', portable: true, vegan: true, vegetarian: true, dairyFree: true, glutenFree: true, nutFree: true, note: 'A simple, easy-to-carry carb option when time is tight.' },
+];
+
+const GROCERY_GOALS = [
+  { id: 'school-week', label: 'School + practice week', description: 'Packable snacks, quick breakfasts, and easy dinners.' },
+  { id: 'practice-fuel', label: 'Practice fuel', description: 'Simple food before activity plus recovery basics.' },
+  { id: 'away-game', label: 'Away game', description: 'Portable, shelf-stable food for travel and long days.' },
+  { id: 'recovery-meals', label: 'Recovery meals', description: 'Carbs, protein, produce, and easy meal building.' },
+  { id: 'restock-basics', label: 'Restock basics', description: 'Affordable staples that work across the week.' },
+];
+
+const GROCERY_CATALOG = [
+  { id: 'bananas', name: 'Bananas', category: 'Produce', price: 2.25, goals: ['school-week', 'practice-fuel', 'away-game', 'recovery-meals', 'restock-basics'], vegan: true, vegetarian: true, dairyFree: true, glutenFree: true, nutFree: true },
+  { id: 'apples', name: 'Apples', category: 'Produce', price: 4.5, goals: ['school-week', 'away-game', 'restock-basics'], vegan: true, vegetarian: true, dairyFree: true, glutenFree: true, nutFree: true },
+  { id: 'frozen-berries', name: 'Frozen berries', category: 'Produce', price: 4.25, goals: ['school-week', 'recovery-meals'], vegan: true, vegetarian: true, dairyFree: true, glutenFree: true, nutFree: true },
+  { id: 'baby-carrots', name: 'Baby carrots', category: 'Produce', price: 2.5, goals: ['school-week', 'away-game', 'recovery-meals'], vegan: true, vegetarian: true, dairyFree: true, glutenFree: true, nutFree: true },
+  { id: 'bread', name: 'Whole-grain bread', category: 'Grains', price: 3.5, goals: ['school-week', 'practice-fuel', 'recovery-meals', 'restock-basics'], vegan: true, vegetarian: true, dairyFree: true, glutenFree: false, nutFree: true },
+  { id: 'tortillas', name: 'Tortillas', category: 'Grains', price: 3.25, goals: ['school-week', 'away-game', 'recovery-meals', 'restock-basics'], vegan: true, vegetarian: true, dairyFree: true, glutenFree: false, nutFree: true },
+  { id: 'oats', name: 'Oats', category: 'Grains', price: 4, goals: ['school-week', 'practice-fuel', 'recovery-meals', 'restock-basics'], vegan: true, vegetarian: true, dairyFree: true, glutenFree: true, nutFree: true },
+  { id: 'rice', name: 'Rice', category: 'Grains', price: 4.5, goals: ['school-week', 'recovery-meals', 'restock-basics'], vegan: true, vegetarian: true, dairyFree: true, glutenFree: true, nutFree: true },
+  { id: 'pretzels', name: 'Pretzels', category: 'Packable', price: 3.25, goals: ['school-week', 'practice-fuel', 'away-game', 'restock-basics'], vegan: true, vegetarian: true, dairyFree: true, glutenFree: false, nutFree: true },
+  { id: 'applesauce', name: 'Applesauce pouches', category: 'Packable', price: 4.75, goals: ['school-week', 'practice-fuel', 'away-game'], vegan: true, vegetarian: true, dairyFree: true, glutenFree: true, nutFree: true },
+  { id: 'fig-bars', name: 'Fig bars', category: 'Packable', price: 5, goals: ['school-week', 'practice-fuel', 'away-game'], vegan: true, vegetarian: true, dairyFree: true, glutenFree: false, nutFree: true },
+  { id: 'crackers', name: 'Crackers', category: 'Packable', price: 3.5, goals: ['school-week', 'practice-fuel', 'away-game', 'restock-basics'], vegan: true, vegetarian: true, dairyFree: true, glutenFree: false, nutFree: true },
+  { id: 'beans', name: 'Canned beans', category: 'Protein', price: 2.5, goals: ['school-week', 'recovery-meals', 'restock-basics'], vegan: true, vegetarian: true, dairyFree: true, glutenFree: true, nutFree: true },
+  { id: 'eggs', name: 'Eggs', category: 'Protein', price: 4, goals: ['school-week', 'recovery-meals', 'restock-basics'], vegan: false, vegetarian: true, dairyFree: true, glutenFree: true, nutFree: true },
+  { id: 'chicken', name: 'Chicken', category: 'Protein', price: 9, goals: ['school-week', 'recovery-meals'], vegan: false, vegetarian: false, dairyFree: true, glutenFree: true, nutFree: true },
+  { id: 'tofu', name: 'Tofu', category: 'Protein', price: 3.5, goals: ['school-week', 'recovery-meals'], vegan: true, vegetarian: true, dairyFree: true, glutenFree: true, nutFree: true },
+  { id: 'tuna-pouches', name: 'Tuna pouches', category: 'Protein', price: 5.5, goals: ['away-game', 'recovery-meals'], vegan: false, vegetarian: false, dairyFree: true, glutenFree: true, nutFree: true },
+  { id: 'sunbutter', name: 'Sunflower-seed butter', category: 'Protein', price: 6.5, goals: ['school-week', 'practice-fuel', 'away-game'], vegan: true, vegetarian: true, dairyFree: true, glutenFree: true, nutFree: true },
+  { id: 'yogurt', name: 'Yogurt', category: 'Cold', price: 5, goals: ['school-week', 'practice-fuel', 'recovery-meals'], vegan: false, vegetarian: true, dairyFree: false, glutenFree: true, nutFree: true },
+  { id: 'soy-milk', name: 'Shelf-stable soy milk', category: 'Drinks', price: 4.5, goals: ['school-week', 'practice-fuel', 'away-game', 'recovery-meals'], vegan: true, vegetarian: true, dairyFree: true, glutenFree: true, nutFree: true },
+  { id: 'sports-drink', name: 'Sports drink', category: 'Drinks', price: 6, goals: ['practice-fuel', 'away-game'], vegan: true, vegetarian: true, dairyFree: true, glutenFree: true, nutFree: true },
+  { id: 'cheese-sticks', name: 'Cheese sticks', category: 'Cold', price: 5, goals: ['school-week', 'away-game', 'recovery-meals'], vegan: false, vegetarian: true, dairyFree: false, glutenFree: true, nutFree: true },
+  { id: 'hummus', name: 'Hummus', category: 'Cold', price: 4, goals: ['school-week', 'away-game', 'recovery-meals'], vegan: true, vegetarian: true, dairyFree: true, glutenFree: true, nutFree: true },
+];
+
+function loadProfile() {
+  const saved = JSON.parse(localStorage.getItem('nourally-profile') || 'null');
+  return saved ? {
+    ...DEFAULT_PROFILE,
+    ...saved,
+    dietaryNeeds: Array.isArray(saved.dietaryNeeds) ? saved.dietaryNeeds : DEFAULT_PROFILE.dietaryNeeds,
+    foodSources: Array.isArray(saved.foodSources) ? saved.foodSources : DEFAULT_PROFILE.foodSources,
+  } : DEFAULT_PROFILE;
+}
+
+function timeToMinutes(value) {
+  if (!value) return 0;
+  const [hours, minutes] = value.split(':').map(Number);
+  return hours * 60 + minutes;
+}
+
+function formatClock(value) {
+  if (!/^\d{2}:\d{2}$/.test(value || '')) return 'Time TBD';
+  const [hours, minutes] = value.split(':').map(Number);
+  return new Intl.DateTimeFormat('en-US', { hour: 'numeric', minute: '2-digit' }).format(new Date(2000, 0, 1, hours, minutes));
+}
+
+function isSchoolDay(dateKey, schoolSchedule) {
+  if (!schoolSchedule?.enabled || dateKey < schoolSchedule.startDate || dateKey > schoolSchedule.endDate || schoolSchedule.excludedDates?.includes(dateKey)) return false;
+  return schoolSchedule.weekdays.includes(new Date(`${dateKey}T12:00:00`).getDay());
+}
+
+function eventOccursOn(event, dateKey) {
+  if (event.date) return event.date === dateKey;
+  if (!event.recurrence) return false;
+  const { startDate, endDate, weekdays = [], excludedDates = [] } = event.recurrence;
+  if (dateKey < startDate || dateKey > endDate || excludedDates.includes(dateKey)) return false;
+  return weekdays.includes(new Date(`${dateKey}T12:00:00`).getDay());
+}
+
+function eventsForDate(events, dateKey) {
+  return events
+    .filter((event) => eventOccursOn(event, dateKey))
+    .map((event) => event.recurrence ? {
+      ...event,
+      date: dateKey,
+      occurrenceId: `${event.id}-${dateKey}`,
+      recurringSeries: true,
+    } : event)
+    .sort((a, b) => (a.startTime || '').localeCompare(b.startTime || ''));
+}
+
+function planTasksForIdea(idea, { travelMode = false, inSchool = false } = {}) {
+  const verb = idea.portable ? 'Pack' : 'Plan';
+  const tasks = [{ label: `${verb} ${idea.name}`, kind: 'food', foodId: idea.id }];
+  if (idea.needsCold) tasks.push({ label: 'Add an ice pack or refrigerate it', kind: 'prep' });
+  if (idea.needsHeat && inSchool) tasks.push({ label: 'Confirm microwave access', kind: 'prep' });
+  if (travelMode) tasks.push({ label: 'Fill and pack a water bottle', kind: 'gear' });
+  if (idea.portable) tasks.push({ label: 'Set it beside your school or team bag', kind: 'gear' });
+  return tasks;
+}
+
+function tomorrowPrepTasks(event) {
+  const tasks = [
+    { label: 'Choose and set out breakfast', kind: 'food' },
+    { label: 'Pack a familiar pre-activity snack', kind: 'food' },
+    { label: 'Fill a water bottle', kind: 'gear' },
+    { label: 'Put uniform, shoes, and gear by the door', kind: 'gear' },
+  ];
+  if (event.location === 'away' || Number(event.travelMinutes || 0) >= 30) {
+    tasks.push({ label: `Check the route and allow ${event.travelMinutes || 0} minutes for travel`, kind: 'prep' });
+    tasks.push({ label: 'Pack one extra shelf-stable snack', kind: 'food' });
+  }
+  return tasks;
+}
+
+function ideaFitsProfile(idea, profile) {
+  const needs = profile.dietaryNeeds || [];
+  if (needs.includes('vegan') && !idea.vegan) return false;
+  if (needs.includes('vegetarian') && !idea.vegetarian) return false;
+  if (needs.includes('dairyFree') && !idea.dairyFree) return false;
+  if (needs.includes('glutenFree') && !idea.glutenFree) return false;
+  if (needs.includes('nutFree') && !idea.nutFree) return false;
+  if (profile.budget === 'save' && idea.cost !== 'save') return false;
+  return true;
+}
+
+function getFuelingGuidance({ now, todayKey, events, schoolSchedule, profile }) {
+  const currentMinutes = now.getHours() * 60 + now.getMinutes();
+  const training = eventsForDate(events, todayKey)
+    .map((event) => ({ ...event, start: timeToMinutes(event.startTime), end: timeToMinutes(event.endTime) }))
+    .sort((a, b) => a.start - b.start);
+  const active = training.find((event) => currentMinutes >= event.start && currentMinutes <= event.end);
+  const next = training.find((event) => event.start > currentMinutes);
+  const recent = [...training].reverse().find((event) => currentMinutes > event.end && currentMinutes - event.end <= 90);
+  const schoolToday = isSchoolDay(todayKey, schoolSchedule);
+  const inSchool = schoolToday && currentMinutes >= timeToMinutes(schoolSchedule.startTime) && currentMinutes <= timeToMinutes(schoolSchedule.endTime);
+  const schoolWindows = inSchool ? [
+    schoolSchedule.morningSnackTime && { label: 'Morning snack window', start: schoolSchedule.morningSnackTime },
+    schoolSchedule.lunchStartTime && { label: 'Lunch', start: schoolSchedule.lunchStartTime },
+    schoolSchedule.afternoonSnackTime && { label: 'Afternoon snack window', start: schoolSchedule.afternoonSnackTime },
+  ].filter(Boolean).sort((a, b) => a.start.localeCompare(b.start)) : [];
+  const nextSchoolWindow = schoolWindows.find((window) => timeToMinutes(window.start) >= currentMinutes);
+
+  let moment = 'regular';
+  let label = 'STEADY-DAY FUELING';
+  let title = 'Keep a regular eating rhythm today.';
+  let explanation = 'No training is coming up soon. Choose a familiar meal or snack and use the next food window instead of waiting until you are drained.';
+  let timing = nextSchoolWindow ? `${nextSchoolWindow.label} at ${formatClock(nextSchoolWindow.start)}.` : inSchool ? schoolSchedule.foodAccess?.eatInClass ? 'Use an allowed class or passing-period window.' : 'Use your next allowed food window.' : 'Eat when you are comfortably hungry.';
+  let focusEvent = null;
+
+  if (active) {
+    focusEvent = active;
+    moment = active.end - active.start >= 75 || active.intensity === 'high' ? 'during' : 'quick';
+    label = `${active.title.toUpperCase()} / IN PROGRESS`;
+    title = 'Hydrate now; keep mid-session fuel familiar.';
+    explanation = 'For a longer or harder session, a familiar easy-to-carry carb may help. Avoid trying a brand-new food during competition or practice.';
+    timing = `${formatClock(active.startTime)}–${formatClock(active.endTime)}`;
+  } else if (next) {
+    focusEvent = next;
+    const minutesUntil = next.start - currentMinutes;
+    if (minutesUntil <= 30) {
+      moment = 'quick';
+      label = `${next.title.toUpperCase()} / ${minutesUntil} MIN`;
+      title = 'Choose something small and easy right now.';
+      explanation = 'There is not much digestion time. A familiar carb-forward snack and a few sips of water are the practical move.';
+    } else if (minutesUntil <= 90) {
+      moment = 'pre';
+      label = `${next.title.toUpperCase()} / ${minutesUntil} MIN`;
+      title = 'Have a practical pre-activity snack now.';
+      explanation = 'Choose familiar carbs that fit where you are. Keep heavy, greasy, or brand-new foods for another time.';
+    } else if (minutesUntil <= 180) {
+      moment = 'regular';
+      label = `${next.title.toUpperCase()} / ${Math.round(minutesUntil / 15) * 15} MIN`;
+      title = 'Use this meal window before the rush.';
+      explanation = 'A balanced meal or substantial snack now can make the school-to-sport transition easier later.';
+    } else {
+      label = `${next.title.toUpperCase()} / ${formatClock(next.startTime)}`;
+      title = 'Plan the handoff from school to sport.';
+      explanation = 'Your activity is later today. Decide what you will eat, where it will come from, and whether it needs to be packed before the day gets busy.';
+    }
+    timing = `${formatClock(next.startTime)} start${next.location === 'away' ? ` · away · ${next.travelMinutes || 0} min travel` : ''}`;
+  } else if (recent) {
+    focusEvent = recent;
+    moment = 'recovery';
+    label = `${recent.title.toUpperCase()} / RECOVERY`;
+    title = 'Refuel with carbs, protein, and fluids.';
+    explanation = 'Choose a familiar option you can actually get now. A regular meal works; a snack can bridge the gap if dinner is later.';
+    timing = `Ended ${currentMinutes - recent.end} min ago`;
+  }
+
+  const availableSources = inSchool
+    ? [
+        ...(schoolSchedule.foodAccess?.cafeteria ? ['cafeteria'] : []),
+        ...(profile.foodSources.includes('packed') ? ['packed'] : []),
+      ]
+    : profile.foodSources;
+  const travelMode = ['away', 'travel'].includes(focusEvent?.location) || Number(focusEvent?.travelMinutes || 0) >= 30;
+  let ideas = FOOD_IDEAS.filter((idea) => idea.moments.includes(moment) && ideaFitsProfile(idea, profile));
+  ideas = ideas.filter((idea) => {
+    const availableMatches = idea.sources.filter((source) => availableSources.includes(source));
+    if (!availableMatches.length || (travelMode && !idea.portable)) return false;
+    const cafeteriaProvidesIt = inSchool && availableMatches.includes('cafeteria');
+    if (inSchool && !cafeteriaProvidesIt && idea.needsCold && !schoolSchedule.foodAccess?.refrigerator) return false;
+    if (inSchool && !cafeteriaProvidesIt && idea.needsHeat && !schoolSchedule.foodAccess?.microwave) return false;
+    return true;
+  });
+
+  const sourceLabel = inSchool
+    ? schoolSchedule.foodAccess?.cafeteria ? 'cafeteria or packed food' : 'packed food'
+    : travelMode ? 'portable food for travel' : availableSources.map((source) => ({ packed: 'packed food', cafeteria: 'cafeteria', home: 'home kitchen', store: 'nearby store' }[source])).filter(Boolean).join(', ');
+
+  return {
+    label,
+    title,
+    explanation,
+    timing,
+    ideas: ideas.slice(0, 3),
+    alternates: ideas.slice(3, 9),
+    sourceLabel: sourceLabel || 'what is available now',
+    travelMode,
+    event: focusEvent,
+    schoolToday,
+    inSchool,
+  };
+}
+
 function loadDailyLogs() {
   const saved = JSON.parse(readStoredValue('nourally-daily-logs', 'fuel-daily-logs') || 'null');
   if (saved) return saved;
@@ -47,99 +321,140 @@ function loadDailyLogs() {
 }
 
 function App() {
-  const [step, setStep] = useState(() => readStoredValue('nourally-step', 'fuel-step') || 'account');
+  const [step, setStep] = useState(() => readStoredValue('nourally-step', 'fuel-step') === 'dashboard' ? 'dashboard' : 'setup');
   const [view, setView] = useState('today');
   const [todayKey, setTodayKey] = useState(getDateKey);
-  const [goal, setGoal] = useState(() => Number(readStoredValue('nourally-goal', 'fuel-goal')) || 2400);
-  const [waterGoal, setWaterGoal] = useState(() => Number(readStoredValue('nourally-water-goal', 'fuel-water-goal')) || 80);
+  const [now, setNow] = useState(new Date());
   const [dailyLogs, setDailyLogs] = useState(loadDailyLogs);
   const [schedule, setSchedule] = useState(loadSchedule);
   const [schoolSchedule, setSchoolSchedule] = useState(loadSchoolSchedule);
+  const [profile, setProfile] = useState(loadProfile);
+  const [dayPlans, setDayPlans] = useState(loadDayPlans);
+  const [reminderSettings, setReminderSettings] = useState(loadReminderSettings);
+  const [groceryState, setGroceryState] = useState(loadGroceryState);
 
   useEffect(() => localStorage.setItem('nourally-step', step), [step]);
-  useEffect(() => localStorage.setItem('nourally-goal', goal), [goal]);
-  useEffect(() => localStorage.setItem('nourally-water-goal', waterGoal), [waterGoal]);
   useEffect(() => localStorage.setItem('nourally-daily-logs', JSON.stringify(dailyLogs)), [dailyLogs]);
   useEffect(() => localStorage.setItem('nourally-schedule', JSON.stringify(schedule)), [schedule]);
   useEffect(() => localStorage.setItem('nourally-school-schedule', JSON.stringify(schoolSchedule)), [schoolSchedule]);
+  useEffect(() => localStorage.setItem('nourally-profile', JSON.stringify(profile)), [profile]);
+  useEffect(() => localStorage.setItem('nourally-day-plans', JSON.stringify(dayPlans)), [dayPlans]);
+  useEffect(() => localStorage.setItem('nourally-reminders', JSON.stringify(reminderSettings)), [reminderSettings]);
+  useEffect(() => localStorage.setItem('nourally-groceries', JSON.stringify(groceryState)), [groceryState]);
   useEffect(() => {
-    const timer = window.setInterval(() => setTodayKey(getDateKey()), 60000);
+    const timer = window.setInterval(() => {
+      setNow(new Date());
+      setTodayKey(getDateKey());
+    }, 60000);
     return () => window.clearInterval(timer);
   }, []);
+  useEffect(() => {
+    if (!reminderSettings.enabled || typeof Notification === 'undefined' || Notification.permission !== 'granted') return;
+    const notified = JSON.parse(localStorage.getItem('nourally-notified-events') || '[]');
+    const notifiedSet = new Set(notified);
+    const currentMinutes = now.getHours() * 60 + now.getMinutes();
+    const lead = Number(reminderSettings.leadMinutes || 60);
+    eventsForDate(schedule, todayKey).forEach((event) => {
+      const minutesUntil = timeToMinutes(event.startTime) - currentMinutes;
+      const notificationKey = `${event.id}-${todayKey}-${lead}`;
+      if (minutesUntil <= lead && minutesUntil >= 0 && !notifiedSet.has(notificationKey)) {
+        new Notification(`${event.title} in about ${lead} minutes`, {
+          body: event.location === 'away' || event.location === 'travel'
+            ? 'Grab your packed food, water, and travel gear.'
+            : 'Check your food plan, water, and gear before you go.',
+        });
+        notifiedSet.add(notificationKey);
+      }
+    });
+    const tomorrowKey = getDateKey(addDays(new Date(`${todayKey}T12:00:00`), 1));
+    const earlyTomorrow = eventsForDate(schedule, tomorrowKey).find((event) => timeToMinutes(event.startTime) <= 600);
+    const prepKey = `prep-${tomorrowKey}`;
+    if (reminderSettings.eveningPrep && now.getHours() >= 19 && earlyTomorrow && !notifiedSet.has(prepKey)) {
+      new Notification(`Prepare tonight for ${earlyTomorrow.title}`, { body: 'Set out breakfast, pack a snack and water, and put your gear by the door.' });
+      notifiedSet.add(prepKey);
+    }
+    localStorage.setItem('nourally-notified-events', JSON.stringify([...notifiedSet].slice(-200)));
+  }, [now, reminderSettings, schedule, todayKey]);
 
-  const todayLog = dailyLogs[todayKey] || { goal, entries: [], water: 0, waterGoal };
+  const todayLog = dailyLogs[todayKey] || { entries: [], water: 0 };
 
-  function saveGoal() {
-    setDailyLogs((logs) => ({
-      ...logs,
-      [todayKey]: { ...logs[todayKey], goal, entries: logs[todayKey]?.entries || [], water: logs[todayKey]?.water || 0, waterGoal: logs[todayKey]?.waterGoal || waterGoal },
-    }));
+  function saveProfile(nextProfile) {
+    setProfile(nextProfile);
     setStep('dashboard');
     setView('today');
   }
 
   function setTodayEntries(update) {
     setDailyLogs((logs) => {
-      const current = logs[todayKey] || { goal, entries: [] };
+      const current = logs[todayKey] || { entries: [] };
       const entries = typeof update === 'function' ? update(current.entries) : update;
-      return { ...logs, [todayKey]: { ...current, goal, entries } };
+      return { ...logs, [todayKey]: { ...current, entries } };
     });
   }
 
   function setTodayHydration(update) {
     setDailyLogs((logs) => {
-      const current = logs[todayKey] || { goal, entries: [], water: 0, waterGoal };
-      const hydration = { water: current.water || 0, waterGoal: current.waterGoal || waterGoal };
+      const current = logs[todayKey] || { entries: [], water: 0 };
+      const hydration = { water: current.water || 0 };
       const next = typeof update === 'function' ? update(hydration) : update;
       return { ...logs, [todayKey]: { ...current, ...next } };
     });
   }
 
-  function updateWaterGoal(nextGoal) {
-    setWaterGoal(nextGoal);
-    setTodayHydration((hydration) => ({ ...hydration, waterGoal: nextGoal }));
-  }
-
-  if (step === 'account') return <AccountScreen onContinue={() => setStep('goal')} />;
-  if (step === 'goal') return <GoalScreen goal={goal} setGoal={setGoal} onContinue={saveGoal} />;
-  if (view === 'history') return <History dailyLogs={dailyLogs} todayKey={todayKey} fallbackWaterGoal={waterGoal} onBack={() => setView('today')} />;
-  if (view === 'weekly') return <WeeklyProgress dailyLogs={dailyLogs} todayKey={todayKey} fallbackGoal={goal} fallbackWaterGoal={waterGoal} onBack={() => setView('today')} />;
+  if (step === 'setup') return <ProfileSetup profile={profile} onSave={saveProfile} />;
+  if (view === 'history') return <History dailyLogs={dailyLogs} todayKey={todayKey} onBack={() => setView('today')} />;
+  if (view === 'weekly') return <WeeklyProgress dailyLogs={dailyLogs} todayKey={todayKey} onBack={() => setView('today')} />;
   if (view === 'calendar') return <ScheduleCalendar events={schedule} setEvents={setSchedule} schoolSchedule={schoolSchedule} setSchoolSchedule={setSchoolSchedule} todayKey={todayKey} onBack={() => setView('today')} />;
-  return <Dashboard goal={todayLog.goal || goal} entries={todayLog.entries} setEntries={setTodayEntries} water={todayLog.water || 0} waterGoal={todayLog.waterGoal || waterGoal} setHydration={setTodayHydration} onSetWaterGoal={updateWaterGoal} onEditGoal={() => setStep('goal')} onHistory={() => setView('history')} onWeekly={() => setView('weekly')} onCalendar={() => setView('calendar')} />;
+  if (view === 'groceries') return <GroceryHub groceryState={groceryState} setGroceryState={setGroceryState} profile={profile} setProfile={setProfile} todayKey={todayKey} onBack={() => setView('today')} />;
+  return <Dashboard now={now} todayKey={todayKey} events={schedule} schoolSchedule={schoolSchedule} profile={profile} entries={todayLog.entries} setEntries={setTodayEntries} water={todayLog.water || 0} setHydration={setTodayHydration} dayPlans={dayPlans} setDayPlans={setDayPlans} reminderSettings={reminderSettings} setReminderSettings={setReminderSettings} onEditProfile={() => setStep('setup')} onHistory={() => setView('history')} onWeekly={() => setView('weekly')} onCalendar={() => setView('calendar')} onGroceries={() => setView('groceries')} />;
 }
 
 function Shell({ children, eyebrow = 'NOURALLY / DAILY NUTRITION' }) {
   return <main className="shell"><div className="brand"><span className="brand-mark">↗</span><span>nourally</span></div><div className="eyebrow">{eyebrow}</div>{children}<footer>Your ally from school to sport <span>·</span> Your data stays on this device</footer></main>;
 }
 
-function AccountScreen({ onContinue }) {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  return <Shell>
-    <section className="intro split-intro"><div><p className="kicker">YOUR DAILY EDGE</p><h1>Eat with purpose.<br /><em>Move with confidence.</em></h1></div><p className="intro-copy">A clear, simple way to keep your fuel on track through school, practice, and game day.</p></section>
-    <section className="card account-card"><div className="section-label">01 / CREATE YOUR ACCOUNT</div><h2>Let’s get you set up.</h2><p className="muted">Start with an account, then we’ll help you choose a daily calorie goal.</p><form onSubmit={(event) => { event.preventDefault(); onContinue(); }}><label>Email address<input type="email" required value={email} onChange={(event) => setEmail(event.target.value)} placeholder="you@example.com" /></label><label>Password<input type="password" minLength="6" required value={password} onChange={(event) => setPassword(event.target.value)} placeholder="At least 6 characters" /></label><button className="primary" type="submit">Create account <span>→</span></button></form><p className="fine-print">This prototype does not send or store account information online.</p></section>
+function ProfileSetup({ profile, onSave }) {
+  const [draft, setDraft] = useState(profile);
+  const needs = [['vegetarian', 'Vegetarian'], ['vegan', 'Vegan'], ['dairyFree', 'Dairy-free'], ['glutenFree', 'Gluten-free'], ['nutFree', 'Nut-free']];
+  const sources = [['packed', 'Packed from home'], ['cafeteria', 'School cafeteria'], ['home', 'Home kitchen'], ['store', 'Nearby store']];
+
+  function toggleList(key, value) {
+    setDraft((current) => ({ ...current, [key]: current[key].includes(value) ? current[key].filter((item) => item !== value) : [...current[key], value] }));
+  }
+
+  return <Shell eyebrow="NOURALLY / YOUR REAL DAY">
+    <section className="intro split-intro"><div><p className="kicker">FUELING THAT FITS REAL LIFE</p><h1>School to sport,<br /><em>without the guesswork.</em></h1></div><p className="intro-copy">Nourally turns your schedule, food access, budget, and dietary needs into a practical next step—not a rigid prescription.</p></section>
+    <section className="card profile-card"><div className="section-label">SET YOUR FOOD REALITY</div><h2>Set what works in real life.</h2><p className="muted">These details stay on this device and only filter the examples you see.</p><form onSubmit={(event) => { event.preventDefault(); onSave(draft); }}>
+      <label>First name <span className="optional-label">Optional</span><input value={draft.name} onChange={(event) => setDraft({ ...draft, name: event.target.value })} placeholder="First name" /></label>
+      <fieldset className="choice-field"><legend>Usual food budget</legend><div className="choice-grid three">{[['save', 'Save where possible'], ['standard', 'Everyday'], ['flexible', 'Flexible']].map(([value, label]) => <button type="button" className={draft.budget === value ? 'selected' : ''} onClick={() => setDraft({ ...draft, budget: value })} key={value}>{label}</button>)}</div></fieldset>
+      <fieldset className="choice-field"><legend>Dietary needs</legend><div className="choice-grid">{needs.map(([value, label]) => <button type="button" className={draft.dietaryNeeds.includes(value) ? 'selected' : ''} aria-pressed={draft.dietaryNeeds.includes(value)} onClick={() => toggleList('dietaryNeeds', value)} key={value}>{label}</button>)}</div></fieldset>
+      <fieldset className="choice-field"><legend>Food you can usually access</legend><div className="choice-grid">{sources.map(([value, label]) => <button type="button" className={draft.foodSources.includes(value) ? 'selected' : ''} aria-pressed={draft.foodSources.includes(value)} onClick={() => toggleList('foodSources', value)} key={value}>{label}</button>)}</div></fieldset>
+      <label className="check-row"><input type="checkbox" checked={draft.familyPrep} onChange={(event) => setDraft({ ...draft, familyPrep: event.target.checked })} /><span>A parent or guardian can sometimes help pack or prep food.</span></label>
+      <button className="primary" type="submit" disabled={!draft.foodSources.length}>Save and see today <span>→</span></button>
+    </form><p className="safety-note"><strong>Educational guidance only.</strong> Nourally offers practical examples, not calorie prescriptions or medical advice. Allergies, medical conditions, eating concerns, and individualized needs should be discussed with a qualified professional and a parent or guardian.</p></section>
   </Shell>;
 }
 
-function GoalScreen({ goal, setGoal, onContinue }) {
-  const options = [2000, 2200, 2400, 2800];
-  return <Shell eyebrow="NOURALLY / YOUR STARTING POINT">
-    <section className="intro"><p className="kicker">YOUR DAILY TARGET</p><h1>How much fuel<br /><em>do you need today?</em></h1><p className="intro-copy wide">Choose a starting goal. You can adjust it anytime as your training changes.</p></section>
-    <section className="card goal-card"><div className="section-label">02 / DAILY CALORIE GOAL</div><div className="goal-input-wrap"><input aria-label="Daily calorie goal" type="number" min="1000" max="6000" step="50" value={goal} onChange={(event) => setGoal(Number(event.target.value))} /><span>CALORIES / DAY</span></div><div className="quick-options">{options.map((option) => <button type="button" className={goal === option ? 'selected' : ''} key={option} onClick={() => setGoal(option)}>{option.toLocaleString()}</button>)}</div><button className="primary" onClick={onContinue}>Save goal & continue <span>→</span></button><p className="fine-print">Your goal is a starting estimate, not medical advice. Talk with a qualified professional for personalized nutrition guidance.</p></section>
-  </Shell>;
-}
-
-function Dashboard({ goal, entries, setEntries, water, waterGoal, setHydration, onSetWaterGoal, onEditGoal, onHistory, onWeekly, onCalendar }) {
+function Dashboard({ now, todayKey, events, schoolSchedule, profile, entries, setEntries, water, setHydration, dayPlans, setDayPlans, reminderSettings, setReminderSettings, onEditProfile, onHistory, onWeekly, onCalendar, onGroceries }) {
   const [showForm, setShowForm] = useState(false);
   const [showScanner, setShowScanner] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [name, setName] = useState('');
   const [calories, setCalories] = useState('');
-  const total = entries.reduce((sum, entry) => sum + entry.calories, 0);
-  const remaining = Math.max(goal - total, 0);
-  const progress = Math.min((total / goal) * 100, 100);
-  const date = new Intl.DateTimeFormat('en-US', { weekday: 'long', month: 'long', day: 'numeric' }).format(new Date());
-  const status = useMemo(() => total === 0 ? 'Ready when you are.' : remaining === 0 ? 'Goal reached. Nice work.' : `${remaining.toLocaleString()} calories left today.`, [total, remaining]);
+  const [swapFor, setSwapFor] = useState('');
+  const [reminderStatus, setReminderStatus] = useState('');
+  const guidance = useMemo(() => getFuelingGuidance({ now, todayKey, events, schoolSchedule, profile }), [now, todayKey, events, schoolSchedule, profile]);
+  const date = new Intl.DateTimeFormat('en-US', { weekday: 'long', month: 'long', day: 'numeric' }).format(now);
+  const todayEvents = eventsForDate(events, todayKey);
+  const tomorrowKey = getDateKey(addDays(new Date(`${todayKey}T12:00:00`), 1));
+  const tomorrowEvents = eventsForDate(events, tomorrowKey);
+  const earlyTomorrow = tomorrowEvents.find((event) => timeToMinutes(event.startTime) <= 600);
+  const todayPlan = dayPlans[todayKey] || [];
+  const tomorrowPlan = dayPlans[tomorrowKey] || [];
+  const timeline = [
+    ...(guidance.schoolToday ? [{ id: 'school', type: 'school', title: schoolSchedule.name, startTime: schoolSchedule.startTime, endTime: schoolSchedule.endTime }] : []),
+    ...todayEvents,
+  ].sort((a, b) => a.startTime.localeCompare(b.startTime));
 
   function resetForm() {
     setName('');
@@ -150,14 +465,14 @@ function Dashboard({ goal, entries, setEntries, water, waterGoal, setHydration, 
 
   function submitEntry(event) {
     event.preventDefault();
-    if (!name.trim() || !calories) return;
+    if (!name.trim()) return;
     if (editingId) {
-      setEntries((current) => current.map((entry) => entry.id === editingId ? { ...entry, name: name.trim(), calories: Number(calories) } : entry));
+      setEntries((current) => current.map((entry) => entry.id === editingId ? { ...entry, name: name.trim(), calories: Number(calories || 0) } : entry));
     } else {
       setEntries((current) => [...current, {
         id: Date.now(),
         name: name.trim(),
-        calories: Number(calories),
+        calories: Number(calories || 0),
         time: new Intl.DateTimeFormat('en-US', { hour: 'numeric', minute: '2-digit' }).format(new Date()),
       }]);
     }
@@ -189,12 +504,234 @@ function Dashboard({ goal, entries, setEntries, water, waterGoal, setHydration, 
     setShowScanner(false);
   }
 
+  function addPlanTasks(dateKey, tasks) {
+    setDayPlans((plans) => {
+      const current = plans[dateKey] || [];
+      const newTasks = tasks
+        .filter((task) => !current.some((item) => item.label === task.label))
+        .map((task, index) => ({ ...task, id: `${Date.now()}-${index}`, done: false }));
+      return { ...plans, [dateKey]: [...current, ...newTasks] };
+    });
+  }
+
+  function pickIdea(idea) {
+    addPlanTasks(todayKey, planTasksForIdea(idea, { travelMode: guidance.travelMode, inSchool: guidance.inSchool }));
+  }
+
+  function togglePlanTask(dateKey, id) {
+    setDayPlans((plans) => ({
+      ...plans,
+      [dateKey]: (plans[dateKey] || []).map((item) => item.id === id ? { ...item, done: !item.done } : item),
+    }));
+  }
+
+  function removePlanTask(dateKey, id) {
+    setDayPlans((plans) => ({ ...plans, [dateKey]: (plans[dateKey] || []).filter((item) => item.id !== id) }));
+  }
+
+  async function enableReminders() {
+    if (typeof Notification === 'undefined') {
+      setReminderStatus('Browser notifications are not available here.');
+      return;
+    }
+    const permission = await Notification.requestPermission();
+    if (permission === 'granted') {
+      setReminderSettings((settings) => ({ ...settings, enabled: true }));
+      setReminderStatus('Reminders are on while Nourally is open.');
+    } else {
+      setReminderSettings((settings) => ({ ...settings, enabled: false }));
+      setReminderStatus('Notifications were not allowed in this browser.');
+    }
+  }
+
   return <Shell eyebrow="NOURALLY / TODAY">
-    <section className="dashboard-head"><div><p className="kicker">{date.toUpperCase()}</p><h1>Keep your <em>momentum.</em></h1></div><div className="head-actions"><button className="text-button" onClick={onCalendar}>Calendar ↗</button><button className="text-button" onClick={onWeekly}>Weekly ↗</button><button className="text-button" onClick={onHistory}>History ↗</button><button className="text-button" onClick={onEditGoal}>Edit goal ↗</button></div></section>
-    <section className="dashboard-grid"><div className="card tracker-card"><div className="section-label">CALORIE TRACKER</div><div className="tracker-content"><div className="progress-ring" style={{ '--progress': `${progress * 3.6}deg` }}><div><strong>{total.toLocaleString()}</strong><span>of {goal.toLocaleString()}</span></div></div><div><p className="kicker">TODAY’S PROGRESS</p><h2>{status}</h2><p className="muted">Log meals and snacks as you go. Small entries add up.</p></div></div><div className="progress-bar"><span style={{ width: `${progress}%` }} /></div></div><div className="card summary-card"><div className="section-label">AT A GLANCE</div><div className="summary-row"><span>Daily goal</span><strong>{goal.toLocaleString()} <small>kcal</small></strong></div><div className="summary-row"><span>Logged</span><strong>{total.toLocaleString()} <small>kcal</small></strong></div><div className="summary-row"><span>Remaining</span><strong>{remaining.toLocaleString()} <small>kcal</small></strong></div></div></section>
-    <HydrationTracker water={water} waterGoal={waterGoal} setHydration={setHydration} onSetWaterGoal={onSetWaterGoal} />
-    <section className="entries-section"><div className="section-heading"><div><p className="kicker">TODAY’S LOG</p><h2>What have you eaten?</h2></div><div className="entry-buttons"><button className="scan-button small" onClick={() => { resetForm(); setShowScanner(!showScanner); }}>{showScanner ? 'Close scanner' : '▣ Scan barcode'}</button><button className="primary small" onClick={() => { setShowScanner(false); if (showForm) resetForm(); else setShowForm(true); }}>{showForm ? 'Cancel' : '+ Add calories'}</button></div></div>{showScanner && <BarcodeScanner onAdd={addScannedProduct} onClose={() => setShowScanner(false)} />}{showForm && <form className="add-form card" onSubmit={submitEntry}><input required value={name} onChange={(event) => setName(event.target.value)} placeholder="Meal or snack name" /><input required min="1" type="number" value={calories} onChange={(event) => setCalories(event.target.value)} placeholder="Calories" /><button className="primary small" type="submit">{editingId ? 'Save' : 'Add'}</button></form>}{entries.length === 0 ? <div className="empty-state"><span>＋</span><h3>No calories logged yet.</h3><p>Your first meal or snack will appear here.</p></div> : <div className="entries">{entries.map((entry) => <div className="entry" key={entry.id}><div className="entry-icon">{entry.source === 'barcode' ? '▣' : '✦'}</div><div className="entry-copy"><strong>{entry.name}</strong><span>{entry.time}{entry.source === 'barcode' ? ` · ${entry.servingGrams}g serving` : ''}</span></div><b>{entry.calories.toLocaleString()} <small>kcal</small></b><div className="entry-actions"><button onClick={() => editEntry(entry)} aria-label={`Edit ${entry.name}`}>Edit</button><button className="danger" onClick={() => deleteEntry(entry.id)} aria-label={`Delete ${entry.name}`}>Delete</button></div></div>)}</div>}</section>
+    <section className="dashboard-head"><div><p className="kicker">{date.toUpperCase()}</p><h1>{profile.name ? `${profile.name}, here’s` : 'Here’s'} your<br /><em>next move.</em></h1></div><div className="head-actions"><button className="text-button grocery-nav" onClick={onGroceries}>Groceries ↗</button><button className="text-button" onClick={onCalendar}>Calendar ↗</button><button className="text-button" onClick={onWeekly}>Weekly ↗</button><button className="text-button" onClick={onHistory}>History ↗</button><button className="text-button" onClick={onEditProfile}>Food reality ↗</button></div></section>
+    <section className="guidance-layout">
+      <article className="card now-card"><div className="now-card-top"><div><div className="section-label">WHAT SHOULD I EAT NOW?</div><span className="context-pill">{guidance.label}</span></div><span className="now-time">{guidance.timing}</span></div><h2>{guidance.title}</h2><p className="guidance-explanation">{guidance.explanation}</p><div className="reality-strip"><span>Built around</span><strong>{guidance.sourceLabel}</strong>{profile.dietaryNeeds.length > 0 && <strong>{profile.dietaryNeeds.map((need) => ({ dairyFree: 'dairy-free', glutenFree: 'gluten-free', nutFree: 'nut-free' }[need] || need)).join(' · ')}</strong>}<strong>{profile.budget === 'save' ? 'lower-cost picks' : `${profile.budget} budget`}</strong></div>
+        <div className="idea-grid">{guidance.ideas.length ? guidance.ideas.map((idea) => <article className="idea-card" key={idea.id}><span>{idea.portable ? 'PACKABLE' : 'MEAL WINDOW'}</span><h3>{idea.name}</h3><p>{idea.note}</p><div className="idea-actions"><button onClick={() => pickIdea(idea)}>Add to plan +</button>{guidance.alternates.length > 0 && <button className="swap-button" onClick={() => setSwapFor(swapFor === idea.id ? '' : idea.id)}>{swapFor === idea.id ? 'Close swaps' : 'See swaps'}</button>}</div></article>) : <article className="idea-card fallback"><span>FAMILIAR WORKS</span><h3>Choose a food you already tolerate well.</h3><p>Use a carb-forward snack before activity or a regular meal after it. Check ingredient labels for your dietary needs.</p></article>}</div>
+        {swapFor && <div className="swap-tray"><div><span>SWAP IT</span><strong>Same moment, different food</strong></div>{guidance.alternates.slice(0, 4).map((idea) => <button key={idea.id} onClick={() => { pickIdea(idea); setSwapFor(''); }}><span>{idea.name}</span><small>{idea.portable ? 'Packable' : 'Meal option'} →</small></button>)}</div>}
+        <p className="guidance-disclaimer">General fueling education, not a calorie target or medical plan. Check labels and follow guidance from your qualified care team.</p>
+      </article>
+      <aside className="card day-plan-card"><div className="section-label">TODAY’S HANDOFFS</div>{timeline.length ? <div className="mini-timeline">{timeline.map((event) => <div className={event.type} key={event.id}><span>{formatClock(event.startTime)}</span><i /><div><strong>{event.title}</strong><small>{event.type === 'school' ? `Lunch ${formatClock(schoolSchedule.lunchStartTime)}` : `${event.type}${event.location === 'away' ? ' · away' : ''}`}</small></div></div>)}</div> : <div className="timeline-empty"><span>＋</span><h3>Add today’s schedule.</h3><p>Nourally gets more useful when it knows when school and training happen.</p><button className="primary small" onClick={onCalendar}>Open calendar <span>→</span></button></div>}<div className="prep-callout"><span>{guidance.travelMode ? 'PACK BEFORE YOU GO' : 'MAKE THE NEXT STEP EASY'}</span><p>{guidance.travelMode ? 'Choose shelf-stable options, pack water, and avoid relying on an unfamiliar away venue.' : profile.familyPrep ? 'If someone at home can help, share what needs packing before the busy part of the day.' : 'Set aside the next snack or meal before the busy part of the day.'}</p></div></aside>
+    </section>
+    <section className="planning-layout">
+      <PrepChecklist title="TODAY’S PACK + PREP LIST" dateLabel="Today" items={todayPlan} empty="Choose a food above and Nourally will build the packing steps." onToggle={(id) => togglePlanTask(todayKey, id)} onRemove={(id) => removePlanTask(todayKey, id)} />
+      <article className="card tomorrow-card"><div className="section-label">PREPARE TONIGHT</div>{earlyTomorrow ? <><div className="tomorrow-event"><span>{formatClock(earlyTomorrow.startTime)} tomorrow</span><h2>{earlyTomorrow.title}</h2><p>{earlyTomorrow.location === 'away' || earlyTomorrow.location === 'travel' ? `Early travel day · ${earlyTomorrow.travelMinutes || 0} min travel` : 'Early activity · make the morning easier tonight'}</p></div>{tomorrowPlan.length === 0 && <button className="primary small" onClick={() => addPlanTasks(tomorrowKey, tomorrowPrepTasks(earlyTomorrow))}>Build tomorrow’s list <span>→</span></button>}<PrepChecklist compact title="TOMORROW’S CHECKLIST" dateLabel="Tomorrow" items={tomorrowPlan} empty="Build the list to set out food, water, and gear." onToggle={(id) => togglePlanTask(tomorrowKey, id)} onRemove={(id) => removePlanTask(tomorrowKey, id)} /></> : <div className="tomorrow-empty"><span>✓</span><h2>No early event tomorrow.</h2><p>If you add one before 10:00 AM, Nourally will offer a prepare-tonight checklist here.</p></div>}</article>
+    </section>
+    <section className="card reminder-card"><div><div className="section-label">OPTIONAL REMINDERS</div><h2>Get a nudge before practice or a game.</h2><p>Browser notifications work while Nourally is open. Your schedule stays on this device.</p>{reminderStatus && <span className="reminder-status">{reminderStatus}</span>}</div><div className="reminder-controls">{reminderSettings.enabled ? <button className="reminder-toggle on" onClick={() => setReminderSettings((settings) => ({ ...settings, enabled: false }))}><span /> On</button> : <button className="reminder-toggle" onClick={enableReminders}><span /> Turn on</button>}<label>Remind me<select value={reminderSettings.leadMinutes} onChange={(event) => setReminderSettings((settings) => ({ ...settings, leadMinutes: Number(event.target.value) }))}><option value="30">30 min before</option><option value="60">60 min before</option><option value="90">90 min before</option></select></label><label className="check-row reminder-check"><input type="checkbox" checked={reminderSettings.eveningPrep} onChange={(event) => setReminderSettings((settings) => ({ ...settings, eveningPrep: event.target.checked }))} /><span>Evening reminder for early events</span></label></div></section>
+    <HydrationTracker water={water} setHydration={setHydration} guidance={guidance} />
+    <section className="entries-section"><div className="section-heading"><div><p className="kicker">TODAY’S CHECK-INS</p><h2>Food logged today.</h2></div><div className="entry-buttons"><button className="scan-button small" onClick={() => { resetForm(); setShowScanner(!showScanner); }}>{showScanner ? 'Close scanner' : '▣ Barcode helper'}</button><button className="primary small" onClick={() => { setShowScanner(false); if (showForm) resetForm(); else setShowForm(true); }}>{showForm ? 'Cancel' : '+ Food check-in'}</button></div></div><p className="log-intro">Logging is for reflection, not judgment. Calories are optional and only shown when you enter them or scan a label.</p>{showScanner && <BarcodeScanner onAdd={addScannedProduct} onClose={() => setShowScanner(false)} />}{showForm && <form className="add-form card" onSubmit={submitEntry}><input required value={name} onChange={(event) => setName(event.target.value)} placeholder="Meal or snack" /><input min="1" type="number" value={calories} onChange={(event) => setCalories(event.target.value)} placeholder="Calories (optional)" /><button className="primary small" type="submit">{editingId ? 'Save' : 'Check in'}</button></form>}{entries.length === 0 ? <div className="empty-state"><span>＋</span><h3>No food check-ins yet.</h3><p>Your first meal or snack will appear here.</p></div> : <div className="entries">{entries.map((entry) => <div className="entry" key={entry.id}><div className="entry-icon">{entry.source === 'barcode' ? '▣' : entry.source === 'guidance' ? '↗' : '✦'}</div><div className="entry-copy"><strong>{entry.name}</strong><span>{entry.time}{entry.source === 'barcode' ? ` · ${entry.servingGrams}g label serving` : entry.source === 'guidance' ? ' · planned from guidance' : ''}</span></div>{entry.calories > 0 && <b>{entry.calories.toLocaleString()} <small>kcal</small></b>}<div className="entry-actions"><button onClick={() => editEntry(entry)} aria-label={`Edit ${entry.name}`}>Edit</button><button className="danger" onClick={() => deleteEntry(entry.id)} aria-label={`Delete ${entry.name}`}>Delete</button></div></div>)}</div>}</section>
   </Shell>;
+}
+
+function PrepChecklist({ title, dateLabel, items, empty, onToggle, onRemove, compact = false }) {
+  const completed = items.filter((item) => item.done).length;
+  return <article className={`card prep-checklist${compact ? ' compact' : ''}`}><div className="checklist-head"><div><div className="section-label">{title}</div><h2>{dateLabel} <small>{items.length ? `${completed}/${items.length} ready` : 'nothing added yet'}</small></h2></div>{items.length > 0 && <span className="checklist-count">{Math.round((completed / items.length) * 100)}%</span>}</div>{items.length ? <div className="checklist-items">{items.map((item) => <div className={item.done ? 'done' : ''} key={item.id}><button className="task-check" onClick={() => onToggle(item.id)} aria-label={`${item.done ? 'Mark incomplete' : 'Mark complete'}: ${item.label}`}>{item.done ? '✓' : ''}</button><span><i>{item.kind}</i>{item.label}</span><button className="task-remove" onClick={() => onRemove(item.id)} aria-label={`Remove ${item.label}`}>×</button></div>)}</div> : <p className="checklist-empty">{empty}</p>}</article>;
+}
+
+function groceryFitsProfile(item, profile) {
+  const needs = profile.dietaryNeeds || [];
+  return !(
+    (needs.includes('vegan') && !item.vegan) ||
+    (needs.includes('vegetarian') && !item.vegetarian) ||
+    (needs.includes('dairyFree') && !item.dairyFree) ||
+    (needs.includes('glutenFree') && !item.glutenFree) ||
+    (needs.includes('nutFree') && !item.nutFree)
+  );
+}
+
+function GroceryHub({ groceryState, setGroceryState, profile, setProfile, todayKey, onBack }) {
+  const [pantryName, setPantryName] = useState('');
+  const [listName, setListName] = useState('');
+  const [listPrice, setListPrice] = useState('');
+  const listItems = groceryState.items.filter((item) => item.status === 'list');
+  const cartItems = groceryState.items.filter((item) => item.status === 'cart');
+  const listEstimate = listItems.reduce((sum, item) => sum + Number(item.price || 0) * Number(item.quantity || 1), 0);
+  const cartEstimate = cartItems.reduce((sum, item) => sum + Number(item.price || 0) * Number(item.quantity || 1), 0);
+  const plannedEstimate = listEstimate + cartEstimate;
+  const budgetAmount = Math.max(Number(groceryState.budgetAmount || 0), 0);
+  const budgetRemaining = budgetAmount - plannedEstimate;
+  const budgetPercent = budgetAmount ? Math.min((plannedEstimate / budgetAmount) * 100, 100) : 0;
+  const selectedGoal = GROCERY_GOALS.find((goal) => goal.id === groceryState.goal) || GROCERY_GOALS[0];
+  const pantryKeys = new Set(groceryState.pantry.flatMap((item) => [item.catalogId, item.name.trim().toLowerCase()].filter(Boolean)));
+  const quickPantry = GROCERY_CATALOG.filter((item) => !pantryKeys.has(item.id) && !pantryKeys.has(item.name.toLowerCase())).slice(0, 8);
+
+  function updateState(patch) {
+    setGroceryState((current) => ({ ...current, ...patch }));
+  }
+
+  function setLastShopDaysAgo(days) {
+    updateState({ lastShopDate: getDateKey(addDays(new Date(`${todayKey}T12:00:00`), -days)) });
+  }
+
+  function lastShopLabel() {
+    if (!groceryState.lastShopDate) return 'Not set';
+    const today = new Date(`${todayKey}T12:00:00`);
+    const last = new Date(`${groceryState.lastShopDate}T12:00:00`);
+    const days = Math.max(Math.round((today - last) / 86400000), 0);
+    if (days === 0) return 'Today';
+    if (days === 1) return 'Yesterday';
+    return `${days} days ago`;
+  }
+
+  function addPantryItem(name, catalogId = '') {
+    const cleanName = name.trim();
+    if (!cleanName) return;
+    setGroceryState((current) => {
+      const existing = current.pantry.find((item) => item.name.toLowerCase() === cleanName.toLowerCase());
+      const pantry = existing
+        ? current.pantry.map((item) => item.id === existing.id ? { ...item, quantity: item.quantity + 1, updatedDate: todayKey } : item)
+        : [...current.pantry, { id: `pantry-${Date.now()}`, catalogId, name: cleanName, quantity: 1, updatedDate: todayKey }];
+      return { ...current, pantry };
+    });
+    setPantryName('');
+  }
+
+  function changePantryQuantity(id, amount) {
+    setGroceryState((current) => ({
+      ...current,
+      pantry: current.pantry
+        .map((item) => item.id === id ? { ...item, quantity: item.quantity + amount, updatedDate: todayKey } : item)
+        .filter((item) => item.quantity > 0),
+    }));
+  }
+
+  function generateList() {
+    setGroceryState((current) => {
+      const inPantry = new Set(current.pantry.flatMap((item) => [item.catalogId, item.name.toLowerCase()].filter(Boolean)));
+      const cart = current.items.filter((item) => item.status === 'cart');
+      const inCart = new Set(cart.flatMap((item) => [item.catalogId, item.name.toLowerCase()].filter(Boolean)));
+      const cartTotal = cart.reduce((sum, item) => sum + Number(item.price || 0) * Number(item.quantity || 1), 0);
+      const candidates = GROCERY_CATALOG
+        .filter((item) => item.goals.includes(current.goal) && groceryFitsProfile(item, profile))
+        .filter((item) => !inPantry.has(item.id) && !inPantry.has(item.name.toLowerCase()))
+        .filter((item) => !inCart.has(item.id) && !inCart.has(item.name.toLowerCase()))
+        .sort((a, b) => a.price - b.price);
+      const chosen = [];
+      let estimate = cartTotal;
+      for (const item of candidates) {
+        if (chosen.length >= 12) break;
+        if (budgetAmount > 0 && estimate + item.price > budgetAmount && chosen.length >= 3) continue;
+        chosen.push({ ...item, id: `grocery-${item.id}-${Date.now()}`, catalogId: item.id, quantity: 1, status: 'list' });
+        estimate += item.price;
+      }
+      return { ...current, items: [...cart, ...chosen] };
+    });
+  }
+
+  function addCustomListItem(event) {
+    event.preventDefault();
+    const cleanName = listName.trim();
+    if (!cleanName) return;
+    setGroceryState((current) => ({
+      ...current,
+      items: [...current.items, { id: `custom-${Date.now()}`, name: cleanName, category: 'Custom', price: Math.max(Number(listPrice || 0), 0), quantity: 1, status: 'list' }],
+    }));
+    setListName('');
+    setListPrice('');
+  }
+
+  function setItemStatus(id, status) {
+    setGroceryState((current) => ({ ...current, items: current.items.map((item) => item.id === id ? { ...item, status } : item) }));
+  }
+
+  function changeItemQuantity(id, amount) {
+    setGroceryState((current) => ({
+      ...current,
+      items: current.items.map((item) => item.id === id ? { ...item, quantity: Math.max(Number(item.quantity || 1) + amount, 1) } : item),
+    }));
+  }
+
+  function removeItem(id) {
+    setGroceryState((current) => ({ ...current, items: current.items.filter((item) => item.id !== id) }));
+  }
+
+  function recordBought(ids) {
+    setGroceryState((current) => {
+      const bought = current.items.filter((item) => ids.includes(item.id));
+      let pantry = [...current.pantry];
+      bought.forEach((item) => {
+        const existing = pantry.find((pantryItem) => pantryItem.catalogId === item.catalogId || pantryItem.name.toLowerCase() === item.name.toLowerCase());
+        pantry = existing
+          ? pantry.map((pantryItem) => pantryItem.id === existing.id ? { ...pantryItem, quantity: pantryItem.quantity + Number(item.quantity || 1), updatedDate: todayKey } : pantryItem)
+          : [...pantry, { id: `pantry-${item.id}`, catalogId: item.catalogId || '', name: item.name, quantity: Number(item.quantity || 1), updatedDate: todayKey }];
+      });
+      const purchases = bought.map((item) => ({ ...item, purchasedDate: todayKey, purchaseId: `purchase-${item.id}-${Date.now()}` }));
+      return {
+        ...current,
+        pantry,
+        items: current.items.filter((item) => !ids.includes(item.id)),
+        lastShopDate: todayKey,
+        purchases: [...purchases, ...current.purchases].slice(0, 30),
+      };
+    });
+  }
+
+  return <Shell eyebrow="NOURALLY / GROCERIES">
+    <section className="grocery-head"><div><p className="kicker">FOOD AT HOME + NEXT SHOP</p><h1>Plan the shop.<br /><em>Fuel the week.</em></h1></div><button className="text-button" onClick={onBack}>← Back to today</button></section>
+    <section className="grocery-summary">
+      <article className="card grocery-summary-card"><span>Weekly budget</span><strong>${budgetAmount.toFixed(0)}</strong><small>{profile.budget === 'save' ? 'saving-focused choices' : `${profile.budget} food budget`}</small></article>
+      <article className="card grocery-summary-card"><span>Last grocery trip</span><strong>{lastShopLabel()}</strong><small>{groceryState.pantry.length} pantry items tracked</small></article>
+      <article className="card grocery-summary-card"><span>Planned estimate</span><strong>${plannedEstimate.toFixed(2)}</strong><small className={budgetRemaining < 0 ? 'over-budget' : ''}>{budgetRemaining >= 0 ? `$${budgetRemaining.toFixed(2)} left` : `$${Math.abs(budgetRemaining).toFixed(2)} over`}</small></article>
+    </section>
+    <section className="card grocery-controls">
+      <div className="grocery-control"><div className="section-label">BUDGET</div><label>Amount for this shop<div className="money-input"><span>$</span><input type="number" min="0" step="5" value={groceryState.budgetAmount} onChange={(event) => updateState({ budgetAmount: event.target.value })} /></div></label><div className="budget-style">{[['save', 'Save'], ['standard', 'Everyday'], ['flexible', 'Flexible']].map(([value, label]) => <button className={profile.budget === value ? 'selected' : ''} onClick={() => setProfile({ ...profile, budget: value })} key={value}>{label}</button>)}</div></div>
+      <div className="grocery-control"><div className="section-label">LAST SHOP</div><strong className="control-value">{lastShopLabel()}</strong><div className="shop-recency"><button onClick={() => setLastShopDaysAgo(0)}>Today</button><button onClick={() => setLastShopDaysAgo(3)}>This week</button><button onClick={() => setLastShopDaysAgo(10)}>10+ days</button></div><label>Exact date<input type="date" max={todayKey} value={groceryState.lastShopDate} onChange={(event) => updateState({ lastShopDate: event.target.value })} /></label></div>
+      <div className="grocery-control"><div className="section-label">SHOPPING GOAL</div><label>Plan focus<select value={groceryState.goal} onChange={(event) => updateState({ goal: event.target.value })}>{GROCERY_GOALS.map((goal) => <option key={goal.id} value={goal.id}>{goal.label}</option>)}</select></label><p>{selectedGoal.description}</p><button className="primary small" onClick={generateList}>Generate grocery list <span>→</span></button></div>
+    </section>
+    <section className="grocery-workspace">
+      <article className="card pantry-card"><div className="workspace-head"><div><div className="section-label">AT HOME NOW</div><h2>Pantry check</h2></div><span>{groceryState.pantry.length} tracked</span></div><form className="quick-add-form" onSubmit={(event) => { event.preventDefault(); addPantryItem(pantryName); }}><input value={pantryName} onChange={(event) => setPantryName(event.target.value)} placeholder="Add food at home" /><button className="primary small" type="submit">Add</button></form><div className="quick-pantry"><span>Quick add</span>{quickPantry.map((item) => <button onClick={() => addPantryItem(item.name, item.id)} key={item.id}>+ {item.name}</button>)}</div>{groceryState.pantry.length ? <div className="pantry-list">{groceryState.pantry.map((item) => <div key={item.id}><div><strong>{item.name}</strong><small>Updated {item.updatedDate === todayKey ? 'today' : item.updatedDate}</small></div><div className="quantity-stepper"><button onClick={() => changePantryQuantity(item.id, -1)} aria-label={`Use one ${item.name}`}>−</button><span>{item.quantity}</span><button onClick={() => changePantryQuantity(item.id, 1)} aria-label={`Add one ${item.name}`}>+</button></div></div>)}</div> : <div className="grocery-empty"><span>＋</span><strong>Add a few foods already at home.</strong><p>Generated lists leave tracked pantry items out.</p></div>}</article>
+      <div className="grocery-list-column">
+        <article className="card generated-list-card"><div className="workspace-head"><div><div className="section-label">SMART GROCERY LIST</div><h2>{selectedGoal.label}</h2></div><span>{listItems.length} items · ${listEstimate.toFixed(2)}</span></div><div className="budget-meter"><span style={{ width: `${budgetPercent}%` }} /><i>${plannedEstimate.toFixed(2)} of ${budgetAmount.toFixed(2)}</i></div><form className="manual-list-form" onSubmit={addCustomListItem}><input value={listName} onChange={(event) => setListName(event.target.value)} placeholder="Add custom item" /><div className="money-input compact"><span>$</span><input type="number" min="0" step="0.25" value={listPrice} onChange={(event) => setListPrice(event.target.value)} placeholder="Est." /></div><button type="submit">Add</button></form>{listItems.length ? <div className="grocery-list">{listItems.map((item) => <GroceryItemRow key={item.id} item={item} onQuantity={changeItemQuantity} onPrimary={() => setItemStatus(item.id, 'cart')} primaryLabel="Add to cart" onBought={() => recordBought([item.id])} onRemove={() => removeItem(item.id)} />)}</div> : <div className="grocery-empty"><span>↗</span><strong>Your generated list lands here.</strong><p>It will use your goal, budget, dietary needs, and current pantry.</p><button onClick={generateList}>Generate now</button></div>}<p className="price-note">Prices are rough planning estimates and vary by store and location.</p></article>
+        <article className="card grocery-cart"><div className="workspace-head"><div><div className="section-label">IN-APP CART</div><h2>Ready to buy</h2></div><span>{cartItems.length} items · ${cartEstimate.toFixed(2)}</span></div>{cartItems.length ? <><div className="grocery-list cart-list">{cartItems.map((item) => <GroceryItemRow key={item.id} item={item} onQuantity={changeItemQuantity} onPrimary={() => setItemStatus(item.id, 'list')} primaryLabel="Move back" onBought={() => recordBought([item.id])} onRemove={() => removeItem(item.id)} />)}</div><button className="primary cart-checkout" onClick={() => recordBought(cartItems.map((item) => item.id))}>Mark cart as bought <span>✓</span></button></> : <p className="cart-empty">Move list items here as you shop. Marking them bought updates your pantry and shopping date.</p>}</article>
+      </div>
+    </section>
+    {groceryState.purchases.length > 0 && <section className="card recent-purchases"><div><div className="section-label">RECENTLY BOUGHT</div><h2>Purchase history</h2></div><div>{groceryState.purchases.slice(0, 8).map((item) => <span key={item.purchaseId}><strong>{item.name}</strong><small>{item.quantity} · {item.purchasedDate}</small></span>)}</div></section>}
+  </Shell>;
+}
+
+function GroceryItemRow({ item, onQuantity, onPrimary, primaryLabel, onBought, onRemove }) {
+  return <div className="grocery-item" key={item.id}><div className="grocery-item-copy"><span>{item.category}</span><strong>{item.name}</strong><small>${(Number(item.price || 0) * Number(item.quantity || 1)).toFixed(2)} estimated</small></div><div className="quantity-stepper"><button onClick={() => onQuantity(item.id, -1)} aria-label={`Decrease ${item.name}`}>−</button><span>{item.quantity || 1}</span><button onClick={() => onQuantity(item.id, 1)} aria-label={`Increase ${item.name}`}>+</button></div><div className="grocery-item-actions"><button onClick={onPrimary}>{primaryLabel}</button><button onClick={onBought}>Bought</button><button className="danger" onClick={onRemove}>×</button></div></div>;
 }
 
 function ScheduleCalendar({ events, setEvents, schoolSchedule, setSchoolSchedule, todayKey, onBack }) {
@@ -210,6 +747,11 @@ function ScheduleCalendar({ events, setEvents, schoolSchedule, setSchoolSchedule
   const [startTime, setStartTime] = useState('16:00');
   const [endTime, setEndTime] = useState('17:30');
   const [intensity, setIntensity] = useState('medium');
+  const [location, setLocation] = useState('home');
+  const [travelMinutes, setTravelMinutes] = useState('0');
+  const [repeatMode, setRepeatMode] = useState('once');
+  const [repeatWeekdays, setRepeatWeekdays] = useState([today.getDay()]);
+  const [repeatEndDate, setRepeatEndDate] = useState(getDateKey(addDays(today, 84)));
   const [formError, setFormError] = useState('');
   const [schoolName, setSchoolName] = useState(schoolSchedule?.name || 'School');
   const [schoolStartDate, setSchoolStartDate] = useState(schoolSchedule?.startDate || `${schoolYearStart}-08-15`);
@@ -253,17 +795,19 @@ function ScheduleCalendar({ events, setEvents, schoolSchedule, setSchoolSchedule
 
   function getEventsForDay(date) {
     const key = getDateKey(date);
-    const dayEvents = events.filter((event) => event.date === key);
+    const dayEvents = eventsForDate(events, key);
     const schoolEvent = getSchoolEvent(date);
     return (schoolEvent ? [...dayEvents, schoolEvent] : dayEvents).sort((a, b) => a.startTime.localeCompare(b.startTime));
   }
 
   function formatTime(value) {
+    if (!/^\d{2}:\d{2}$/.test(value || '')) return 'Time TBD';
     const [hours, minutes] = value.split(':').map(Number);
     return new Intl.DateTimeFormat('en-US', { hour: 'numeric', minute: '2-digit' }).format(new Date(2000, 0, 1, hours, minutes));
   }
 
   function formatDuration(start, end) {
+    if (!/^\d{2}:\d{2}$/.test(start || '') || !/^\d{2}:\d{2}$/.test(end || '')) return 'Duration not set';
     const [startHour, startMinute] = start.split(':').map(Number);
     const [endHour, endMinute] = end.split(':').map(Number);
     const minutes = endHour * 60 + endMinute - startHour * 60 - startMinute;
@@ -273,29 +817,35 @@ function ScheduleCalendar({ events, setEvents, schoolSchedule, setSchoolSchedule
     return remainder ? `${hours} hr ${remainder} min` : `${hours} hr`;
   }
 
-  function resetForm() {
+  function resetForm(resetKey = selectedKey) {
     setEditingId(null);
     setType('practice');
     setTitle('');
     setStartTime('16:00');
     setEndTime('17:30');
     setIntensity('medium');
+    setLocation('home');
+    setTravelMinutes('0');
+    setRepeatMode('once');
+    setRepeatWeekdays([new Date(`${resetKey}T12:00:00`).getDay()]);
+    setRepeatEndDate(getDateKey(addDays(new Date(`${resetKey}T12:00:00`), 84)));
     setFormError('');
     setShowForm(false);
   }
 
   function selectDay(date) {
-    setSelectedKey(getDateKey(date));
+    const key = getDateKey(date);
+    setSelectedKey(key);
     if (date.getMonth() !== monthCursor.getMonth() || date.getFullYear() !== monthCursor.getFullYear()) {
       setMonthCursor(new Date(date.getFullYear(), date.getMonth(), 1));
     }
-    resetForm();
+    resetForm(key);
   }
 
   function goToToday() {
     setSelectedKey(todayKey);
     setMonthCursor(new Date(today.getFullYear(), today.getMonth(), 1));
-    resetForm();
+    resetForm(todayKey);
   }
 
   function saveEvent(event) {
@@ -304,14 +854,36 @@ function ScheduleCalendar({ events, setEvents, schoolSchedule, setSchoolSchedule
       setFormError('End time must be later than start time.');
       return;
     }
+    if (!Number.isFinite(Number(travelMinutes)) || Number(travelMinutes) < 0 || Number(travelMinutes) > 360) {
+      setFormError('Travel time must be between 0 and 360 minutes.');
+      return;
+    }
+    if (repeatMode === 'weekly' && !repeatWeekdays.length) {
+      setFormError('Choose at least one repeat day.');
+      return;
+    }
+    if (repeatMode === 'weekly' && repeatEndDate < selectedKey) {
+      setFormError('The repeat end date must be on or after the first activity.');
+      return;
+    }
+    const existingEvent = events.find((item) => item.id === editingId);
     const scheduledEvent = {
       id: editingId || Date.now(),
-      date: selectedKey,
       type,
       title: title.trim() || type[0].toUpperCase() + type.slice(1),
       startTime,
       endTime,
       intensity,
+      location,
+      travelMinutes: Number(travelMinutes || 0),
+      ...(repeatMode === 'weekly' ? {
+        recurrence: {
+          startDate: editingId && existingEvent?.recurrence ? existingEvent.recurrence.startDate : selectedKey,
+          endDate: repeatEndDate,
+          weekdays: [...repeatWeekdays].sort(),
+          excludedDates: existingEvent?.recurrence?.excludedDates || [],
+        },
+      } : { date: selectedKey }),
     };
     setEvents((current) => editingId
       ? current.map((item) => item.id === editingId ? scheduledEvent : item)
@@ -326,6 +898,11 @@ function ScheduleCalendar({ events, setEvents, schoolSchedule, setSchoolSchedule
     setStartTime(event.startTime);
     setEndTime(event.endTime);
     setIntensity(event.intensity);
+    setLocation(event.location || 'home');
+    setTravelMinutes(String(event.travelMinutes || 0));
+    setRepeatMode(event.recurrence ? 'weekly' : 'once');
+    setRepeatWeekdays(event.recurrence?.weekdays || [new Date(`${event.date}T12:00:00`).getDay()]);
+    setRepeatEndDate(event.recurrence?.endDate || getDateKey(addDays(new Date(`${event.date}T12:00:00`), 84)));
     setFormError('');
     setShowForm(true);
   }
@@ -333,6 +910,20 @@ function ScheduleCalendar({ events, setEvents, schoolSchedule, setSchoolSchedule
   function deleteEvent(id) {
     setEvents((current) => current.filter((event) => event.id !== id));
     if (editingId === id) resetForm();
+  }
+
+  function skipRecurringOccurrence(event) {
+    setEvents((current) => current.map((item) => item.id === event.id ? {
+      ...item,
+      recurrence: {
+        ...item.recurrence,
+        excludedDates: [...new Set([...(item.recurrence?.excludedDates || []), selectedKey])],
+      },
+    } : item));
+  }
+
+  function toggleRepeatDay(day) {
+    setRepeatWeekdays((days) => days.includes(day) ? days.filter((item) => item !== day) : [...days, day]);
   }
 
   function saveSchoolSchedule(event) {
@@ -460,7 +1051,7 @@ function ScheduleCalendar({ events, setEvents, schoolSchedule, setSchoolSchedule
           const outsideMonth = date.getMonth() !== monthCursor.getMonth();
           return <button type="button" className={`calendar-day${outsideMonth ? ' outside' : ''}${key === todayKey ? ' today' : ''}${key === selectedKey ? ' selected' : ''}`} key={key} onClick={() => selectDay(date)} aria-label={new Intl.DateTimeFormat('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }).format(date)}>
             <span className="day-number">{date.getDate()}</span>
-            <span className="day-events">{dayEvents.slice(0, 3).map((event) => <span className={`calendar-event-chip ${event.type}`} key={event.id}><i />{event.title}</span>)}{dayEvents.length > 3 && <span className="more-events">+{dayEvents.length - 3} more</span>}</span>
+            <span className="day-events">{dayEvents.slice(0, 3).map((event) => <span className={`calendar-event-chip ${event.type}`} key={event.occurrenceId || event.id}><i />{event.title}</span>)}{dayEvents.length > 3 && <span className="more-events">+{dayEvents.length - 3} more</span>}</span>
           </button>;
         })}</div>
       </div>
@@ -471,10 +1062,14 @@ function ScheduleCalendar({ events, setEvents, schoolSchedule, setSchoolSchedule
           <label>Activity name<input value={title} onChange={(event) => setTitle(event.target.value)} placeholder={type[0].toUpperCase() + type.slice(1)} /></label>
           <div className="time-fields"><label>Starts<input required type="time" value={startTime} onChange={(event) => setStartTime(event.target.value)} /></label><label>Ends<input required type="time" value={endTime} onChange={(event) => setEndTime(event.target.value)} /></label></div>
           <fieldset><legend>Activity level</legend><div className="intensity-options">{['low', 'medium', 'high'].map((level) => <button type="button" className={intensity === level ? 'selected' : ''} onClick={() => setIntensity(level)} key={level}>{level}</button>)}</div></fieldset>
+          <fieldset><legend>Location</legend><div className="intensity-options"><button type="button" className={location === 'home' ? 'selected' : ''} onClick={() => setLocation('home')}>Home / local</button><button type="button" className={location === 'away' ? 'selected' : ''} onClick={() => setLocation('away')}>Away</button><button type="button" className={location === 'travel' ? 'selected' : ''} onClick={() => setLocation('travel')}>Travel day</button></div></fieldset>
+          <label>Travel time<input type="number" min="0" max="360" step="5" value={travelMinutes} onChange={(event) => setTravelMinutes(event.target.value)} /><small>Minutes each way. This helps Nourally favor packable choices.</small></label>
+          <fieldset><legend>Repeat</legend><div className="intensity-options"><button type="button" className={repeatMode === 'once' ? 'selected' : ''} onClick={() => setRepeatMode('once')}>One time</button><button type="button" className={repeatMode === 'weekly' ? 'selected' : ''} onClick={() => setRepeatMode('weekly')}>Every week</button></div></fieldset>
+          {repeatMode === 'weekly' && <div className="repeat-settings"><fieldset><legend>Repeat on</legend><div className="school-weekdays">{[['S', 0], ['M', 1], ['T', 2], ['W', 3], ['T', 4], ['F', 5], ['S', 6]].map(([label, day]) => <button type="button" className={repeatWeekdays.includes(day) ? 'selected' : ''} onClick={() => toggleRepeatDay(day)} key={day}>{label}</button>)}</div></fieldset><label>Repeat through<input required type="date" min={selectedKey} value={repeatEndDate} onChange={(event) => setRepeatEndDate(event.target.value)} /><small>You can skip an individual day later without deleting the series.</small></label></div>}
           {formError && <p className="schedule-error">{formError}</p>}
           <button className="primary" type="submit">{editingId ? 'Save changes' : 'Add to calendar'} <span>→</span></button>
         </form>}
-        {!showForm && <>{selectedSchoolCanceled && <div className="school-canceled"><span>School canceled for this day.</span><button onClick={() => restoreSchoolDay(selectedKey)}>Restore</button></div>}{selectedEvents.length ? <div className="agenda-events">{selectedEvents.map((event) => <article className={`agenda-event ${event.type}`} key={event.id}><div className="event-time"><strong>{formatTime(event.startTime)}</strong><span>{formatTime(event.endTime)}</span></div><div className="event-details"><span>{event.type}{event.recurring ? ' · recurring school day' : ` · ${event.intensity} activity`}</span><h3>{event.title}</h3><p>{formatDuration(event.startTime, event.endTime)}</p></div><div className="event-actions">{event.recurring ? <><button onClick={openSchoolForm}>Edit schedule</button><button className="danger" onClick={() => cancelSchoolDay(selectedKey)} aria-label={`Cancel school on ${selectedKey}`}>Cancel this day</button></> : <><button onClick={() => editEvent(event)} aria-label={`Edit ${event.title}`}>Edit</button><button className="danger" onClick={() => deleteEvent(event.id)} aria-label={`Delete ${event.title}`}>Delete</button></>}</div></article>)}</div> : !selectedSchoolCanceled && <div className="agenda-empty"><span>＋</span><h3>Nothing scheduled.</h3><p>Add a workout, practice, or game—or import your school year.</p></div>}</>}
+        {!showForm && <>{selectedSchoolCanceled && <div className="school-canceled"><span>School canceled for this day.</span><button onClick={() => restoreSchoolDay(selectedKey)}>Restore</button></div>}{selectedEvents.length ? <div className="agenda-events">{selectedEvents.map((event) => <article className={`agenda-event ${event.type}`} key={event.occurrenceId || event.id}><div className="event-time"><strong>{formatTime(event.startTime)}</strong><span>{formatTime(event.endTime)}</span></div><div className="event-details"><span>{event.type}{event.recurring ? ' · recurring school day' : event.recurringSeries ? ' · weekly series' : ` · ${event.intensity} activity`}</span><h3>{event.title}</h3><p>{formatDuration(event.startTime, event.endTime)}{!event.recurring && event.location ? ` · ${event.location === 'home' ? 'local' : event.location}${event.travelMinutes ? ` · ${event.travelMinutes} min travel` : ''}` : ''}</p></div><div className="event-actions">{event.recurring ? <><button onClick={openSchoolForm}>Edit schedule</button><button className="danger" onClick={() => cancelSchoolDay(selectedKey)} aria-label={`Cancel school on ${selectedKey}`}>Cancel this day</button></> : event.recurringSeries ? <><button onClick={() => editEvent(event)} aria-label={`Edit ${event.title} series`}>Edit series</button><button onClick={() => skipRecurringOccurrence(event)} aria-label={`Skip ${event.title} on ${selectedKey}`}>Skip this day</button><button className="danger" onClick={() => deleteEvent(event.id)} aria-label={`Delete ${event.title} series`}>Delete series</button></> : <><button onClick={() => editEvent(event)} aria-label={`Edit ${event.title}`}>Edit</button><button className="danger" onClick={() => deleteEvent(event.id)} aria-label={`Delete ${event.title}`}>Delete</button></>}</div></article>)}</div> : !selectedSchoolCanceled && <div className="agenda-empty"><span>＋</span><h3>Nothing scheduled.</h3><p>Add a workout, practice, or game—or import your school year.</p></div>}</>}
       </aside>
     </section>
   </Shell>;
@@ -637,46 +1232,31 @@ function BarcodeScanner({ onAdd, onClose }) {
   return <section className="card scanner-card"><div className="scanner-head"><div><div className="section-label">BARCODE MEAL ENTRY</div><h3>Scan a packaged food</h3></div><button className="scanner-close" onClick={() => { stopCamera(); onClose(); }} aria-label="Close barcode scanner">×</button></div><div className="scanner-grid"><div><div className={`camera-frame${cameraActive || capturedImage ? ' active' : ''}`}><video ref={videoRef} muted playsInline />{capturedImage && <img className="captured-frame" src={capturedImage} alt="Captured barcode frame" />}<div className="scan-guide"><span /><p>{cameraActive ? 'Keep the bars level and fill the frame' : capturedImage ? 'Photo captured' : 'Camera preview'}</p></div></div><div className="scanner-camera-actions"><button className="camera-button" onClick={cameraActive ? stopCamera : startCamera}>{cameraActive ? 'Stop camera' : 'Use camera'}</button><button className="capture-button" onClick={capturePhoto} disabled={!cameraActive || loading}>{loading ? 'Scanning…' : 'Take photo'}</button></div><p className="scanner-note">Start the camera, center the entire barcode inside the guide, then take a photo. You can also enter the printed number.</p></div><div className="scanner-lookup"><form onSubmit={(event) => { event.preventDefault(); lookupBarcode(barcode); }}><label>Barcode number<input inputMode="numeric" pattern="[0-9]*" value={barcode} onChange={(event) => setBarcode(event.target.value.replace(/\D/g, ''))} placeholder="Enter 8–14 digits" /></label><button className="primary small" type="submit" disabled={loading}>{loading ? 'Scanning…' : 'Look up product'}</button></form>{error && <div className="scanner-error">{error}</div>}{product && <div className="product-result">{product.image ? <img src={product.image} alt="" /> : <div className="product-placeholder">▣</div>}<div className="product-details"><span>{product.brand || 'Packaged food'}</span><h3>{product.name}</h3><p>{product.caloriesPer100g.toLocaleString()} kcal per 100g{product.servingSize ? ` · Label serving: ${product.servingSize}` : ''}</p><label>Serving amount<div className="serving-input"><input type="number" min="1" max="2000" value={servingGrams} onChange={(event) => setServingGrams(event.target.value)} /><span>grams</span></div></label><div className="product-calories"><span>Calories to add</span><strong>{calculatedCalories.toLocaleString()} kcal</strong></div><button className="primary" disabled={!calculatedCalories} onClick={() => onAdd({ name: product.brand ? `${product.name} — ${product.brand}` : product.name, calories: calculatedCalories, barcode: product.barcode, servingGrams: Number(servingGrams) })}>Add to today <span>→</span></button></div></div>}</div></div><p className="data-disclaimer">Product and nutrition data are provided by the Open Food Facts community and may be incomplete. Check the package label before logging.</p></section>;
 }
 
-function HydrationTracker({ water, waterGoal, setHydration, onSetWaterGoal }) {
-  const [editingGoal, setEditingGoal] = useState(false);
-  const [goalInput, setGoalInput] = useState(String(waterGoal));
-  const progress = Math.min((water / waterGoal) * 100, 100);
-  const remaining = Math.max(waterGoal - water, 0);
-
+function HydrationTracker({ water, setHydration, guidance }) {
   function addWater(amount) {
     setHydration((hydration) => ({ ...hydration, water: Math.max((hydration.water || 0) + amount, 0) }));
   }
 
-  function saveWaterGoal(event) {
-    event.preventDefault();
-    const nextGoal = Number(goalInput);
-    if (nextGoal < 16 || nextGoal > 200) return;
-    onSetWaterGoal(nextGoal);
-    setEditingGoal(false);
-  }
-
-  return <section className="card hydration-card"><div className="hydration-copy"><div className="section-label">HYDRATION</div><div className="water-title"><div className="water-icon">◒</div><div><h2>{water.toLocaleString()} <small>of {waterGoal.toLocaleString()} oz</small></h2><p>{remaining === 0 ? 'Hydration goal reached.' : `${remaining.toLocaleString()} oz left today.`}</p></div></div><div className="water-progress"><span style={{ width: `${progress}%` }} /></div></div><div className="hydration-actions"><div className="water-quick-add">{[8, 12, 16, 24].map((amount) => <button key={amount} onClick={() => addWater(amount)}>+{amount} oz</button>)}</div><div className="water-secondary"><button onClick={() => addWater(-8)} disabled={water === 0}>−8 oz</button><button onClick={() => { setGoalInput(String(waterGoal)); setEditingGoal(!editingGoal); }}>{editingGoal ? 'Cancel' : 'Edit goal'}</button></div>{editingGoal && <form className="water-goal-form" onSubmit={saveWaterGoal}><input aria-label="Daily water goal in ounces" type="number" min="16" max="200" step="4" value={goalInput} onChange={(event) => setGoalInput(event.target.value)} /><button className="primary small" type="submit">Save goal</button></form>}</div></section>;
+  return <section className="card hydration-card"><div className="hydration-copy"><div className="section-label">HYDRATION CHECK-IN</div><div className="water-title"><div className="water-icon">◒</div><div><h2>{water.toLocaleString()} <small>oz logged today</small></h2><p>{guidance.event ? `Bring fluids for ${guidance.event.title}. Sip regularly and follow your team or clinician’s plan.` : 'Keep water available and drink regularly through the day.'}</p></div></div></div><div className="hydration-actions"><div className="water-quick-add">{[8, 12, 16, 24].map((amount) => <button key={amount} onClick={() => addWater(amount)}>+{amount} oz</button>)}</div><div className="water-secondary"><button onClick={() => addWater(-8)} disabled={water === 0}>Undo 8 oz</button><span>No prescribed target</span></div></div></section>;
 }
 
-function WeeklyProgress({ dailyLogs, todayKey, fallbackGoal, fallbackWaterGoal, onBack }) {
+function WeeklyProgress({ dailyLogs, todayKey, onBack }) {
   const [weekOffset, setWeekOffset] = useState(0);
   const today = new Date(`${todayKey}T12:00:00`);
   const weekStart = addDays(today, -6 + weekOffset * 7);
   const days = Array.from({ length: 7 }, (_, index) => {
     const date = addDays(weekStart, index);
     const key = getDateKey(date);
-    const log = dailyLogs[key] || { goal: fallbackGoal, entries: [], water: 0, waterGoal: fallbackWaterGoal };
-    const total = log.entries.reduce((sum, entry) => sum + entry.calories, 0);
-    return { date, key, total, goal: log.goal || fallbackGoal, hasEntries: log.entries.length > 0, water: log.water || 0, waterGoal: log.waterGoal || fallbackWaterGoal };
+    const log = dailyLogs[key] || { entries: [], water: 0 };
+    return { date, key, checkIns: log.entries.length, hasEntries: log.entries.length > 0, water: log.water || 0 };
   });
-  const weeklyTotal = days.reduce((sum, day) => sum + day.total, 0);
+  const weeklyCheckIns = days.reduce((sum, day) => sum + day.checkIns, 0);
   const weeklyWater = days.reduce((sum, day) => sum + day.water, 0);
-  const average = Math.round(weeklyTotal / 7);
-  const waterAverage = Math.round(weeklyWater / 7);
-  const goalsReached = days.filter((day) => day.total >= day.goal).length;
-  const waterGoalsReached = days.filter((day) => day.water >= day.waterGoal).length;
   const loggedDays = days.filter((day) => day.hasEntries).length;
+  const hydrationDays = days.filter((day) => day.water > 0).length;
   const range = `${new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric' }).format(days[0].date)} – ${new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).format(days[6].date)}`;
+  const maxCheckIns = Math.max(...days.map((item) => item.checkIns), 4);
+  const maxWater = Math.max(...days.map((item) => item.water), 64);
 
   let streak = 0;
   let streakDate = new Date(today);
@@ -687,31 +1267,24 @@ function WeeklyProgress({ dailyLogs, todayKey, fallbackGoal, fallbackWaterGoal, 
   }
 
   return <Shell eyebrow="NOURALLY / WEEKLY PROGRESS">
-    <section className="dashboard-head weekly-head"><div><p className="kicker">YOUR SEVEN-DAY VIEW</p><h1>Progress you<br /><em>can build on.</em></h1></div><button className="text-button" onClick={onBack}>← Back to today</button></section>
+    <section className="dashboard-head weekly-head"><div><p className="kicker">YOUR SEVEN-DAY VIEW</p><h1>Patterns, not<br /><em>perfect numbers.</em></h1></div><button className="text-button" onClick={onBack}>← Back to today</button></section>
     <section className="week-toolbar"><button className="week-arrow" onClick={() => setWeekOffset((offset) => offset - 1)} aria-label="Previous seven days">←</button><div><strong>{weekOffset === 0 ? 'Last 7 days' : range}</strong><span>{range}</span></div><button className="week-arrow" disabled={weekOffset === 0} onClick={() => setWeekOffset((offset) => Math.min(offset + 1, 0))} aria-label="Next seven days">→</button></section>
-    <section className="weekly-stats"><article className="card weekly-stat"><span>Calorie average</span><strong>{average.toLocaleString()}</strong><small>kcal</small></article><article className="card weekly-stat"><span>Calorie goals</span><strong>{goalsReached}<i>/7</i></strong><small>days</small></article><article className="card weekly-stat"><span>Water average</span><strong>{waterAverage}</strong><small>oz/day</small></article><article className="card weekly-stat"><span>Hydration goals</span><strong>{waterGoalsReached}<i>/7</i></strong><small>days</small></article><article className="card weekly-stat"><span>Logging streak</span><strong>{streak}</strong><small>{streak === 1 ? 'day' : 'days'}</small></article><article className="card weekly-stat"><span>Days logged</span><strong>{loggedDays}</strong><small>last 7 days</small></article></section>
-    <section className="card weekly-chart-card"><div className="chart-heading"><div><div className="section-label">CALORIES BY DAY</div><h2>{weeklyTotal.toLocaleString()} <small>kcal over 7 days</small></h2></div><div className="chart-key"><span><i className="key-fill" /> Logged</span><span><i className="key-line" /> Goal</span></div></div><div className="weekly-chart">{days.map((day) => {
-      const percentage = Math.min((day.total / day.goal) * 100, 100);
-      return <div className={`chart-day${day.key === todayKey ? ' today' : ''}`} key={day.key}><div className="bar-value">{day.total ? day.total.toLocaleString() : '—'}</div><div className="bar-track"><span className={day.total >= day.goal ? 'met' : ''} style={{ height: `${percentage}%` }} /><i /></div><strong>{new Intl.DateTimeFormat('en-US', { weekday: 'short' }).format(day.date)}</strong><small>{day.date.getDate()}</small></div>;
-    })}</div>{weeklyTotal === 0 && <p className="chart-empty">Log calories during the week to see your progress take shape here.</p>}</section>
-    <section className="card weekly-water-card"><div className="chart-heading"><div><div className="section-label">HYDRATION BY DAY</div><h2>{weeklyWater.toLocaleString()} <small>oz over 7 days</small></h2></div></div><div className="water-week">{days.map((day) => {
-      const waterProgress = Math.min((day.water / day.waterGoal) * 100, 100);
-      return <div className={`water-day${day.key === todayKey ? ' today' : ''}`} key={day.key}><div className="water-day-label"><strong>{new Intl.DateTimeFormat('en-US', { weekday: 'short' }).format(day.date)}</strong><span>{day.water} / {day.waterGoal} oz</span></div><div><span className={day.water >= day.waterGoal ? 'met' : ''} style={{ width: `${waterProgress}%` }} /></div></div>;
-    })}</div></section>
+    <section className="weekly-stats"><article className="card weekly-stat"><span>Food check-ins</span><strong>{weeklyCheckIns}</strong><small>this period</small></article><article className="card weekly-stat"><span>Days reflected</span><strong>{loggedDays}<i>/7</i></strong><small>days</small></article><article className="card weekly-stat"><span>Hydration check-ins</span><strong>{hydrationDays}<i>/7</i></strong><small>days</small></article><article className="card weekly-stat"><span>Logging streak</span><strong>{streak}</strong><small>{streak === 1 ? 'day' : 'days'}</small></article><article className="card weekly-stat"><span>Water logged</span><strong>{weeklyWater}</strong><small>oz total</small></article></section>
+    <section className="card weekly-chart-card"><div className="chart-heading"><div><div className="section-label">FOOD CHECK-INS BY DAY</div><h2>{weeklyCheckIns} <small>moments captured over 7 days</small></h2></div><div className="chart-key"><span><i className="key-fill" /> Check-ins</span></div></div><div className="weekly-chart">{days.map((day) => <div className={`chart-day${day.key === todayKey ? ' today' : ''}`} key={day.key}><div className="bar-value">{day.checkIns || '—'}</div><div className="bar-track"><span style={{ height: `${Math.min((day.checkIns / maxCheckIns) * 100, 100)}%` }} /></div><strong>{new Intl.DateTimeFormat('en-US', { weekday: 'short' }).format(day.date)}</strong><small>{day.date.getDate()}</small></div>)}</div>{weeklyCheckIns === 0 && <p className="chart-empty">Use food check-ins to notice where busy days make fueling harder.</p>}</section>
+    <section className="card weekly-water-card"><div className="chart-heading"><div><div className="section-label">HYDRATION BY DAY</div><h2>{weeklyWater.toLocaleString()} <small>oz logged over 7 days</small></h2></div></div><div className="water-week">{days.map((day) => <div className={`water-day${day.key === todayKey ? ' today' : ''}`} key={day.key}><div className="water-day-label"><strong>{new Intl.DateTimeFormat('en-US', { weekday: 'short' }).format(day.date)}</strong><span>{day.water} oz</span></div><div><span style={{ width: `${Math.min((day.water / maxWater) * 100, 100)}%` }} /></div></div>)}</div></section>
+    <p className="weekly-safety">These summaries show what you logged; they do not grade intake or set a medical target.</p>
   </Shell>;
 }
 
-function History({ dailyLogs, todayKey, fallbackWaterGoal, onBack }) {
+function History({ dailyLogs, todayKey, onBack }) {
   const dates = Object.keys(dailyLogs).filter((date) => date !== todayKey).sort().reverse();
   return <Shell eyebrow="NOURALLY / HISTORY">
-    <section className="dashboard-head history-head"><div><p className="kicker">YOUR DAILY RECORD</p><h1>Look back.<br /><em>Keep moving.</em></h1></div><button className="text-button" onClick={onBack}>← Back to today</button></section>
-    {dates.length === 0 ? <section className="card history-empty"><div className="section-label">PREVIOUS DAYS</div><h2>Your history starts tomorrow.</h2><p className="muted">Today’s entries will stay saved on this device and appear here on the next calendar day.</p></section> : <section className="history-list">{dates.map((date) => {
+    <section className="dashboard-head history-head"><div><p className="kicker">YOUR DAILY RECORD</p><h1>Look back.<br /><em>Keep learning.</em></h1></div><button className="text-button" onClick={onBack}>← Back to today</button></section>
+    {dates.length === 0 ? <section className="card history-empty"><div className="section-label">PREVIOUS DAYS</div><h2>Your history starts tomorrow.</h2><p className="muted">Today’s check-ins stay on this device and appear here on the next calendar day.</p></section> : <section className="history-list">{dates.map((date) => {
       const log = dailyLogs[date];
-      const total = log.entries.reduce((sum, entry) => sum + entry.calories, 0);
       const water = log.water || 0;
-      const waterGoal = log.waterGoal || fallbackWaterGoal;
       const formattedDate = new Intl.DateTimeFormat('en-US', { weekday: 'long', month: 'long', day: 'numeric' }).format(new Date(`${date}T12:00:00`));
-      return <article className="card history-day" key={date}><div className="history-day-head"><div><p className="kicker">{formattedDate.toUpperCase()}</p><h2>{total.toLocaleString()} <small>of {(log.goal || 2400).toLocaleString()} kcal</small></h2></div><span className={total >= (log.goal || 2400) ? 'goal-badge reached' : 'goal-badge'}>{total >= (log.goal || 2400) ? 'Goal reached' : `${Math.max((log.goal || 2400) - total, 0).toLocaleString()} remaining`}</span></div><div className="history-water"><div><span>Water</span><strong>{water.toLocaleString()} of {waterGoal.toLocaleString()} oz</strong></div><div><span className={water >= waterGoal ? 'met' : ''} style={{ width: `${Math.min((water / waterGoal) * 100, 100)}%` }} /></div></div><div className="history-entries">{log.entries.length ? log.entries.map((entry) => <div key={entry.id}><span>{entry.name}</span><strong>{entry.calories.toLocaleString()} kcal</strong></div>) : <p className="muted">No calories were logged.</p>}</div></article>;
+      return <article className="card history-day" key={date}><div className="history-day-head"><div><p className="kicker">{formattedDate.toUpperCase()}</p><h2>{log.entries.length} <small>{log.entries.length === 1 ? 'food check-in' : 'food check-ins'}</small></h2></div><span className="goal-badge reached">Day reflected</span></div><div className="history-water"><div><span>Water logged</span><strong>{water.toLocaleString()} oz</strong></div></div><div className="history-entries">{log.entries.length ? log.entries.map((entry) => <div key={entry.id}><span>{entry.name}</span><strong>{entry.calories > 0 ? `${entry.calories.toLocaleString()} kcal` : entry.time || 'Checked in'}</strong></div>) : <p className="muted">No food check-ins were logged.</p>}</div></article>;
     })}</section>}
   </Shell>;
 }
