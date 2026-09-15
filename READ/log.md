@@ -208,3 +208,65 @@ Removed the Familiar works fallback card from meal suggestions. 2026.09.04
 Converted Profile editing into a navigable main tab while preserving the first-run setup flow. 2026.09.04
 Removed the School, Next Sport, and Prep summary-card column from Today and expanded the next recommended action across the available width. 2026.09.04
 Added a consistent 16-pixel gap between the next recommended action and meal suggestions without changing responsive widths or breakpoints. 2026.09.04
+Added a normalized Nourally food-record adapter for USDA FoodData Central generic and branded search results. 2026.09.04
+Added a configurable USDA API connection with a development demo-key fallback and clear private-key guidance. 2026.09.04
+Added a resumable downloader and ignored storage location for the official April 2026 full FoodData Central CSV snapshot. 2026.09.04
+Added ingredient mappings that let every meal suggestion compare its ingredients with the user’s tracked food at home. 2026.09.04
+Replaced the standalone Groceries navigation destination with a unified Food workspace while preserving legacy grocery navigation. 2026.09.04
+Moved the detailed meal-suggestion and food-log experiences out of Today so they can live together in Food. 2026.09.04
+Kept Today focused on the next action, timeline, preparation, reminders, and hydration after the Food move. 2026.09.04
+Added a live USDA FoodData Central search with All, Generic, and Branded filters and nutrient previews. 2026.09.04
+Added direct USDA-result actions for food at home, groceries, and the current day’s food log. 2026.09.04
+Added Food overview readiness totals based on pantry-to-meal ingredient coverage. 2026.09.04
+Normalized USDA energy values to kilocalories and safely converted kilojoules when a kilocalorie value is unavailable. 2026.09.04
+Removed obsolete food-log props from the streamlined Today dashboard render. 2026.09.04
+Verified live USDA generic and branded searches, including correct kilocalorie normalization and branded serving labels. 2026.09.04
+Verified the finished Food workspace with a production build, whitespace check, USDA archive checksum, live-site response, and responsive browser flows. 2026.09.04
+Completed a final audit of the USDA connection files, archive documentation, and production-key guidance. 2026.09.06
+Verified the Food workspace with a successful production build, whitespace check, USDA archive checksum, and live local response. 2026.09.04
+Built the Food workspace with Overview, At home, Groceries, Meals, and Food log sub-tabs. 2026.09.04
+Added a connected Food overview showing pantry, grocery, meal-availability, and logging status. 2026.09.04
+Preserved USDA food identity and nutrient metadata when groceries are checked out into Food at Home. 2026.09.04
+Distinguished unknown store prices for USDA items from zero-dollar grocery estimates. 2026.09.04
+Added polished responsive styling for Food navigation, USDA search results, inventory, meal availability, and logging. 2026.09.04
+Made the downloaded USDA checksum portable and kept the downloader resumable for future refreshes. 2026.09.04
+Updated both product one-pagers and the comparative report for the connected Food workspace and live USDA integration. 2026.09.04
+Connected meal cards to live pantry availability, missing-ingredient grocery actions, and Today preparation tasks. 2026.09.04
+Moved manual food check-ins and Open Food Facts barcode fallback into a reusable Food log panel. 2026.09.04
+Connected USDA food records to pantry quantities, grocery-list items, and nutrition-aware food-log entries. 2026.09.04
+Added pantry-to-meal ingredient matching and one-click grocery additions for missing meal ingredients. 2026.09.04
+Connected Food meal planning back to Today’s existing preparation checklist. 2026.09.04
+Created an isolated browser audit fixture and captured functional, responsive, and provider-integration evidence without changing the user's existing app data. 2026.09.14
+Added browser audit helpers for local account boundaries, cross-tab persistence, malformed storage, timing rules, ingredient matching, and responsive schedule flows. 2026.09.14
+Wrote the detailed Nourally app audit in Markdown with 23 prioritized findings, reproduction steps, UI specifications, a connected-food data plan, and completed-test matrices. 2026.09.14
+Generated a 34-page PDF report with linked contents, source references, and real app screenshots using a reproducible report renderer. 2026.09.14
+Rendered and visually inspected all PDF pages and added a PDF verification helper and contact sheets for document quality assurance. 2026.09.14
+Closed the isolated audit browser and retained the running local development server while preserving all existing application source changes. 2026.09.14
+Moved the seven audit report and helper files into the project-root AUDIT folder. 2026.09.14
+Moved supporting screenshots, browser artifacts, and synthetic test storage into AUDIT/evidence. 2026.09.14
+Updated audit helper paths and report references to use the consolidated AUDIT folder. 2026.09.14
+Created the complete audit implementation checklist and preserved the pre-change source and configuration in AUDIT/implementation-baseline. 2026.09.14
+Extracted the existing food catalog and timing logic into domain modules without removing the original functionality. 2026.09.14
+Added versioned profile schemas, legacy migration backups, atomic IndexedDB transactions, cross-tab refresh, additive imports, and local profile export/deletion primitives. 2026.09.14
+Connected the app to isolated local profiles, explicit device-data controls, visible save errors, recovery UI, and hash-based navigation. 2026.09.14
+Replaced conflicting food matching with canonical ingredient relationships and added precise/approximate stock, explicit portions, immutable source snapshots, and unknown-price handling. 2026.09.14
+Implemented grocery previews that preserve existing list/cart items, strict estimated budgets, idempotent purchase recording, and purchase undo. 2026.09.14
+Built the local USDA snapshot index containing 2,013,644 searchable generic and branded records and verified SQLite integrity. 2026.09.14
+Added a validated, cached server-side food gateway with timeouts, request limits, local indexed search, details, and barcode fallback while removing browser API-key configuration. 2026.09.14
+Rebuilt contextual Food search, pantry, groceries, meal plans, food logging, explicit pantry deductions, and reversible removal controls without adding new photography. 2026.09.14
+Added lazy camera decoding and shared USDA/Open Food Facts food records, portions, source metadata, favorites, and recent foods. 2026.09.14
+Added active lunch and multi-session recovery handling, travel-departure context, actual-time notification text, reversible hydration entries, and actionable rest-day state. 2026.09.14
+Added skipped-sports restoration, series-delete confirmation, overlap warnings, mobile agenda mode, accessible weekday controls, and focused activity editing. 2026.09.14
+Added compact navigation and headings, contextual Food tabs, stronger contrast and targets, restrained surfaces, accessible dialogs, a Weekly data table, editable History, and an app favicon. 2026.09.14
+Kept reminder deduplication stable when the lead-time setting changes, while retaining a new reminder for a rescheduled start. 2026.09.14
+Routed Today’s completed-preparation action to the food log and missing-ingredient action to meals. 2026.09.14
+Made generated grocery reasons reference the relevant upcoming activity or the selected shopping goal. 2026.09.14
+Added regression tests for remaining-time reminder delivery, lead-time deduplication, rescheduling, grouped purchase undo, and grouped stock-deduction limits. 2026.09.14
+Documented local USDA index operation, refresh, server fallback, data boundaries, and local profile behavior. 2026.09.14
+Updated both product concept copies to describe the implemented Food workspace, local profiles, IndexedDB storage, and indexed USDA snapshot accurately. 2026.09.14
+Verified all ten main and Food routes at 320, 390, 768, 1024, and 1440 pixel widths with no horizontal page overflow or browser page errors. 2026.09.14
+Verified the built production server serves the app and indexed local USDA search with the correct dated snapshot. 2026.09.14
+Limited initial meal cards to six with an explicit Show more control for easier phone browsing. 2026.09.14
+Made mobile Food subsection navigation horizontally scrollable and keep the selected subsection visible. 2026.09.14
+Verified additive backup import, active-profile-only deletion, and a simulated IndexedDB quota failure without changing existing user data. 2026.09.14
+Completed the audit checklist for all app-controlled items and documented the remaining device, credential, and specialist checks separately. 2026.09.14

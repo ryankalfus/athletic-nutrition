@@ -42,14 +42,14 @@ For the MVP, the system does not independently prescribe a teen’s calorie need
 - Cafeteria, refrigerator, microwave, and classroom-eating access.
 - One-time or weekly practice, workout, and game scheduling with intensity, home/away status, travel time, series editing, and single-day exceptions.
 - School-day exceptions for holidays, closures, and absences.
-- A redesigned Today view separates the school block, next sports activity, and current preparation status while keeping one next action visually dominant.
+- Today keeps one next action visually dominant, then shows the day's timeline, preparation, hydration, and relevant tomorrow tasks.
 
 ### 2. “What Should I Eat Now?”
 
 - Guidance changes according to time before, during, or after the next activity.
 - Food examples filter by budget, dietary needs, location, available sources, and portability.
 - Away-game and longer-travel events favor packable options and preparation cues.
-- An expanded 24-option food library and quick substitutions provide more choices without bypassing the athlete’s budget, dietary, access, and timing filters.
+- A practical food-example library and quick substitutions provide choices filtered by the athlete’s budget, dietary, access, and timing settings.
 - Each suggestion explains why it fits and can generate a practical pack-and-prep checklist without being mistaken for food already eaten.
 
 ### 3. Pack, Prep, and Remind
@@ -58,12 +58,14 @@ For the MVP, the system does not independently prescribe a teen’s calorie need
 - Early activities tomorrow trigger a prepare-tonight card and one-tap checklist for breakfast, snacks, fluids, gear, and travel.
 - Optional browser notifications can remind the athlete 30, 60, or 90 minutes before an activity and in the evening before an early event while Nourally is open.
 
-### 4. Grocery Continuity
+### 4. Connected Food Workspace
 
-- A dedicated Groceries tab remembers the shopping budget, goal, last grocery date, pantry, active list, cart, and recent purchases on the device.
-- Quick pantry entry and quantity controls make it easy to record what is already at home.
-- Generated lists filter out pantry items, follow dietary needs, use the next seven days of practices, games, intensity, and travel, and apply rough prices to stay within budget when possible.
-- List items can move into an in-app cart or be marked bought, which updates the pantry and shopping history automatically.
+- A dedicated Food tab brings Overview, At Home, Groceries, Meals, and Food Log into one connected workspace.
+- An indexed April 2026 USDA FoodData Central snapshot searches Foundation, FNDDS, SR Legacy, and branded foods when the local index is present; the server gateway can use the live USDA API when it is not. A food record can be sent directly to home inventory, groceries, or the daily food log.
+- Quick food-at-home entry and quantity controls make it easy to record what is already available.
+- Generated lists account for tracked pantry items, dietary settings, upcoming practices and travel, and a per-shop budget. Prices in generated examples are rough estimates; added products can have unknown prices.
+- Meal suggestions compare their ingredients with food at home and can add missing ingredients to groceries or create the Today preparation checklist.
+- List items can move into an in-app cart or be marked bought, updating food-at-home inventory and shopping history while preserving the USDA food identity. Purchases and explicit pantry deductions can be undone.
 
 ### 5. Practical Reflection
 
@@ -84,14 +86,14 @@ The defensible product learning is not merely which foods to recommend. It is un
 - General education and practical examples, not diagnosis, treatment, weight-loss coaching, or independently generated calorie prescriptions.
 - No unnecessary collection of weight, body measurements, or medical history in the MVP.
 - Local-device storage in the current prototype, with clear disclosure.
-- A device-local account-entry prototype supports signed-out, create-account, and returning-user demonstrations without collecting or storing passwords; production authentication requires a server-backed identity system.
+- Separate local profiles, profile switching, export, and additive import work on this device. These are not authenticated accounts; no password or cloud sync is provided.
 
 ## Technology Stack
 
 | Area | MVP approach |
 |---|---|
 | Frontend | React, HTML, CSS, JavaScript, Vite |
-| Persistence | Local browser storage for the prototype; Firebase considered after privacy and consent requirements are defined |
+| Persistence | Versioned IndexedDB on this device with export, additive import, legacy migration, and non-destructive recovery |
 | Recommendation logic | Transparent deterministic timing and constraint rules |
-| Food data | Open Food Facts for optional barcode convenience; USDA FoodData Central may support future food search |
+| Food data | Local indexed April 2026 USDA snapshot (2,013,644 records) when available; server-side USDA API fallback; Open Food Facts for barcode lookup |
 | Future AI | Explanations and adaptation of approved options, not unrestricted medical or calorie prescriptions |

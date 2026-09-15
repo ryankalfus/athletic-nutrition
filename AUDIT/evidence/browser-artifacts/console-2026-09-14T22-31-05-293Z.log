@@ -1,0 +1,3 @@
+[     312ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://127.0.0.1:5173/node_modules/.vite/deps/react-dom_client.js?v=c6293aef:14514
+[    1753ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://127.0.0.1:5173/favicon.ico:0
+[  264868ms] [ERROR] Failed to load resource: the server responded with a status of 429 (Too Many Requests) @ https://api.nal.usda.gov/fdc/v1/foods/search?api_key=DEMO_KEY&query=different+food&pageSize=18&dataType=Branded:0

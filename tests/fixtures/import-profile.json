@@ -1,0 +1,44 @@
+{
+  "version": 2,
+  "revision": 0,
+  "defaultProfileId": "fixture-profile",
+  "profiles": {
+    "fixture-profile": {
+      "id": "fixture-profile",
+      "name": "Imported fixture",
+      "email": "",
+      "data": {
+        "step": "dashboard",
+        "profile": {
+          "name": "Imported fixture",
+          "budget": "standard",
+          "dietaryNeeds": [],
+          "foodSources": ["home"],
+          "familyPrep": false,
+          "restDays": []
+        },
+        "schedule": [],
+        "schoolSchedule": null,
+        "dailyLogs": {},
+        "dayPlans": {},
+        "mealPlans": [],
+        "favorites": [],
+        "recentFoods": [],
+        "operations": [],
+        "reminderSettings": {
+          "enabled": false,
+          "leadMinutes": 60,
+          "eveningPrep": true
+        },
+        "groceryState": {
+          "budgetAmount": 50,
+          "goal": "school-week",
+          "lastShopDate": "",
+          "pantry": [],
+          "items": [],
+          "purchases": []
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,328 @@
+- main [ref=e781]:
+  - generic [ref=e782]:
+    - generic [ref=e783]: ↗
+    - generic [ref=e784]: nourally
+  - generic [ref=e785]: NOURALLY / FOOD
+  - generic [ref=e786]:
+    - generic [ref=e787]:
+      - paragraph [ref=e788]: FOOD AT HOME + NEXT SHOP + TODAY
+      - heading [level=1] [ref=e789]:
+        - text: Know your food.
+        - emphasis [ref=e790]: Fuel what’s next.
+    - navigation "Nourally sections" [ref=e791]:
+      - button "Today" [ref=e792] [cursor=pointer]
+      - button "Food" [ref=e793] [cursor=pointer]
+      - button "Schedule" [ref=e794] [cursor=pointer]
+      - button "Weekly" [ref=e795] [cursor=pointer]
+      - button "History" [ref=e796] [cursor=pointer]
+      - button "Profile" [ref=e797] [cursor=pointer]
+  - navigation "Food workspace" [ref=e798]:
+    - button "Overview" [ref=e799] [cursor=pointer]
+    - button "At home 1" [ref=e908] [cursor=pointer]:
+      - text: At home
+      - generic [ref=e801]: "1"
+    - button "Groceries 4" [ref=e1026] [cursor=pointer]:
+      - text: Groceries
+      - generic [ref=e803]: "4"
+    - button "Meals" [ref=e804] [cursor=pointer]
+    - button "Food log 2" [ref=e1027] [cursor=pointer]:
+      - text: Food log
+      - generic [ref=e806]: "2"
+  - generic [ref=e807]:
+    - generic [ref=e808]:
+      - generic [ref=e809]:
+        - generic [ref=e810]: USDA FOODDATA CENTRAL
+        - heading "Search generic and branded food" [level=2] [ref=e811]
+        - paragraph [ref=e812]: Use one USDA result for food at home, groceries, or today’s log.
+      - link "Official USDA source ↗" [ref=e813] [cursor=pointer]:
+        - /url: https://fdc.nal.usda.gov/
+    - generic [ref=e814]:
+      - generic [ref=e815]:
+        - generic [ref=e816]: Food or brand
+        - textbox "Food or brand" [ref=e817]:
+          - /placeholder: Try banana, peanut butter, cereal, or a brand
+          - text: Cheerios
+      - generic "Food type" [ref=e818]:
+        - button "All foods" [ref=e819] [cursor=pointer]
+        - button "Generic" [ref=e820] [cursor=pointer]
+        - button "Branded" [ref=e821] [cursor=pointer]
+      - button "Search USDA →" [ref=e822] [cursor=pointer]:
+        - text: Search USDA
+        - generic [ref=e823]: →
+    - paragraph [ref=e824]:
+      - text: Connected with USDA’s development key. Add
+      - code [ref=e825]: VITE_FDC_API_KEY
+      - text: locally for a higher request limit.
+    - generic [ref=e1028]: Cheerios Cereal — General Mills added to groceries.
+    - generic [ref=e868]:
+      - strong [ref=e869]: 242 USDA matches
+      - generic [ref=e870]: Showing the most relevant 18
+    - generic [ref=e871]:
+      - article [ref=e1029]:
+        - generic [ref=e1030]:
+          - generic [ref=e1031]: Branded · General Mills
+          - heading "Cheerios Cereal" [level=3] [ref=e1032]
+          - paragraph [ref=e1033]: Processed Cereal Products
+          - generic [ref=e1034]:
+            - generic [ref=e1035]: 359 kcal
+            - generic [ref=e1036]: 74.4g carbs
+            - generic [ref=e1037]: 12.8g protein
+        - generic [ref=e1038]:
+          - button "At home" [ref=e1039] [cursor=pointer]
+          - button "Groceries" [ref=e1040] [cursor=pointer]
+          - button "Log 100g" [ref=e1041] [cursor=pointer]
+      - article [ref=e1042]:
+        - generic [ref=e1043]:
+          - generic [ref=e1044]: Branded · GENERAL MILLS SALES INC.
+          - heading "Cheerios Cereal" [level=3] [ref=e1045]
+          - paragraph [ref=e1046]: Processed Cereal Products
+          - generic [ref=e1047]:
+            - generic [ref=e1048]: 357 kcal
+            - generic [ref=e1049]: 75.0g carbs
+            - generic [ref=e1050]: 14.3g protein
+        - generic [ref=e1051]:
+          - button "At home" [ref=e1052] [cursor=pointer]
+          - button "Groceries" [ref=e1053] [cursor=pointer]
+          - button "Log 100g" [ref=e1054] [cursor=pointer]
+      - article [ref=e1055]:
+        - generic [ref=e1056]:
+          - generic [ref=e1057]: Branded · GENERAL MILLS SALES INC.
+          - heading "Cheerios Cereal" [level=3] [ref=e1058]
+          - paragraph [ref=e1059]: Processed Cereal Products
+          - generic [ref=e1060]:
+            - generic [ref=e1061]: 385 kcal
+            - generic [ref=e1062]: 73.1g carbs
+            - generic [ref=e1063]: 11.5g protein
+        - generic [ref=e1064]:
+          - button "At home" [ref=e1065] [cursor=pointer]
+          - button "Groceries" [ref=e1066] [cursor=pointer]
+          - button "Log 26g" [ref=e1067] [cursor=pointer]
+      - article [ref=e1068]:
+        - generic [ref=e1069]:
+          - generic [ref=e1070]: Branded · GENERAL MILLS SALES INC.
+          - heading "Frosted Cheerios Cereal" [level=3] [ref=e1071]
+          - paragraph [ref=e1072]: Processed Cereal Products
+          - generic [ref=e1073]:
+            - generic [ref=e1074]: 389 kcal
+            - generic [ref=e1075]: 83.3g carbs
+            - generic [ref=e1076]: 8.3g protein
+        - generic [ref=e1077]:
+          - button "At home" [ref=e1078] [cursor=pointer]
+          - button "Groceries" [ref=e1079] [cursor=pointer]
+          - button "Log 100g" [ref=e1080] [cursor=pointer]
+      - article [ref=e1081]:
+        - generic [ref=e1082]:
+          - generic [ref=e1083]: Branded · GENERAL MILLS SALES INC.
+          - heading "Blueberry Cheerios Cereal" [level=3] [ref=e1084]
+          - paragraph [ref=e1085]: Processed Cereal Products
+          - generic [ref=e1086]:
+            - generic [ref=e1087]: 407 kcal
+            - generic [ref=e1088]: 77.8g carbs
+            - generic [ref=e1089]: 7.4g protein
+        - generic [ref=e1090]:
+          - button "At home" [ref=e1091] [cursor=pointer]
+          - button "Groceries" [ref=e1092] [cursor=pointer]
+          - button "Log 150g" [ref=e1093] [cursor=pointer]
+      - article [ref=e1094]:
+        - generic [ref=e1095]:
+          - generic [ref=e1096]: Branded · GENERAL MILLS SALES INC.
+          - heading "Blueberry Cheerios Cereal" [level=3] [ref=e1097]
+          - paragraph [ref=e1098]: Processed Cereal Products
+          - generic [ref=e1099]:
+            - generic [ref=e1100]: 385 kcal
+            - generic [ref=e1101]: 80.0g carbs
+            - generic [ref=e1102]: 9.0g protein
+        - generic [ref=e1103]:
+          - button "At home" [ref=e1104] [cursor=pointer]
+          - button "Groceries" [ref=e1105] [cursor=pointer]
+          - button "Log 159g" [ref=e1106] [cursor=pointer]
+      - article [ref=e1107]:
+        - generic [ref=e1108]:
+          - generic [ref=e1109]: Branded · GENERAL MILLS SALES INC.
+          - heading "Blueberry Cheerios Cereal" [level=3] [ref=e1110]
+          - paragraph [ref=e1111]: Processed Cereal Products
+          - generic [ref=e1112]:
+            - generic [ref=e1113]: 407 kcal
+            - generic [ref=e1114]: 77.8g carbs
+            - generic [ref=e1115]: 7.4g protein
+        - generic [ref=e1116]:
+          - button "At home" [ref=e1117] [cursor=pointer]
+          - button "Groceries" [ref=e1118] [cursor=pointer]
+          - button "Log 150g" [ref=e1119] [cursor=pointer]
+      - article [ref=e1120]:
+        - generic [ref=e1121]:
+          - generic [ref=e1122]: Branded · GENERAL MILLS SALES INC.
+          - heading "Cheerios Breakfast Cereal" [level=3] [ref=e1123]
+          - paragraph [ref=e1124]: Processed Cereal Products
+          - generic [ref=e1125]:
+            - generic [ref=e1126]: 359 kcal
+            - generic [ref=e1127]: 74.4g carbs
+            - generic [ref=e1128]: 12.8g protein
+        - generic [ref=e1129]:
+          - button "At home" [ref=e1130] [cursor=pointer]
+          - button "Groceries" [ref=e1131] [cursor=pointer]
+          - button "Log 100g" [ref=e1132] [cursor=pointer]
+      - article [ref=e1133]:
+        - generic [ref=e1134]:
+          - generic [ref=e1135]: Branded · GENERAL MILLS SALES INC.
+          - heading "Cheerios Breakfast Cereal" [level=3] [ref=e1136]
+          - paragraph [ref=e1137]: Processed Cereal Products
+          - generic [ref=e1138]:
+            - generic [ref=e1139]: 359 kcal
+            - generic [ref=e1140]: 74.4g carbs
+            - generic [ref=e1141]: 12.8g protein
+        - generic [ref=e1142]:
+          - button "At home" [ref=e1143] [cursor=pointer]
+          - button "Groceries" [ref=e1144] [cursor=pointer]
+          - button "Log 100g" [ref=e1145] [cursor=pointer]
+      - article [ref=e1146]:
+        - generic [ref=e1147]:
+          - generic [ref=e1148]: Branded · GENERAL MILLS SALES INC.
+          - heading "Cheerios Cereal Bowlpak" [level=3] [ref=e1149]
+          - paragraph [ref=e1150]: Processed Cereal Products
+          - generic [ref=e1151]:
+            - generic [ref=e1152]: 368 kcal
+            - generic [ref=e1153]: 73.7g carbs
+            - generic [ref=e1154]: 10.5g protein
+        - generic [ref=e1155]:
+          - button "At home" [ref=e1156] [cursor=pointer]
+          - button "Groceries" [ref=e1157] [cursor=pointer]
+          - button "Log 100g" [ref=e1158] [cursor=pointer]
+      - article [ref=e1159]:
+        - generic [ref=e1160]:
+          - generic [ref=e1161]: Branded · GENERAL MILLS SALES INC.
+          - heading "Cheerios Cereal Pouch" [level=3] [ref=e1162]
+          - paragraph [ref=e1163]: Processed Cereal Products
+          - generic [ref=e1164]:
+            - generic [ref=e1165]: 359 kcal
+            - generic [ref=e1166]: 74.4g carbs
+            - generic [ref=e1167]: 12.8g protein
+        - generic [ref=e1168]:
+          - button "At home" [ref=e1169] [cursor=pointer]
+          - button "Groceries" [ref=e1170] [cursor=pointer]
+          - button "Log 100g" [ref=e1171] [cursor=pointer]
+      - article [ref=e1172]:
+        - generic [ref=e1173]:
+          - generic [ref=e1174]: Branded · GENERAL MILLS SALES INC.
+          - heading "Cheerios Cereal Singlepak" [level=3] [ref=e1175]
+          - paragraph [ref=e1176]: Processed Cereal Products
+          - generic [ref=e1177]:
+            - generic [ref=e1178]: 359 kcal
+            - generic [ref=e1179]: 74.4g carbs
+            - generic [ref=e1180]: 12.8g protein
+        - generic [ref=e1181]:
+          - button "At home" [ref=e1182] [cursor=pointer]
+          - button "Groceries" [ref=e1183] [cursor=pointer]
+          - button "Log 100g" [ref=e1184] [cursor=pointer]
+      - article [ref=e1185]:
+        - generic [ref=e1186]:
+          - generic [ref=e1187]: Branded · GENERAL MILLS SALES INC.
+          - heading "Chocolate Cheerios Cereal" [level=3] [ref=e1188]
+          - paragraph [ref=e1189]: Processed Cereal Products
+          - generic [ref=e1190]:
+            - generic [ref=e1191]: 389 kcal
+            - generic [ref=e1192]: 80.6g carbs
+            - generic [ref=e1193]: 8.3g protein
+        - generic [ref=e1194]:
+          - button "At home" [ref=e1195] [cursor=pointer]
+          - button "Groceries" [ref=e1196] [cursor=pointer]
+          - button "Log 100g" [ref=e1197] [cursor=pointer]
+      - article [ref=e1198]:
+        - generic [ref=e1199]:
+          - generic [ref=e1200]: Branded · GENERAL MILLS SALES INC.
+          - heading "Chocolate Cheerios Cereal" [level=3] [ref=e1201]
+          - paragraph [ref=e1202]: Processed Cereal Products
+          - generic [ref=e1203]:
+            - generic [ref=e1204]: 389 kcal
+            - generic [ref=e1205]: 80.6g carbs
+            - generic [ref=e1206]: 8.3g protein
+        - generic [ref=e1207]:
+          - button "At home" [ref=e1208] [cursor=pointer]
+          - button "Groceries" [ref=e1209] [cursor=pointer]
+          - button "Log 100g" [ref=e1210] [cursor=pointer]
+      - article [ref=e1211]:
+        - generic [ref=e1212]:
+          - generic [ref=e1213]: Branded · GENERAL MILLS SALES INC.
+          - heading "Chocolate Cheerios Cereal" [level=3] [ref=e1214]
+          - paragraph [ref=e1215]: Processed Cereal Products
+          - generic [ref=e1216]:
+            - generic [ref=e1217]: 389 kcal
+            - generic [ref=e1218]: 80.6g carbs
+            - generic [ref=e1219]: 8.3g protein
+        - generic [ref=e1220]:
+          - button "At home" [ref=e1221] [cursor=pointer]
+          - button "Groceries" [ref=e1222] [cursor=pointer]
+          - button "Log 100g" [ref=e1223] [cursor=pointer]
+      - article [ref=e1224]:
+        - generic [ref=e1225]:
+          - generic [ref=e1226]: Branded · GENERAL MILLS SALES INC.
+          - heading "Chocolate Cheerios Cereal" [level=3] [ref=e1227]
+          - paragraph [ref=e1228]: Processed Cereal Products
+          - generic [ref=e1229]:
+            - generic [ref=e1230]: 370 kcal
+            - generic [ref=e1231]: 77.8g carbs
+            - generic [ref=e1232]: 11.1g protein
+        - generic [ref=e1233]:
+          - button "At home" [ref=e1234] [cursor=pointer]
+          - button "Groceries" [ref=e1235] [cursor=pointer]
+          - button "Log 27g" [ref=e1236] [cursor=pointer]
+      - article [ref=e1237]:
+        - generic [ref=e1238]:
+          - generic [ref=e1239]: Branded · GENERAL MILLS SALES INC.
+          - heading "Chocolate Cheerios Cereal" [level=3] [ref=e1240]
+          - paragraph [ref=e1241]: Processed Cereal Products
+          - generic [ref=e1242]:
+            - generic [ref=e1243]: 370 kcal
+            - generic [ref=e1244]: 77.8g carbs
+            - generic [ref=e1245]: 11.1g protein
+        - generic [ref=e1246]:
+          - button "At home" [ref=e1247] [cursor=pointer]
+          - button "Groceries" [ref=e1248] [cursor=pointer]
+          - button "Log 27g" [ref=e1249] [cursor=pointer]
+      - article [ref=e1250]:
+        - generic [ref=e1251]:
+          - generic [ref=e1252]: Branded · GENERAL MILLS SALES INC.
+          - heading "Cinnamon Cheerios Cereal" [level=3] [ref=e1253]
+          - paragraph [ref=e1254]: Processed Cereal Products
+          - generic [ref=e1255]:
+            - generic [ref=e1256]: 387 kcal
+            - generic [ref=e1257]: 80.0g carbs
+            - generic [ref=e1258]: 8.8g protein
+        - generic [ref=e1259]:
+          - button "At home" [ref=e1260] [cursor=pointer]
+          - button "Groceries" [ref=e1261] [cursor=pointer]
+          - button "Log 100g" [ref=e1262] [cursor=pointer]
+    - paragraph [ref=e826]: Food and nutrient values come from USDA FoodData Central. Branded label data can change; confirm allergens and serving information on the package.
+  - generic [ref=e1263]:
+    - generic [ref=e1264]:
+      - generic [ref=e1265]:
+        - paragraph [ref=e1266]: TODAY’S FOOD LOG
+        - heading "Food logged today." [level=2] [ref=e1267]
+      - generic [ref=e1268]:
+        - button "▣ Barcode fallback" [ref=e1269] [cursor=pointer]
+        - button "Cancel" [active] [ref=e1291] [cursor=pointer]
+    - paragraph [ref=e1271]: Search USDA above to log a generic or branded food, scan a barcode, or write a quick manual check-in.
+    - generic [ref=e1292]:
+      - textbox "Meal or snack" [ref=e1293]
+      - spinbutton "Calories (optional)" [ref=e1294]
+      - button "Check in" [ref=e1295] [cursor=pointer]
+    - generic [ref=e1272]:
+      - generic [ref=e1273]:
+        - generic [ref=e1274]: US
+        - generic [ref=e1275]:
+          - strong [ref=e1276]: Bananas, ripe and slightly ripe, raw
+          - generic [ref=e1277]: 6:33 PM · USDA · 100g
+        - generic [ref=e1278]: 97 kcal
+        - generic [ref=e1279]:
+          - button "Edit Bananas, ripe and slightly ripe, raw" [ref=e1280] [cursor=pointer]: Edit
+          - button "Delete Bananas, ripe and slightly ripe, raw" [ref=e1281] [cursor=pointer]: Delete
+      - generic [ref=e1282]:
+        - generic [ref=e1283]: US
+        - generic [ref=e1284]:
+          - strong [ref=e1285]: Cheerios Cereal — General Mills
+          - generic [ref=e1286]: 6:33 PM · USDA · 100g
+        - generic [ref=e1287]: 359 kcal
+        - generic [ref=e1288]:
+          - button "Edit Cheerios Cereal — General Mills" [ref=e1289] [cursor=pointer]: Edit
+          - button "Delete Cheerios Cereal — General Mills" [ref=e1290] [cursor=pointer]: Delete
+  - generic [ref=e867]: Your ally from school to sport · Your data stays on this device

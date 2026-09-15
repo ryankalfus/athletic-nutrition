@@ -1,0 +1,46 @@
+{
+  "cookies": [],
+  "origins": [
+    {
+      "origin": "http://127.0.0.1:5173",
+      "localStorage": [
+        {
+          "name": "nourally-reminders",
+          "value": "{\"enabled\":false,\"leadMinutes\":60,\"eveningPrep\":false}"
+        },
+        {
+          "name": "nourally-school-schedule",
+          "value": "{\"enabled\":true,\"name\":\"Audit High School\",\"startDate\":\"2026-08-15\",\"endDate\":\"2027-06-15\",\"startTime\":\"08:00\",\"endTime\":\"15:00\",\"weekdays\":[1,2,3,4,5],\"lunchStartTime\":\"11:30\",\"lunchEndTime\":\"12:00\",\"morningSnackTime\":\"10:00\",\"afternoonSnackTime\":\"14:30\",\"commuteMinutes\":30,\"foodAccess\":{\"cafeteria\":true,\"refrigerator\":true,\"microwave\":true,\"eatInClass\":true},\"excludedDates\":[]}"
+        },
+        {
+          "name": "nourally-groceries",
+          "value": "{\"budgetAmount\":\"5\",\"goal\":\"away-game\",\"lastShopDate\":\"2026-09-14\",\"pantry\":[{\"id\":\"pantry-fdc-1105314-1789425197384\",\"catalogId\":\"fdc-1105314\",\"fdcId\":1105314,\"name\":\"Bananas, ripe and slightly ripe, raw\",\"category\":\"Fruits and Fruit Juices\",\"quantity\":3,\"updatedDate\":\"2026-09-14\",\"food\":{\"id\":\"fdc-1105314\",\"fdcId\":1105314,\"name\":\"Bananas, ripe and slightly ripe, raw\",\"displayName\":\"Bananas, ripe and slightly ripe, raw\",\"brand\":\"\",\"dataType\":\"Foundation\",\"category\":\"Fruits and Fruit Juices\",\"barcode\":\"\",\"servingSize\":null,\"servingSizeUnit\":\"g\",\"householdServing\":\"\",\"nutrients\":{\"calories\":97,\"protein\":0.74,\"carbs\":23,\"fat\":0.29},\"source\":\"USDA FoodData Central\"}},{\"id\":\"pantry-meal-pretzels-1789425362164-0\",\"catalogId\":\"pretzels\",\"name\":\"Pretzels\",\"category\":\"Packable\",\"quantity\":1,\"updatedDate\":\"2026-09-14\"}],\"items\":[{\"id\":\"grocery-bananas-1789425211882\",\"name\":\"Bananas\",\"category\":\"Produce\",\"price\":2.25,\"goals\":[\"school-week\",\"practice-fuel\",\"away-game\",\"recovery-meals\",\"restock-basics\"],\"vegan\":true,\"vegetarian\":true,\"dairyFree\":true,\"glutenFree\":true,\"nutFree\":true,\"catalogId\":\"bananas\",\"quantity\":1,\"status\":\"list\",\"reason\":\"For upcoming travel or away activity\"},{\"id\":\"grocery-baby-carrots-1789425211882\",\"name\":\"Baby carrots\",\"category\":\"Produce\",\"price\":2.5,\"goals\":[\"school-week\",\"away-game\",\"recovery-meals\"],\"vegan\":true,\"vegetarian\":true,\"dairyFree\":true,\"glutenFree\":true,\"nutFree\":true,\"catalogId\":\"baby-carrots\",\"quantity\":1,\"status\":\"list\",\"reason\":\"For upcoming travel or away activity\"},{\"id\":\"grocery-tortillas-1789425211882\",\"name\":\"Tortillas\",\"category\":\"Grains\",\"price\":3.25,\"goals\":[\"school-week\",\"away-game\",\"recovery-meals\",\"restock-basics\"],\"vegan\":true,\"vegetarian\":true,\"dairyFree\":true,\"glutenFree\":false,\"nutFree\":true,\"catalogId\":\"tortillas\",\"quantity\":1,\"status\":\"list\",\"reason\":\"For upcoming travel or away activity\"},{\"id\":\"grocery-fdc-2517161-1789425238399\",\"catalogId\":\"fdc-2517161\",\"fdcId\":2517161,\"name\":\"Cheerios Cereal — General Mills\",\"category\":\"Branded\",\"price\":0,\"quantity\":1,\"status\":\"list\",\"reason\":\"Added from USDA FoodData Central\",\"food\":{\"id\":\"fdc-2517161\",\"fdcId\":2517161,\"name\":\"Cheerios Cereal\",\"displayName\":\"Cheerios Cereal — General Mills\",\"brand\":\"General Mills\",\"dataType\":\"Branded\",\"category\":\"Processed Cereal Products\",\"barcode\":\"00016000275287\",\"servingSize\":20,\"servingSizeUnit\":\"GRM\",\"householdServing\":\"3/4 cup (20g) (age 1-3 years)\",\"nutrients\":{\"calories\":359,\"protein\":12.8,\"carbs\":74.4,\"fat\":6.41},\"source\":\"USDA FoodData Central\"}}],\"purchases\":[{\"id\":\"meal-pretzels-1789425362164-0\",\"name\":\"Pretzels\",\"category\":\"Packable\",\"price\":3.25,\"goals\":[\"school-week\",\"practice-fuel\",\"away-game\",\"restock-basics\"],\"vegan\":true,\"vegetarian\":true,\"dairyFree\":true,\"glutenFree\":false,\"nutFree\":true,\"catalogId\":\"pretzels\",\"quantity\":1,\"status\":\"list\",\"reason\":\"Missing for Banana + pretzels\",\"purchasedDate\":\"2026-09-14\",\"purchaseId\":\"purchase-meal-pretzels-1789425362164-0-1789425362431\"},{\"id\":\"grocery-fdc-1105314-1789425197449\",\"catalogId\":\"fdc-1105314\",\"fdcId\":1105314,\"name\":\"Bananas, ripe and slightly ripe, raw\",\"category\":\"Foundation\",\"price\":0,\"quantity\":1,\"status\":\"cart\",\"reason\":\"Added from USDA FoodData Central\",\"food\":{\"id\":\"fdc-1105314\",\"fdcId\":1105314,\"name\":\"Bananas, ripe and slightly ripe, raw\",\"displayName\":\"Bananas, ripe and slightly ripe, raw\",\"brand\":\"\",\"dataType\":\"Foundation\",\"category\":\"Fruits and Fruit Juices\",\"barcode\":\"\",\"servingSize\":null,\"servingSizeUnit\":\"g\",\"householdServing\":\"\",\"nutrients\":{\"calories\":97,\"protein\":0.74,\"carbs\":23,\"fat\":0.29},\"source\":\"USDA FoodData Central\"},\"purchasedDate\":\"2026-09-14\",\"purchaseId\":\"purchase-grocery-fdc-1105314-1789425197449-1789425211715\"}]}"
+        },
+        {
+          "name": "nourally-schedule",
+          "value": "[{\"id\":1789425146616,\"type\":\"practice\",\"title\":\"Soccer practice edited\",\"startTime\":\"19:00\",\"endTime\":\"20:30\",\"intensity\":\"high\",\"location\":\"away\",\"travelMinutes\":45,\"date\":\"2026-09-14\"},{\"id\":1789425159550,\"type\":\"game\",\"title\":\"Early away game\",\"startTime\":\"07:30\",\"endTime\":\"09:00\",\"intensity\":\"high\",\"location\":\"away\",\"travelMinutes\":60,\"recurrence\":{\"startDate\":\"2026-09-15\",\"endDate\":\"2026-10-13\",\"weekdays\":[2],\"excludedDates\":[\"2026-09-22\"]}}]"
+        },
+        {
+          "name": "nourally-daily-logs",
+          "value": "{\"2026-09-14\":{\"entries\":[{\"id\":1789425197483,\"name\":\"Bananas, ripe and slightly ripe, raw\",\"calories\":97,\"servingGrams\":100,\"source\":\"usda\",\"fdcId\":1105314,\"food\":{\"id\":\"fdc-1105314\",\"fdcId\":1105314,\"name\":\"Bananas, ripe and slightly ripe, raw\",\"displayName\":\"Bananas, ripe and slightly ripe, raw\",\"brand\":\"\",\"dataType\":\"Foundation\",\"category\":\"Fruits and Fruit Juices\",\"barcode\":\"\",\"servingSize\":null,\"servingSizeUnit\":\"g\",\"householdServing\":\"\",\"nutrients\":{\"calories\":97,\"protein\":0.74,\"carbs\":23,\"fat\":0.29},\"source\":\"USDA FoodData Central\"},\"time\":\"6:33 PM\"},{\"id\":1789425238349,\"name\":\"Cheerios Cereal — General Mills\",\"calories\":100,\"servingGrams\":100,\"source\":\"usda\",\"fdcId\":2517161,\"food\":{\"id\":\"fdc-2517161\",\"fdcId\":2517161,\"name\":\"Cheerios Cereal\",\"displayName\":\"Cheerios Cereal — General Mills\",\"brand\":\"General Mills\",\"dataType\":\"Branded\",\"category\":\"Processed Cereal Products\",\"barcode\":\"00016000275287\",\"servingSize\":20,\"servingSizeUnit\":\"GRM\",\"householdServing\":\"3/4 cup (20g) (age 1-3 years)\",\"nutrients\":{\"calories\":359,\"protein\":12.8,\"carbs\":74.4,\"fat\":6.41},\"source\":\"USDA FoodData Central\"},\"time\":\"6:33 PM\"},{\"id\":1789425296482,\"name\":\"Nutella — Nutella, Ferrero\",\"calories\":81,\"barcode\":\"3017620422003\",\"servingGrams\":15,\"source\":\"barcode\",\"provider\":\"Open Food Facts\",\"time\":\"6:34 PM\"}],\"water\":52}}"
+        },
+        {
+          "name": "nourally-day-plans",
+          "value": "{\"2026-09-14\":[{\"label\":\"Set it beside your school or team bag\",\"kind\":\"gear\",\"id\":\"1789425104715-1\",\"done\":false},{\"label\":\"Pack Banana + pretzels\",\"kind\":\"food\",\"foodId\":\"banana-pretzels\",\"id\":\"1789425362232-0\",\"done\":false},{\"label\":\"Fill and pack a water bottle\",\"kind\":\"gear\",\"id\":\"1789425362232-1\",\"done\":false},{\"label\":\"Pack Cereal cup + shelf-stable soy milk\",\"kind\":\"food\",\"foodId\":\"cereal-milk\",\"id\":\"1789425362314-0\",\"done\":false}],\"2026-09-15\":[{\"label\":\"Choose and set out breakfast\",\"kind\":\"food\",\"id\":\"1789425171853-0\",\"done\":true},{\"label\":\"Pack a familiar pre-activity snack\",\"kind\":\"food\",\"id\":\"1789425171853-1\",\"done\":false},{\"label\":\"Fill a water bottle\",\"kind\":\"gear\",\"id\":\"1789425171853-2\",\"done\":false},{\"label\":\"Put uniform, shoes, and gear by the door\",\"kind\":\"gear\",\"id\":\"1789425171853-3\",\"done\":false},{\"label\":\"Check the route and allow 60 minutes for travel\",\"kind\":\"prep\",\"id\":\"1789425171853-4\",\"done\":false}]}"
+        },
+        {
+          "name": "nourally-profile",
+          "value": "{\"name\":\"Audit Athlete\",\"budget\":\"standard\",\"dietaryNeeds\":[\"vegan\",\"glutenFree\",\"nutFree\"],\"foodSources\":[\"packed\",\"home\"],\"familyPrep\":true}"
+        },
+        {
+          "name": "nourally-step",
+          "value": "dashboard"
+        },
+        {
+          "name": "nourally-notified-events",
+          "value": "[\"1789425146616-2026-09-14-60\"]"
+        }
+      ]
+    }
+  ]
+}

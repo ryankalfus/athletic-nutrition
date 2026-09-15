@@ -1,0 +1,50 @@
+- main [ref=e3]:
+  - generic [ref=e4]:
+    - generic [ref=e5]: ↗
+    - generic [ref=e6]: nourally
+  - generic [ref=e7]: NOURALLY / YOUR REAL DAY
+  - generic [ref=e8]:
+    - generic [ref=e9]:
+      - paragraph [ref=e10]: FUELING THAT FITS REAL LIFE
+      - heading [level=1] [ref=e11]:
+        - text: School to sport,
+        - emphasis [ref=e12]: without the guesswork.
+    - paragraph [ref=e14]: Nourally turns your schedule, food access, budget, and dietary needs into a practical next step—not a rigid prescription.
+  - generic [ref=e15]:
+    - generic [ref=e16]: SET YOUR FOOD REALITY
+    - heading "Set what works in real life." [level=2] [ref=e17]
+    - paragraph [ref=e18]: These details stay on this device and only filter the examples you see.
+    - generic [ref=e19]:
+      - generic [ref=e20]:
+        - text: First name
+        - generic [ref=e21]: Optional
+        - textbox "First name Optional" [ref=e22]:
+          - /placeholder: First name
+      - group "Usual food budget" [ref=e23]:
+        - generic [ref=e25]:
+          - button "Save where possible" [ref=e26] [cursor=pointer]
+          - button "Everyday" [ref=e27] [cursor=pointer]
+          - button "Flexible" [ref=e28] [cursor=pointer]
+      - group "Dietary needs" [ref=e29]:
+        - generic [ref=e31]:
+          - button "Vegetarian" [ref=e32] [cursor=pointer]
+          - button "Vegan" [ref=e33] [cursor=pointer]
+          - button "Dairy-free" [ref=e34] [cursor=pointer]
+          - button "Gluten-free" [ref=e35] [cursor=pointer]
+          - button "Nut-free" [ref=e36] [cursor=pointer]
+      - group "Food you can usually access" [ref=e37]:
+        - generic [ref=e39]:
+          - button "Packed from home" [pressed] [ref=e40] [cursor=pointer]
+          - button "School cafeteria" [pressed] [ref=e41] [cursor=pointer]
+          - button "Home kitchen" [pressed] [ref=e42] [cursor=pointer]
+          - button "Nearby store" [ref=e43] [cursor=pointer]
+      - generic [ref=e44]:
+        - checkbox "A parent or guardian can sometimes help pack or prep food." [checked] [ref=e45]
+        - generic [ref=e46]: A parent or guardian can sometimes help pack or prep food.
+      - button "Save and see today →" [ref=e47] [cursor=pointer]:
+        - text: Save and see today
+        - generic [ref=e48]: →
+    - paragraph [ref=e49]:
+      - strong [ref=e50]: Educational guidance only.
+      - text: Nourally offers practical examples, not calorie prescriptions or medical advice. Allergies, medical conditions, eating concerns, and individualized needs should be discussed with a qualified professional and a parent or guardian.
+  - generic [ref=e51]: Your ally from school to sport · Your data stays on this device

@@ -1,0 +1,115 @@
+- main [ref=e1744]:
+  - generic [ref=e1745]:
+    - generic [ref=e1746]: ↗
+    - generic [ref=e1747]: nourally
+  - generic [ref=e1748]: NOURALLY / FOOD
+  - generic [ref=e1749]:
+    - generic [ref=e1750]:
+      - paragraph [ref=e1751]: FOOD AT HOME + NEXT SHOP + TODAY
+      - heading [level=1] [ref=e1752]:
+        - text: Know your food.
+        - emphasis [ref=e1753]: Fuel what’s next.
+    - navigation "Nourally sections" [ref=e1754]:
+      - button "Today" [ref=e1755] [cursor=pointer]
+      - button "Food" [ref=e1756] [cursor=pointer]
+      - button "Schedule" [ref=e1757] [cursor=pointer]
+      - button "Weekly" [ref=e1758] [cursor=pointer]
+      - button "History" [ref=e1759] [cursor=pointer]
+      - button "Profile" [ref=e1760] [cursor=pointer]
+  - navigation "Food workspace" [ref=e1761]:
+    - button "Overview" [ref=e1762] [cursor=pointer]
+    - button "At home 2" [ref=e1763] [cursor=pointer]:
+      - text: At home
+      - generic [ref=e1764]: "2"
+    - button "Groceries 12" [ref=e1765] [cursor=pointer]:
+      - text: Groceries
+      - generic [ref=e1766]: "12"
+    - button "Meals" [ref=e1767] [cursor=pointer]
+    - button "Food log 3" [ref=e1768] [cursor=pointer]:
+      - text: Food log
+      - generic [ref=e1769]: "3"
+  - generic [ref=e1770]:
+    - generic [ref=e1771]:
+      - generic [ref=e1772]:
+        - generic [ref=e1773]: USDA FOODDATA CENTRAL
+        - heading "Search generic and branded food" [level=2] [ref=e1774]
+        - paragraph [ref=e1775]: Use one USDA result for food at home, groceries, or today’s log.
+      - link "Official USDA source ↗" [ref=e1776] [cursor=pointer]:
+        - /url: https://fdc.nal.usda.gov/
+    - generic [ref=e1777]:
+      - generic [ref=e1778]:
+        - generic [ref=e1779]: Food or brand
+        - textbox "Food or brand" [ref=e1780]:
+          - /placeholder: Try banana, peanut butter, cereal, or a brand
+      - generic "Food type" [ref=e1781]:
+        - button "All foods" [ref=e1782] [cursor=pointer]
+        - button "Generic" [ref=e1783] [cursor=pointer]
+        - button "Branded" [ref=e1784] [cursor=pointer]
+      - button "Search USDA →" [ref=e1785] [cursor=pointer]:
+        - text: Search USDA
+        - generic [ref=e1786]: →
+    - paragraph [ref=e1787]:
+      - text: Connected with USDA’s development key. Add
+      - code [ref=e1788]: VITE_FDC_API_KEY
+      - text: locally for a higher request limit.
+    - paragraph [ref=e1789]: Food and nutrient values come from USDA FoodData Central. Branded label data can change; confirm allergens and serving information on the package.
+  - generic [ref=e1790]:
+    - generic [ref=e1791]:
+      - generic [ref=e1792]:
+        - paragraph [ref=e1793]: TODAY’S FOOD LOG
+        - heading "Food logged today." [level=2] [ref=e1794]
+      - generic [ref=e1795]:
+        - button "Close scanner" [active] [ref=e1828] [cursor=pointer]
+        - button "+ Manual check-in" [ref=e1797] [cursor=pointer]
+    - paragraph [ref=e1798]: Search USDA above to log a generic or branded food, scan a barcode, or write a quick manual check-in.
+    - generic [ref=e1829]:
+      - generic [ref=e1830]:
+        - generic [ref=e1831]:
+          - generic [ref=e1832]: BARCODE MEAL ENTRY
+          - heading "Scan a packaged food" [level=3] [ref=e1833]
+        - button "Close barcode scanner" [ref=e1834] [cursor=pointer]: ×
+      - generic [ref=e1835]:
+        - generic [ref=e1836]:
+          - generic [ref=e1837]:
+            - generic:
+              - paragraph: Camera preview
+          - generic [ref=e1839]:
+            - button "Use camera" [ref=e1840] [cursor=pointer]
+            - button "Take photo" [disabled] [ref=e1841]
+          - paragraph [ref=e1842]: Start the camera, center the entire barcode inside the guide, then take a photo. You can also enter the printed number.
+        - generic [ref=e1844]:
+          - generic [ref=e1845]:
+            - text: Barcode number
+            - textbox "Barcode number" [ref=e1846]:
+              - /placeholder: Enter 8–14 digits
+          - button "Look up product" [ref=e1847] [cursor=pointer]
+      - paragraph [ref=e1848]: Product and nutrition data are provided by the Open Food Facts community and may be incomplete. Check the package label before logging.
+    - generic [ref=e1799]:
+      - generic [ref=e1800]:
+        - generic [ref=e1801]: US
+        - generic [ref=e1802]:
+          - strong [ref=e1803]: Bananas, ripe and slightly ripe, raw
+          - generic [ref=e1804]: 6:33 PM · USDA · 100g
+        - generic [ref=e1805]: 97 kcal
+        - generic [ref=e1806]:
+          - button "Edit Bananas, ripe and slightly ripe, raw" [ref=e1807] [cursor=pointer]: Edit
+          - button "Delete Bananas, ripe and slightly ripe, raw" [ref=e1808] [cursor=pointer]: Delete
+      - generic [ref=e1809]:
+        - generic [ref=e1810]: US
+        - generic [ref=e1811]:
+          - strong [ref=e1812]: Cheerios Cereal — General Mills
+          - generic [ref=e1813]: 6:33 PM · USDA · 100g
+        - generic [ref=e1814]: 100 kcal
+        - generic [ref=e1815]:
+          - button "Edit Cheerios Cereal — General Mills" [ref=e1816] [cursor=pointer]: Edit
+          - button "Delete Cheerios Cereal — General Mills" [ref=e1817] [cursor=pointer]: Delete
+      - generic [ref=e1818]:
+        - generic [ref=e1819]: ▣
+        - generic [ref=e1820]:
+          - strong [ref=e1821]: Nutella — Nutella, Ferrero
+          - generic [ref=e1822]: 6:34 PM · barcode · 15g
+        - generic [ref=e1823]: 81 kcal
+        - generic [ref=e1824]:
+          - button "Edit Nutella — Nutella, Ferrero" [ref=e1825] [cursor=pointer]: Edit
+          - button "Delete Nutella — Nutella, Ferrero" [ref=e1826] [cursor=pointer]: Delete
+  - generic [ref=e1827]: Your ally from school to sport · Your data stays on this device

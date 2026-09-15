@@ -1,0 +1,208 @@
+- main [ref=e138]:
+  - generic [ref=e139]:
+    - generic [ref=e140]: ↗
+    - generic [ref=e141]: nourally
+  - generic [ref=e142]: NOURALLY / CALENDAR
+  - generic [ref=e143]:
+    - generic [ref=e144]:
+      - paragraph [ref=e145]: SCHOOL + TRAINING SCHEDULE
+      - heading [level=1] [ref=e146]:
+        - text: Plan your
+        - emphasis [ref=e147]: whole day.
+    - generic [ref=e148]:
+      - navigation "Nourally sections" [ref=e149]:
+        - button "Today" [ref=e150] [cursor=pointer]
+        - button "Food" [ref=e151] [cursor=pointer]
+        - button "Schedule" [ref=e152] [cursor=pointer]
+        - button "Weekly" [ref=e153] [cursor=pointer]
+        - button "History" [ref=e154] [cursor=pointer]
+        - button "Profile" [ref=e155] [cursor=pointer]
+      - button "▤ School" [active] [ref=e156] [cursor=pointer]
+  - generic [ref=e269]:
+    - generic [ref=e270]:
+      - generic [ref=e271]:
+        - generic [ref=e272]: SCHOOL CALENDAR
+        - heading "Import your school schedule" [level=2] [ref=e273]
+      - button "Close" [ref=e275] [cursor=pointer]
+    - generic [ref=e276]:
+      - generic [ref=e277]:
+        - text: School name
+        - textbox "School name" [ref=e278]:
+          - /placeholder: School
+          - text: School
+      - generic [ref=e279]:
+        - generic [ref=e280]:
+          - text: School year starts
+          - textbox "School year starts" [ref=e281]: 2026-08-15
+        - generic [ref=e282]:
+          - text: School year ends
+          - textbox "School year ends" [ref=e283]: 2027-06-15
+      - generic [ref=e284]:
+        - generic [ref=e285]:
+          - text: School starts
+          - textbox "School starts" [ref=e286]: 08:00
+        - generic [ref=e287]:
+          - text: School ends
+          - textbox "School ends" [ref=e288]: 15:00
+      - group "School days" [ref=e289]:
+        - generic [ref=e291]:
+          - button "S" [ref=e292] [cursor=pointer]
+          - button "M" [ref=e293] [cursor=pointer]
+          - button "T" [ref=e294] [cursor=pointer]
+          - button "W" [ref=e295] [cursor=pointer]
+          - button "T" [ref=e296] [cursor=pointer]
+          - button "F" [ref=e297] [cursor=pointer]
+          - button "S" [ref=e298] [cursor=pointer]
+      - generic [ref=e299]:
+        - generic [ref=e300]:
+          - generic [ref=e301]: FOOD WINDOWS & ACCESS
+          - paragraph [ref=e302]: Tell Nourally what is realistically available during your school day.
+        - generic [ref=e303]:
+          - generic [ref=e304]:
+            - text: Lunch starts
+            - textbox "Lunch starts" [ref=e305]: 11:30
+          - generic [ref=e306]:
+            - text: Lunch ends
+            - textbox "Lunch ends" [ref=e307]: 12:00
+        - generic [ref=e308]:
+          - generic [ref=e309]:
+            - text: Morning snack
+            - generic [ref=e310]: Optional
+            - textbox "Morning snack Optional" [ref=e311]
+          - generic [ref=e312]:
+            - text: Afternoon snack
+            - generic [ref=e313]: Optional
+            - textbox "Afternoon snack Optional" [ref=e314]
+        - generic [ref=e315]:
+          - text: Commute from school
+          - spinbutton "Commute from school Minutes from school to home, practice, or your usual next stop." [ref=e316]: "20"
+          - generic [ref=e317]: Minutes from school to home, practice, or your usual next stop.
+        - group "Food access at school" [ref=e318]:
+          - generic [ref=e320]:
+            - button "✓ Cafeteria" [pressed] [ref=e321] [cursor=pointer]:
+              - generic [ref=e322]: ✓
+              - text: Cafeteria
+            - button "+ Refrigerator" [ref=e323] [cursor=pointer]:
+              - generic [ref=e324]: +
+              - text: Refrigerator
+            - button "+ Microwave" [ref=e325] [cursor=pointer]:
+              - generic [ref=e326]: +
+              - text: Microwave
+            - button "+ Can eat in class" [ref=e327] [cursor=pointer]:
+              - generic [ref=e328]: +
+              - text: Can eat in class
+      - button "Import school year →" [ref=e329] [cursor=pointer]:
+        - text: Import school year
+        - generic [ref=e330]: →
+  - generic [ref=e157]:
+    - generic [ref=e158]:
+      - generic [ref=e159]:
+        - generic [ref=e160]:
+          - button "Previous month" [ref=e161] [cursor=pointer]: ‹
+          - button "Next month" [ref=e162] [cursor=pointer]: ›
+        - heading "September 2026" [level=2] [ref=e163]
+        - button "Today" [ref=e164] [cursor=pointer]
+      - generic [ref=e165]:
+        - generic [ref=e166]: SUN
+        - generic [ref=e167]: MON
+        - generic [ref=e168]: TUE
+        - generic [ref=e169]: WED
+        - generic [ref=e170]: THU
+        - generic [ref=e171]: FRI
+        - generic [ref=e172]: SAT
+      - generic [ref=e173]:
+        - button "Sunday, August 30, 2026" [ref=e174] [cursor=pointer]:
+          - generic [ref=e175]: "30"
+        - button "Monday, August 31, 2026" [ref=e176] [cursor=pointer]:
+          - generic [ref=e177]: "31"
+        - button "Tuesday, September 1, 2026" [ref=e178] [cursor=pointer]:
+          - generic [ref=e179]: "1"
+        - button "Wednesday, September 2, 2026" [ref=e180] [cursor=pointer]:
+          - generic [ref=e181]: "2"
+        - button "Thursday, September 3, 2026" [ref=e182] [cursor=pointer]:
+          - generic [ref=e183]: "3"
+        - button "Friday, September 4, 2026" [ref=e184] [cursor=pointer]:
+          - generic [ref=e185]: "4"
+        - button "Saturday, September 5, 2026" [ref=e186] [cursor=pointer]:
+          - generic [ref=e187]: "5"
+        - button "Sunday, September 6, 2026" [ref=e188] [cursor=pointer]:
+          - generic [ref=e189]: "6"
+        - button "Monday, September 7, 2026" [ref=e190] [cursor=pointer]:
+          - generic [ref=e191]: "7"
+        - button "Tuesday, September 8, 2026" [ref=e192] [cursor=pointer]:
+          - generic [ref=e193]: "8"
+        - button "Wednesday, September 9, 2026" [ref=e194] [cursor=pointer]:
+          - generic [ref=e195]: "9"
+        - button "Thursday, September 10, 2026" [ref=e196] [cursor=pointer]:
+          - generic [ref=e197]: "10"
+        - button "Friday, September 11, 2026" [ref=e198] [cursor=pointer]:
+          - generic [ref=e199]: "11"
+        - button "Saturday, September 12, 2026" [ref=e200] [cursor=pointer]:
+          - generic [ref=e201]: "12"
+        - button "Sunday, September 13, 2026" [ref=e202] [cursor=pointer]:
+          - generic [ref=e203]: "13"
+        - button "Monday, September 14, 2026" [ref=e204] [cursor=pointer]:
+          - generic [ref=e205]: "14"
+        - button "Tuesday, September 15, 2026" [ref=e206] [cursor=pointer]:
+          - generic [ref=e207]: "15"
+        - button "Wednesday, September 16, 2026" [ref=e208] [cursor=pointer]:
+          - generic [ref=e209]: "16"
+        - button "Thursday, September 17, 2026" [ref=e210] [cursor=pointer]:
+          - generic [ref=e211]: "17"
+        - button "Friday, September 18, 2026" [ref=e212] [cursor=pointer]:
+          - generic [ref=e213]: "18"
+        - button "Saturday, September 19, 2026" [ref=e214] [cursor=pointer]:
+          - generic [ref=e215]: "19"
+        - button "Sunday, September 20, 2026" [ref=e216] [cursor=pointer]:
+          - generic [ref=e217]: "20"
+        - button "Monday, September 21, 2026" [ref=e218] [cursor=pointer]:
+          - generic [ref=e219]: "21"
+        - button "Tuesday, September 22, 2026" [ref=e220] [cursor=pointer]:
+          - generic [ref=e221]: "22"
+        - button "Wednesday, September 23, 2026" [ref=e222] [cursor=pointer]:
+          - generic [ref=e223]: "23"
+        - button "Thursday, September 24, 2026" [ref=e224] [cursor=pointer]:
+          - generic [ref=e225]: "24"
+        - button "Friday, September 25, 2026" [ref=e226] [cursor=pointer]:
+          - generic [ref=e227]: "25"
+        - button "Saturday, September 26, 2026" [ref=e228] [cursor=pointer]:
+          - generic [ref=e229]: "26"
+        - button "Sunday, September 27, 2026" [ref=e230] [cursor=pointer]:
+          - generic [ref=e231]: "27"
+        - button "Monday, September 28, 2026" [ref=e232] [cursor=pointer]:
+          - generic [ref=e233]: "28"
+        - button "Tuesday, September 29, 2026" [ref=e234] [cursor=pointer]:
+          - generic [ref=e235]: "29"
+        - button "Wednesday, September 30, 2026" [ref=e236] [cursor=pointer]:
+          - generic [ref=e237]: "30"
+        - button "Thursday, October 1, 2026" [ref=e238] [cursor=pointer]:
+          - generic [ref=e239]: "1"
+        - button "Friday, October 2, 2026" [ref=e240] [cursor=pointer]:
+          - generic [ref=e241]: "2"
+        - button "Saturday, October 3, 2026" [ref=e242] [cursor=pointer]:
+          - generic [ref=e243]: "3"
+        - button "Sunday, October 4, 2026" [ref=e244] [cursor=pointer]:
+          - generic [ref=e245]: "4"
+        - button "Monday, October 5, 2026" [ref=e246] [cursor=pointer]:
+          - generic [ref=e247]: "5"
+        - button "Tuesday, October 6, 2026" [ref=e248] [cursor=pointer]:
+          - generic [ref=e249]: "6"
+        - button "Wednesday, October 7, 2026" [ref=e250] [cursor=pointer]:
+          - generic [ref=e251]: "7"
+        - button "Thursday, October 8, 2026" [ref=e252] [cursor=pointer]:
+          - generic [ref=e253]: "8"
+        - button "Friday, October 9, 2026" [ref=e254] [cursor=pointer]:
+          - generic [ref=e255]: "9"
+        - button "Saturday, October 10, 2026" [ref=e256] [cursor=pointer]:
+          - generic [ref=e257]: "10"
+    - complementary [ref=e258]:
+      - generic [ref=e259]:
+        - generic [ref=e260]:
+          - generic [ref=e261]: Monday
+          - strong [ref=e262]: September 14
+        - button "+ Add" [ref=e263] [cursor=pointer]
+      - generic [ref=e264]:
+        - generic [ref=e265]: ＋
+        - heading "Nothing scheduled." [level=3] [ref=e266]
+        - paragraph [ref=e267]: Add a workout, practice, or game—or import your school year.
+  - generic [ref=e268]: Your ally from school to sport · Your data stays on this device
