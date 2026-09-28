@@ -270,3 +270,7 @@ Limited initial meal cards to six with an explicit Show more control for easier 
 Made mobile Food subsection navigation horizontally scrollable and keep the selected subsection visible. 2026.09.14
 Verified additive backup import, active-profile-only deletion, and a simulated IndexedDB quota failure without changing existing user data. 2026.09.14
 Completed the audit checklist for all app-controlled items and documented the remaining device, credential, and specialist checks separately. 2026.09.14
+Created TODO/REMAINING-APP-CHANGES.md with a source-checked meeting-to-app checklist that excludes completed features, non-app assignments, and deadlines without changing app functionality. 2026.09.21
+Created a curated Downloads/CLAUDE copy for a Claude product and UI review, including active source, relevant documentation, audit Markdown, and UI screenshots while excluding large generated and USDA data files. 2026.09.21
+Created a standalone Claude prompt for a full Nourally source and screenshot review covering product strategy, information architecture, page redesigns, design-system specifications, feature decisions, responsive behavior, accessibility, state completeness, and an implementation-ready prioritized audit. 2026.09.21
+Committed and pushed all current workspace changes to GitHub. 2026.09.28
