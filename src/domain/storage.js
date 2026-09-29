@@ -1,10 +1,11 @@
 import { DEFAULT_PROFILE } from "./catalog.js";
+import { normalizeSport } from "./sport.js";
 
 export const SCHEMA_VERSION = 3;
 export const uid = () => globalThis.crypto.randomUUID();
 export const emptyData = () => ({
   step: "setup",
-  profile: structuredClone(DEFAULT_PROFILE),
+  profile: { ...structuredClone(DEFAULT_PROFILE), sport: "" },
   schedule: [],
   schoolSchedule: null,
   dailyLogs: {},
@@ -118,6 +119,13 @@ export function validateData(data) {
     )
   )
     throw new Error("Invalid profile preferences.");
+  if (
+    data.profile &&
+    data.profile.sport !== undefined &&
+    data.profile.sport !== null &&
+    typeof data.profile.sport !== "string"
+  )
+    throw new Error("Invalid profile sport.");
   for (const log of Object.values(data.dailyLogs || {}))
     if (
       log.waterEntries !== undefined &&
@@ -215,7 +223,11 @@ export function validateData(data) {
     ...data,
     mealPlans,
     dayPlans,
-    profile: { ...defaults.profile, ...data.profile },
+    profile: {
+      ...defaults.profile,
+      ...data.profile,
+      sport: normalizeSport(data.profile?.sport),
+    },
     groceryState: {
       ...defaults.groceryState,
       ...data.groceryState,

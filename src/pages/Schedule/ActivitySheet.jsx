@@ -82,7 +82,7 @@ export function ActivitySheet({ model }) {
             <input
               value={title}
               onChange={(event) => setTitle(event.target.value)}
-              placeholder={`${activityPlaceholder[0].toUpperCase()}${activityPlaceholder.slice(1)}`}
+              placeholder={activityPlaceholder}
             />
           </label>
           {editingScope === "date" ? (

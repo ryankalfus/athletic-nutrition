@@ -171,3 +171,62 @@
     gap: 24px;
   }
 }
+.today-availability {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  list-style: none;
+  padding: 0;
+  margin: 8px 0;
+}
+.today-availability li {
+  font-size: 13px;
+  padding: 4px 10px;
+  border-radius: 24px;
+  border: 1px solid var(--color-border);
+}
+.today-availability li[data-have="true"] {
+  background: var(--color-surface);
+}
+.today-availability li[data-have="false"] {
+  border-style: dashed;
+}
+
+/* You › Reminders (IA-12, YOU-05, DATA-06) */
+.you-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+.you-row h2 {
+  margin: 0 0 4px;
+}
+.you-row p {
+  margin: 0;
+}
+.reminders-sheet form {
+  display: grid;
+  gap: 16px;
+}
+.reminders-sheet fieldset:disabled {
+  opacity: 0.55;
+}
+.reminder-permission,
+.reminder-honesty {
+  font-size: 14px;
+  margin: 0;
+}
+.reminder-honesty {
+  color: var(--color-ink-muted);
+}
+.reminders-sheet .dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+.field-hint {
+  display: block;
+  font-size: 13px;
+  font-weight: 400;
+}

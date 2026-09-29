@@ -1,6 +1,7 @@
 import { useSyncExternalStore } from "react";
 import { showToast } from "./components/ui/Toast.jsx";
 import { syncPlanPreparation } from "./domain/plans.js";
+import { signedOutFlag } from "./session.js";
 import { backupDocument, backupFilename } from "./domain/backup.js";
 import {
   SCHEMA_VERSION,
@@ -166,6 +167,10 @@ export const setField = (field, update) =>
       for (const date of Object.keys(data.dayPlans))
         syncPlanPreparation(data, date);
   });
+export function useSignedOut() {
+  return useSyncExternalStore(signedOutFlag.subscribe, signedOutFlag.get);
+}
+export const setSignedOut = (value) => signedOutFlag.set(value);
 export function useStore() {
   return useSyncExternalStore(subscribe, () => snapshot);
 }
@@ -200,7 +205,7 @@ function docHasProfile(id) {
 }
 export function selectProfile(id) {
   currentId = id;
-  sessionStorage.removeItem("nourally-signed-out");
+  signedOutFlag.set(false);
   const url = new URL(window.location.href);
   url.searchParams.delete("signedOut");
   window.history.replaceState({}, "", url);
@@ -320,7 +325,9 @@ export async function importBackup(file) {
 }
 export async function deleteCurrentProfile() {
   if (!(await exportBackup())) return false;
-  sessionStorage.setItem("nourally-signed-out", "1");
+  // Sign out before the write publishes, so no render or reminder effect can
+  // run for the next athlete while Welcome is showing.
+  signedOutFlag.set(true);
   const ok = await transaction((doc, id) => {
     if (Object.keys(doc.profiles).length === 1) {
       const next = uid();
@@ -332,7 +339,7 @@ export async function deleteCurrentProfile() {
   if (ok) {
     window.location.hash = "/welcome";
     showToast("Profile deleted.");
-  } else sessionStorage.removeItem("nourally-signed-out");
+  } else signedOutFlag.set(false);
   return ok;
 }
 channel &&

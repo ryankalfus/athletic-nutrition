@@ -23,6 +23,7 @@ import {
 } from "../../domain/timing.js";
 import { SchoolDayEditor } from "./SchoolDayEditor.jsx";
 import { ActivitySheet } from "./ActivitySheet.jsx";
+import { activityTitle } from "../../domain/sport.js";
 import ScheduleWeek from "./ScheduleWeek.jsx";
 import MonthGrid from "./MonthGrid.jsx";
 export default function ScheduleCalendar({
@@ -33,7 +34,7 @@ export default function ScheduleCalendar({
   todayKey,
 }) {
   const { current } = useStore();
-  const sport = current.data.profile.sport?.trim() || "";
+  const sport = current.data.profile.sport || "";
   const today = new Date(`${todayKey}T12:00:00`);
   const schoolYearStart =
     today.getMonth() >= 6 ? today.getFullYear() : today.getFullYear() - 1;
@@ -113,7 +114,7 @@ export default function ScheduleCalendar({
     },
   );
   const [schoolError, setSchoolError] = useState("");
-  const activityPlaceholder = `${sport ? `${sport[0].toUpperCase()}${sport.slice(1)} ` : ""}${type}`;
+  const activityPlaceholder = activityTitle(sport, type);
   const [excludedRanges, setExcludedRanges] = useState(
     schoolSchedule?.excludedRanges || [],
   );
@@ -349,9 +350,7 @@ export default function ScheduleCalendar({
     const existingEvent = events.find((item) => item.id === editingId);
     const eventFields = {
       type,
-      title:
-        title.trim() ||
-        `${activityPlaceholder[0].toUpperCase()}${activityPlaceholder.slice(1)}`,
+      title: title.trim() || activityPlaceholder,
       startTime,
       endTime,
       intensity,
