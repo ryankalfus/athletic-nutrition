@@ -504,3 +504,11 @@ Moved the Show price estimates switch to You › Food access & budget. 2026.09.2
 Made the Ideas add-missing toast state the real count, or say everything is already on the list. 2026.09.29
 Verified the gaps in P0-05, P0-06, P0-07, P0-09, P0-11 and P1-01 to P1-06 are closed, completed P1-06 Groceries, and checked P1-06, IA-12, TODAY-09, FOOD-05, GROC-01 to GROC-08 and DATA-06 in the tracker after npm run check and browser checks at 375 px. 2026.09.29
 Hid the Dairy-free chip and stopped filtering on unreviewed dairy flags, with a notice for a stored Dairy-free choice and test coverage. 2026.09.29
+Added `npm run test:browser` (scripts/run-browser-checks.mjs) that starts or reuses Vite on 5184, runs every tests/browser-*.js snippet in headless Chromium, and exits non-zero on failure; added playwright as a devDependency (setup: `npx playwright install chromium`). 2026.09.29
+Updated the provider browser check to the current Log food button. 2026.09.29
+Rewrote the persistence browser check for Restore backup, typed-DELETE profile deletion, and the Water row save failure. 2026.09.29
+Rewrote the reliability browser check for the Water row, +8/+16 cross-tab writes, and the current profile flow. 2026.09.29
+Rewrote the schedule browser check for the week view, repeating-activity scope prompts, and school day skip/restore. 2026.09.29
+Rewrote the food workflow browser check for Groceries add-for-week, Finish shopping, put-away to At home as Have, Ideas plan/pack/log, use from home, and price estimates. 2026.09.29
+Added a You browser check for sport, hidden Gluten-free/Dairy-free/Nut-free chips, and the Reminders sheet at #/you/reminders with its honesty line. 2026.09.29
+Rewrote the responsive browser check to fail on horizontal scroll at 375 px and up on every main route; 320 px is reported only (Today spills 8 px there). 2026.09.29
