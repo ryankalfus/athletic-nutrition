@@ -1,0 +1,67 @@
+/* Welcome, first-run setup, athlete chooser, recovery and not-found pages. */
+
+.intro {
+  display: grid;
+  gap: var(--space-4);
+  margin-bottom: var(--rhythm-section);
+}
+
+.intro h1,
+.shell > h1:first-of-type {
+  font-size: var(--text-display);
+  line-height: var(--leading-display);
+}
+
+.intro-copy {
+  margin: 0;
+  color: var(--color-ink-muted);
+}
+
+.profile-card > h2 {
+  margin-bottom: var(--space-1);
+}
+
+.profile-card > p {
+  margin: 0;
+  color: var(--color-ink-muted);
+}
+
+.profile-card form,
+.shell > form {
+  display: grid;
+  gap: var(--space-5);
+  margin-top: var(--space-6);
+}
+
+.profile-card form > .primary,
+.shell > form > .primary {
+  width: 100%;
+  min-height: 52px;
+}
+
+.profile-list {
+  display: grid;
+  gap: var(--space-3);
+  margin: var(--space-4) 0;
+}
+
+.recovery,
+.not-found {
+  display: grid;
+  justify-items: start;
+  gap: var(--space-4);
+}
+
+.recovery > *,
+.not-found > * {
+  margin: 0;
+}
+
+@media (min-width: 768px) {
+  .profile-card form > .primary,
+  .shell > form > .primary {
+    justify-self: start;
+    width: auto;
+    min-height: var(--control-height);
+  }
+}

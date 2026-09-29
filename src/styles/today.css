@@ -1,213 +1,380 @@
+/* Today (6.3): heading, Now card, Day rail, Pack & prep, Water, Tonight. */
+
 .today-heading {
-  margin-bottom: 24px;
+  display: grid;
+  gap: var(--space-2);
+  margin-bottom: var(--space-6);
 }
-.today-heading h1 {
-  margin-bottom: 8px;
-}
+
 .today-heading p {
-  margin: 0 0 12px;
+  margin: 0;
+  color: var(--color-ink-muted);
 }
-.today-chips,
-.today-alternates {
+
+.today-chips {
   display: flex;
-  gap: 8px;
   flex-wrap: wrap;
+  gap: var(--space-2);
 }
+
 .today-chips span {
-  font-size: 13px;
+  padding: var(--space-1) var(--space-3);
+  border: var(--border);
+  border-radius: var(--radius-full);
   background: var(--color-surface);
-  padding: 8px 12px;
-  border-radius: 24px;
+  font-size: var(--text-caption);
+  line-height: var(--leading-caption);
+  font-weight: 500;
 }
+
 .today-layout {
   display: grid;
   /* minmax(0, 1fr) lets cards shrink below their content at 320 px. */
   grid-template-columns: minmax(0, 1fr);
-  gap: 24px;
-  max-width: 1072px;
+  gap: var(--rhythm-section);
 }
-.today-layout section {
-  border: 1px solid var(--color-border);
-  border-radius: 20px;
-  padding: 20px;
+
+/* Every Today section is a card (DS-14). */
+.today-layout > section,
+.today-prompt {
+  margin: 0;
+  padding: var(--card-padding);
+  border: var(--border);
+  border-radius: var(--radius-lg);
   background: var(--color-surface);
+  box-shadow: var(--shadow-1);
+}
+
+.today-layout > section > :last-child {
+  margin-bottom: 0;
+}
+
+.today-section-header h2,
+.tonight-card h2 {
   margin: 0;
 }
-.today-layout .now-card {
-  background: var(--color-paper);
-  padding: 24px;
+
+/* Now card: pitch surface, 24px radius, 20/28px padding (DS-14). */
+.today-layout > .now-card {
+  display: grid;
+  gap: var(--space-4);
+  padding: var(--space-5);
+  border: 0;
+  border-radius: var(--radius-xl);
+  background: linear-gradient(160deg, var(--color-pitch), var(--color-pitch-end));
+  color: var(--color-on-dark);
 }
+
 .now-card h2 {
-  font-size: 26px;
-  margin: 12px 0;
-}
-.today-countdown {
-  font-family: "Barlow Semi Condensed", sans-serif;
-  font-size: 18px;
   margin: 0;
+  font-size: var(--text-now);
+  line-height: var(--leading-now);
+  font-weight: 700;
+  letter-spacing: -0.01em;
 }
+
+.now-card p {
+  margin: 0;
+  color: var(--color-on-dark-muted);
+}
+
+.now-card [role="status"] {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+}
+
+.now-card [role="status"] p {
+  flex-basis: 100%;
+  color: var(--color-on-dark);
+}
+
+.today-countdown {
+  font-family: var(--font-numeral);
+  font-size: var(--text-numeral-m);
+  line-height: var(--leading-numeral-m);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.now-card .today-countdown {
+  color: var(--color-lime);
+}
+
 .today-pick {
-  margin: 16px 0;
+  display: grid;
+  gap: var(--space-3);
 }
-.today-pick p {
-  font-size: 13px;
-  margin: 8px 0;
+
+.today-pick > strong {
+  font-size: var(--text-h3);
+  line-height: var(--leading-h3);
 }
-.today-alternates button,
-.today-text {
-  font-size: 13px;
-  padding: 8px;
-  min-height: 44px;
+
+/* Secondary buttons on the pitch surface. */
+.now-card :where(button):not(.today-primary, .today-text) {
+  border-color: var(--color-line-dark);
+  background: transparent;
+  color: var(--color-on-dark);
 }
+
+@media (hover: hover) {
+  .now-card :where(button):not(.today-primary, .today-text):hover:not(:disabled) {
+    background: rgb(255 255 255 / 0.08);
+  }
+}
+
+.now-card :where(button):disabled:not(.today-primary) {
+  color: var(--color-on-dark-muted);
+}
+
+/* Go: the only lime button (DS-11). */
 .today-primary {
   width: 100%;
   min-height: 52px;
-}
-.today-section-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 12px;
-}
-.today-section-header h2 {
-  margin: 0;
-  font-size: 22px;
-}
-.day-rail ol {
-  list-style: none;
-  padding: 0;
-  margin: 20px 0 0;
-}
-.day-rail li {
-  display: grid;
-  grid-template-columns: 56px 1fr;
-  gap: 12px;
-  border-left: 2px solid var(--color-border);
-  padding: 8px 0 8px 12px;
-  align-items: center;
-}
-.day-rail time {
-  font-family: "Barlow Semi Condensed", sans-serif;
-  font-size: 13px;
-}
-.day-rail li button {
-  text-align: left;
-  background: transparent;
-  display: grid;
-  padding: 8px;
-  min-height: 44px;
-}
-.day-rail li span {
-  font-size: 13px;
-}
-.day-rail .rail-now {
   background: var(--color-lime);
   color: var(--color-ink);
-  border-radius: 8px;
-  min-height: 44px;
 }
+
+@media (hover: hover) {
+  .today-primary:hover:not(:disabled) {
+    background: var(--color-lime-hover);
+  }
+}
+
+.today-primary:active:not(:disabled) {
+  background: var(--color-lime-hover);
+}
+
+.today-primary:disabled {
+  background: rgb(255 255 255 / 0.16);
+  color: var(--color-on-dark-muted);
+}
+
+.today-text {
+  justify-self: start;
+  min-height: var(--target);
+  padding: var(--space-2) 0;
+  border: 0;
+  background: transparent;
+  color: var(--color-on-dark);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+@media (hover: hover) {
+  .today-text:hover:not(:disabled) {
+    background: transparent;
+    color: var(--color-lime);
+  }
+}
+
+/* Ingredient availability badges */
+.today-availability {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.today-availability li {
+  padding: var(--space-1) var(--space-3);
+  border: var(--border-control);
+  border-radius: var(--radius-full);
+  font-size: var(--text-caption);
+  line-height: var(--leading-caption);
+}
+
+.today-availability li[data-have="false"] {
+  border-style: dashed;
+}
+
+.now-card .today-availability li {
+  border-color: var(--color-line-dark);
+  color: var(--color-on-dark);
+}
+
+.now-card .today-availability li[data-have="true"] {
+  background: rgb(255 255 255 / 0.12);
+}
+
+/* Day rail: 56px time column with condensed numerals (RWD-08). */
+.day-rail ol {
+  display: grid;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.day-rail li {
+  display: grid;
+  grid-template-columns: 56px minmax(0, 1fr);
+  align-items: center;
+  gap: var(--space-3);
+  min-height: var(--target);
+  padding-left: var(--space-3);
+  border-left: 2px solid var(--color-line);
+}
+
+.day-rail time {
+  font-family: var(--font-numeral);
+  font-size: var(--text-numeral-m);
+  line-height: var(--leading-numeral-m);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.day-rail li button {
+  display: grid;
+  justify-content: stretch;
+  justify-items: start;
+  gap: 0;
+  width: 100%;
+  padding: var(--space-2) var(--space-3);
+  border: var(--border);
+  font-weight: 400;
+  text-align: left;
+}
+
+.day-rail li span {
+  color: var(--color-ink-muted);
+  font-size: var(--text-caption);
+  line-height: var(--leading-caption);
+}
+
+.day-rail li strong {
+  font-weight: 600;
+}
+
+.day-rail .rail-now {
+  padding: var(--space-2) var(--space-3);
+  border-left-color: var(--color-lime);
+  border-radius: var(--radius-md);
+  background: var(--color-lime);
+  color: var(--color-ink);
+}
+
 .rail-past {
   color: var(--color-ink-muted);
 }
+
+/* Pack & prep: 44px check column (RWD-07). */
+.pack-prep > p {
+  color: var(--color-ink-muted);
+}
+
 .prep-row {
-  display: flex;
-  gap: 12px;
+  display: grid;
+  grid-template-columns: var(--target) minmax(0, 1fr);
   align-items: center;
-  min-height: 48px;
+  gap: var(--space-2);
+  min-height: var(--target);
+  padding: var(--space-1) 0;
+  font-weight: 400;
 }
+
+.prep-row + .prep-row {
+  margin-top: var(--space-1);
+}
+
 .prep-row input {
-  width: 24px;
-  height: 24px;
+  justify-self: center;
 }
+
 .prep-row small {
   display: block;
-  font-size: 13px;
+  color: var(--color-ink-muted);
 }
-.water-row {
+
+/* Water */
+.today-layout > .water-row {
   display: flex;
-  justify-content: space-between;
-  gap: 12px;
-  align-items: center;
   flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
 }
+
 .water-row div {
   display: flex;
-  gap: 8px;
+  flex-wrap: wrap;
+  gap: var(--space-2);
 }
+
 .water-row button {
-  min-height: 44px;
-  min-width: 44px;
+  min-width: var(--target);
 }
-.tonight-card h2 {
-  margin-top: 0;
+
+.tonight-card {
+  display: grid;
+  gap: var(--space-3);
+  justify-items: start;
 }
+
+.tonight-card p {
+  margin: 0;
+}
+
+/* Reminder prompt below the day */
+.today-prompt {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+  margin-top: var(--rhythm-section);
+  border-color: var(--color-info-tint);
+  background: var(--color-info-tint);
+  box-shadow: none;
+}
+
+.today-prompt p {
+  flex-basis: 100%;
+  margin: 0;
+}
+
+@media (min-width: 1024px) {
+  .today-layout > .now-card {
+    padding: var(--space-8);
+  }
+}
+
 @media (min-width: 1200px) {
   .today-layout {
-    grid-template-columns: minmax(0, 720px) 320px;
+    grid-template-columns: minmax(0, 1fr) var(--width-aside);
+    align-items: start;
   }
+
   .now-card,
   .pack-prep,
   .water-row,
   .tonight-card {
     grid-column: 1;
   }
-  .day-rail {
-    grid-column: 2;
-    grid-row: 1/5;
-    align-self: start;
+
+  .today-layout > .day-rail {
     position: sticky;
-    top: 24px;
+    top: var(--space-8);
+    grid-column: 2;
+    grid-row: 1 / span 4;
   }
-}
-@media (max-width: 767px) {
-  .today-layout .now-card {
-    padding: 20px;
-  }
-  .now-card h2 {
-    font-size: 24px;
-  }
-  .today-heading {
-    margin-bottom: 16px;
-  }
-  .today-layout {
-    gap: 24px;
-  }
-}
-.today-availability {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  list-style: none;
-  padding: 0;
-  margin: 8px 0;
-}
-.today-availability li {
-  font-size: 13px;
-  padding: 4px 10px;
-  border-radius: 24px;
-  border: 1px solid var(--color-border);
-}
-.today-availability li[data-have="true"] {
-  background: var(--color-surface);
-}
-.today-availability li[data-have="false"] {
-  border-style: dashed;
 }
 
-/* You › Reminders (IA-12, YOU-05, DATA-06) */
+/* You › Reminders sheet (IA-12, YOU-05, DATA-06) */
 .reminders-sheet fieldset:disabled {
-  opacity: 0.55;
+  color: var(--color-ink-subtle);
 }
+
 .reminder-permission,
 .reminder-honesty {
-  font-size: 14px;
-  margin: 0;
+  font-size: var(--text-small);
+  line-height: var(--leading-small);
 }
+
 .reminder-honesty {
   color: var(--color-ink-muted);
-}
-.field-hint {
-  display: block;
-  font-size: 13px;
-  font-weight: 400;
 }

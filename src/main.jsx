@@ -1,19 +1,20 @@
 import { Component, StrictMode, useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import "@fontsource-variable/dm-sans/wght.css";
 import "@fontsource/barlow-semi-condensed/600.css";
-import "./styles.css";
-import "./refinement.css";
 import "./styles/tokens.css";
 import "./styles/base.css";
+import "./styles/components.css";
 import "./styles/frame.css";
+import "./styles/welcome.css";
+import "./styles/today.css";
 import "./styles/schedule.css";
+import "./styles/food.css";
 import "./styles/search.css";
+import "./styles/you.css";
 import { Shell } from "./components/AppFrame.jsx";
 import Dashboard from "./pages/Today/TodayPage.jsx";
-import "./styles/today.css";
-import "./styles/food.css";
-import "./styles/you.css";
 import ScheduleCalendar from "./pages/Schedule/SchedulePage.jsx";
 import FoodHub from "./components/FoodWorkspace.jsx";
 import { ToastProvider } from "./components/ui/Toast.jsx";
@@ -263,7 +264,6 @@ function ProfileSetup({ profile, onSave }) {
     <Shell navigation={false}>
       <section className="intro split-intro">
         <div>
-          <p className="kicker">FUELING THAT FITS REAL LIFE</p>
           <h1>
             School to sport,
             <br />
@@ -278,7 +278,6 @@ function ProfileSetup({ profile, onSave }) {
         </div>
       </section>
       <section className="card profile-card">
-        <div className="section-label">FOOD NEEDS & ACCESS</div>
         <h2>Food needs & access</h2>
         <p className="muted">
           These details stay on this device and only filter the examples you
@@ -386,7 +385,7 @@ function ProfileSetup({ profile, onSave }) {
             type="submit"
             disabled={!draft.foodSources.length}
           >
-            Save and see today <span>→</span>
+            Save and see today
           </button>
         </form>
       </section>
@@ -422,7 +421,7 @@ function WeeklyProgress({ dailyLogs, todayKey, onNavigate }) {
     <Shell>
       <section className="dashboard-head weekly-head">
         <div>
-          <h1>Food</h1>
+          <h1 className="page-title">Food</h1>
         </div>
       </section>
       <nav className="food-sections" aria-label="Food workspace">
@@ -449,7 +448,7 @@ function WeeklyProgress({ dailyLogs, todayKey, onNavigate }) {
           onClick={() => setWeekOffset((offset) => offset - 1)}
           aria-label="Previous seven days"
         >
-          ←
+          <ChevronLeft size={20} strokeWidth={1.75} aria-hidden="true" />
         </button>
         <div>
           <strong>{weekOffset === 0 ? "Last 7 days" : range}</strong>
@@ -461,7 +460,7 @@ function WeeklyProgress({ dailyLogs, todayKey, onNavigate }) {
           onClick={() => setWeekOffset((offset) => Math.min(offset + 1, 0))}
           aria-label="Next seven days"
         >
-          →
+          <ChevronRight size={20} strokeWidth={1.75} aria-hidden="true" />
         </button>
       </section>
       <section className="weekly-stats">
@@ -495,7 +494,6 @@ function WeeklyProgress({ dailyLogs, todayKey, onNavigate }) {
       <section className="card weekly-chart-card">
         <div className="chart-heading">
           <div>
-            <div className="section-label">FOOD CHECK-INS BY DAY</div>
             <h2>
               {weeklyCheckIns} <small>foods logged this week</small>
             </h2>
@@ -538,7 +536,6 @@ function WeeklyProgress({ dailyLogs, todayKey, onNavigate }) {
       <section className="card weekly-water-card">
         <div className="chart-heading">
           <div>
-            <div className="section-label">HYDRATION BY DAY</div>
             <h2>
               {weeklyWater.toLocaleString()}{" "}
               <small>oz logged over 7 days</small>

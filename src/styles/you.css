@@ -1,52 +1,53 @@
-/* You (6.13) and This device (6.14) */
+/* You (6.13), This device (6.14), About, and the You settings sheets. */
+
 .you-page {
-  width: 100%;
-  max-width: 640px;
-  margin: 0 auto;
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--space-6);
 }
-.you-page h1 {
-  margin: 0;
-}
+
+.you-page h1,
 .you-page > p {
   margin: 0;
 }
+
 .you-back {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-1);
   justify-self: start;
-  min-height: 44px;
-  padding: 0;
+  padding-left: 0;
 }
 
 .you-athlete {
   display: flex;
-  align-items: center;
   flex-wrap: wrap;
+  align-items: center;
   gap: var(--space-3) var(--space-4);
-  padding: var(--space-4);
-  border: 1px solid var(--color-line);
+  padding: var(--card-padding);
+  border: var(--border);
   border-radius: var(--radius-lg);
   background: var(--color-surface);
+  box-shadow: var(--shadow-1);
 }
+
 .you-athlete > div {
   flex: 1 1 140px;
   min-width: 0;
 }
+
 .you-athlete p {
   margin: 0;
 }
+
 .you-athlete-name {
-  font-size: 20px;
+  font-size: var(--text-h2);
+  line-height: var(--leading-h2);
   font-weight: 600;
   overflow-wrap: anywhere;
 }
+
 .you-avatar {
   display: inline-grid;
-  place-items: center;
   flex: 0 0 auto;
+  place-items: center;
   width: 40px;
   height: 40px;
   border-radius: var(--radius-full);
@@ -55,18 +56,25 @@
   font-weight: 700;
 }
 
-.you-list {
-  list-style: none;
+/* Settings list: one grouped card, 56px rows. */
+.you-list,
+.device-athletes {
+  width: 100%;
   margin: 0;
   padding: 0;
-  border: 1px solid var(--color-line);
+  overflow: hidden;
+  border: var(--border);
   border-radius: var(--radius-lg);
   background: var(--color-surface);
-  overflow: hidden;
+  box-shadow: var(--shadow-1);
+  list-style: none;
 }
-.you-list li + li {
-  border-top: 1px solid var(--color-line);
+
+.you-list li + li,
+.device-athletes li + li {
+  border-top: var(--border);
 }
+
 .you-list a {
   display: flex;
   align-items: center;
@@ -75,167 +83,118 @@
   min-height: 56px;
   padding: var(--space-3) var(--space-4);
   color: var(--color-ink);
+  font-weight: 600;
   text-decoration: none;
 }
-.you-list a:hover {
-  background: var(--color-surface-muted);
+
+@media (hover: hover) {
+  .you-list a:hover {
+    background: var(--color-hover);
+  }
 }
+
+.you-list a:focus-visible {
+  outline-offset: -3px;
+}
+
 .you-list a > span {
   display: grid;
-  gap: 2px;
   min-width: 0;
 }
+
 .you-summary {
   color: var(--color-ink-muted);
-  font-size: 14px;
+  font-size: var(--text-small);
+  line-height: var(--leading-small);
+  font-weight: 400;
   overflow-wrap: anywhere;
 }
+
 .you-list svg {
   flex: 0 0 auto;
   color: var(--color-ink-muted);
 }
 
-.you-secondary {
-  min-height: 44px;
-  padding: 10px 16px;
-  border: 1px solid var(--color-line-strong);
-  border-radius: var(--radius-md);
-  background: var(--color-surface);
-  color: var(--color-ink);
-  font-weight: 600;
-}
-.you-secondary:hover {
-  background: var(--color-surface-muted);
-}
-
-/* Settings sheets: 560 px dialogs on desktop, bottom sheets on phones. */
-.app-dialog.settings-sheet {
-  width: min(560px, calc(100vw - 32px));
-}
-.settings-sheet form {
-  display: grid;
-  gap: var(--space-4);
-}
+/* Settings sheets */
 .settings-sheet h3 {
   margin: 0 0 var(--space-1);
-  font-size: 16px;
+  font-size: var(--text-label);
+  line-height: var(--leading-label);
 }
+
 .settings-sheet .you-allergies p {
   margin: 0;
 }
-.settings-sheet .choice-field {
-  min-width: 0;
-  margin: 0;
-}
-.settings-sheet .choice-grid {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-2);
-}
-.settings-sheet .choice-grid button {
-  min-height: 44px;
-  padding: 8px 14px;
-  font-size: 14px;
-}
-.settings-sheet .dialog-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: var(--space-3);
-}
+
 .switch-row span {
   display: grid;
-  gap: 2px;
 }
+
 .budget-input {
   display: flex;
   align-items: center;
   gap: var(--space-2);
   max-width: 200px;
-}
-@media (max-width: 767px) {
-  .app-dialog.settings-sheet[open] {
-    width: 100vw;
-    max-width: 100vw;
-    margin: auto 0 0;
-    border-radius: var(--radius-xl) var(--radius-xl) 0 0;
-    max-height: 90dvh;
-  }
+  font-weight: 400;
 }
 
 /* This device */
 .device-page section {
   display: grid;
-  gap: var(--space-3);
   justify-items: start;
+  gap: var(--space-3);
 }
+
 .device-page section > * {
   margin: 0;
 }
-.device-page h2 {
-  font-size: 18px;
-}
-.device-athletes {
-  list-style: none;
-  padding: 0;
-  width: 100%;
-  border: 1px solid var(--color-line);
-  border-radius: var(--radius-lg);
-  background: var(--color-surface);
-}
+
 .device-athletes li {
   display: flex;
-  align-items: center;
   flex-wrap: wrap;
+  align-items: center;
   gap: var(--space-3);
   min-height: 56px;
   padding: var(--space-2) var(--space-4);
 }
-.device-athletes li + li {
-  border-top: 1px solid var(--color-line);
-}
+
 .device-athlete-name {
   flex: 1 1 120px;
   min-width: 0;
+  font-weight: 600;
   overflow-wrap: anywhere;
 }
+
 .device-athlete-name small {
+  display: block;
   color: var(--color-ink-muted);
+  font-weight: 400;
 }
+
 .device-athlete-actions {
   display: flex;
-  gap: var(--space-3);
+  gap: var(--space-2);
 }
-.device-athlete-actions button {
-  min-height: 44px;
-}
-.device-page .button-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-3);
-}
+
 .danger-zone {
-  margin-top: var(--space-8);
-  padding-top: var(--space-8);
-  border-top: 1px solid var(--color-line);
-}
-.danger-zone .danger-button {
-  min-height: 44px;
-  padding: 10px 16px;
-  border: 1px solid var(--color-error);
-  border-radius: var(--radius-md);
-  background: var(--color-surface);
-  color: var(--color-error);
+  margin-top: var(--space-4);
+  padding-top: var(--rhythm-section);
+  border-top: var(--border);
 }
 
 /* About */
-.about-page section h2 {
-  margin: 0 0 var(--space-1);
-  font-size: 18px;
+.about-page section {
+  display: grid;
+  gap: var(--space-1);
 }
+
+.about-page section h2,
 .about-page section p,
 .about-intro {
   margin: 0;
 }
+
 .about-intro {
-  font-size: 17px;
+  font-size: var(--text-h3);
+  line-height: var(--leading-h3);
 }

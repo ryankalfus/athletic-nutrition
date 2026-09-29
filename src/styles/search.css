@@ -1,76 +1,174 @@
-.app-dialog.food-search-dialog[open] {
-  width: min(640px, calc(100vw - 32px));
-  max-height: min(80dvh, 760px);
+/* Food search (6.15) and barcode scanner, shown in dialogs. */
+
+.food-search {
+  display: grid;
+  gap: var(--space-4);
 }
-.food-search-dialog > header {
-  position: sticky;
-  top: -24px;
-  z-index: var(--z-sticky);
-  padding: var(--space-4) 0;
-  background: var(--color-surface);
-}
+
 .food-search > form {
   position: sticky;
-  top: 36px;
+  top: 64px;
   z-index: var(--z-sticky);
   padding-bottom: var(--space-3);
   background: var(--color-surface);
 }
-.food-search-loading {
-  display: grid;
-  gap: var(--space-3);
-  margin-top: var(--space-5);
-}
-.food-search-loading span {
-  display: block;
-  height: 52px;
-  border-radius: var(--radius-md);
-  background: var(--color-selected-bg);
-}
+
 .food-search-field {
-  display: flex;
-  align-items: end;
-  gap: var(--space-2);
   position: relative;
+  display: flex;
+  align-items: flex-end;
+  gap: var(--space-2);
 }
+
 .food-search-field label {
   flex: 1;
   min-width: 0;
 }
+
 .food-search-field input {
-  width: 100%;
-  padding-left: 38px;
+  padding-left: var(--space-10);
 }
+
+/* Lucide "search" icon inside the field. */
 .food-search-field::before {
-  content: "⌕";
   position: absolute;
-  left: 13px;
-  bottom: 11px;
-  color: var(--color-ink-muted);
-  font-size: 22px;
+  bottom: 14px;
+  left: var(--space-3);
+  width: 20px;
+  height: 20px;
+  background: var(--icon-search) center / 20px no-repeat;
+  content: "";
   pointer-events: none;
 }
+
 .food-search-field button {
-  min-height: 44px;
+  flex: 0 0 auto;
+  min-height: var(--control-height);
 }
+
+.food-search-loading {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.food-search-loading span {
+  height: 56px;
+}
+
 .food-result-list.stale {
   opacity: 0.5;
 }
+
 .food-source {
   display: block;
   color: var(--color-ink-muted);
-  font-size: 12px;
+  font-size: var(--text-caption);
+  line-height: var(--leading-caption);
 }
-@media (max-width: 600px) {
-  .app-dialog.food-search-dialog[open] {
-    width: 100vw;
-    max-width: none;
-    height: 100dvh;
-    max-height: 100dvh;
-    margin: 0;
-    border-radius: 0;
+
+.quick-basics {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.quick-basics h3 {
+  margin: 0;
+}
+
+/* Barcode scanner */
+.scanner-card {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.camera-frame {
+  position: relative;
+  height: 220px;
+  overflow: hidden;
+  border-radius: var(--radius-md);
+  background: var(--color-pitch);
+}
+
+.camera-frame video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+}
+
+.camera-frame.active video {
+  opacity: 1;
+}
+
+.captured-frame {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.scan-guide {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: var(--space-4);
+  color: var(--color-on-dark);
+  pointer-events: none;
+}
+
+.scan-guide span {
+  display: block;
+  width: 76%;
+  height: 96px;
+  border: 2px solid var(--color-lime);
+  border-radius: var(--radius-sm);
+}
+
+.scan-guide p {
+  margin: 0;
+  font-size: var(--text-caption);
+  line-height: var(--leading-caption);
+}
+
+.product-result {
+  display: grid;
+  grid-template-columns: 72px minmax(0, 1fr);
+  gap: var(--space-3);
+  padding-top: var(--space-4);
+  border-top: var(--border);
+}
+
+.product-result > img {
+  width: 72px;
+  height: 96px;
+  object-fit: contain;
+  border: var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+}
+
+/* Search is a full-screen sheet on phones and a 640px dialog from 768px (DS-15). */
+.app-dialog.food-search-dialog {
+  width: 100%;
+  height: 100dvh;
+  max-height: 100dvh;
+  margin: 0;
+  border-radius: 0;
+}
+
+@media (min-width: 768px) {
+  .app-dialog.food-search-dialog {
+    width: min(640px, calc(100vw - 2 * var(--gutter)));
+    height: auto;
+    max-height: min(92dvh, 800px);
+    margin: auto;
+    border-radius: var(--radius-xl);
   }
-  .food-search-field button {
-    font-size: 13px;
+
+  .camera-frame {
+    height: 245px;
   }
 }
