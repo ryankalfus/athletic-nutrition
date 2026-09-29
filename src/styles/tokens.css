@@ -25,6 +25,9 @@
   --color-line: #dddbd2;
   --color-line-strong: #7a847f;
   --color-line-dark: rgb(255 255 255 / 0.24);
+  --color-on-dark-hover: rgb(255 255 255 / 0.08);
+  --color-on-dark-fill: rgb(255 255 255 / 0.12);
+  --color-on-dark-disabled: rgb(255 255 255 / 0.16);
   --color-pitch: #0f3640;
   --color-pitch-end: #16484a;
   --color-lime: #d7f45f;
@@ -103,6 +106,8 @@
   --rhythm-row: var(--space-3);
   --card-padding: var(--space-5);
   --top-bar: 56px;
+  --dialog-header: 64px;
+  --sticky-offset: 72px; /* below a sticky section control */
   --tab-bar: 64px;
   --control-height: 48px;
   --target: 44px;

@@ -121,7 +121,7 @@
 
 @media (hover: hover) {
   .now-card :where(button):not(.today-primary, .today-text):hover:not(:disabled) {
-    background: rgb(255 255 255 / 0.08);
+    background: var(--color-on-dark-hover);
   }
 }
 
@@ -148,7 +148,7 @@
 }
 
 .today-primary:disabled {
-  background: rgb(255 255 255 / 0.16);
+  background: var(--color-on-dark-disabled);
   color: var(--color-on-dark-muted);
 }
 
@@ -198,7 +198,7 @@
 }
 
 .now-card .today-availability li[data-have="true"] {
-  background: rgb(255 255 255 / 0.12);
+  background: var(--color-on-dark-fill);
 }
 
 /* Day rail: 56px time column with condensed numerals (RWD-08). */

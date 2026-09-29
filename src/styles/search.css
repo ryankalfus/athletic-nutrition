@@ -7,7 +7,7 @@
 
 .food-search > form {
   position: sticky;
-  top: 64px;
+  top: var(--dialog-header);
   z-index: var(--z-sticky);
   padding-bottom: var(--space-3);
   background: var(--color-surface);
@@ -32,7 +32,7 @@
 /* Lucide "search" icon inside the field. */
 .food-search-field::before {
   position: absolute;
-  bottom: 14px;
+  bottom: calc((var(--control-height) - 20px) / 2);
   left: var(--space-3);
   width: 20px;
   height: 20px;

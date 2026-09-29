@@ -210,7 +210,7 @@
 }
 
 .stock-row > div:first-child {
-  flex: 1 1 120px;
+  flex: 1 1 96px;
   min-width: 0;
 }
 
@@ -256,7 +256,8 @@
 }
 
 .stock-control > button {
-  min-width: 56px;
+  min-width: var(--control-height);
+  padding-inline: var(--space-2);
 }
 
 .low-summary {
@@ -341,10 +342,11 @@
   height: var(--target);
 }
 
-.grocery-check input {
+.grocery-check input[type="checkbox"] {
   width: 28px;
   height: 28px;
   border-radius: var(--radius-full);
+  background-size: 18px;
 }
 
 .grocery-main {
@@ -733,7 +735,7 @@
 
   .low-summary {
     position: sticky;
-    top: 72px;
+    top: var(--sticky-offset);
   }
 }
 

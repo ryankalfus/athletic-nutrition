@@ -141,6 +141,8 @@
 
 .shell[data-layout="grid"] {
   --layout-max: var(--width-grid);
+  /* Food: top bar 56 + 8 + section control 48 = 112px of chrome (RWD-04). */
+  padding-top: var(--space-2);
 }
 
 .shell > footer {
@@ -159,7 +161,7 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-start;
   gap: var(--space-3) var(--space-4);
   margin-bottom: var(--space-6);
 }
@@ -252,6 +254,11 @@
 
   .app-frame.has-navigation .dashboard-head {
     margin-bottom: var(--space-6);
+  }
+
+  .dashboard-head,
+  .calendar-head {
+    justify-content: space-between;
   }
 }
 
