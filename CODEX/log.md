@@ -556,3 +556,12 @@ Made ideas, Today's idea check and grocery suggestions hide items that list a ch
 Showed Open Food Facts allergens and traces on product views (portion editor, barcode result, grocery item sheet) with "this list may be incomplete", above the label-check line. 2026.09.29
 Moved the Food needs fields into a shared FoodNeedsFields component; with the gate closed the Allergies section shows "Allergy filtering is waiting for review. Check every label." and no chips. 2026.09.29
 Added a pending ingredient allergen table, reviewer questions and a blank sign-off block to NUTRITION-REVIEW.md; P1-09 stays unticked until it is signed. 2026.09.29
+Added setupStep and lastUsedAt to athlete data with validation, and made new athletes start with low-cost ideas off (ONB-03). 2026.09.29
+Added pure setup step logic in src/domain/setup.js (school, usual practice and game, food at school, first-plan preview, last used) with tests in tests/setup.test.js. 2026.09.29
+Shared the weekday picker and time-range fields between the school day editor, the activity sheet and setup, and moved school-day validation into the domain. 2026.09.29
+Added Welcome at #/welcome: "Fuel for the day you actually have.", Get started on a first visit, athlete tiles with sport and last used (Rename and Remove menu), Add another athlete, the privacy line and How Nourally works. 2026.09.29
+Replaced the one-form setup in main.jsx with a six-step SetupFlow in src/pages/Setup that saves each step on Next, resumes at setupStep after a reload, and offers Skip and Skip setup. 2026.09.29
+Made a new athlete open setup step 1 and choosing an athlete always open Today; removed the old device profile chooser. 2026.09.29
+Updated every browser check for the new setup, added browser-setup.js (Welcome, fit at 390 × 844, resume at step 4, steps 1 and 3 only) and browser-allergens.js (Open Food Facts allergens on a scanned product). 2026.09.29
+Recorded the setup preview copy and the low-cost default as pending review in NUTRITION-REVIEW.md. 2026.09.29
+Checked P1-11, ENTRY-01 to ENTRY-05, ONB-01 to ONB-03, ONB-05, ONB-06, ADD-01 and DATA-02; left P1-09, P1-10, YOU-02, YOU-03 and ONB-04 open pending the allergen tag sign-off, and DATA-08 for P1-12. 2026.09.29

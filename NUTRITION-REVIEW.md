@@ -286,6 +286,12 @@ Shellfish: no built-in ingredient is tagged, so a shellfish allergy hides nothin
 8. **Filtering rule:** hiding on "may contain" as well as "contains" is stricter than some allergy plans need. Confirm or change.
 9. **Open Food Facts wording:** "Label lists: … May contain: … From Open Food Facts; this list may be incomplete." Confirm that it does not read as a safety claim. Nothing is shown when Open Food Facts lists no allergens.
 
+### Setup copy added with P1-11 (pending the same review)
+
+- Step 6 preview: "Here's your first plan: [Soccer practice] today at 4:00 PM. Plan a snack for about 2:30." It uses the audit's sample copy and the same 90-minute pre-activity point that Today already uses. There is no snack time when that time has passed. With no activity it says "Add a practice or game any time on Schedule. Today will time your snacks around it." (`firstPlanPreview` in `src/domain/setup.js`).
+- Step 5 shows the audit ONB-04 line "Nourally hides ideas that list your allergies, but always check labels." only once the allergen gate is open. Until then it shows the waiting line.
+- New athletes now start with "Keep ideas low-cost" off (ONB-03), so higher-cost ideas show by default.
+
 ### Sign-off (ingredient allergen tags)
 
 - Reviewer name: ______________________
