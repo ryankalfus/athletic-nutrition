@@ -1,7 +1,17 @@
 import { existsSync } from "node:fs";
 import { DatabaseSync } from "node:sqlite";
+import {
+  SEARCH_PAGE_SIZE,
+  collapseFoodMatches,
+  isBarcodeQuery,
+  rankFoods,
+} from "../src/domain/search.js";
 
 let db;
+/** Tests pass an in-memory catalog; null restores the file lookup. */
+export function useLocalCatalog(database) {
+  db = database;
+}
 export function localCatalog() {
   if (db) return db;
   const path = process.env.USDA_DB_PATH || "data/usda/catalog.sqlite";
@@ -41,76 +51,59 @@ function food(row) {
       })),
   };
 }
+// Basic foods first, closest match first, near-duplicates collapsed, in both
+// the local catalog and the live USDA API (P1-07).
 export function rankFdcResults(foods, query) {
-  const needle = query.trim().toLocaleLowerCase();
-  const brandQuery =
-    /^\d{8,14}$/.test(needle) ||
-    foods.some(
-      (item) =>
-        String(item.brandOwner || item.brandName || "").toLocaleLowerCase() ===
-        needle,
-    );
-  function score(item) {
-    const name = String(item.description || "").toLocaleLowerCase();
-    const brand = String(
-      item.brandOwner || item.brandName || "",
-    ).toLocaleLowerCase();
-    const basic = item.dataType !== "Branded";
-    if (brandQuery && brand === needle) return 0;
-    if (basic && [`, raw`, `s, raw`].some((suffix) => name === needle + suffix))
-      return 1;
-    if (basic && name === needle) return 2;
-    if (basic && name.startsWith(`${needle},`)) return 3;
-    return basic ? 4 : 5;
-  }
-  return [...foods].sort((a, b) => score(a) - score(b));
+  return collapseFoodMatches(rankFoods(foods, query));
 }
+// Rows ranked in JavaScript before paging; later pages continue in SQL order.
+export const LOCAL_POOL = 360;
 export function searchLocal(query, type, page) {
   const db = localCatalog();
   if (!db) return null;
   const tokens = query.match(/[\p{L}\p{N}]+/gu) || [];
-  if (!tokens.length) return { foods: [], totalHits: 0, pageNumber: page };
+  if (!tokens.length)
+    return { foods: [], totalHits: 0, pageNumber: page, hasMore: false };
   const filter =
     type === "branded"
       ? " AND f.type='Branded'"
       : type === "generic"
         ? " AND f.type!='Branded'"
         : "";
-  const barcode = /^\d{8,14}$/.test(query);
+  const barcode = isBarcodeQuery(query);
   const from = barcode
     ? "food f"
     : "food_search JOIN food f ON f.id=food_search.rowid";
   const where = barcode ? "f.barcode=?" : "food_search MATCH ?";
   const term = barcode ? query : tokens.map((t) => `"${t}"*`).join(" AND ");
-  const brandQuery = Boolean(
-    db
-      .prepare(
-        `SELECT 1 FROM ${from} WHERE ${where} AND lower(f.brand)=lower(?) LIMIT 1`,
-      )
-      .get(term, query),
-  );
   const totalHits = db
     .prepare(`SELECT COUNT(*) count FROM ${from} WHERE ${where}${filter}`)
     .get(term).count;
-  const rows = db
-    .prepare(
-      `SELECT f.* FROM ${from} WHERE ${where}${filter} ORDER BY CASE WHEN ? AND lower(f.brand)=lower(?) THEN 0 WHEN f.type!='Branded' AND lower(f.name) IN (lower(?) || ', raw', lower(?) || 's, raw') THEN 1 WHEN f.type!='Branded' AND lower(f.name)=lower(?) THEN 2 WHEN f.type!='Branded' AND lower(f.name) LIKE lower(?) || ',%' THEN 3 WHEN f.type!='Branded' THEN 4 ELSE 5 END, ${barcode ? "f.id" : "bm25(food_search)"}, f.id LIMIT 18 OFFSET ?`,
-    )
-    .all(
-      term,
-      Number(brandQuery || barcode),
-      query,
-      query,
-      query,
-      query,
-      query,
-      (page - 1) * 18,
-    );
+  // The coarse SQL order puts every likely match in the pool: basic foods,
+  // then names or brands that start with the query, then full-text relevance.
+  const order = barcode
+    ? "f.id"
+    : "f.type='Branded', CASE WHEN lower(f.name) LIKE lower(?) || '%' OR lower(f.brand) LIKE lower(?) || '%' THEN 0 ELSE 1 END, bm25(food_search), f.id";
+  const select = (limit, offset) =>
+    db
+      .prepare(
+        `SELECT f.* FROM ${from} WHERE ${where}${filter} ORDER BY ${order} LIMIT ? OFFSET ?`,
+      )
+      .all(term, ...(barcode ? [] : [query, query]), limit, offset)
+      .map(food);
+  const pool = rankFdcResults(select(LOCAL_POOL, 0), query);
+  const poolPages = Math.ceil(pool.length / SEARCH_PAGE_SIZE);
+  const beyond = Math.max(0, page - poolPages);
+  const foods =
+    page <= poolPages
+      ? pool.slice((page - 1) * SEARCH_PAGE_SIZE, page * SEARCH_PAGE_SIZE)
+      : select(SEARCH_PAGE_SIZE, LOCAL_POOL + (beyond - 1) * SEARCH_PAGE_SIZE);
   return {
-    foods: rows.map(food),
+    foods,
     totalHits,
     pageNumber: page,
-    totalPages: Math.ceil(totalHits / 18),
+    hasMore:
+      page < poolPages || totalHits > LOCAL_POOL + beyond * SEARCH_PAGE_SIZE,
     mode: "local-snapshot",
     snapshot: Object.fromEntries(
       db

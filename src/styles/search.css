@@ -46,8 +46,19 @@
   min-height: var(--control-height);
 }
 
-.food-result-list.stale {
+.food-result-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* Old results stay visible, dimmed, until new ones arrive (6.15). */
+.food-results.stale {
   opacity: 0.5;
+}
+
+:is(.food-result-row, .product-result) .allergen-line {
+  color: var(--color-ink);
 }
 
 .food-source {
@@ -126,19 +137,18 @@
 
 .product-result {
   display: grid;
-  grid-template-columns: 72px minmax(0, 1fr);
-  gap: var(--space-3);
+  gap: var(--space-2);
   padding-top: var(--space-4);
   border-top: var(--border);
 }
 
-.product-result > img {
-  width: 72px;
-  height: 96px;
-  object-fit: contain;
-  border: var(--border);
-  border-radius: var(--radius-sm);
-  background: var(--color-surface);
+.product-result :is(h3, p) {
+  margin: 0;
+}
+
+.product-result > button {
+  justify-self: start;
+  margin-top: var(--space-2);
 }
 
 /* Search is a full-screen sheet on phones and a 640px dialog from 768px (DS-15). */

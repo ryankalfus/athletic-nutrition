@@ -32,39 +32,40 @@ async (page) => {
       .or(p.getByText("Food provider rate limit reached.", { exact: false }))
       .first()
       .waitFor();
-    if (!(await p.locator(".food-result-row").count()))
-      throw new Error(
-        "Real USDA search is rate-limited (DEMO_KEY allows ~30 requests/hour). Set FDC_API_KEY in .env or retry later.",
+    // A throttled DEMO_KEY fails this check at the end, after the mocked
+    // failure, offline and barcode checks below still run.
+    const rateLimited = !(await p.locator(".food-result-row").count());
+    if (!rateLimited) {
+      const first = await p.locator(".food-result-row").first().innerText();
+      if (!/Bananas?, raw/.test(first))
+        throw new Error(`Plain banana did not rank first: ${first}`);
+      const listText = await p.locator(".food-result-list").last().innerText();
+      // COPY-05: database taxonomy never shows; rows read "Basic food" or "Brand: …".
+      if (/Foundation|SR Legacy|FNDDS|Branded/.test(listText))
+        throw new Error("USDA data-type labels are visible");
+      if (!listText.includes("Basic food"))
+        throw new Error("Generic foods are not labeled Basic food");
+      if (!listText.includes("Allergies: check every label."))
+        throw new Error("Search rows are missing the label line");
+      if (await p.getByRole("button", { name: "Show more results" }).count()) {
+        const before = await p.locator(".food-result-row").count();
+        await p.getByRole("button", { name: "Show more results" }).click();
+        await p.waitForFunction(
+          (n) => document.querySelectorAll(".food-result-row").length > n,
+          before,
+        );
+      }
+      result.checks.push(
+        "Search is focused, plain banana ranks first, rows show Basic food and the label line, more results load.",
       );
-    const first = await p.locator(".food-result-row").first().innerText();
-    if (!/Bananas?, raw/.test(first))
-      throw new Error(`Plain banana did not rank first: ${first}`);
-    const listText = await p.locator(".food-result-list").last().innerText();
-    // COPY-05: database taxonomy never shows; rows read "Basic food" or "Brand: …".
-    if (/Foundation|SR Legacy|FNDDS|Branded/.test(listText))
-      throw new Error("USDA data-type labels are visible");
-    if (!listText.includes("Basic food"))
-      throw new Error("Generic foods are not labeled Basic food");
-    if (!listText.includes("Allergies: check every label."))
-      throw new Error("Search rows are missing the label line");
-    if (await p.getByRole("button", { name: "Show more results" }).count()) {
-      const before = await p.locator(".food-result-row").count();
-      await p.getByRole("button", { name: "Show more results" }).click();
-      await p.waitForFunction(
-        (n) => document.querySelectorAll(".food-result-row").length > n,
-        before,
+      await search("abcdefnonfood");
+      await p.getByText("No matching foods.", { exact: false }).waitFor();
+      if (await dialog.getByRole("heading", { name: /Bananas?, raw/ }).count())
+        throw new Error("Stale banana results remained after query change");
+      result.checks.push(
+        "Changing the query clears old results; no-result state is explicit.",
       );
     }
-    result.checks.push(
-      "Search is focused, plain banana ranks first, rows show Basic food and the label line, more results load.",
-    );
-    await search("abcdefnonfood");
-    await p.getByText("No matching foods.", { exact: false }).waitFor();
-    if (await dialog.getByRole("heading", { name: /Bananas?, raw/ }).count())
-      throw new Error("Stale banana results remained after query change");
-    result.checks.push(
-      "Changing the query clears old results; no-result state is explicit.",
-    );
     await p.route("**/api/foods/search?*", (route) =>
       route.fulfill({
         status: 429,
@@ -84,11 +85,24 @@ async (page) => {
     )
       throw new Error("Failure fallback hidden");
     await p.unroute("**/api/foods/search?*");
+    await p.route("**/api/foods/search?*", (route) =>
+      route.fulfill({
+        contentType: "application/json",
+        body: JSON.stringify({
+          foods: [
+            { fdcId: 1, description: "Bananas, raw", dataType: "SR Legacy" },
+          ],
+          totalHits: 1,
+          hasMore: false,
+        }),
+      }),
+    );
     await p.getByRole("button", { name: "Retry" }).click();
     await p.locator(".food-result-row").first().waitFor();
     result.checks.push(
       "429 shows a working retry and the saved/manual fallback.",
     );
+    await p.unroute("**/api/foods/search?*");
     await p.route("**/api/foods/search?*", (route) => route.abort("failed"));
     await context.setOffline(true);
     await search("apple");
@@ -134,17 +148,27 @@ async (page) => {
     );
     await p.getByRole("textbox", { name: "Barcode number" }).fill("12345678");
     await p.getByRole("button", { name: "Look up product" }).click();
-    await p
-      .getByRole("heading", { name: "Zero test water — Audit brand" })
-      .waitFor();
+    await p.getByRole("heading", { name: "Zero test water" }).waitFor();
     const product = await p.locator(".product-result").innerText();
-    if (!product.includes("0 kcal"))
-      throw new Error("Zero energy treated as unknown");
+    if (!product.includes("Brand: Audit brand"))
+      throw new Error("Scanned product is missing the brand line");
+    if (!product.includes("Allergens: check the package."))
+      throw new Error("Scanned product is missing the allergen line (SRCH-07)");
     if (!product.includes("Allergies: check every label."))
       throw new Error("Scanned product is missing the label line");
+    if (/kcal/.test(product)) throw new Error("Scanned product shows kcal");
+    await p.getByRole("button", { name: "Use this food" }).click();
+    await p.getByText("Nutrition details (optional)").click();
+    await p.getByText("About 0 kcal", { exact: false }).waitFor();
     result.checks.push(
-      "Barcode validation, 404 not-found copy, normalized zero, and label line pass.",
+      "Barcode validation, 404 not-found copy, brand, allergen and label lines, no kcal on the product, and zero energy kept in Nutrition details.",
     );
+    if (rateLimited)
+      return {
+        ...result,
+        failure:
+          "Real USDA search is rate-limited (DEMO_KEY allows ~30 requests/hour). Set FDC_API_KEY in .env or retry later. The other provider checks passed.",
+      };
     return result;
   } catch (e) {
     return {

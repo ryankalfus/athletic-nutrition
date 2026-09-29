@@ -1,4 +1,9 @@
 import { portionCalories } from "./domain/food.js";
+import {
+  SEARCH_PAGE_SIZE,
+  collapseFoodMatches,
+} from "./domain/search.js";
+export { collapseFoodMatches };
 function cleanText(value) {
   return String(value || "")
     .replace(/\s+/g, " ")
@@ -10,14 +15,20 @@ export function sentenceCaseFoodName(name) {
     ? text[0].toLocaleUpperCase() + text.slice(1).toLocaleLowerCase()
     : text;
 }
-export function collapseFoodMatches(foods) {
-  const seen = new Set();
-  return foods.filter((food) => {
-    const key = `${cleanText(food.name).toLocaleLowerCase()}|${cleanText(food.brand).toLocaleLowerCase()}`;
-    if (seen.has(key)) return false;
-    seen.add(key);
-    return true;
-  });
+// The first USDA household measure with a gram weight, e.g. "1 medium".
+function firstMeasure(food) {
+  const measure = (food.foodMeasures || []).find(
+    (item) =>
+      Number(item.gramWeight) > 0 &&
+      cleanText(item.disseminationText) &&
+      !/quantity not specified/i.test(item.disseminationText),
+  );
+  return measure
+    ? {
+        label: cleanText(measure.disseminationText),
+        grams: Number(measure.gramWeight),
+      }
+    : null;
 }
 function nutrientValue(food, names, units = []) {
   const nutrient = (food.foodNutrients || []).find(
@@ -42,8 +53,8 @@ export function normalizeFdcFood(food) {
     ["KCAL"],
   );
   const kj = nutrientValue(food, ["Energy"], ["KJ"]);
-  const brand = cleanText(food.brandOwner || food.brandName);
-  const name = cleanText(food.description) || "USDA food";
+  const brand = sentenceCaseFoodName(food.brandName || food.brandOwner);
+  const name = sentenceCaseFoodName(food.description) || "USDA food";
   return {
     id: `fdc-${food.fdcId}`,
     fdcId: Number(food.fdcId),
@@ -64,6 +75,7 @@ export function normalizeFdcFood(food) {
       cleanText(food.servingSizeUnit).toLowerCase() ||
       null,
     householdServing: cleanText(food.householdServingFullText),
+    portion: firstMeasure(food),
     nutrients: {
       calories:
         kcal ?? (kj == null ? null : Math.round((kj / 4.184) * 10) / 10),
@@ -169,6 +181,9 @@ export async function searchFoodDataCentral(
   );
   return {
     ...data,
+    hasMore:
+      data.hasMore ??
+      page * SEARCH_PAGE_SIZE < Number(data.totalHits || 0),
     foods: collapseFoodMatches(
       (data.foods || []).map((food) =>
         normalizeFdcFood({ ...food, catalogSnapshot: data.snapshot || null }),
