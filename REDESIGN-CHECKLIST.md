@@ -38,7 +38,7 @@ Owner Ryan Kalfus confirmed the recommended options previously presented for aud
 - [ ] **P1-09**
 - [ ] **P1-10**
 - [ ] **P1-11**
-- [ ] **P1-12**
+- [x] **P1-12**
 - [ ] **P1-13**
 
 ### P2
@@ -240,7 +240,7 @@ Each ID is an individual checkbox. Implementation notes and blockers go on the m
 - [x] **DATA-05**
 - [x] **DATA-06**
 - [x] **DATA-07**
-- [ ] **DATA-08**
+- [x] **DATA-08**
 - [x] **DATA-09**
 
 ### DLG
@@ -362,13 +362,13 @@ Each ID is an individual checkbox. Implementation notes and blockers go on the m
 - [ ] **ADD-03**
 - [ ] **ADD-04**
 - [ ] **ADD-05**
-- [ ] **ADD-06**
+- [x] **ADD-06**
 - [x] **ADD-07**
 - [ ] **ADD-08**
-- [ ] **ADD-09**
+- [x] **ADD-09**
 - [ ] **ADD-10**
-- [ ] **ADD-11**
-- [ ] **ADD-12**
+- [x] **ADD-11**
+- [x] **ADD-12**
 - [ ] **ADD-13**
 - [ ] **ADD-14**
 - [ ] **ADD-15**
@@ -441,8 +441,8 @@ Each ID is an individual checkbox. Implementation notes and blockers go on the m
 - [x] **CMP-08**
 - [ ] **CMP-09**
 - [ ] **CMP-10**
-- [ ] **CMP-11**
-- [ ] **CMP-12**
+- [x] **CMP-11**
+- [x] **CMP-12**
 - [ ] **CMP-13**
 - [ ] **CMP-14**
 - [ ] **CMP-15**

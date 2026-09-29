@@ -123,16 +123,18 @@ async (page) => {
       "Without Web Share the button reads Copy list and copies a plain-text checklist (one task per line, no IDs).",
     );
 
-    // Desktop width: the Tonight card still fits without sideways scroll.
-    await p.setViewportSize({ width: 1280, height: 900 });
-    await tonight.waitFor();
-    const overflow = await p.evaluate(
-      () => document.documentElement.scrollWidth - window.innerWidth,
-    );
-    if (overflow > 0)
-      throw new Error(`Today scrolls sideways by ${overflow}px`);
+    // Phone to desktop: the Tonight card fits without sideways scroll.
+    for (const width of [320, 390, 1280]) {
+      await p.setViewportSize({ width, height: 900 });
+      await tonight.waitFor();
+      const overflow = await p.evaluate(
+        () => document.documentElement.scrollWidth - window.innerWidth,
+      );
+      if (overflow > 0)
+        throw new Error(`Today scrolls sideways by ${overflow}px at ${width}`);
+    }
     result.checks.push(
-      "Tonight renders at 390 and 1280 px without sideways scroll.",
+      "Tonight renders at 320, 390 and 1280 px without sideways scroll.",
     );
 
     // --- Backup nudge (monthly) on the same athlete. ---
