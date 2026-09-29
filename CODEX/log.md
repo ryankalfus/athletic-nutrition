@@ -516,3 +516,4 @@ Added Sport & season, Food needs & allergies and Food access & budget sheets tha
 Added the grocery budget and school food access to Food access & budget, and showed the budget next to the Groceries price estimate. 2026.09.29
 Added About Nourally's guidance as the one full safety explanation. 2026.09.29
 Moved the You page out of main.jsx into src/pages/You, keeping the first-run form in main.jsx for setup only. 2026.09.29
+Fixed an 8 px sideways scroll on Today at 320 px by letting the Today grid column shrink. 2026.09.29
