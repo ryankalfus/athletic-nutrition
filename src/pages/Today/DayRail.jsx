@@ -1,5 +1,5 @@
-import { formatClock, timeToMinutes } from "../../domain/timing.js";
-export default function DayRail({ rows, now, onNavigate }) {
+import { formatTime } from "../../format.js";
+export default function DayRail({ rows, onNavigate, onOpenPlan }) {
   return (
     <section className="day-rail" aria-labelledby="day-title">
       <div className="today-section-header">
@@ -9,21 +9,19 @@ export default function DayRail({ rows, now, onNavigate }) {
       <ol>
         {rows.map((r, i) => (
           <li
-            key={i}
+            key={`${r.kind}-${r.planId || r.time}-${i}`}
             aria-current={r.now ? "time" : undefined}
-            className={
-              r.now
-                ? "rail-now"
-                : timeToMinutes(r.time) < now.getHours() * 60 + now.getMinutes()
-                  ? "rail-past"
-                  : ""
-            }
+            className={`rail-${r.kind}${r.now ? " rail-now" : r.past ? " rail-past" : ""}`}
           >
-            <time>{formatClock(r.time)}</time>
+            <time>{formatTime(r.time)}</time>
             {r.now ? (
-              <strong>Now</strong>
+              <strong>{r.title}</strong>
             ) : (
-              <button onClick={() => onNavigate(r.route)}>
+              <button
+                onClick={() =>
+                  r.planId ? onOpenPlan(r.planId) : onNavigate(r.route)
+                }
+              >
                 <strong>{r.title}</strong>
                 <span>{r.detail}</span>
               </button>
