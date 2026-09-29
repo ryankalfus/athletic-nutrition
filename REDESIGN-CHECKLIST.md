@@ -87,21 +87,21 @@ Each ID is an individual checkbox. Implementation notes and blockers go on the m
 - [x] **DS-02**
 - [x] **DS-03**
 - [x] **DS-04**
-- [ ] **DS-05**
-- [ ] **DS-06**
-- [ ] **DS-07**
-- [ ] **DS-08**
-- [ ] **DS-09**
-- [ ] **DS-10**
-- [ ] **DS-11**
-- [ ] **DS-12**
-- [ ] **DS-13**
-- [ ] **DS-14**
-- [ ] **DS-15**
-- [ ] **DS-16**
-- [ ] **DS-17**
-- [ ] **DS-18**
-- [ ] **DS-19**
+- [x] **DS-05**
+- [x] **DS-06**
+- [x] **DS-07**
+- [x] **DS-08**
+- [x] **DS-09**
+- [x] **DS-10**
+- [x] **DS-11**
+- [x] **DS-12**
+- [ ] **DS-13** — Partial: 48 px inputs, selects with chevron, 22 px checkboxes, focus and `aria-invalid` error styles and the error icon are in `base.css`/`components.css`; field-level error messages linked with `aria-describedby` are not wired yet (errors are form-level; P1-13).
+- [x] **DS-14**
+- [ ] **DS-15** — Partial: 560/640 px dialogs, bottom sheets under 768 px with drag handle, sticky header and footer, backdrop, 200 ms entry and first-field focus are done; "Discard changes?" exists only in the You, activity, school-day and At home edit sheets, not yet in grocery edit, portion, water or Counts as.
+- [x] **DS-16**
+- [x] **DS-17**
+- [x] **DS-18**
+- [x] **DS-19**
 
 ### ENTRY
 
@@ -376,19 +376,19 @@ Each ID is an individual checkbox. Implementation notes and blockers go on the m
 
 ### RWD
 
-- [ ] **RWD-01**
-- [ ] **RWD-02**
-- [ ] **RWD-03**
-- [ ] **RWD-04**
-- [ ] **RWD-05**
-- [ ] **RWD-06**
-- [ ] **RWD-07**
-- [ ] **RWD-08**
-- [ ] **RWD-09**
+- [x] **RWD-01**
+- [x] **RWD-02**
+- [x] **RWD-03**
+- [x] **RWD-04**
+- [x] **RWD-05**
+- [x] **RWD-06**
+- [x] **RWD-07**
+- [x] **RWD-08**
+- [x] **RWD-09**
 - [x] **RWD-10**
-- [ ] **RWD-11**
-- [ ] **RWD-12**
-- [ ] **RWD-13**
+- [x] **RWD-11**
+- [x] **RWD-12**
+- [x] **RWD-13**
 - [x] **RWD-14**
 - [x] **RWD-15**
 
@@ -432,13 +432,13 @@ Each ID is an individual checkbox. Implementation notes and blockers go on the m
 ### CMP
 
 - [ ] **CMP-01**
-- [ ] **CMP-02**
-- [ ] **CMP-03**
-- [ ] **CMP-04**
+- [ ] **CMP-02** — Partial: button variants (primary, secondary default, text, destructive, icon, lime Go, busy spinner) are consolidated in `components.css`; no `Button`/`IconButton` React components yet.
+- [x] **CMP-03**
+- [ ] **CMP-04** — Partial: `Dialog` has `initialFocusRef`, `aria-labelledby`, the inline error slot, sticky footer and phone sheet styling; the dirty guard still lives in each sheet, not in `Dialog`.
 - [x] **CMP-05**
 - [x] **CMP-06**
-- [ ] **CMP-07**
-- [ ] **CMP-08**
+- [x] **CMP-07**
+- [x] **CMP-08**
 - [ ] **CMP-09**
 - [ ] **CMP-10**
 - [ ] **CMP-11**
@@ -447,7 +447,7 @@ Each ID is an individual checkbox. Implementation notes and blockers go on the m
 - [ ] **CMP-14**
 - [ ] **CMP-15**
 - [ ] **CMP-16**
-- [ ] **CMP-17**
+- [ ] **CMP-17** — Partial: row menus share one details-based style with a 44 px trigger and one panel; no `Menu` component with menu keyboard semantics for At home and Groceries yet.
 
 ## Owner decisions and review gates (§13.7, §11.6)
 

@@ -534,3 +534,19 @@ Made the provider browser check name the USDA DEMO_KEY rate limit when real sear
 Checked YOU-01, YOU-04 to YOU-06, DATA-01, DATA-04 and DATA-07 after unit and browser checks, and noted YOU-02 and YOU-03 as partial pending reviewed allergen tags. 2026.09.29
 Documented browser-check setup, the USDA key, and the Windows npm ci lock issue in AGENTS.md. 2026.09.29
 Fixed household amount wording that contradicted idea names or used undefined units, added soy milk to the smoothie, showed the approved sports-drink water line on Ideas cards, and recorded every change as pending qualified review. 2026.09.29
+Rebuilt tokens.css with the type scale, gutters 16/24/32, column widths 720/960/1072, rhythm, icon, layer and motion tokens, and removed the old alias tokens. 2026.09.29
+Rewrote base.css with element defaults: headings on the type scale, 48 px inputs with focus and error states, chevron selects, 22 px checkboxes, a switch style, tables, focus rings and reduced motion. 2026.09.29
+Added components.css with the shared primitives: buttons (primary, secondary, text, destructive, icon, busy spinner), chips, segmented controls, cards, rows, row menus, badges, empty states, skeletons, inline errors, dialogs and bottom sheets with sticky header and footer, and toasts. 2026.09.29
+Made the frame center every page in a 720, 960 (Food) or 1072 px (Today, Schedule at 1200 px) column with 16/24/32 px gutters, dropped the 100vh minimum height, and kept phone chrome within 112 px. 2026.09.29
+Moved Today, Schedule, Food, Search and You styles onto the tokens with mobile-first 480/768/1024/1200/1280 breakpoints, and added welcome.css for setup, the athlete chooser, recovery and not-found. 2026.09.29
+Migrated the still-used legacy rules (month grid, day agenda, school day, weekly view, scanner, setup form) and deleted src/styles.css and src/refinement.css. 2026.09.29
+Made the Now card a pitch card with the lime Go button, removed card stripes, and marked activities with a colored dot instead of a left border. 2026.09.29
+Replaced glyph icons (close, chevrons, steppers, row menus, empty agenda, favorite star, brand arrow) with Lucide icons and removed unused eyebrow props, hidden kickers, uppercase section labels and the floated arrow on Save and see today. 2026.09.29
+Hid the page H1 visually on phones where the top bar already shows the page name, keeping it for screen readers. 2026.09.29
+Made the Food section control fit all four tabs at 320 px and stick under the top bar. 2026.09.29
+Added EmptyState and Skeleton components and used them for every empty state and the search and startup loading states. 2026.09.29
+Added SegmentedControl, ChipGroup and SwitchRow in components/ui and used them for the Schedule view, stock status, season, reminder timing, activity sheet, setup and school food access groups. 2026.09.29
+Set aria-busy on buttons that show Saving… so they draw the spinner. 2026.09.29
+Moved loose dialog buttons into the sticky action footer and wrapped row menu items so each menu opens as one panel. 2026.09.29
+Extended the responsive browser check to fail on text under 12 px (13 px outside the tab bar and badges), negative margins, an uncentered or over-wide column, phone chrome over 112 px, clipped Food tabs and a clipped activity sheet, and to cover the welcome page. 2026.09.29
+Checked DS-05 to DS-12, DS-14, DS-16 to DS-19, RWD-01 to RWD-09, RWD-11 to RWD-13, CMP-03, CMP-07 and CMP-08, and noted DS-13, DS-15, CMP-02, CMP-04 and CMP-17 as partial. 2026.09.29
