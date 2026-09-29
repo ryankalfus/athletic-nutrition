@@ -2,6 +2,7 @@
 // Snippets keep the Playwright CLI format: a single `async (page) => { ... }` expression
 // that returns { checks, errors, failure? } or throws.
 //
+//   npx playwright install chromium      # one-time setup
 //   npm run test:browser                 # start Vite on 5184 (or reuse one already there)
 //   npm run test:browser -- schedule     # only files whose name contains "schedule"
 //   BASE_URL=http://127.0.0.1:5173/ npm run test:browser   # use an existing server
@@ -77,7 +78,13 @@ async function main() {
   process.chdir(root); // snippets use repo-relative paths (fixtures, screenshots)
   await ensureServer();
   globalThis.BASE_URL = base;
-  const browser = await chromium.launch({ headless: !process.env.HEADED });
+  const browser = await chromium
+    .launch({ headless: !process.env.HEADED })
+    .catch((error) => {
+      throw new Error(
+        `${error.message}\nRun "npx playwright install chromium" once, then retry.`,
+      );
+    });
   const page = await browser.newPage();
   const summary = [];
   for (const file of files) {
@@ -96,6 +103,7 @@ async function main() {
     console.log(`\n${failure ? "FAIL" : "PASS"} ${file} (${checks.length} checks, ${seconds}s)`);
     for (const check of checks)
       console.log(`  ok  ${typeof check === "string" ? check : JSON.stringify(check)}`);
+    for (const warning of result?.warnings || []) console.log(`  !   ${warning}`);
     if (failure) {
       console.log(`  x   ${failure}`);
       if (result?.last) console.log(`  --- page text ---\n${String(result.last).slice(0, 1500)}`);
