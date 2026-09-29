@@ -61,7 +61,11 @@
   padding: var(--space-5);
   border: 0;
   border-radius: var(--radius-xl);
-  background: linear-gradient(160deg, var(--color-pitch), var(--color-pitch-end));
+  background: linear-gradient(
+    160deg,
+    var(--color-pitch),
+    var(--color-pitch-end)
+  );
   color: var(--color-on-dark);
 }
 
@@ -120,7 +124,8 @@
 }
 
 @media (hover: hover) {
-  .now-card :where(button):not(.today-primary, .today-text):hover:not(:disabled) {
+  .now-card
+    :where(button):not(.today-primary, .today-text):hover:not(:disabled) {
     background: var(--color-on-dark-hover);
   }
 }
@@ -268,7 +273,24 @@
   color: var(--color-ink-muted);
 }
 
+/* Checklist (CMP-12): today's Pack & prep and tomorrow's list. */
+.checklist {
+  display: grid;
+  gap: var(--space-1);
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
 .prep-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) var(--target);
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.prep-row label {
   display: grid;
   grid-template-columns: var(--target) minmax(0, 1fr);
   align-items: center;
@@ -278,8 +300,9 @@
   font-weight: 400;
 }
 
-.prep-row + .prep-row {
-  margin-top: var(--space-1);
+/* Keep the box and its text on one row (base.css stacks label children). */
+.prep-row label > :is(input, span) {
+  grid-column: auto;
 }
 
 .prep-row input {
@@ -289,6 +312,37 @@
 .prep-row small {
   display: block;
   color: var(--color-ink-muted);
+}
+
+.prep-row small.prep-late {
+  color: var(--color-warning);
+  font-weight: 600;
+}
+
+.prep-row .icon-button {
+  color: var(--color-ink-muted);
+}
+
+/* Game chip (ADD-09): the game color on a tint, never color alone. */
+.badge-game,
+.today-chips .chip-game {
+  border-color: var(--color-game);
+  background: var(--color-surface);
+  color: var(--color-game);
+  font-weight: 600;
+}
+
+.today-countdown .badge-game,
+.day-rail li strong .badge-game,
+.tonight-when .badge-game {
+  margin-left: var(--space-2);
+  border: 1px solid currentcolor;
+  color: var(--color-game);
+  vertical-align: middle;
+}
+
+.now-card .today-countdown .badge-game {
+  background: var(--color-surface);
 }
 
 /* Water */
@@ -313,11 +367,27 @@
 .tonight-card {
   display: grid;
   gap: var(--space-3);
-  justify-items: start;
+}
+
+.tonight-card .today-section-header {
+  margin-bottom: 0;
 }
 
 .tonight-card p {
   margin: 0;
+}
+
+.tonight-when {
+  font-weight: 600;
+}
+
+.tonight-events ul {
+  display: grid;
+  gap: var(--space-1);
+  margin: var(--space-1) 0 0;
+  padding: 0;
+  list-style: none;
+  color: var(--color-ink-muted);
 }
 
 /* Reminder prompt below the day */

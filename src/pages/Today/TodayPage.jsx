@@ -14,9 +14,9 @@ import {
   eventsForDate,
   formatClock,
   timeToMinutes,
-  addDays,
-  tomorrowPrepTasks,
+  withSportTitles,
 } from "../../domain/timing.js";
+import { eveningPlan, mergeTomorrowTasks } from "../../domain/tonight.js";
 import { ingredientsForMeal, missingGroceries } from "../../domain/food.js";
 import {
   planMeal,
@@ -62,7 +62,10 @@ export default function TodayPage({
     data,
     todayKey,
   );
-  const events = eventsForDate(data.schedule, todayKey);
+  const events = withSportTitles(
+    eventsForDate(data.schedule, todayKey),
+    data.profile.sport,
+  );
   const plan = data.mealPlans.find(
     (p) =>
       p.date === todayKey &&
@@ -80,10 +83,15 @@ export default function TodayPage({
   const missing = ingredients.filter((i) => !i.sufficient);
   const tasks = data.dayPlans[todayKey] || [];
   const done = tasks.filter((t) => t.done).length;
-  const tomorrow = addDays(todayKey, 1);
-  const next = eventsForDate(data.schedule, tomorrow)[0];
-  const showTonight =
-    next && (now.getHours() >= 19 || timeToMinutes(next.startTime) < 600);
+  const tonight = eveningPlan({
+    now,
+    todayKey,
+    events: data.schedule,
+    schoolSchedule: data.schoolSchedule,
+    profile: data.profile,
+    dayPlans: data.dayPlans,
+  });
+  const next = tonight.events[0];
   const write = (key, reduce, message) =>
     run(key, () => changeData(reduce, message));
   const water = (n) =>
@@ -101,14 +109,18 @@ export default function TodayPage({
     write(
       "tomorrow",
       (d) => {
-        const list = d.dayPlans[tomorrow] || [];
-        for (const t of tomorrowPrepTasks(next))
-          if (!list.some((x) => x.label === t.label))
-            list.push({ ...t, id: uid(), done: false, independent: true });
-        d.dayPlans[tomorrow] = list;
+        d.dayPlans[tonight.tomorrowKey] = mergeTomorrowTasks(
+          d.dayPlans[tonight.tomorrowKey],
+          tonight.toAdd,
+          uid,
+        );
       },
       "Tomorrow’s list is ready.",
     );
+  const openTonight = () =>
+    document
+      .getElementById("tonight-title")
+      ?.scrollIntoView({ behavior: "smooth", block: "start" });
   const createPlan = () =>
     write(
       "plan",
@@ -121,7 +133,8 @@ export default function TodayPage({
   const primary = () => {
     if (guidance.state === "setup") return onNavigate("schedule?add=practice");
     if (guidance.state === "during") return water(8);
-    if (guidance.state === "evening") return buildTomorrow();
+    if (guidance.state === "evening")
+      return tonight.built ? openTonight() : buildTomorrow();
     if (["no_sport", "rest"].includes(guidance.state))
       return onNavigate(`food/ideas?moment=${next ? "tomorrow" : "now"}`);
     if (
@@ -162,7 +175,9 @@ export default function TodayPage({
       : guidance.state === "during"
         ? "+8 oz water"
         : guidance.state === "evening"
-          ? "Build tomorrow’s list"
+          ? tonight.built
+            ? "Open tomorrow’s list"
+            : "Build tomorrow’s list"
           : ["rest", "no_sport"].includes(guidance.state)
             ? next
               ? "Plan tomorrow"
@@ -206,11 +221,10 @@ export default function TodayPage({
             </span>
           )}
           {events.map((e) => (
-            <span key={e.id}>
+            <span key={e.id} className={e.type === "game" ? "chip-game" : ""}>
               {e.title} {formatClock(e.startTime)}
             </span>
           ))}
-          {guidance.gameDay && <span>Game day</span>}
         </div>
       </header>
       <div className="today-layout">
@@ -242,14 +256,18 @@ export default function TodayPage({
               pending,
               write,
               todayKey,
+              now,
               showTasks,
               setShowTasks,
             }}
           />
         )}
         <WaterRow {...{ data, todayKey, pending, water, setCustom }} />
-        {showTonight && (
-          <TonightCard {...{ next, pending, buildTomorrow, data, tomorrow }} />
+        {tonight.show && (
+          <TonightCard
+            plan={tonight}
+            {...{ pending, write, buildTomorrow, onNavigate }}
+          />
         )}
       </div>
       <ContextPrompt
@@ -261,6 +279,7 @@ export default function TodayPage({
           run,
           write,
           onNavigate,
+          now,
         }}
       />
       {openPlan && (

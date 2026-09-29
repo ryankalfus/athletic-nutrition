@@ -22,7 +22,10 @@ export default function DayRail({ rows, onNavigate, onOpenPlan }) {
                   r.planId ? onOpenPlan(r.planId) : onNavigate(r.route)
                 }
               >
-                <strong>{r.title}</strong>
+                <strong>
+                  {r.title}
+                  {r.game && <span className="badge badge-game">Game</span>}
+                </strong>
                 <span>{r.detail}</span>
               </button>
             )}
