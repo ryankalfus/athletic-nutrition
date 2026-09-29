@@ -1,60 +1,90 @@
-// Playwright CLI helper for isolated local profile import, deletion, and failed-save visibility.
+// Playwright snippet: additive backup import, profile switch, scoped deletion, failed-save visibility.
+// Run with `npm run test:browser` (or paste into a Playwright CLI browser).
 async (page) => {
+  const base = globalThis.BASE_URL ?? "http://127.0.0.1:5173/";
   const context = await page.context().browser().newContext();
   const p = await context.newPage();
   p.setDefaultTimeout(15000);
   const result = { checks: [], errors: [] };
   p.on("pageerror", (error) => result.errors.push(error.message));
+  const athlete = () =>
+    p.getByRole("banner").getByRole("button", { name: "Switch athlete" });
+  const athletes = () =>
+    p
+      .getByRole("region", { name: "Athletes on this device" })
+      .getByRole("listitem");
   try {
-    await p.goto("http://127.0.0.1:5173/");
+    await p.goto(base);
     await p
-      .getByRole("textbox", { name: "First name Optional" })
+      .getByRole("textbox", { name: /First name/ })
       .fill("Persistence test");
+    await p.getByRole("button", { name: /Save and see today/ }).click();
+    await p.getByRole("heading", { name: "Today", exact: true }).waitFor();
+    await p.goto(`${base}#/you/device`);
+    await p.getByRole("heading", { name: "This device", level: 1 }).waitFor();
     await p
-      .getByRole("button", { name: "Save and see today", exact: false })
-      .click();
-    await p.getByRole("heading", { name: "Today, Persistence test" }).waitFor();
-    await p.goto("http://127.0.0.1:5173/#/profile");
-    await p
-      .getByLabel("Import backup")
+      .getByLabel("Backup file")
       .setInputFiles("tests/fixtures/import-profile.json");
+    const preview = p.getByRole("dialog", { name: "Add from this file?" });
+    await preview.getByText(/Imported fixture/).waitFor();
+    await preview.getByRole("button", { name: "Add from file" }).click();
+    await preview.waitFor({ state: "hidden" });
+    await athletes().nth(1).waitFor();
+    if ((await athletes().count()) !== 2)
+      throw new Error("Additive restore did not keep the existing athlete");
+    if (!(await athletes().first().innerText()).includes("Open now"))
+      throw new Error("Restore switched away from the open athlete");
+    await p.getByRole("button", { name: /^Open Imported fixture/ }).click();
+    await athlete().getByText("Imported fixture").waitFor();
+    await p.goto(`${base}#/today`);
+    await p.getByRole("heading", { name: "Today", exact: true }).waitFor();
+    if (!(await athlete().innerText()).includes("Imported fixture"))
+      throw new Error("Athlete switch did not survive navigation");
+    await p.goto(`${base}#/you`);
     await p
-      .getByRole("status")
-      .getByText("Imported as separate profiles.", { exact: false })
-      .waitFor();
-    const select = p.getByLabel("Current device profile");
-    if ((await select.locator("option").count()) !== 2)
-      throw new Error("Additive import did not retain the existing profile");
-    await select.selectOption({ index: 1 });
-    await p.getByRole("button", { name: "Save changes", exact: false }).click();
-    await p.getByRole("heading", { name: "Today, Imported fixture" }).waitFor();
-    await p.goto("http://127.0.0.1:5173/#/profile");
-    await p
-      .getByRole("button", { name: "Close profile / choose another" })
+      .getByRole("region", { name: "Athlete" })
+      .getByRole("button", { name: "Switch athlete" })
       .click();
-    await p.getByRole("button", { name: /Imported fixture.*Open/ }).waitFor();
+    await p.getByRole("button", { name: /^Open Imported fixture/ }).waitFor();
+    await p.getByRole("button", { name: "Open Persistence test" }).waitFor();
     result.checks.push(
-      "Validated import is additive, profile switch survives, and local profile chooser remains available.",
+      "Restore previews the file and adds without replacing; opening the imported athlete sticks; the chooser lists both.",
     );
-    await p.getByRole("button", { name: /Imported fixture.*Open/ }).click();
-    await p.getByRole("button", { name: "Save changes", exact: false }).click();
-    await p.getByRole("heading", { name: "Today, Imported fixture" }).waitFor();
-    await p.goto("http://127.0.0.1:5173/#/profile");
-    p.once("dialog", (dialog) => dialog.accept());
-    await p.getByRole("button", { name: "Delete this profile" }).click();
-    await p.getByRole("button", { name: "Save changes", exact: false }).click();
-    await p.getByRole("heading", { name: "Today, Persistence test" }).waitFor();
-    await p.goto("http://127.0.0.1:5173/#/profile");
-    if (
-      (await p
-        .getByLabel("Current device profile")
-        .locator("option")
-        .count()) !== 1
-    )
-      throw new Error("Profile deletion affected the wrong profile");
+
+    await p.getByRole("button", { name: /^Open Imported fixture/ }).click();
+    await p.getByRole("heading", { name: "Today", exact: true }).waitFor();
+    await p.goto(`${base}#/you/device`);
+    const deleteData = p.getByRole("button", { name: /^Delete Imported fixture.*'s data$/ });
+    await deleteData.click();
+    const confirm = p.getByRole("dialog", {
+      name: /^Delete Imported fixture.*data from this device\?$/,
+    });
+    const deleteButton = confirm.getByRole("button", { name: "Delete data" });
+    if (!(await deleteButton.isDisabled()))
+      throw new Error("Delete is enabled before typing DELETE");
+    await confirm.getByRole("button", { name: "Cancel" }).click();
+    await confirm.waitFor({ state: "hidden" });
+    if ((await athletes().count()) !== 2)
+      throw new Error("Cancelling delete removed an athlete");
+    await deleteData.click();
+    await confirm.getByRole("textbox", { name: /Type DELETE/ }).fill("DELETE");
+    await deleteButton.click();
+    // Deleting signs out to the device profile chooser.
+    await p
+      .getByRole("heading", { name: "Choose a device profile" })
+      .waitFor();
+    if (await p.getByRole("button", { name: /^Open Imported fixture/ }).count())
+      throw new Error("Deleted athlete is still listed");
+    await p.getByRole("button", { name: "Open Persistence test" }).click();
+    await athlete().getByText("Persistence test").waitFor();
+    await p.goto(`${base}#/you/device`);
+    await athletes().first().waitFor();
+    if ((await athletes().count()) !== 1)
+      throw new Error("Deletion affected the wrong athlete");
     result.checks.push(
-      "Confirmed deletion removes only the active profile and returns to the preserved profile.",
+      "Delete [name]'s data needs typed DELETE, can be cancelled, removes only the open athlete, and returns to the chooser.",
     );
+
     await p.evaluate(() => {
       const original = IDBObjectStore.prototype.put;
       IDBObjectStore.prototype.put = function (...args) {
@@ -66,16 +96,18 @@ async (page) => {
         return original.apply(this, args);
       };
     });
-    await p.goto("http://127.0.0.1:5173/#/today");
-    await p.getByRole("button", { name: "+8 oz" }).click();
-    await p.getByText("Not saved:", { exact: false }).waitFor();
+    await p.goto(`${base}#/today`);
+    await p.getByRole("button", { name: "+8", exact: true }).click();
+    const alert = p.getByRole("alert").filter({ hasText: "Not saved:" });
+    await alert.getByRole("button", { name: "Export backup" }).waitFor();
     if (
-      (await p.getByRole("heading", { name: "0 oz logged today" }).count()) !==
-      1
+      !(await p.getByRole("region", { name: "Water" }).innerText()).includes(
+        "Water today · 0 oz",
+      )
     )
-      throw new Error("Failed write changed the visible saved hydration value");
+      throw new Error("Failed write changed the visible water total");
     result.checks.push(
-      "A simulated quota failure leaves the saved value intact and shows an exportable error.",
+      "A simulated quota failure keeps the saved water total and shows Not saved with Export backup.",
     );
     return result;
   } catch (error) {

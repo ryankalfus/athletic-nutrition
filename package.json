@@ -13,7 +13,8 @@
     "typecheck": "tsc -p tsconfig.json",
     "check": "npm run lint && npm run typecheck && npm test && npm run build",
     "format": "prettier --write src server tests vite.config.js",
-    "index:usda": "python3 scripts/index-usda.py data/usda/FoodData_Central_csv_2026-04-30.zip data/usda/catalog.sqlite"
+    "index:usda": "python3 scripts/index-usda.py data/usda/FoodData_Central_csv_2026-04-30.zip data/usda/catalog.sqlite",
+    "test:browser": "node scripts/run-browser-checks.mjs"
   },
   "dependencies": {
     "@fontsource-variable/dm-sans": "^5.3.0",
@@ -30,6 +31,7 @@
     "eslint": "9.39.1",
     "eslint-plugin-react": "7.37.5",
     "globals": "17.12.0",
+    "playwright": "1.63.0",
     "prettier": "3.9.6",
     "typescript": "5.9.3"
   }

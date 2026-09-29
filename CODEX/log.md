@@ -504,6 +504,14 @@ Moved the Show price estimates switch to You › Food access & budget. 2026.09.2
 Made the Ideas add-missing toast state the real count, or say everything is already on the list. 2026.09.29
 Verified the gaps in P0-05, P0-06, P0-07, P0-09, P0-11 and P1-01 to P1-06 are closed, completed P1-06 Groceries, and checked P1-06, IA-12, TODAY-09, FOOD-05, GROC-01 to GROC-08 and DATA-06 in the tracker after npm run check and browser checks at 375 px. 2026.09.29
 Hid the Dairy-free chip and stopped filtering on unreviewed dairy flags, with a notice for a stored Dairy-free choice and test coverage. 2026.09.29
+Added `npm run test:browser` (scripts/run-browser-checks.mjs) that starts or reuses Vite on 5184, runs every tests/browser-*.js snippet in headless Chromium, and exits non-zero on failure; added playwright as a devDependency (setup: `npx playwright install chromium`). 2026.09.29
+Updated the provider browser check to the current Log food button. 2026.09.29
+Rewrote the persistence browser check for Restore backup, typed-DELETE profile deletion, and the Water row save failure. 2026.09.29
+Rewrote the reliability browser check for the Water row, +8/+16 cross-tab writes, and the current profile flow. 2026.09.29
+Rewrote the schedule browser check for the week view, repeating-activity scope prompts, and school day skip/restore. 2026.09.29
+Rewrote the food workflow browser check for Groceries add-for-week, Finish shopping, put-away to At home as Have, Ideas plan/pack/log, use from home, and price estimates. 2026.09.29
+Added a You browser check for sport, hidden Gluten-free/Dairy-free/Nut-free chips, and the Reminders sheet at #/you/reminders with its honesty line. 2026.09.29
+Rewrote the responsive browser check to fail on horizontal scroll at 375 px and up on every main route; 320 px is reported only (Today spills 8 px there). 2026.09.29
 Added a root AGENTS.md with shared handoff rules, commands and safety rules, and a CLAUDE.md that imports it, so Codex and Claude Code load the same instructions. 2026.09.29
 Added a pending qualified review section to NUTRITION-REVIEW.md covering every household amount, with 31 OK, 27 questions and 8 suggested changes, and a blank sign-off block. 2026.09.29
 Added You settings data (season, Not a fan of, low-cost switch from the budget tier, last backup date) with additive migration, validation and tests. 2026.09.29
@@ -518,3 +526,8 @@ Added About Nourally's guidance as the one full safety explanation. 2026.09.29
 Moved the You page out of main.jsx into src/pages/You, keeping the first-run form in main.jsx for setup only. 2026.09.29
 Fixed an 8 px sideways scroll on Today at 320 px by letting the Today grid column shrink. 2026.09.29
 Counted an exact At home count in another unit (for example 3 bunches of bananas) as available for ideas, marked approximate, with a test. 2026.09.29
+Updated the persistence browser check for You › This device: restore preview, Open athlete, and Delete [name]'s data. 2026.09.29
+Updated the You browser check for the settings list: Sport sheet save, Food needs without allergen chips, and the Reminders link. 2026.09.29
+Updated the food workflow browser check to set 3 bunches before Ideas and assert the banana counts At home, and to turn on price estimates in the Access sheet. 2026.09.29
+Made the responsive browser check fail on page-level horizontal scroll at 320 px too and added the You sheet routes. 2026.09.29
+Made the provider browser check name the USDA DEMO_KEY rate limit when real search is throttled. 2026.09.29

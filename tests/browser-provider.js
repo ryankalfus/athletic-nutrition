@@ -1,6 +1,6 @@
-// Playwright CLI helper for food search, failure states, and barcode fallback.
+// Playwright snippet: food search, provider failure states, and barcode fallback. Needs network (USDA DEMO_KEY).
 async (page) => {
-  const base = "http://127.0.0.1:5173/";
+  const base = globalThis.BASE_URL ?? "http://127.0.0.1:5173/";
   const context = await page.context().browser().newContext();
   const p = await context.newPage();
   p.setDefaultTimeout(15000);
@@ -12,13 +12,13 @@ async (page) => {
   };
   try {
     await p.goto(base);
-    await p.getByRole("textbox", { name: "First name" }).fill("Provider test");
+    await p.getByRole("textbox", { name: /First name/ }).fill("Provider test");
     await p
       .getByRole("button", { name: "Save and see today", exact: false })
       .click();
     await p.getByRole("heading", { name: "Today", exact: true }).waitFor();
     await p.goto(`${base}#/food/log`);
-    await p.getByRole("button", { name: "+ Log food" }).click();
+    await p.getByRole("button", { name: "Log food", exact: true }).click();
     const dialog = p.getByRole("dialog", { name: "Log food" });
     if (
       !(await p
@@ -27,7 +27,15 @@ async (page) => {
     )
       throw new Error("Search field is not focused when the dialog opens");
     await search("banana");
-    await p.locator(".food-result-row").first().waitFor();
+    await p
+      .locator(".food-result-row")
+      .or(p.getByText("Food provider rate limit reached.", { exact: false }))
+      .first()
+      .waitFor();
+    if (!(await p.locator(".food-result-row").count()))
+      throw new Error(
+        "Real USDA search is rate-limited (DEMO_KEY allows ~30 requests/hour). Set FDC_API_KEY in .env or retry later.",
+      );
     const first = await p.locator(".food-result-row").first().innerText();
     if (!/Bananas?, raw/.test(first))
       throw new Error(`Plain banana did not rank first: ${first}`);
