@@ -1922,3 +1922,21 @@ test("At home: an exact count in another unit still covers an idea", () => {
     false,
   );
 });
+
+test("Review prep: amounts match the idea name and use defined units", () => {
+  const shown = (ideaId, ingredient) =>
+    MEAL_INGREDIENTS[ideaId].find((row) => row[1] === ingredient)[4];
+  assert.equal(shown("fig-bar-fruit", "bananas"), "1 banana or other fruit");
+  assert.equal(shown("banana-pretzels", "bananas"), "1 banana");
+  assert.equal(shown("bagel-jam", "bread"), "1 bagel or 2 slices of toast");
+  assert.equal(
+    shown("bean-burrito", "tortillas"),
+    "1 large tortilla (or 2 small)",
+  );
+  assert.ok(
+    MEAL_INGREDIENTS["smoothie-toast"].some((row) => row[1] === "soy-milk"),
+  );
+  for (const rows of Object.values(MEAL_INGREDIENTS))
+    for (const row of rows)
+      assert.doesNotMatch(row[4], /\b(scoop|bowl|a few)\b/i, row[4]);
+});

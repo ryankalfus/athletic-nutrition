@@ -168,6 +168,36 @@ The owner confirmed all previously presented recommended options on 2026.09.29: 
 
 - **The Gluten-free, Nut-free and Dairy-free filters are hidden, pending per-ingredient tag review (ADD-03, P0-06).** `DIET_FILTERS` in `src/domain/catalog.js` holds only vegan and vegetarian. The hand-coded `glutenFree` / `dairyFree` flags on `FOOD_IDEAS` and `GROCERY_CATALOG` are unreviewed, so the app must not show them or filter on them until that review is done.
 
+### Copy changes applied 2026.09.29 (pending the same review)
+
+These edits fix wording that contradicted the idea name or used undefined units. They change what users see, so they are **not approved** and belong to this review. Moments, protein content, and the seed mix and sports drink placement are unchanged and wait for the reviewer.
+
+| Row(s) | Before | After |
+|---|---|---|
+| #6, #26, #45 | 1 banana | 1 banana or other fruit |
+| #7 (cereal cup idea) | 1 cup of cereal | 1 single-serve cereal cup |
+| #27 (yogurt idea) | 1 cup of cereal | ¼ cup of cereal on top |
+| #9 | 2 slices of bread | 1 bagel or 2 slices of toast |
+| #38 | 2 tortillas | 1 large tortilla (or 2 small) |
+| #58 | (no liquid) | added "1 cup of soy milk to blend" |
+| #14 | 1 bowl of oatmeal | ½ cup of dry oats |
+| #16 | 1 small cup of hummus | 1 snack-size hummus cup |
+| #20 | A few slices of turkey | 3 slices of turkey |
+| #31, #37 | 1 scoop of beans | ½ cup of beans |
+| #32, #35, #47, #65 | 1 scoop of rice | 1 cup of cooked rice |
+| #34 | A few strips of chicken | A palm-size amount of chicken |
+| #40 | 1 bowl of pasta | 1 cup of cooked pasta |
+| #41 | 1 scoop of chickpeas | ½ cup of chickpeas |
+| #46 | 1 cup of edamame | 1 cup of shelled edamame |
+| #49 | 1 carton of chocolate milk | 1 carton (8 oz) of chocolate milk |
+| #60 | 1 bottle of sports drink | 1 small bottle (about 12 oz) of sports drink |
+| #64 | 1 scoop of tofu | ½ cup of tofu cubes |
+| #30 idea note | "A dairy-free recovery option…" | "A plant-based recovery option…" |
+
+The approved line "Water works for most practices. Sports drinks can help in long or hot sessions." now also shows on any Ideas card that includes a sports drink.
+
+**Still for the reviewer to decide:** sports drink moments (#60), seed mix in quick and during (#56–57), low-protein recovery examples (#8, #9, #49, #51, #55), sunflower-seed butter amount for pre (#12), and the allergen wording for hummus, sunflower-seed butter and granola.
+
 ### Sign-off (household amounts)
 
 - Reviewer name: ______________________

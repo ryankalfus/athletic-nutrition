@@ -6,6 +6,7 @@ import { useAsyncAction } from "../../hooks/useAsyncAction.js";
 import { getDateKey } from "../../domain/timing.js";
 import { lowCostHiddenCount } from "../../domain/ranking.js";
 import { ideasForMoment } from "../../domain/ideaMoments.js";
+import { SPORTS_DRINK_NOTE } from "../../domain/catalog.js";
 import { ingredientsForMeal, missingGroceries } from "../../domain/food.js";
 import {
   planMeal,
@@ -192,6 +193,9 @@ export default function IdeasPage({ now, todayKey }) {
                   </li>
                 ))}
               </ul>
+              {ingredients.some((i) => i.ingredientId === "sports-drink") && (
+                <p className="muted">{SPORTS_DRINK_NOTE}</p>
+              )}
               <button
                 className="primary"
                 aria-label={`${replace ? "Change to" : "Plan"} ${idea.name}`}

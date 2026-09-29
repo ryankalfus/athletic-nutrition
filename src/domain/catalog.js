@@ -2,6 +2,9 @@
 // out until reviewed per-ingredient tags exist (P0-06, ADD-03).
 export const DIET_FILTERS = ["vegan", "vegetarian"];
 
+export const SPORTS_DRINK_NOTE =
+  "Water works for most practices. Sports drinks can help in long or hot sessions.";
+
 export const DEFAULT_PROFILE = {
   name: "",
   budget: "save",
@@ -170,7 +173,7 @@ export const FOOD_IDEAS = [
     vegetarian: true,
     dairyFree: true,
     glutenFree: false,
-    note: "A dairy-free recovery option that packs well with an ice pack.",
+    note: "A plant-based recovery option that packs well with an ice pack.",
   },
   {
     id: "bean-rice-bowl",
@@ -350,14 +353,14 @@ export const MEAL_INGREDIENTS = {
   ],
   "fig-bar-fruit": [
     ["Fig bars", "fig-bars"],
-    ["Fresh fruit", "bananas"],
+    ["Fresh fruit", "bananas", "1 banana or other fruit"],
   ],
   "cereal-milk": [
-    ["Cereal", "cereal"],
+    ["Cereal", "cereal", "1 single-serve cereal cup"],
     ["Shelf-stable soy milk", "soy-milk"],
   ],
   "bagel-jam": [
-    ["Bagels or bread", "bread"],
+    ["Bagels or bread", "bread", "1 bagel or 2 slices of toast"],
     ["Jam", "jam"],
   ],
   "sunbutter-sandwich": [
@@ -386,8 +389,8 @@ export const MEAL_INGREDIENTS = {
   ],
   "yogurt-cereal": [
     ["Yogurt", "yogurt"],
-    ["Fresh fruit", "bananas"],
-    ["Cereal", "cereal"],
+    ["Fresh fruit", "bananas", "1 banana or other fruit"],
+    ["Cereal", "cereal", "¼ cup of cereal on top"],
   ],
   "soy-yogurt": [
     ["Soy yogurt", "soy-yogurt"],
@@ -406,7 +409,7 @@ export const MEAL_INGREDIENTS = {
   ],
   "bean-burrito": [
     ["Canned beans", "beans"],
-    ["Tortillas", "tortillas"],
+    ["Tortillas", "tortillas", "1 large tortilla (or 2 small)"],
     ["Salsa", "salsa"],
   ],
   "pasta-salad": [
@@ -417,7 +420,7 @@ export const MEAL_INGREDIENTS = {
   "eggs-toast": [
     ["Eggs", "eggs"],
     ["Whole-grain bread", "bread"],
-    ["Fresh fruit", "bananas"],
+    ["Fresh fruit", "bananas", "1 banana or other fruit"],
   ],
   "edamame-rice": [
     ["Edamame", "edamame"],
@@ -439,6 +442,7 @@ export const MEAL_INGREDIENTS = {
   ],
   "smoothie-toast": [
     ["Fresh or frozen fruit", "frozen-berries"],
+    ["Soy milk", "soy-milk", "1 cup of soy milk to blend"],
     ["Whole-grain bread", "bread"],
   ],
   "sports-drink-crackers": [
@@ -507,12 +511,12 @@ const displayAmounts = {
   "soy-milk": "1 cup of soy milk",
   jam: "1 spoonful of jam",
   sunbutter: "2 tablespoons of sunflower-seed butter",
-  oats: "1 bowl of oatmeal",
+  oats: "½ cup of dry oats",
   "frozen-berries": "1 cup of fruit",
-  hummus: "1 small cup of hummus",
+  hummus: "1 snack-size hummus cup",
   pita: "1 pita",
   grapes: "1 handful of grapes",
-  turkey: "A few slices of turkey",
+  turkey: "3 slices of turkey",
   apples: "1 apple or other fruit",
   "tuna-pouches": "1 tuna pouch",
   crackers: "1 handful of crackers",
@@ -520,29 +524,30 @@ const displayAmounts = {
   yogurt: "1 yogurt cup",
   "soy-yogurt": "1 soy yogurt cup",
   granola: "1 handful of granola",
-  beans: "1 scoop of beans",
-  rice: "1 scoop of rice",
-  chicken: "A few strips of chicken",
+  beans: "½ cup of beans",
+  rice: "1 cup of cooked rice",
+  chicken: "A palm-size amount of chicken",
   "baby-carrots": "1 handful of vegetables",
   tortillas: "2 tortillas",
   salsa: "1 spoonful of salsa",
-  pasta: "1 bowl of pasta",
-  chickpeas: "1 scoop of chickpeas",
-  edamame: "1 cup of edamame",
-  "chocolate-milk": "1 carton of chocolate milk",
+  pasta: "1 cup of cooked pasta",
+  chickpeas: "½ cup of chickpeas",
+  edamame: "1 cup of shelled edamame",
+  "chocolate-milk": "1 carton (8 oz) of chocolate milk",
   "cheese-sticks": "1 cheese stick",
   "seed-mix": "1 small handful of seed mix",
   "dried-fruit": "1 small box of dried fruit",
-  "sports-drink": "1 bottle of sports drink",
+  "sports-drink": "1 small bottle (about 12 oz) of sports drink",
   juice: "1 juice box",
-  tofu: "1 scoop of tofu",
+  tofu: "½ cup of tofu cubes",
 };
 for (const key of Object.keys(MEAL_INGREDIENTS))
-  MEAL_INGREDIENTS[key] = MEAL_INGREDIENTS[key].map(([name, id]) => [
+  MEAL_INGREDIENTS[key] = MEAL_INGREDIENTS[key].map(([name, id, display]) => [
     name,
     id,
     ...(exampleAmounts[id] || [1, "portion"]),
-    displayAmounts[id] ||
+    display ||
+      displayAmounts[id] ||
       (exampleAmounts[id] &&
       !["piece", "portion"].includes(exampleAmounts[id][1])
         ? `${exampleAmounts[id][0]} ${exampleAmounts[id][1]} ${name.toLowerCase()}`

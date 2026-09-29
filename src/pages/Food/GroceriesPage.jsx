@@ -18,6 +18,7 @@ import {
   weeklyGroceryIdeas,
 } from "../../domain/food.js";
 import { uid } from "../../domain/storage.js";
+import { SPORTS_DRINK_NOTE } from "../../domain/catalog.js";
 import { formatDate, plural } from "../../format.js";
 import {
   GroceryItemForm,
@@ -39,8 +40,6 @@ const GROUPS = [
     (i) => !["meal", "generated", "recommendation"].includes(i.origin),
   ],
 ];
-const SPORTS_DRINK_NOTE =
-  "Water works for most practices. Sports drinks can help in long or hot sessions.";
 const items = (n) => `${n} ${plural(n, "item")}`;
 
 export default function GroceriesPage({ todayKey }) {
