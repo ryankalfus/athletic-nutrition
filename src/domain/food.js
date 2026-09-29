@@ -154,7 +154,12 @@ export function ingredientsForMeal(idea, pantry, date) {
         available: matches.length > 0,
         sufficient:
           known >= amount ||
-          matches.some((item) => ["have", "some"].includes(item.availability)),
+          matches.some(
+            (item) =>
+              ["have", "some"].includes(item.availability) ||
+              // An exact count in another unit ("3 bunches") still means some is at home.
+              (quantityIn(item, unit) == null && Number(item.quantity) > 0),
+          ),
         missing: Math.max(amount - known, 0),
         approximate: matches.some((item) => quantityIn(item, unit) == null),
       };

@@ -21,6 +21,8 @@
 }
 .today-layout {
   display: grid;
+  /* minmax(0, 1fr) lets cards shrink below their content at 320 px. */
+  grid-template-columns: minmax(0, 1fr);
   gap: 24px;
   max-width: 1072px;
 }

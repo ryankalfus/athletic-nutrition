@@ -1898,3 +1898,27 @@ test("DATA-04/07 ADD-12: restore preview, backup errors, names, last backup", ()
     "Last backup: Sep 28 (today)",
   );
 });
+
+test("At home: an exact count in another unit still covers an idea", () => {
+  const idea = FOOD_IDEAS.find((i) => i.id === "banana-pretzels");
+  const pantry = [
+    {
+      id: "b",
+      name: "Bananas",
+      ingredientId: "bananas",
+      availability: "exact",
+      quantity: 3,
+      unit: "bunch",
+    },
+  ];
+  const banana = ingredientsForMeal(idea, pantry, day).find(
+    (i) => i.ingredientId === "bananas",
+  );
+  assert.equal(banana.sufficient, true);
+  assert.equal(banana.approximate, true);
+  const none = ingredientsForMeal(idea, [{ ...pantry[0], quantity: 0 }], day);
+  assert.equal(
+    none.find((i) => i.ingredientId === "bananas").sufficient,
+    false,
+  );
+});
