@@ -32,7 +32,7 @@ Owner Ryan Kalfus confirmed the recommended options previously presented for aud
 - [x] **P1-03**
 - [x] **P1-04**
 - [x] **P1-05**
-- [ ] **P1-06**
+- [x] **P1-06**
 - [ ] **P1-07**
 - [ ] **P1-08**
 - [ ] **P1-09**
@@ -77,7 +77,7 @@ Each ID is an individual checkbox. Implementation notes and blockers go on the m
 - [ ] **IA-09**
 - [ ] **IA-10**
 - [ ] **IA-11**
-- [ ] **IA-12**
+- [x] **IA-12**
 - [ ] **IA-13**
 - [ ] **IA-14**
 
@@ -131,7 +131,7 @@ Each ID is an individual checkbox. Implementation notes and blockers go on the m
 - [x] **TODAY-06**
 - [x] **TODAY-07**
 - [x] **TODAY-08**
-- [ ] **TODAY-09**
+- [x] **TODAY-09**
 - [x] **TODAY-10**
 - [x] **TODAY-11**
 
@@ -141,7 +141,7 @@ Each ID is an individual checkbox. Implementation notes and blockers go on the m
 - [x] **FOOD-02**
 - [x] **FOOD-03**
 - [x] **FOOD-04**
-- [ ] **FOOD-05**
+- [x] **FOOD-05**
 - [x] **FOOD-06**
 
 ### HOME
@@ -156,14 +156,14 @@ Each ID is an individual checkbox. Implementation notes and blockers go on the m
 
 ### GROC
 
-- [ ] **GROC-01**
-- [ ] **GROC-02**
-- [ ] **GROC-03**
-- [ ] **GROC-04**
-- [ ] **GROC-05**
-- [ ] **GROC-06**
-- [ ] **GROC-07**
-- [ ] **GROC-08**
+- [x] **GROC-01**
+- [x] **GROC-02**
+- [x] **GROC-03**
+- [x] **GROC-04**
+- [x] **GROC-05**
+- [x] **GROC-06**
+- [x] **GROC-07**
+- [x] **GROC-08**
 
 ### IDEA
 
@@ -238,7 +238,7 @@ Each ID is an individual checkbox. Implementation notes and blockers go on the m
 - [x] **DATA-03**
 - [ ] **DATA-04**
 - [x] **DATA-05**
-- [ ] **DATA-06**
+- [x] **DATA-06**
 - [ ] **DATA-07**
 - [ ] **DATA-08**
 - [x] **DATA-09**
