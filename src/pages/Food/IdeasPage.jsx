@@ -3,13 +3,9 @@ import { Heart } from "lucide-react";
 import { useStore, changeData } from "../../store.js";
 import { useRoute } from "../../routing.js";
 import { useAsyncAction } from "../../hooks/useAsyncAction.js";
-import {
-  getFuelingGuidance,
-  eventsForDate,
-  addDays,
-  getDateKey,
-} from "../../domain/timing.js";
-import { ideasFor, advanceCompletedMoment } from "../../domain/ranking.js";
+import { getDateKey } from "../../domain/timing.js";
+import { lowCostHiddenCount } from "../../domain/ranking.js";
+import { ideasForMoment } from "../../domain/ideaMoments.js";
 import { ingredientsForMeal, missingGroceries } from "../../domain/food.js";
 import {
   planMeal,
@@ -18,8 +14,9 @@ import {
   profileSignature,
   undoPlan,
 } from "../../domain/plans.js";
-import { formatTime, formatDate } from "../../format.js";
+import { formatTime, formatDate, formatPlanStatus } from "../../format.js";
 import { Dialog } from "../../components/Dialog.jsx";
+import { LabelCheck } from "../../components/ui/LabelCheck.jsx";
 
 export default function IdeasPage({ now, todayKey }) {
   const { current } = useStore();
@@ -35,51 +32,14 @@ export default function IdeasPage({ now, todayKey }) {
   )
     ? query.get("moment")
     : "now";
-  const date =
-    moment === "tomorrow"
-      ? getDateKey(addDays(new Date(`${todayKey}T12:00:00`), 1))
-      : todayKey;
-  const currentGuidance = advanceCompletedMoment(
-    getFuelingGuidance({
-      now,
-      todayKey,
-      events: data.schedule,
-      schoolSchedule: data.schoolSchedule,
-      profile: data.profile,
-      pantry: data.groceryState.pantry,
-      favorites: data.favorites,
-    }),
-    data,
+  // Same ranking inputs as Today for every moment (P1-01, IDEA-01).
+  const { date, event, guidance, ideas, inputs } = ideasForMoment({
+    moment,
+    now,
     todayKey,
-  );
-  const event = eventsForDate(data.schedule, date)[0];
-  const guidance =
-    moment === "now"
-      ? currentGuidance
-      : {
-          event,
-          moment:
-            moment === "after"
-              ? "recovery"
-              : moment === "before"
-                ? "pre"
-                : "regular",
-          date,
-          schoolSchedule: data.schoolSchedule,
-          travelMode: event?.location === "away",
-          inSchool: false,
-        };
-  const ideas =
-    moment === "now" && currentGuidance.allIdeas.length
-      ? currentGuidance.allIdeas
-      : ideasFor({
-          moment: guidance.moment,
-          date,
-          profile: data.profile,
-          pantry: data.groceryState.pantry,
-          favorites: data.favorites,
-          travelMode: guidance.travelMode,
-        });
+    data,
+  });
+  const hiddenByLowCost = lowCostHiddenCount(inputs);
   const plans = data.mealPlans.filter((p) => p.date === date);
   const write = (key, fn, message) => run(key, () => changeData(fn, message));
   const addMissing = (idea) =>
@@ -124,8 +84,8 @@ export default function IdeasPage({ now, todayKey }) {
       {guidance.travelMode && (
         <p>Away activity — showing foods that travel well.</p>
       )}
-      {(data.profile.lowCostIdeas ?? data.profile.budget === "save") && (
-        <p>
+      {hiddenByLowCost > 0 && (
+        <p className="idea-filter-note">
           Showing low-cost ideas.{" "}
           <button
             disabled={!!pending}
@@ -171,7 +131,20 @@ export default function IdeasPage({ now, todayKey }) {
           <button onClick={() => setReplace(null)}>Cancel</button>
         </p>
       )}
-      {!ideas.length && (
+      {!ideas.length && !inputs.access.length && (
+        <div className="empty-state">
+          <h3>
+            {guidance.inSchool
+              ? "Nothing is available at school right now"
+              : "Nothing is available on the way right now"}
+          </h3>
+          <p>Pack a snack next time — see ideas for tomorrow.</p>
+          <button onClick={() => navigate("food/ideas?moment=tomorrow")}>
+            Ideas for tomorrow
+          </button>
+        </div>
+      )}
+      {!ideas.length && inputs.access.length > 0 && (
         <div className="empty-state">
           <h3>No ideas fit these settings</h3>
           <p>Check your food needs and access, or choose a different moment.</p>
@@ -271,9 +244,9 @@ export default function IdeasPage({ now, todayKey }) {
                   Not for me
                 </button>
               </div>
+              <LabelCheck />
               <details>
                 <summary>Preparation &amp; storage</summary>
-                <p>Check package labels and adjust to your appetite.</p>
                 <p>
                   {idea.needsCold
                     ? "Keep refrigerated or pack with ice packs."
@@ -294,9 +267,16 @@ export default function IdeasPage({ now, todayKey }) {
       {ideas.length > limit && (
         <button onClick={() => setLimit((n) => n + 6)}>Show more ideas</button>
       )}
+      {ideas.length > 0 && (
+        <p className="muted idea-guidance">
+          Ideas are examples, not amounts you must eat. Check labels for
+          allergens.
+        </p>
+      )}
       {confirm && (
         <Dialog title="Log what you ate" onClose={() => setConfirm(null)}>
           <p>Did you eat {confirm.template.name} as planned?</p>
+          <LabelCheck />
           <button
             className="primary"
             disabled={!!pending}
@@ -355,8 +335,9 @@ export function MealPlanCard({
         {plan.eatAt
           ? `Eat around ${formatTime(plan.eatAt)}`
           : "Eat when it fits your day"}{" "}
-        · {plan.status}
+        · {formatPlanStatus(plan.status)}
       </p>
+      <LabelCheck />
       {changed && (
         <p>
           Your food needs changed. Check this plan.{" "}
