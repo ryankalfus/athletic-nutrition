@@ -1,4 +1,5 @@
 import { useEffect, useId, useRef } from "react";
+import { X } from "lucide-react";
 import { retryLastWrite, useStore } from "../store.js";
 import { InlineError } from "./ui/InlineError.jsx";
 
@@ -39,8 +40,13 @@ export function Dialog({
     >
       <header>
         <h2 id={titleId}>{title}</h2>
-        <button type="button" aria-label={`Close ${title}`} onClick={onClose}>
-          ×
+        <button
+          type="button"
+          className="icon-button"
+          aria-label={`Close ${title}`}
+          onClick={onClose}
+        >
+          <X size={20} strokeWidth={1.75} aria-hidden="true" />
         </button>
       </header>
       <InlineError message={error} onRetry={retryLastWrite} />

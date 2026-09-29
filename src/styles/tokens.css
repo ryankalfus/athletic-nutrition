@@ -1,28 +1,47 @@
+/*
+ * Nourally design tokens ("Game-day calm", audit section 5).
+ * The only file with literal colors, sizes and durations. Everything else uses these.
+ *
+ * Breakpoints (mobile first, min-width only; custom media is not supported yet):
+ *   480px  forms may use two columns
+ *   768px  tablet: top bar with four destinations, 24px gutters
+ *   1024px desktop: 232px left rail, 32px gutters
+ *   1200px right column (Today, Schedule, At home, Groceries)
+ *   1280px Ideas grid three columns
+ */
 :root {
   color-scheme: light;
 
+  /* Color roles (DS-01) */
   --color-paper: #f7f6f2;
   --color-surface: #fff;
   --color-surface-muted: #efeee8;
+  --color-hover: #eef3f1;
   --color-ink: #14333c;
   --color-ink-muted: #52656b;
   --color-ink-subtle: #66746f;
+  --color-on-dark: #fff;
+  --color-on-dark-muted: #d3e0e0;
   --color-line: #dddbd2;
   --color-line-strong: #7a847f;
+  --color-line-dark: rgb(255 255 255 / 0.24);
   --color-pitch: #0f3640;
   --color-pitch-end: #16484a;
   --color-lime: #d7f45f;
+  --color-lime-hover: #c8e64c;
   --color-primary: #08777c;
   --color-primary-hover: #065f65;
   --color-primary-pressed: #054f54;
   --color-focus: #05666d;
   --color-focus-dark: #e5ff91;
   --color-selected-bg: #e3f1ef;
+  --color-backdrop: rgb(15 44 56 / 0.48);
   --color-success: #1e6b3a;
   --color-success-tint: #e6f2e9;
   --color-warning: #8a5300;
   --color-warning-tint: #fdf1dc;
   --color-error: #a12c24;
+  --color-error-hover: #862019;
   --color-error-tint: #fbeae8;
   --color-info: #1f5a96;
   --color-info-tint: #e7f0fa;
@@ -32,9 +51,37 @@
   --color-workout: #6d4fb3;
   --color-travel: #9a6700;
   --color-food-moment: #3f7d20;
+  --color-other: #52656b;
 
-  --font-ui: "DM Sans Variable", "DM Sans", sans-serif;
+  /* Typography (DS-02, DS-03, DS-05). Mobile values; desktop overrides below. */
+  --font-ui: "DM Sans Variable", "DM Sans", system-ui, sans-serif;
   --font-numeral: "Barlow Semi Condensed", var(--font-ui);
+  --text-display: 36px;
+  --leading-display: 40px;
+  --text-h1: 28px;
+  --leading-h1: 32px;
+  --text-now: 24px;
+  --leading-now: 28px;
+  --text-h2: 20px;
+  --leading-h2: 26px;
+  --text-h3: 17px;
+  --leading-h3: 22px;
+  --text-body: 16px;
+  --leading-body: 24px;
+  --text-small: 14px;
+  --leading-small: 20px;
+  --text-label: 15px;
+  --leading-label: 20px;
+  --text-caption: 13px;
+  --leading-caption: 18px;
+  --text-numeral-xl: 32px;
+  --leading-numeral-xl: 36px;
+  --text-numeral-m: 16px;
+  --leading-numeral-m: 20px;
+  --text-badge: 12px; /* the only size below 13px: badges and tab-bar labels */
+  --leading-badge: 16px;
+
+  /* Spacing (DS-06), gutters (DS-07), widths (DS-08), rhythm (DS-09) */
   --space-1: 4px;
   --space-2: 8px;
   --space-3: 12px;
@@ -45,32 +92,75 @@
   --space-10: 40px;
   --space-12: 48px;
   --space-16: 64px;
+  --gutter: var(--space-4);
+  --width-reading: 720px;
+  --width-grid: 960px;
+  --width-aside: 320px;
+  --width-rail: 232px;
+  --width-page: 1280px;
+  --rhythm-section: var(--space-8);
+  --rhythm-card: var(--space-4);
+  --rhythm-row: var(--space-3);
+  --card-padding: var(--space-5);
+  --top-bar: 56px;
+  --tab-bar: 64px;
+  --control-height: 48px;
+  --target: 44px;
+
+  /* Shape (5.6) */
   --radius-sm: 6px;
   --radius-md: 10px;
   --radius-lg: 16px;
   --radius-xl: 24px;
   --radius-full: 999px;
+  --border: 1px solid var(--color-line);
+  --border-control: 1px solid var(--color-line-strong);
   --shadow-1: 0 1px 2px rgb(20 51 60 / 0.06);
   --shadow-2: 0 -1px 0 var(--color-line), 0 -8px 24px rgb(20 51 60 / 0.08);
   --shadow-3: 0 24px 64px rgb(15 44 56 / 0.24);
+
+  /* Inline icons (Lucide paths, stroke 1.75-3) for CSS-only controls */
+  --icon-chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2314333c' stroke-width='1.75' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  --icon-check: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6 9 17l-5-5'/%3E%3C/svg%3E");
+  --icon-check-primary: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2308777c' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6 9 17l-5-5'/%3E%3C/svg%3E");
+
+  --icon-search: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2352656b' stroke-width='1.75' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='m21 21-4.3-4.3'/%3E%3C/svg%3E");
+
+  /* Layers */
   --z-rail: 10;
   --z-sticky: 20;
   --z-toast: 40;
   --z-dialog: 50;
+
+  /* Motion (DS-19) */
   --motion-fast: 150ms;
   --motion-standard: 200ms;
   --motion-check: 250ms;
-
-  /* Compatibility aliases for the existing screens while they are rebuilt. */
-  --ink: var(--color-ink);
-  --muted: var(--color-ink-muted);
-  --line: var(--color-line);
-  --accent: var(--color-lime);
-  --teal: var(--color-primary);
-  --navy: var(--color-pitch);
-  --surface: var(--color-surface);
-  --danger: var(--color-error);
-  --radius: var(--radius-lg);
+  --ease-out: cubic-bezier(0.2, 0, 0, 1);
 }
 
-/* Layout breakpoints: 480px, 768px, 1024px, 1200px. */
+@media (min-width: 768px) {
+  :root {
+    --gutter: var(--space-6);
+    --top-bar: 64px;
+  }
+}
+
+@media (min-width: 1024px) {
+  :root {
+    --gutter: var(--space-8);
+    --card-padding: var(--space-6);
+    --text-display: 44px;
+    --leading-display: 48px;
+    --text-h1: 32px;
+    --leading-h1: 36px;
+    --text-now: 28px;
+    --leading-now: 32px;
+    --text-h3: 18px;
+    --leading-h3: 24px;
+    --text-numeral-xl: 40px;
+    --leading-numeral-xl: 44px;
+    --text-numeral-m: 17px;
+    --leading-numeral-m: 22px;
+  }
+}

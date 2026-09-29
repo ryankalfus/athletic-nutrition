@@ -1,52 +1,325 @@
+/* Element defaults: type scale (5.4), inputs (DS-13), focus (5.10), motion (DS-19). */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
 html {
   font-family: var(--font-ui);
   color: var(--color-ink);
   background: var(--color-paper);
   font-synthesis: none;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
 }
 
 body {
+  min-width: 320px;
   margin: 0;
   background: var(--color-paper);
+  font-size: var(--text-body);
+  line-height: var(--leading-body);
 }
 
-.event-time strong,
-.mini-timeline > div > span,
-.water-title h2,
-.water-day-label strong {
-  font-family: var(--font-numeral);
-  font-variant-numeric: tabular-nums;
+h1,
+h2,
+h3,
+p,
+ul,
+ol,
+figure {
+  margin-top: 0;
 }
 
-button,
-input,
-select,
-textarea {
+h1 {
+  margin-bottom: 0;
+  font-size: var(--text-h1);
+  line-height: var(--leading-h1);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  overflow-wrap: anywhere;
+}
+
+h2 {
+  margin-bottom: var(--space-2);
+  font-size: var(--text-h2);
+  line-height: var(--leading-h2);
+  font-weight: 600;
+}
+
+h3 {
+  margin-bottom: var(--space-2);
+  font-size: var(--text-h3);
+  line-height: var(--leading-h3);
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+p {
+  margin-bottom: var(--space-3);
+  max-width: 70ch;
+}
+
+small {
+  font-size: var(--text-caption);
+  line-height: var(--leading-caption);
+}
+
+em {
+  font-style: normal;
+}
+
+a {
+  color: var(--color-primary);
+}
+
+img,
+svg,
+video {
+  max-width: 100%;
+}
+
+:where(button, input, select, textarea) {
   font: inherit;
-}
-
-button,
-input,
-select,
-textarea {
+  color: inherit;
   accent-color: var(--color-primary);
 }
 
-:where(button, a, input, select, textarea, summary):focus-visible {
+button,
+summary,
+label:has(> input[type="checkbox"]) {
+  cursor: pointer;
+}
+
+/* Form labels and fields (DS-13). The label text and an "Optional" tag share
+ * the first row; the field and any hint take full rows below. */
+label {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: baseline;
+  gap: var(--space-2);
+  color: var(--color-ink);
+  font-size: var(--text-label);
+  line-height: var(--leading-label);
+  font-weight: 600;
+}
+
+label > :not(.optional-label) {
+  grid-column: 1 / -1;
+}
+
+fieldset {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+legend {
+  margin-bottom: var(--space-2);
+  padding: 0;
+  font-size: var(--text-label);
+  line-height: var(--leading-label);
+  font-weight: 600;
+}
+
+:where(
+    input:not([type="checkbox"], [type="radio"], [type="file"], [type="range"]),
+    select,
+    textarea
+  ) {
+  width: 100%;
+  min-width: 0;
+  min-height: var(--control-height);
+  padding: var(--space-3);
+  border: var(--border-control);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  color: var(--color-ink);
+  font-size: var(--text-body);
+  line-height: var(--leading-body);
+  font-weight: 400;
+  transition: border-color var(--motion-fast) var(--ease-out);
+}
+
+:where(input, textarea)::placeholder {
+  color: var(--color-ink-subtle);
+  opacity: 1;
+}
+
+:where(textarea) {
+  min-height: 96px;
+  resize: vertical;
+}
+
+:where(select) {
+  appearance: none;
+  padding-right: var(--space-10);
+  background: var(--color-surface) var(--icon-chevron) right var(--space-3) center / 20px no-repeat;
+}
+
+:where(input, select, textarea):focus {
+  border-color: var(--color-primary);
+  box-shadow: inset 0 0 0 1px var(--color-primary);
+  outline: none;
+}
+
+:where(input, select, textarea)[aria-invalid="true"] {
+  border-color: var(--color-error);
+  box-shadow: inset 0 0 0 1px var(--color-error);
+}
+
+:where(input, select, textarea):disabled {
+  background-color: var(--color-surface-muted);
+  color: var(--color-ink-subtle);
+}
+
+/* Checkbox: 22px, 2px strong border, checked = primary fill + white check. */
+input[type="checkbox"]:not([role="switch"]) {
+  appearance: none;
+  flex: 0 0 auto;
+  width: 22px;
+  height: 22px;
+  margin: 0;
+  border: 2px solid var(--color-line-strong);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  transition: background-color var(--motion-check) var(--ease-out);
+}
+
+input[type="checkbox"]:not([role="switch"]):checked {
+  border-color: var(--color-primary);
+  background: var(--color-primary) var(--icon-check) center / 16px no-repeat;
+}
+
+/* Switch (CMP-03): a checkbox with role="switch". */
+input[type="checkbox"][role="switch"] {
+  appearance: none;
+  position: relative;
+  flex: 0 0 auto;
+  width: 44px;
+  height: 26px;
+  margin: 0;
+  border: 2px solid var(--color-line-strong);
+  border-radius: var(--radius-full);
+  background: var(--color-surface-muted);
+  transition: background-color var(--motion-fast) var(--ease-out);
+}
+
+input[type="checkbox"][role="switch"]::after {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 18px;
+  height: 18px;
+  border-radius: var(--radius-full);
+  background: var(--color-line-strong);
+  content: "";
+  transition: transform var(--motion-fast) var(--ease-out);
+}
+
+input[type="checkbox"][role="switch"]:checked {
+  border-color: var(--color-primary);
+  background: var(--color-primary);
+}
+
+input[type="checkbox"][role="switch"]:checked::after {
+  background: var(--color-surface);
+  transform: translateX(18px);
+}
+
+:where(input[type="checkbox"]):disabled {
+  border-color: var(--color-line);
+  background-color: var(--color-surface-muted);
+}
+
+summary {
+  min-height: var(--target);
+  padding: var(--space-3) 0;
+  color: var(--color-ink);
+  font-size: var(--text-label);
+  line-height: var(--leading-label);
+  font-weight: 600;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--text-small);
+  line-height: var(--leading-small);
+}
+
+caption {
+  padding-bottom: var(--space-3);
+  color: var(--color-ink-muted);
+  text-align: left;
+}
+
+th,
+td {
+  padding: var(--space-3);
+  border-bottom: var(--border);
+  text-align: left;
+}
+
+/* Focus (5.10): 3px ring, 2px offset; lime ring on pitch surfaces. */
+:where(button, a, input, select, textarea, summary, [tabindex]):focus-visible {
   outline: 3px solid var(--color-focus);
   outline-offset: 2px;
 }
 
-:where(.action-hero, .now-card) :where(button, a, summary):focus-visible {
+:where(input, select, textarea):focus-visible {
+  outline-offset: 1px;
+}
+
+:where(.now-card, .app-toast) :where(button, a, summary):focus-visible {
   outline-color: var(--color-focus-dark);
+}
+
+/* Utilities */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+.muted {
+  color: var(--color-ink-muted);
+}
+
+.field-hint {
+  display: block;
+  color: var(--color-ink-muted);
+  font-size: var(--text-caption);
+  line-height: var(--leading-caption);
+  font-weight: 400;
+}
+
+.numeral {
+  font-family: var(--font-numeral);
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
 }
 
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
   *::after {
-    animation-duration: 0.01ms !important;
     scroll-behavior: auto !important;
-    transition-duration: 0.01ms !important;
+    transition-property: opacity !important;
+    animation-name: fade-in !important;
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
   }
 }

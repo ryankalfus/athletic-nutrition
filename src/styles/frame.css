@@ -1,3 +1,6 @@
+/* App frame (P0-02): mobile top bar + bottom tab bar, tablet top bar,
+ * desktop 232px rail. Page column widths (DS-08) and gutters (DS-07). */
+
 .app-frame {
   min-height: 100dvh;
   background: var(--color-paper);
@@ -9,37 +12,49 @@
   z-index: var(--z-rail);
   display: flex;
   align-items: center;
-  height: 56px;
-  padding: 0 var(--space-4);
+  height: var(--top-bar);
+  padding: 0 var(--gutter);
   background: var(--color-paper);
-  border-bottom: 1px solid var(--color-line);
+  border-bottom: var(--border);
 }
 
-.frame-brand {
+.frame-brand,
+.brand {
   display: none;
   align-items: center;
   gap: var(--space-2);
-  font-size: 22px;
+  color: var(--color-ink);
+  font-size: var(--text-h2);
+  line-height: var(--leading-h2);
   font-weight: 700;
-  letter-spacing: -0.04em;
+  letter-spacing: -0.02em;
+}
+
+.brand {
+  display: flex;
+  margin-bottom: var(--space-8);
 }
 
 .frame-mobile-title {
   order: -1;
-  font-size: 20px;
+  overflow: hidden;
+  font-size: var(--text-h2);
+  line-height: var(--leading-h2);
   font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
+/* Mobile tab bar (DS-17): 24px icon, 12px label, lime dot above the active icon. */
 .frame-nav {
   position: fixed;
   inset: auto 0 0;
   z-index: var(--z-rail);
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  height: calc(64px + env(safe-area-inset-bottom));
+  height: calc(var(--tab-bar) + env(safe-area-inset-bottom));
   padding: 0 0 env(safe-area-inset-bottom);
   background: var(--color-surface);
-  border-top: 1px solid var(--color-line);
   box-shadow: var(--shadow-2);
 }
 
@@ -49,17 +64,22 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 2px;
+  gap: var(--space-1);
   min-width: 0;
-  min-height: 64px;
-  padding: 5px 2px;
+  min-height: var(--tab-bar);
+  padding: var(--space-2) var(--space-1);
   border: 0;
   border-radius: 0;
   background: transparent;
   color: var(--color-ink-muted);
-  font-size: 12px;
-  line-height: 16px;
+  font-size: var(--text-badge);
+  line-height: var(--leading-badge);
   font-weight: 600;
+}
+
+.frame-nav .frame-nav-item svg {
+  width: 24px;
+  height: 24px;
 }
 
 .frame-nav .frame-nav-item[aria-current="page"] {
@@ -68,7 +88,7 @@
 
 .frame-nav .frame-nav-item[aria-current="page"]::before {
   position: absolute;
-  top: 3px;
+  top: var(--space-1);
   width: 6px;
   height: 6px;
   border-radius: var(--radius-full);
@@ -80,10 +100,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  width: var(--target);
+  height: var(--target);
   margin-left: auto;
-  width: 44px;
-  height: 44px;
-  min-height: 44px;
   padding: 0;
   border: 0;
   border-radius: var(--radius-full);
@@ -93,6 +112,7 @@
 
 .frame-avatar {
   display: grid;
+  flex: 0 0 auto;
   place-items: center;
   width: 32px;
   height: 32px;
@@ -102,129 +122,70 @@
   font-weight: 700;
 }
 
-.frame-athlete-name,
-.frame-switch {
+.frame-athlete-name {
   display: none;
+}
+
+/* Page column: centered, gutters 16/24/32, width by route (DS-08). */
+.shell {
+  --layout-max: var(--width-reading);
+  box-sizing: content-box;
+  max-width: var(--layout-max);
+  margin-inline: auto;
+  padding: var(--space-4) var(--gutter) var(--space-8);
 }
 
 .app-frame.has-navigation .shell {
-  width: calc(100% - 32px);
-  max-width: 720px;
-  min-height: calc(100dvh - 120px);
-  margin: 0 auto;
-  padding: 0 0 calc(88px + env(safe-area-inset-bottom));
+  padding-bottom: calc(var(--tab-bar) + var(--space-8) + env(safe-area-inset-bottom));
 }
 
-.app-frame.has-navigation .eyebrow,
-.app-frame.has-navigation .kicker {
-  display: none;
+.shell[data-layout="grid"] {
+  --layout-max: var(--width-grid);
 }
 
-.app-frame.has-navigation .profile-tools {
-  margin-top: var(--space-8);
-  width: 100%;
+.shell > footer {
+  margin-top: var(--space-12);
+  padding-top: var(--space-4);
+  border-top: var(--border);
+  color: var(--color-ink-muted);
+  font-size: var(--text-caption);
+  line-height: var(--leading-caption);
 }
 
-.app-toast {
-  position: fixed;
-  z-index: var(--z-toast);
-  bottom: calc(80px + env(safe-area-inset-bottom));
-  left: var(--space-4);
-  right: var(--space-4);
+/* Page header: title row with optional tools. On phones the top bar already
+ * shows the page name, so the H1 stays for screen readers only (RWD-04). */
+.dashboard-head,
+.calendar-head {
   display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3) var(--space-4);
+  margin-bottom: var(--space-6);
+}
+
+.app-frame.has-navigation .page-title {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.app-frame.has-navigation .dashboard-head {
+  margin: 0;
+}
+
+.page-head-tools {
+  display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: var(--space-3);
-  width: fit-content;
-  max-width: calc(100% - 32px);
-  min-height: 48px;
-  padding: var(--space-2) var(--space-3);
-  border-radius: var(--radius-md);
-  background: var(--color-ink);
-  box-shadow: var(--shadow-2);
-  color: white;
-  font-size: 14px;
-  line-height: 20px;
-}
-
-.app-toast button {
-  min-width: 44px;
-  min-height: 44px;
-  padding: var(--space-2);
-  border: 0;
-  background: transparent;
-  color: var(--color-lime);
-  font-weight: 700;
-}
-
-.app-toast .toast-dismiss {
-  margin-left: auto;
-  color: white;
-  font-size: 20px;
-}
-
-.inline-error {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-  margin: var(--space-4) 0;
-  padding: var(--space-3);
-  border: 1px solid var(--color-error);
-  border-radius: var(--radius-md);
-  background: var(--color-error-tint);
-  color: var(--color-error);
-  font-size: 14px;
-}
-.label-check {
-  margin: 0.65rem 0;
-  padding: 0.65rem 0.8rem;
-  border-left: 3px solid var(--color-warning, #9c661e);
-  background: var(--color-surface-muted, #f7f4ec);
-  color: var(--color-text, #242b27);
-  font-size: 0.875rem;
-}
-
-.inline-error button {
-  margin-left: auto;
-  border: 1px solid var(--color-error);
-  color: var(--color-error);
-}
-
-.confirm-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: var(--space-3);
-  padding: var(--space-4) 0;
-}
-
-.confirm-actions .danger-button {
-  background: var(--color-error);
-  color: white;
-}
-
-@media (max-width: 767px) {
-  .app-frame.has-navigation .dashboard-head {
-    display: none;
-  }
-
-  .app-frame.has-navigation .calendar-head {
-    margin: var(--space-2) 0 var(--space-4);
-  }
-
-  .app-frame.has-navigation .calendar-head > div:first-child {
-    display: none;
-  }
-
-  .app-frame.has-navigation .intro {
-    margin-top: var(--space-4);
-  }
 }
 
 @media (min-width: 768px) {
-  .frame-header {
-    height: 64px;
-    padding: 0 var(--space-6);
-  }
-
   .frame-brand {
     display: flex;
   }
@@ -233,25 +194,28 @@
     display: none;
   }
 
+  /* Tablet top bar with four destinations. */
   .frame-nav {
     position: static;
     display: flex;
+    flex: 1;
     align-items: center;
     justify-content: center;
-    flex: 1;
-    height: 64px;
+    gap: var(--space-1);
+    height: var(--top-bar);
     padding: 0;
     background: transparent;
-    border: 0;
     box-shadow: none;
   }
 
   .frame-nav .frame-nav-item {
     flex-direction: row;
     gap: var(--space-2);
-    min-height: 48px;
+    min-height: var(--control-height);
     padding: var(--space-2) var(--space-3);
-    font-size: 15px;
+    border-radius: var(--radius-md);
+    font-size: var(--text-label);
+    line-height: var(--leading-label);
   }
 
   .frame-nav .frame-nav-item svg {
@@ -266,28 +230,46 @@
     height: 4px;
   }
 
+  .frame-athlete {
+    margin-left: 0;
+  }
+
+  .shell,
   .app-frame.has-navigation .shell {
-    width: calc(100% - 48px);
-    padding: 0 0 var(--space-12);
+    padding-top: var(--space-6);
+    padding-bottom: var(--space-12);
+  }
+
+  .app-frame.has-navigation .page-title {
+    position: static;
+    width: auto;
+    height: auto;
+    overflow: visible;
+    clip: auto;
+    clip-path: none;
+    white-space: normal;
+  }
+
+  .app-frame.has-navigation .dashboard-head {
+    margin-bottom: var(--space-6);
   }
 }
 
 @media (min-width: 1024px) {
-  .app-toast {
-    left: 264px;
-    right: auto;
-    bottom: var(--space-6);
+  .app-frame.has-navigation {
+    padding-left: var(--width-rail);
   }
+
+  /* Desktop rail (DS-17): 48px items, 20px icon, 15px label, 4px lime bar. */
   .frame-header {
     position: fixed;
     inset: 0 auto 0 0;
-    display: flex;
     flex-direction: column;
     align-items: stretch;
-    width: 232px;
+    width: var(--width-rail);
     height: 100dvh;
     padding: var(--space-6) var(--space-4);
-    border-right: 1px solid var(--color-line);
+    border-right: var(--border);
     border-bottom: 0;
   }
 
@@ -295,16 +277,13 @@
     flex: 0 0 auto;
     flex-direction: column;
     align-items: stretch;
-    gap: var(--space-1);
     height: auto;
     margin-top: var(--space-8);
   }
 
   .frame-nav .frame-nav-item {
     justify-content: flex-start;
-    min-height: 48px;
     padding: var(--space-3) var(--space-4);
-    border-radius: var(--radius-md);
   }
 
   .frame-nav .frame-nav-item[aria-current="page"]::before {
@@ -318,27 +297,27 @@
     gap: var(--space-2);
     width: 100%;
     margin: auto 0 0;
+    padding: 0 var(--space-2);
     border-radius: var(--radius-md);
+    font-weight: 500;
   }
 
-  .frame-athlete-name,
-  .frame-switch {
+  .frame-athlete-name {
     display: inline;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
   }
 
-  .frame-switch {
-    margin-left: auto;
-    color: var(--color-primary);
-    font-size: 13px;
-  }
-
+  .shell,
   .app-frame.has-navigation .shell {
-    width: min(1280px, calc(100% - 296px));
-    max-width: none;
-    margin: 0 var(--space-8) 0 264px;
     padding-top: var(--space-8);
+  }
+}
+
+@media (min-width: 1200px) {
+  /* Today and Schedule add a 320px right column. */
+  .shell[data-layout="wide"] {
+    --layout-max: calc(var(--width-reading) + var(--space-8) + var(--width-aside));
   }
 }

@@ -43,6 +43,15 @@ export function Shell({
   const go = onNavigate || navigate;
   const athleteName =
     state.current?.data?.profile?.name || state.current?.name || "Athlete";
+  // Column width per route (DS-08): Today and Schedule gain a right column at
+  // 1200px, Food uses the 960px grid column, everything else reads at 720px.
+  const layout = !navigation
+    ? "reading"
+    : view === "today" || view === "schedule"
+      ? "wide"
+      : view === "food"
+        ? "grid"
+        : "reading";
 
   return (
     <div className={`app-frame${navigation ? " has-navigation" : ""}`}>
@@ -69,7 +78,7 @@ export function Shell({
           </div>
         </header>
       )}
-      <main id="main-content" className="shell">
+      <main id="main-content" className="shell" data-layout={layout}>
         {state.error && (
           <div className="save-error" role="alert">
             {state.error} <button onClick={exportBackup}>Export backup</button>

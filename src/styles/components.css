@@ -1,0 +1,835 @@
+/* Shared primitives (5.7): buttons, chips, segmented controls, cards, rows,
+ * dialogs and sheets, toasts, empty states, badges and inline messages. */
+
+/* ---------- Buttons (DS-11, CMP-02) ---------- */
+
+/* Secondary is the default look for every button without its own class rule. */
+:where(button) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: var(--target);
+  padding: var(--space-2) var(--space-4);
+  border: var(--border-control);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  color: var(--color-ink);
+  font-size: var(--text-label);
+  line-height: var(--leading-label);
+  font-weight: 600;
+  text-align: center;
+  transition:
+    background-color var(--motion-fast) var(--ease-out),
+    border-color var(--motion-fast) var(--ease-out),
+    color var(--motion-fast) var(--ease-out);
+}
+
+:where(button) svg {
+  flex: 0 0 auto;
+  width: 20px;
+  height: 20px;
+}
+
+@media (hover: hover) {
+  :where(button):hover:not(:disabled, [aria-disabled="true"]) {
+    background-color: var(--color-hover);
+  }
+}
+
+:where(button):active:not(:disabled) {
+  background-color: var(--color-surface-muted);
+}
+
+:where(button):disabled,
+:where(button)[aria-disabled="true"] {
+  border-color: var(--color-line);
+  background-color: var(--color-surface-muted);
+  color: var(--color-ink-subtle);
+  cursor: not-allowed;
+}
+
+/* Primary: one per view. */
+.primary {
+  min-height: var(--control-height);
+  padding: var(--space-3) var(--space-5);
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  background: var(--color-primary);
+  color: var(--color-on-dark);
+}
+
+@media (hover: hover) {
+  .primary:hover:not(:disabled) {
+    background: var(--color-primary-hover);
+  }
+}
+
+.primary:active:not(:disabled) {
+  background: var(--color-primary-pressed);
+}
+
+.primary:disabled {
+  border-color: transparent;
+  background: var(--color-surface-muted);
+  color: var(--color-ink-subtle);
+}
+
+/* Full-width calls to action on phones are 52px (DS-11). */
+.button-block {
+  width: 100%;
+  min-height: 52px;
+}
+
+/* Tertiary (text) */
+.text-button {
+  min-height: var(--target);
+  padding: var(--space-2) var(--space-1);
+  border: 0;
+  background: transparent;
+  color: var(--color-primary);
+  text-underline-offset: 3px;
+}
+
+@media (hover: hover) {
+  .text-button:hover:not(:disabled) {
+    background: transparent;
+    text-decoration: underline;
+  }
+}
+
+.text-button:disabled {
+  background: transparent;
+}
+
+/* Destructive: error text in pages and menus; error fill in confirm dialogs. */
+.danger-button {
+  border-color: var(--color-error);
+  color: var(--color-error);
+}
+
+.app-dialog .danger-button {
+  min-height: var(--control-height);
+  border-color: transparent;
+  background: var(--color-error);
+  color: var(--color-on-dark);
+}
+
+@media (hover: hover) {
+  .danger-button:hover:not(:disabled) {
+    background: var(--color-error-tint);
+  }
+  .app-dialog .danger-button:hover:not(:disabled) {
+    background: var(--color-error-hover);
+  }
+}
+
+.app-dialog .danger-button:disabled {
+  background: var(--color-surface-muted);
+  color: var(--color-ink-subtle);
+}
+
+/* Icon button: 20px icon in a 44 x 44 target. */
+.icon-button {
+  width: var(--target);
+  min-width: var(--target);
+  height: var(--target);
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--color-ink);
+}
+
+/* Loading: spinner + verb label (5.10). */
+:where(button)[aria-busy="true"]::before {
+  width: 16px;
+  height: 16px;
+  border: 2px solid currentcolor;
+  border-right-color: transparent;
+  border-radius: var(--radius-full);
+  content: "";
+  animation: spin 800ms linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(1turn);
+  }
+}
+
+.button-row,
+.row-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+/* ---------- Chips (DS-12, CMP-03): multi-select and filters ---------- */
+
+.chip-group,
+.choice-grid,
+.stock-filters,
+.moment-picker,
+.quick-add > div,
+.school-weekdays,
+.food-access-options,
+.today-alternates {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+:is(
+    .chip-group,
+    .choice-grid,
+    .stock-filters,
+    .moment-picker,
+    .quick-add > div,
+    .school-weekdays,
+    .food-access-options
+  )
+  > button,
+.chip {
+  position: relative;
+  min-height: 36px;
+  margin-block: var(--space-1);
+  padding: var(--space-1) var(--space-4);
+  border: var(--border-control);
+  border-radius: var(--radius-full);
+  background: var(--color-surface);
+  color: var(--color-ink);
+}
+
+/* 44px touch area around a 36px chip. */
+:is(
+    .chip-group,
+    .choice-grid,
+    .stock-filters,
+    .moment-picker,
+    .quick-add > div,
+    .school-weekdays,
+    .food-access-options
+  )
+  > button::after,
+.chip::after {
+  position: absolute;
+  inset: calc(var(--space-1) * -1) 0;
+  content: "";
+}
+
+/* State and semantics are styled together (A11Y-08). */
+:is(
+    .chip-group,
+    .choice-grid,
+    .stock-filters,
+    .moment-picker,
+    .quick-add > div,
+    .school-weekdays,
+    .food-access-options
+  )
+  > button:is([aria-pressed="true"], [aria-checked="true"]),
+.chip:is([aria-pressed="true"], [aria-checked="true"]) {
+  padding-left: var(--space-3);
+  border-color: var(--color-primary);
+  background: var(--color-selected-bg);
+  box-shadow: inset 0 0 0 1px var(--color-primary);
+  color: var(--color-primary-pressed);
+}
+
+:is(
+    .chip-group,
+    .choice-grid,
+    .stock-filters,
+    .moment-picker,
+    .quick-add > div,
+    .school-weekdays,
+    .food-access-options
+  )
+  > button:is([aria-pressed="true"], [aria-checked="true"])::before,
+.chip:is([aria-pressed="true"], [aria-checked="true"])::before {
+  width: 16px;
+  height: 16px;
+  background: var(--icon-check-primary) center / 16px no-repeat;
+  content: "";
+}
+
+/* Horizontal scrollers keep 4px inside so focus rings are never clipped (RWD-05). */
+.moment-picker {
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  padding: var(--space-1);
+  scrollbar-width: thin;
+}
+
+.moment-picker > button {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+/* ---------- Segmented control (DS-12, CMP-03): 2-4 single choices ---------- */
+
+.segmented,
+.schedule-view-control,
+.stock-control,
+.intensity-options,
+.activity-type-options,
+.choice-grid[role="radiogroup"] {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+  padding: var(--space-1);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-muted);
+}
+
+:is(
+    .segmented,
+    .schedule-view-control,
+    .stock-control,
+    .intensity-options,
+    .activity-type-options,
+    .choice-grid[role="radiogroup"]
+  )
+  > button {
+  flex: 1 1 auto;
+  min-height: 36px;
+  margin: 0;
+  padding: var(--space-1) var(--space-3);
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  box-shadow: none;
+  color: var(--color-ink-muted);
+  font-weight: 500;
+}
+
+:is(
+    .segmented,
+    .schedule-view-control,
+    .stock-control,
+    .intensity-options,
+    .activity-type-options,
+    .choice-grid[role="radiogroup"]
+  )
+  > button::before {
+  content: none;
+}
+
+@media (hover: hover) {
+  :is(
+      .segmented,
+      .schedule-view-control,
+      .stock-control,
+      .intensity-options,
+      .activity-type-options,
+      .choice-grid[role="radiogroup"]
+    )
+    > button:hover:not(:disabled) {
+    background: var(--color-surface);
+    color: var(--color-ink);
+  }
+}
+
+:is(
+    .segmented,
+    .schedule-view-control,
+    .stock-control,
+    .intensity-options,
+    .activity-type-options,
+    .choice-grid[role="radiogroup"]
+  )
+  > button:is([aria-pressed="true"], [aria-checked="true"], [aria-current="page"]) {
+  padding-left: var(--space-3);
+  border-color: var(--color-line-strong);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-1);
+  color: var(--color-ink);
+  font-weight: 600;
+}
+
+/* ---------- Cards (DS-14) ---------- */
+
+.card {
+  padding: var(--card-padding);
+  border: var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-1);
+}
+
+.card > :last-child {
+  margin-bottom: 0;
+}
+
+/* A stack of cards in a list: 16px apart (DS-09). */
+.card-list {
+  display: grid;
+  gap: var(--rhythm-card);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* ---------- Section heads and rows ---------- */
+
+.section-toolbar,
+.today-section-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3) var(--space-4);
+  margin-bottom: var(--space-4);
+}
+
+:is(.section-toolbar, .today-section-header) :is(h2, h3, p) {
+  margin: 0;
+}
+
+.section-toolbar h2:focus {
+  outline: none;
+}
+
+.data-list,
+.food-result-list {
+  border-top: var(--border);
+}
+
+.data-row,
+.food-result-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3) var(--space-4);
+  min-width: 0;
+  min-height: 56px;
+  padding: var(--space-3) 0;
+  border-bottom: var(--border);
+}
+
+:is(.data-row, .food-result-row) > div:first-child {
+  flex: 1 1 200px;
+  min-width: 0;
+}
+
+:is(.data-row, .food-result-row) :is(h3, p) {
+  margin: 0;
+}
+
+:is(.data-row, .food-result-row) p {
+  margin-top: var(--space-1);
+  color: var(--color-ink-muted);
+  font-size: var(--text-small);
+  line-height: var(--leading-small);
+  overflow-wrap: anywhere;
+}
+
+.food-result-row h3 {
+  font-size: var(--text-body);
+  line-height: var(--leading-body);
+}
+
+.data-row details {
+  margin-top: var(--space-2);
+}
+
+/* Check rows and switch rows: control + label on one line. */
+.check-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: var(--target);
+  padding: var(--space-2) 0;
+  font-weight: 400;
+}
+
+.check-row > span {
+  display: grid;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+/* Row menu (CMP-17): a details disclosure with a 44px trigger. */
+.row-menu,
+.schedule-row-menu {
+  position: relative;
+}
+
+:is(.row-menu, .schedule-row-menu) > summary {
+  display: grid;
+  place-items: center;
+  min-width: var(--target);
+  min-height: var(--target);
+  padding: 0;
+  border-radius: var(--radius-md);
+  list-style: none;
+}
+
+:is(.row-menu, .schedule-row-menu) > summary::-webkit-details-marker {
+  display: none;
+}
+
+@media (hover: hover) {
+  :is(.row-menu, .schedule-row-menu) > summary:hover {
+    background: var(--color-hover);
+  }
+}
+
+:is(.row-menu, .schedule-row-menu)[open] > :not(summary) {
+  position: absolute;
+  right: 0;
+  z-index: var(--z-sticky);
+  display: grid;
+  min-width: 180px;
+  padding: var(--space-2);
+  border: var(--border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-3);
+}
+
+:is(.row-menu, .schedule-row-menu)[open] :is(button, a):not(summary) {
+  justify-content: flex-start;
+  width: 100%;
+  min-width: 160px;
+  border: 0;
+  background: transparent;
+  text-align: left;
+}
+
+:is(.row-menu, .schedule-row-menu) .danger {
+  color: var(--color-error);
+}
+
+/* ---------- Badges (DS-12) ---------- */
+
+.badge,
+.tab-badge,
+.reason-chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 20px;
+  padding: 0 var(--space-2);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-muted);
+  color: var(--color-ink-muted);
+  font-size: var(--text-caption);
+  line-height: var(--leading-caption);
+  font-weight: 500;
+}
+
+.tab-badge {
+  justify-content: center;
+  min-width: 20px;
+  border-radius: var(--radius-full);
+  background: var(--color-primary);
+  color: var(--color-on-dark);
+  font-family: var(--font-numeral);
+  font-size: var(--text-badge);
+  line-height: var(--leading-badge);
+  font-weight: 600;
+}
+
+.optional-label {
+  color: var(--color-ink-muted);
+  font-size: var(--text-caption);
+  line-height: var(--leading-caption);
+  font-weight: 400;
+}
+
+/* ---------- Empty states (CMP-07) ---------- */
+
+.empty-state,
+.agenda-empty {
+  display: grid;
+  justify-items: center;
+  gap: var(--space-2);
+  padding: var(--space-8) var(--space-6);
+  border: 1px dashed var(--color-line-strong);
+  border-radius: var(--radius-lg);
+  color: var(--color-ink-muted);
+  text-align: center;
+}
+
+:is(.empty-state, .agenda-empty) :is(h3, p) {
+  margin: 0;
+}
+
+:is(.empty-state, .agenda-empty) h3 {
+  color: var(--color-ink);
+}
+
+:is(.empty-state, .agenda-empty) button {
+  margin-top: var(--space-2);
+}
+
+/* Skeleton (CMP-08) */
+.skeleton,
+.food-search-loading span {
+  display: block;
+  border-radius: var(--radius-md);
+  background: var(--color-surface-muted);
+  animation: pulse 1.2s ease-in-out infinite alternate;
+}
+
+@keyframes pulse {
+  to {
+    opacity: 0.55;
+  }
+}
+
+/* ---------- Inline messages ---------- */
+
+.inline-error,
+.schedule-error,
+.save-error {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+  margin: 0;
+  padding: var(--space-3);
+  border: 1px solid var(--color-error);
+  border-radius: var(--radius-md);
+  background: var(--color-error-tint);
+  color: var(--color-error);
+  font-size: var(--text-small);
+  line-height: var(--leading-small);
+}
+
+.inline-error button,
+.save-error button {
+  min-height: var(--target);
+  border-color: var(--color-error);
+  color: var(--color-error);
+}
+
+.inline-error button {
+  margin-left: auto;
+}
+
+.save-error {
+  margin-bottom: var(--space-4);
+  border-color: var(--color-warning);
+  background: var(--color-warning-tint);
+  color: var(--color-warning);
+}
+
+.label-check {
+  margin: 0;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  background: var(--color-warning-tint);
+  color: var(--color-warning);
+  font-size: var(--text-small);
+  line-height: var(--leading-small);
+  font-weight: 600;
+}
+
+.table-wrap {
+  overflow-x: auto;
+}
+
+/* ---------- Dialogs and sheets (DS-15, CMP-04, RWD-11) ---------- */
+
+/* Phones get a bottom sheet (RWD-11): full width, up to 92% tall, drag handle. */
+.app-dialog {
+  --dialog-pad: var(--space-4);
+  width: 100%;
+  max-width: 100%;
+  max-height: 92dvh;
+  margin: auto 0 0;
+  padding: 0 0 var(--dialog-pad);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  border: 0;
+  border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+  background: var(--color-surface);
+  box-shadow: var(--shadow-3);
+  color: var(--color-ink);
+}
+
+.app-dialog[open] {
+  animation: sheet-in var(--motion-standard) var(--ease-out);
+}
+
+.app-dialog::backdrop {
+  background: var(--color-backdrop);
+}
+
+@keyframes sheet-in {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+}
+
+/* Sticky header */
+.app-dialog > header {
+  position: sticky;
+  top: 0;
+  z-index: var(--z-sticky);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  min-height: 64px;
+  margin-bottom: var(--space-4);
+  padding: var(--space-4) var(--space-3) var(--space-3) var(--dialog-pad);
+  border-bottom: var(--border);
+  background: var(--color-surface);
+}
+
+.app-dialog > header h2 {
+  margin: 0;
+}
+
+.app-dialog > header button {
+  flex: 0 0 auto;
+  width: var(--target);
+  height: var(--target);
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+
+/* Body: every other direct child sits on the dialog's inner padding. */
+.app-dialog > :not(header) {
+  margin-inline: var(--dialog-pad);
+}
+
+.app-dialog > :not(header) + :not(header) {
+  margin-top: var(--space-4);
+}
+
+.app-dialog form {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.app-dialog p {
+  margin: 0;
+}
+
+/* Sticky footer: full-bleed surface drawn by ::before so no negative margins are needed. */
+:is(.dialog-actions, .confirm-actions, .sheet-footer, .schedule-form-footer, .app-dialog > form > .button-row:last-child) {
+  position: sticky;
+  bottom: 0;
+  z-index: var(--z-sticky);
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--space-3);
+  padding: var(--space-4) 0;
+  background: var(--color-surface);
+}
+
+:is(.dialog-actions, .confirm-actions, .sheet-footer, .schedule-form-footer, .app-dialog > form > .button-row:last-child)::before {
+  position: absolute;
+  inset: 0 calc(var(--dialog-pad) * -1);
+  z-index: -1;
+  border-top: var(--border);
+  background: var(--color-surface);
+  content: "";
+}
+
+/* Drag handle on phone sheets. */
+.app-dialog > header::before {
+  position: absolute;
+  top: var(--space-2);
+  left: 50%;
+  width: 36px;
+  height: 4px;
+  border-radius: var(--radius-full);
+  background: var(--color-line-strong);
+  content: "";
+  transform: translateX(-50%);
+}
+
+.app-dialog.food-search-dialog > header::before {
+  content: none;
+}
+
+:is(.dialog-actions, .confirm-actions, .sheet-footer, .schedule-form-footer) > button {
+  flex: 1 1 auto;
+}
+
+/* From 768px: a centered 560px dialog (640px for search). */
+@media (min-width: 768px) {
+  .app-dialog {
+    --dialog-pad: var(--space-6);
+    width: min(560px, calc(100vw - 2 * var(--gutter)));
+    max-height: min(92dvh, 800px);
+    margin: auto;
+    border-radius: var(--radius-xl);
+  }
+
+  .app-dialog > header::before {
+    content: none;
+  }
+
+  :is(.dialog-actions, .confirm-actions, .sheet-footer, .schedule-form-footer) > button {
+    flex: 0 0 auto;
+  }
+}
+
+/* ---------- Toast (DS-16) ---------- */
+
+.app-toast {
+  position: fixed;
+  z-index: var(--z-toast);
+  bottom: calc(var(--tab-bar) + var(--space-4) + env(safe-area-inset-bottom));
+  left: 50%;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  width: max-content;
+  max-width: calc(100vw - 2 * var(--gutter));
+  min-height: var(--control-height);
+  padding: var(--space-1) var(--space-1) var(--space-1) var(--space-4);
+  border-radius: var(--radius-md);
+  background: var(--color-ink);
+  box-shadow: var(--shadow-3);
+  color: var(--color-on-dark);
+  font-size: var(--text-small);
+  line-height: var(--leading-small);
+  transform: translateX(-50%);
+  animation: fade-in var(--motion-fast) var(--ease-out);
+}
+
+.app-toast > span {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.app-toast button {
+  flex: 0 0 auto;
+  min-width: var(--target);
+  min-height: var(--target);
+  padding: var(--space-2);
+  border: 0;
+  background: transparent;
+  color: var(--color-lime);
+}
+
+@media (hover: hover) {
+  .app-toast button:hover:not(:disabled) {
+    background: rgb(255 255 255 / 0.12);
+  }
+}
+
+.app-toast .toast-dismiss {
+  color: var(--color-on-dark);
+}
+
+@media (min-width: 1024px) {
+  /* Bottom-left of the content column. */
+  .app-toast {
+    bottom: var(--space-6);
+    left: calc(var(--width-rail) + var(--gutter));
+    transform: none;
+  }
+}

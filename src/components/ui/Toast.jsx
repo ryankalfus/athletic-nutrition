@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { X } from "lucide-react";
 
 export function showToast(message, undo, action) {
   if (typeof window === "undefined") return;
@@ -75,7 +76,7 @@ export function ToastProvider({ children }) {
             aria-label="Dismiss message"
             onClick={() => setToast(null)}
           >
-            ×
+            <X size={20} strokeWidth={1.75} aria-hidden="true" />
           </button>
         </div>
       )}
