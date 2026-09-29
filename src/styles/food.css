@@ -450,15 +450,330 @@
   gap: var(--space-4);
 }
 
-/* Log: the reading column inside the Food frame (DS-08) */
+/* Log › Day and Week (6.8, 6.11, 6.12) */
 .log-page {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.log-page > .segmented {
+  justify-self: start;
+  width: min(100%, 240px);
+}
+
+.log-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--rhythm-section);
+}
+
+.log-week {
   max-width: var(--width-reading);
 }
 
-.data-list + .empty-state,
-.label-check + .empty-state,
-.label-check + .data-list {
-  margin-top: var(--space-4);
+.log-day,
+.log-week,
+.log-side {
+  display: grid;
+  align-content: start;
+  gap: var(--space-4);
+  min-width: 0;
+}
+
+.log-day > .text-button {
+  justify-self: start;
+}
+
+/* Day and week switcher: "‹ Today · Mon, Sep 28 ›" plus a date picker.
+ * Sticks under the Food section control on phones (6.8). */
+.day-switcher {
+  position: sticky;
+  top: calc(var(--top-bar) + var(--space-12) + var(--space-2));
+  z-index: var(--z-sticky);
+  display: grid;
+  grid-template-columns: var(--target) minmax(0, 1fr) var(--target) auto;
+  align-items: center;
+  gap: var(--space-2);
+  padding-block: var(--space-2);
+  background: var(--color-paper);
+}
+
+.log-week .day-switcher {
+  grid-template-columns: var(--target) minmax(0, 1fr) var(--target);
+}
+
+.day-switcher h2 {
+  margin: 0;
+  font-size: var(--text-h3);
+  line-height: var(--leading-h3);
+  text-align: center;
+}
+
+.day-picker {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: var(--target);
+  height: var(--target);
+  border-radius: var(--radius-md);
+}
+
+@media (hover: hover) {
+  .day-picker:hover {
+    background: var(--color-hover);
+  }
+}
+
+.day-picker:focus-within {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+/* The native date input covers the icon so a tap opens the picker. */
+.day-picker input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  min-height: 0;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.log-prompt {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.log-prompt p {
+  margin: 0;
+  font-weight: 600;
+}
+
+.log-timeline {
+  margin: 0;
+  padding: 0;
+  border-top: var(--border);
+  list-style: none;
+}
+
+.log-time {
+  flex: 0 0 72px;
+  color: var(--color-ink-muted);
+  font-size: var(--text-small);
+  line-height: var(--leading-small);
+  font-variant-numeric: tabular-nums;
+}
+
+.log-entry {
+  flex-wrap: nowrap;
+  align-items: flex-start;
+}
+
+.log-entry .log-time {
+  padding-top: var(--space-1);
+}
+
+.log-entry > div:first-of-type {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.log-entry h3 {
+  font-size: var(--text-body);
+  line-height: var(--leading-body);
+}
+
+/* Activity context rows: thin and muted, with the activity color dot (HIST-03). */
+.log-activity {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  min-height: var(--target);
+  padding: var(--space-2) 0;
+  border-bottom: var(--border);
+  color: var(--color-ink-muted);
+  font-size: var(--text-small);
+  line-height: var(--leading-small);
+}
+
+.log-activity > span:last-child {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.log-activity > span:last-child::before,
+.activity-chip::before {
+  flex: 0 0 auto;
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-full);
+  background: var(--color-practice);
+  content: "";
+}
+
+:is(.log-activity, .activity-chip).game > span:last-child::before,
+.activity-chip.game::before {
+  background: var(--color-game);
+}
+
+:is(.log-activity, .activity-chip).workout > span:last-child::before,
+.activity-chip.workout::before {
+  background: var(--color-workout);
+}
+
+:is(.log-activity, .activity-chip):is(.other, .travel) > span:last-child::before,
+.activity-chip:is(.other, .travel)::before {
+  background: var(--color-other);
+}
+
+.activity-chip {
+  gap: var(--space-1);
+}
+
+.log-water {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2) var(--space-4);
+  padding: var(--card-padding);
+  border: var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+}
+
+.log-water h2 {
+  margin: 0;
+  font-size: var(--text-h3);
+  line-height: var(--leading-h3);
+}
+
+.log-water p {
+  flex: 1 1 auto;
+  margin: 0;
+  color: var(--color-ink-muted);
+}
+
+/* Seven nearby days, each a dot when something was logged. */
+.week-strip {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.week-strip ol {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: var(--space-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.week-strip li a {
+  display: grid;
+  justify-items: center;
+  gap: var(--space-1);
+  min-height: var(--target);
+  padding: var(--space-2) 0;
+  border-radius: var(--radius-md);
+  color: var(--color-ink-muted);
+  font-size: var(--text-caption);
+  line-height: var(--leading-caption);
+  text-decoration: none;
+}
+
+.week-strip li a[aria-current] {
+  background: var(--color-selected-bg);
+  color: var(--color-ink);
+}
+
+.week-strip strong {
+  font-family: var(--font-numeral);
+  font-size: var(--text-numeral-m);
+  line-height: var(--leading-numeral-m);
+  font-variant-numeric: tabular-nums;
+}
+
+.week-strip i {
+  width: 8px;
+  height: 8px;
+  border: 1px solid var(--color-line-strong);
+  border-radius: var(--radius-full);
+}
+
+.week-strip i.logged {
+  border-color: var(--color-primary);
+  background: var(--color-primary);
+}
+
+.week-strip > .text-button {
+  justify-self: start;
+}
+
+/* Week: one sentence, then seven rows (WEEK-01). */
+.week-summary {
+  margin: 0;
+  font-size: var(--text-h3);
+  line-height: var(--leading-h3);
+}
+
+.week-days {
+  margin: 0;
+  padding: 0;
+  border-top: var(--border);
+  list-style: none;
+}
+
+.week-day-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  min-height: 64px;
+  padding: var(--space-3) 0;
+  border-bottom: var(--border);
+  color: var(--color-ink);
+  text-decoration: none;
+}
+
+@media (hover: hover) {
+  .week-day-row:hover {
+    background: var(--color-hover);
+  }
+}
+
+.week-day-main {
+  display: grid;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.week-day-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+}
+
+.week-day-meta {
+  color: var(--color-ink-muted);
+  font-size: var(--text-small);
+  line-height: var(--leading-small);
+}
+
+.week-table caption {
+  padding-bottom: var(--space-2);
+  text-align: left;
+}
+
+.log-week > p:last-child {
+  margin: 0;
+  font-size: var(--text-small);
+  line-height: var(--leading-small);
 }
 
 .portion-form {
@@ -466,225 +781,12 @@
   gap: var(--space-4);
 }
 
-/* Log › Week */
-.week-toolbar {
+.when-field {
   display: grid;
-  grid-template-columns: var(--target) minmax(0, 1fr) var(--target);
-  align-items: center;
   gap: var(--space-3);
-  max-width: 360px;
-  margin-bottom: var(--space-4);
-  text-align: center;
-}
-
-.week-toolbar div {
-  display: grid;
-}
-
-.week-toolbar strong {
-  font-size: var(--text-label);
-  line-height: var(--leading-label);
-}
-
-.week-toolbar span {
-  color: var(--color-ink-muted);
-  font-size: var(--text-caption);
-  line-height: var(--leading-caption);
-}
-
-.week-arrow {
-  width: var(--target);
+  margin: 0;
   padding: 0;
-}
-
-/* Four stats: 2 x 2 on phones, one row from 768px, never an orphan tile (RWD-09). */
-.weekly-stats {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: var(--rhythm-card);
-  margin-bottom: var(--rhythm-section);
-}
-
-.weekly-stat {
-  display: grid;
-  align-content: start;
-  gap: var(--space-1);
-  padding: var(--space-4);
-}
-
-.weekly-stat > span,
-.weekly-stat small {
-  color: var(--color-ink-muted);
-  font-size: var(--text-caption);
-  line-height: var(--leading-caption);
-}
-
-.weekly-stat strong {
-  font-family: var(--font-numeral);
-  font-size: var(--text-numeral-xl);
-  line-height: var(--leading-numeral-xl);
-  font-weight: 600;
-  font-variant-numeric: tabular-nums;
-}
-
-.weekly-stat strong i {
-  color: var(--color-ink-muted);
-  font-size: var(--text-numeral-m);
-  font-style: normal;
-}
-
-.weekly-chart-card,
-.weekly-water-card {
-  margin-bottom: var(--rhythm-section);
-}
-
-.chart-heading h2 {
-  margin: 0;
-}
-
-.chart-heading h2 small {
-  color: var(--color-ink-muted);
-  font-weight: 400;
-}
-
-.chart-key {
-  display: flex;
-  gap: var(--space-4);
-  margin-top: var(--space-2);
-  color: var(--color-ink-muted);
-  font-size: var(--text-caption);
-  line-height: var(--leading-caption);
-}
-
-.chart-key span {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-}
-
-.key-fill {
-  display: inline-block;
-  width: 16px;
-  height: 8px;
-  border-radius: var(--radius-sm);
-  background: var(--color-primary);
-}
-
-.weekly-chart {
-  display: grid;
-  grid-template-columns: repeat(7, minmax(0, 1fr));
-  gap: var(--space-2);
-  margin-top: var(--space-6);
-}
-
-.chart-day {
-  display: grid;
-  grid-template-rows: auto 120px auto auto;
-  justify-items: center;
-  gap: var(--space-1);
-  min-width: 0;
-  text-align: center;
-}
-
-.bar-value,
-.chart-day small {
-  color: var(--color-ink-muted);
-  font-family: var(--font-numeral);
-  font-size: var(--text-caption);
-  line-height: var(--leading-caption);
-  font-variant-numeric: tabular-nums;
-}
-
-.bar-track {
-  position: relative;
-  width: min(40px, 100%);
-  height: 100%;
-  overflow: hidden;
-  border-radius: var(--radius-sm);
-  background: var(--color-surface-muted);
-}
-
-.bar-track span {
-  position: absolute;
-  right: 0;
-  bottom: 0;
-  left: 0;
-  background: var(--color-primary);
-}
-
-.chart-day strong {
-  font-size: var(--text-caption);
-  line-height: var(--leading-caption);
-}
-
-.chart-day.today strong {
-  color: var(--color-primary);
-}
-
-.weekly-chart-card .empty-state {
-  margin-top: var(--space-4);
-}
-
-.water-week {
-  display: grid;
-  gap: var(--space-3);
-  margin-top: var(--space-4);
-}
-
-.water-day {
-  display: grid;
-  grid-template-columns: 104px minmax(0, 1fr);
-  align-items: center;
-  gap: var(--space-3);
-}
-
-.water-day-label {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: var(--space-2);
-}
-
-.water-day-label strong {
-  font-size: var(--text-caption);
-  line-height: var(--leading-caption);
-}
-
-.water-day-label span {
-  color: var(--color-ink-muted);
-  font-family: var(--font-numeral);
-  font-size: var(--text-caption);
-  line-height: var(--leading-caption);
-  font-variant-numeric: tabular-nums;
-}
-
-.water-day > div:last-child {
-  height: 8px;
-  overflow: hidden;
-  border-radius: var(--radius-full);
-  background: var(--color-surface-muted);
-}
-
-.water-day > div:last-child span {
-  display: block;
-  height: 100%;
-  border-radius: inherit;
-  background: var(--color-info);
-}
-
-.water-day.today .water-day-label strong {
-  color: var(--color-primary);
-}
-
-.log-page > .table-wrap {
-  margin-bottom: var(--space-4);
-}
-
-.weekly-safety {
-  margin: 0;
-  color: var(--color-ink-muted);
-  font-size: var(--text-small);
-  line-height: var(--leading-small);
+  border: 0;
 }
 
 @media (min-width: 480px) {
@@ -707,15 +809,15 @@
   .food-sections :is(a, button) {
     padding: 0 var(--space-4);
   }
-
-  .weekly-stats {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-  }
 }
 
 @media (min-width: 1024px) {
   .food-sections {
     top: 0;
+  }
+
+  .day-switcher {
+    top: calc(var(--space-12) + var(--space-2));
   }
 
   .ideas-grid {
@@ -728,8 +830,14 @@
 }
 
 @media (min-width: 1200px) {
-  .home-layout {
+  .home-layout,
+  .log-layout {
     grid-template-columns: minmax(0, 1fr) var(--width-aside);
+  }
+
+  .log-side {
+    position: sticky;
+    top: var(--sticky-offset);
   }
 
   .low-summary {

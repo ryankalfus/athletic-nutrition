@@ -119,3 +119,15 @@ export const formatActivityType = (value) =>
   })[value] || value;
 export const formatIntensity = (value) =>
   ({ low: "Light", medium: "Moderate", high: "Hard" })[value] || value;
+
+// "Sep 22 – 28", or "Sep 29 – Oct 5" across months (Log › Week).
+export function formatDateRange(startKey, endKey) {
+  const month = (key) =>
+    new Intl.DateTimeFormat("en-US", { month: "short" }).format(
+      new Date(`${key}T12:00:00`),
+    );
+  const day = (key) => Number(key.slice(8, 10));
+  return month(startKey) === month(endKey)
+    ? `${month(startKey)} ${day(startKey)} – ${day(endKey)}`
+    : `${month(startKey)} ${day(startKey)} – ${month(endKey)} ${day(endKey)}`;
+}
