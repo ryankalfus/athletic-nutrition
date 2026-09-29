@@ -4,7 +4,7 @@ import { useAsyncAction } from "../../hooks/useAsyncAction.js";
 import { Dialog } from "../../components/Dialog.jsx";
 import { ConfirmDialog } from "../../components/ui/ConfirmDialog.jsx";
 import { FoodSearch } from "../../components/FoodSearch.jsx";
-import { GROCERY_CATALOG } from "../../domain/catalog.js";
+import { DIET_FILTERS, GROCERY_CATALOG } from "../../domain/catalog.js";
 import {
   ingredientId,
   INGREDIENTS,
@@ -40,7 +40,7 @@ export default function HomePage({ todayKey }) {
     run(key, () => changeData(fn, message, action));
   const quick = GROCERY_CATALOG.filter((i) =>
     (data.profile.avoid || data.profile.dietaryNeeds || [])
-      .filter((n) => n !== "nutFree")
+      .filter((n) => DIET_FILTERS.includes(n))
       .every((n) => i[n]),
   ).slice(0, 8);
   const add = async (food, choice = null) => {
@@ -297,26 +297,32 @@ export default function HomePage({ todayKey }) {
                             Edit details
                           </button>
                           {places.flatMap(([, group, locations]) =>
-                            locations.filter(location=>location!=="kitchen").map((location) => (
-                              <button
-                                key={location}
-                                disabled={!!pending}
-                                onClick={() =>
-                                  write(
-                                    "move",
-                                    (d) => {
-                                      d.groceryState.pantry.find(
-                                        (i) => i.id === row.id,
-                                      ).location = location;
-                                    },
-                                    `Moved ${row.name} to ${group.toLowerCase()}.`,
-                                  )
-                                }
-                              >
-                                Move to{" "}
-                                {location === "pantry" ? "kitchen" : location === "bag" ? "my bag" : location}
-                              </button>
-                            )),
+                            locations
+                              .filter((location) => location !== "kitchen")
+                              .map((location) => (
+                                <button
+                                  key={location}
+                                  disabled={!!pending}
+                                  onClick={() =>
+                                    write(
+                                      "move",
+                                      (d) => {
+                                        d.groceryState.pantry.find(
+                                          (i) => i.id === row.id,
+                                        ).location = location;
+                                      },
+                                      `Moved ${row.name} to ${group.toLowerCase()}.`,
+                                    )
+                                  }
+                                >
+                                  Move to{" "}
+                                  {location === "pantry"
+                                    ? "kitchen"
+                                    : location === "bag"
+                                      ? "my bag"
+                                      : location}
+                                </button>
+                              )),
                           )}
                           {stockStatus(row) !== "have" && (
                             <button

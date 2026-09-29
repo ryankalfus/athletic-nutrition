@@ -1,4 +1,4 @@
-import { GROCERY_CATALOG, MEAL_INGREDIENTS } from "./catalog.js";
+import { DIET_FILTERS, GROCERY_CATALOG, MEAL_INGREDIENTS } from "./catalog.js";
 import { getDateKey } from "./timing.js";
 import { uid } from "./storage.js";
 
@@ -283,7 +283,8 @@ export function generateGroceryItems({
   const queued = (id, item) =>
     existing.filter(
       (entry) =>
-        (id && ingredientId(entry) === id) || (item && sameProduct(entry, item)),
+        (id && ingredientId(entry) === id) ||
+        (item && sameProduct(entry, item)),
     );
   for (const need of needs) {
     const id = need.ingredientId;
@@ -361,8 +362,8 @@ export function weeklyGroceryIdeas({
   date = getDateKey(),
   limit = 8,
 }) {
-  const needs = (profile.avoid || profile.dietaryNeeds || []).filter(
-    (need) => need !== "nutFree",
+  const needs = (profile.avoid || profile.dietaryNeeds || []).filter((need) =>
+    DIET_FILTERS.includes(need),
   );
   const sorted = [...events].sort((a, b) =>
     `${a.date} ${a.startTime || ""}`.localeCompare(
@@ -614,9 +615,13 @@ export function undoPurchase(state, transactionId, options = {}) {
   const groups = tripGroups(state, transactionId);
   if (!groups.length) return state;
   if (groups.some((g) => g.used) && !options.skipUsed)
-    throw new Error("Some of this trip's food was already used. Undo the rest?");
+    throw new Error(
+      "Some of this trip's food was already used. Undo the rest?",
+    );
   const undo = groups.filter((g) => !g.used);
-  const removeIds = new Set(undo.filter((g) => g.created).map((g) => g.pantryId));
+  const removeIds = new Set(
+    undo.filter((g) => g.created).map((g) => g.pantryId),
+  );
   const restore = new Map(
     undo.filter((g) => !g.created).map((g) => [g.pantryId, g]),
   );

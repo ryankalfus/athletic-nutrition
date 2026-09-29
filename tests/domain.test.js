@@ -1,9 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import {
-  FOOD_IDEAS,
-  DEFAULT_PROFILE,
-} from "../src/domain/catalog.js";
+import { FOOD_IDEAS, DEFAULT_PROFILE } from "../src/domain/catalog.js";
 import {
   addDays,
   applyOccurrenceOverride,
@@ -176,9 +173,16 @@ test("GROC-04: one generator preserves the list, uses shopping units and never p
     profile: emptyData().profile,
     events: [
       { date: "2026-09-14", startTime: "16:00", type: "practice" },
-      { date: "2026-09-19", startTime: "09:00", type: "game", location: "away" },
+      {
+        date: "2026-09-19",
+        startTime: "09:00",
+        type: "game",
+        location: "away",
+      },
     ],
-    pantry: [{ name: "Rice", quantity: 1, unit: "package", availability: "have" }],
+    pantry: [
+      { name: "Rice", quantity: 1, unit: "package", availability: "have" },
+    ],
     items: state.items,
     date: day,
   });
@@ -194,10 +198,7 @@ test("GROC-04: one generator preserves the list, uses shopping units and never p
     candidates: [{ id: "pretzels", name: "Pretzels", reason: "Staple" }],
   })[0];
   assert.equal(shoppingAmount(pretzels), "1 bag");
-  assert.equal(
-    shoppingAmount({ quantity: 2, unit: "bunch" }),
-    "2 bunches",
-  );
+  assert.equal(shoppingAmount({ quantity: 2, unit: "bunch" }), "2 bunches");
   const needs = ingredientsForMeal(idea("banana-pretzels"), [], day);
   const fromIdea = missingGroceries(needs, []);
   assert.ok(fromIdea.every((item) => item.checked === false));
@@ -252,9 +253,31 @@ test("GROC-03/06: put away updates existing rows without duplicates and new rows
     },
   ];
   state.items = [
-    { id: "i1", name: "Bananas", ingredientId: "bananas", quantity: 1, unit: "bunch", checked: true },
-    { id: "i2", name: "Rice", quantity: 1, unit: "package", expiry: null, checked: true },
-    { id: "i3", name: "Hummus", ingredientId: "hummus", quantity: 1, unit: "tub", category: "Cold", checked: true },
+    {
+      id: "i1",
+      name: "Bananas",
+      ingredientId: "bananas",
+      quantity: 1,
+      unit: "bunch",
+      checked: true,
+    },
+    {
+      id: "i2",
+      name: "Rice",
+      quantity: 1,
+      unit: "package",
+      expiry: null,
+      checked: true,
+    },
+    {
+      id: "i3",
+      name: "Hummus",
+      ingredientId: "hummus",
+      quantity: 1,
+      unit: "tub",
+      category: "Cold",
+      checked: true,
+    },
     { id: "i4", name: "Pretzels", quantity: 1, unit: "bag", checked: false },
   ];
   const done = purchase(state, ["i1", "i2", "i3"], day, "trip", {
@@ -265,20 +288,31 @@ test("GROC-03/06: put away updates existing rows without duplicates and new rows
   assert.equal(done.pantry[1].quantity, 3);
   assert.equal(done.pantry[2].availability, "have");
   assert.equal(done.pantry[2].location, "fridge");
-  assert.deepEqual(done.items.map((i) => i.id), ["i4"]);
+  assert.deepEqual(
+    done.items.map((i) => i.id),
+    ["i4"],
+  );
   assert.equal(putAwayPlace(state.pantry, state.items[2]), "fridge");
   assert.equal(putAwayPlace(state.pantry, state.items[0]), "pantry");
   const undone = undoPurchase(done, "trip");
   assert.deepEqual(undone.pantry, state.pantry);
-  assert.deepEqual(
-    undone.items.map((i) => i.id).sort(),
-    ["i1", "i2", "i3", "i4"],
-  );
+  assert.deepEqual(undone.items.map((i) => i.id).sort(), [
+    "i1",
+    "i2",
+    "i3",
+    "i4",
+  ]);
 });
 test("GROC-06/08: undo is scoped to the trip, detects used food and lists past trips", () => {
   const state = emptyData().groceryState;
   state.pantry = [
-    { id: "other", name: "Apples", quantity: 0, unit: "piece", availability: "out" },
+    {
+      id: "other",
+      name: "Apples",
+      quantity: 0,
+      unit: "piece",
+      availability: "out",
+    },
   ];
   state.items = [
     { id: "a", name: "Rice", quantity: 2, unit: "package" },
@@ -299,11 +333,17 @@ test("GROC-06/08: undo is scoped to the trip, detects used food and lists past t
     rest.pantry.map((p) => p.name),
     ["Apples", "Rice"],
   );
-  assert.deepEqual(rest.items.map((i) => i.id), ["b"]);
+  assert.deepEqual(
+    rest.items.map((i) => i.id),
+    ["b"],
+  );
   assert.equal(tripUsage(first, "t1").used.length, 0);
   const trips = groceryTrips(
     purchase(
-      { ...first, items: [{ id: "c", name: "Oats", quantity: 1, unit: "container" }] },
+      {
+        ...first,
+        items: [{ id: "c", name: "Oats", quantity: 1, unit: "container" }],
+      },
       ["c"],
       "2026-09-15",
       "t2",
@@ -1626,4 +1666,18 @@ test("HOME-04/07: Out toggles back to the previous state, legacy rows are Have, 
   assert.equal(ingredientId({ name: "Bananas, raw" }), "bananas");
   assert.equal(ingredientId({ name: "x", catalogId: "hummus" }), "hummus");
   assert.equal(ingredientId({ name: "Mystery bar" }), null);
+});
+
+test("P0-06: grocery suggestions ignore unreviewed gluten and nut flags", () => {
+  const ids = (result) => result.items.map((i) => i.name);
+  const base = { events: [], pantry: [], items: [], date: day, limit: 20 };
+  const plain = ids(
+    weeklyGroceryIdeas({ ...base, profile: { dietaryNeeds: [] } }),
+  );
+  for (const need of ["glutenFree", "nutFree"])
+    assert.deepEqual(
+      ids(weeklyGroceryIdeas({ ...base, profile: { dietaryNeeds: [need] } })),
+      plain,
+      `${need} changed grocery suggestions`,
+    );
 });

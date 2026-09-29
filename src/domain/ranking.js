@@ -1,10 +1,10 @@
-import { FOOD_IDEAS } from "./catalog.js";
+import { DIET_FILTERS, FOOD_IDEAS } from "./catalog.js";
 import { ingredientsForMeal } from "./food.js";
 
 // Diet preferences the catalog flags reliably. Allergen-style flags
 // (nutFree, glutenFree) are hand-coded and not reviewed per ingredient, so no
 // idea is filtered on them until ADD-03 allergen tags exist (P0-06).
-export const DIET_FILTERS = ["vegan", "vegetarian", "dairyFree"];
+export { DIET_FILTERS };
 export const UNREVIEWED_ALLERGEN_NEEDS = ["nutFree", "glutenFree"];
 
 export const isMealFavorite = (favorite) =>

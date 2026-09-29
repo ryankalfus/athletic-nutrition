@@ -25,6 +25,7 @@ import {
   notificationPermission,
 } from "./domain/reminders.js";
 import { RemindersRow, RemindersSheet } from "./pages/You/RemindersSheet.jsx";
+import { PriceEstimatesRow } from "./pages/You/PriceEstimatesRow.jsx";
 import { SportField } from "./pages/You/SportField.jsx";
 import { normalizeSport } from "./domain/sport.js";
 import { addHydration, undoHydration } from "./domain/hydration.js";
@@ -168,6 +169,7 @@ function App() {
         tabbed
         reminders={
           <>
+            <PriceEstimatesRow />
             <RemindersRow
               settings={reminderSettings}
               onOpen={() => setView("you/reminders")}

@@ -14,7 +14,12 @@ import {
   profileSignature,
   undoPlan,
 } from "../../domain/plans.js";
-import { formatTime, formatDate, formatPlanStatus } from "../../format.js";
+import {
+  formatTime,
+  formatDate,
+  formatPlanStatus,
+  plural,
+} from "../../format.js";
 import { Dialog } from "../../components/Dialog.jsx";
 import { LabelCheck } from "../../components/ui/LabelCheck.jsx";
 
@@ -42,8 +47,12 @@ export default function IdeasPage({ now, todayKey }) {
   const hiddenByLowCost = lowCostHiddenCount(inputs);
   const plans = data.mealPlans.filter((p) => p.date === date);
   const write = (key, fn, message) => run(key, () => changeData(fn, message));
-  const addMissing = (idea) =>
-    write(
+  const addMissing = (idea) => {
+    const count = missingGroceries(
+      ingredientsForMeal(idea, data.groceryState.pantry, date),
+      data.groceryState.items,
+    ).length;
+    return write(
       "groceries",
       (d) => {
         const additions = missingGroceries(
@@ -52,8 +61,11 @@ export default function IdeasPage({ now, todayKey }) {
         );
         d.groceryState.items.push(...additions);
       },
-      "Added missing items to groceries.",
+      count
+        ? `Added ${count} ${plural(count, "item")} to groceries.`
+        : "Everything is already on your list.",
     );
+  };
   return (
     <div className="ideas-page">
       <div className="moment-picker" role="group" aria-label="Food moment">

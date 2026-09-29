@@ -134,7 +134,9 @@ export default function GroceriesPage({ todayKey }) {
           };
         }
       }),
-      food ? `Swapped ${item.name} for ${fields.name}.` : `Updated ${fields.name}.`,
+      food
+        ? `Swapped ${item.name} for ${fields.name}.`
+        : `Updated ${fields.name}.`,
     );
     if (ok) setSheet(null);
   }
@@ -154,7 +156,10 @@ export default function GroceriesPage({ todayKey }) {
   }
 
   const row = (item) => (
-    <li className={`grocery-row${item.checked ? " checked" : ""}`} key={item.id}>
+    <li
+      className={`grocery-row${item.checked ? " checked" : ""}`}
+      key={item.id}
+    >
       <label className="grocery-check">
         <input
           type="checkbox"
@@ -254,7 +259,9 @@ export default function GroceriesPage({ todayKey }) {
       {GROUPS.map(([id, label, test]) => {
         const list = grocery.items
           .filter(test)
-          .sort((a, b) => Number(Boolean(a.checked)) - Number(Boolean(b.checked)));
+          .sort(
+            (a, b) => Number(Boolean(a.checked)) - Number(Boolean(b.checked)),
+          );
         return (
           list.length > 0 && (
             <section key={id} aria-labelledby={`grocery-${id}`}>
@@ -300,23 +307,6 @@ export default function GroceriesPage({ todayKey }) {
             Past trips
           </button>
         )}
-        <label className="check-row">
-          <input
-            type="checkbox"
-            checked={showPrices}
-            disabled={pending === "prices"}
-            onChange={() =>
-              write(
-                "prices",
-                (d) => {
-                  d.groceryState.showPrices = !d.groceryState.showPrices;
-                },
-                null,
-              )
-            }
-          />
-          Show price estimates
-        </label>
       </div>
 
       {sheet?.type === "putaway" && (
@@ -334,7 +324,9 @@ export default function GroceriesPage({ todayKey }) {
                   d.groceryState = purchase(
                     d.groceryState,
                     ids.filter((id) =>
-                      d.groceryState.items.some((i) => i.id === id && i.checked),
+                      d.groceryState.items.some(
+                        (i) => i.id === id && i.checked,
+                      ),
                     ),
                     todayKey,
                     uid(),
@@ -376,7 +368,11 @@ export default function GroceriesPage({ todayKey }) {
       )}
       {["add", "swap"].includes(sheet?.type) && (
         <Dialog
-          title={sheet.type === "swap" ? `Swap ${sheet.item.name}` : "Add to groceries"}
+          title={
+            sheet.type === "swap"
+              ? `Swap ${sheet.item.name}`
+              : "Add to groceries"
+          }
           initialFocusRef={searchInput}
           className={sheet.food || sheet.merge ? "" : "food-search-dialog"}
           onClose={closeSheet}
@@ -390,14 +386,18 @@ export default function GroceriesPage({ todayKey }) {
               <div className="dialog-actions">
                 <button
                   disabled={!!pending}
-                  onClick={() => addFood(sheet.food, sheet.merge.fields, "both")}
+                  onClick={() =>
+                    addFood(sheet.food, sheet.merge.fields, "both")
+                  }
                 >
                   Keep both
                 </button>
                 <button
                   className="primary"
                   disabled={!!pending}
-                  onClick={() => addFood(sheet.food, sheet.merge.fields, "merge")}
+                  onClick={() =>
+                    addFood(sheet.food, sheet.merge.fields, "merge")
+                  }
                 >
                   Add to it
                 </button>

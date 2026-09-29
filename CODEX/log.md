@@ -499,3 +499,6 @@ Made finishing a trip update matching At home rows in place, create new rows as 
 Moved Groceries into its own page with check-off rows, a finish bar, put-away sheet, swap, and latest-trip undo. 2026.09.29
 Split the portion editor to log-only, fixed Out restoring to Have, and asked Counts as only for unmatched foods. 2026.09.29
 Replaced leftover data-model copy in the food log and added pending states to its write buttons. 2026.09.29
+Stopped grocery suggestions and At home quick adds from filtering on unreviewed gluten and nut flags, with a test. 2026.09.29
+Moved the Show price estimates switch to You › Food access & budget. 2026.09.29
+Made the Ideas add-missing toast state the real count, or say everything is already on the list. 2026.09.29
