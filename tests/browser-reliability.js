@@ -64,11 +64,16 @@ async (page) => {
     );
 
     await a.goto(`${base}?signedOut=1`);
-    await a.getByLabel("New profile name").fill("Separate athlete");
-    await a
-      .getByRole("button", { name: "Create separate profile", exact: true })
-      .click();
-    await a.getByRole("button", { name: /Save and see today/ }).click();
+    await a.getByRole("button", { name: "Add another athlete" }).click();
+    const add = a.getByRole("dialog", { name: "Add athlete" });
+    await add.getByRole("textbox", { name: "First name" }).fill("Separate athlete");
+    await add.getByRole("button", { name: "Save", exact: true }).click();
+    // A new athlete goes straight to setup step 1 (6.1).
+    await a.getByRole("heading", { name: "What do you play?" }).waitFor();
+    await a.getByRole("combobox", { name: /^Sport/ }).fill("Tennis");
+    await a.getByRole("button", { name: "Next", exact: true }).click();
+    await a.getByRole("heading", { name: "Your school day" }).waitFor();
+    await a.getByRole("button", { name: "Skip setup" }).click();
     await water(a, 0);
     await b.reload();
     await water(b, 76);

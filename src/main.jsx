@@ -18,7 +18,6 @@ import Dashboard from "./pages/Today/TodayPage.jsx";
 import ScheduleCalendar from "./pages/Schedule/SchedulePage.jsx";
 import FoodHub from "./components/FoodWorkspace.jsx";
 import { ToastProvider } from "./components/ui/Toast.jsx";
-import { LabelCheck } from "./components/ui/LabelCheck.jsx";
 import {
   canDeliverReminders,
   reminderCandidates,
@@ -26,29 +25,22 @@ import {
   notificationPermission,
 } from "./domain/reminders.js";
 import YouPage from "./pages/You/YouPage.jsx";
-import { SportField } from "./pages/You/SportField.jsx";
-import { normalizeSport } from "./domain/sport.js";
-import { DIET_CHOICES, FOOD_SOURCES } from "./domain/you.js";
-import { lowCostOn } from "./domain/ranking.js";
+import { AboutPage } from "./pages/You/AboutPage.jsx";
+import WelcomePage from "./pages/Welcome/WelcomePage.jsx";
+import SetupFlow from "./pages/Setup/SetupFlow.jsx";
 import { addHydration, undoHydration } from "./domain/hydration.js";
-import {
-  useField,
-  useStore,
-  changeData,
-  useSignedOut,
-  setSignedOut,
-} from "./store.js";
-import { LocalProfileEntry, Recovery } from "./components/Profiles.jsx";
+import { useField, useStore, useSignedOut } from "./store.js";
+import { Recovery } from "./components/Profiles.jsx";
 import { useRoute } from "./routing.js";
 import { formatDate } from "./format.js";
 
 import { getDateKey, addDays } from "./domain/timing.js";
 import { EmptyState } from "./components/ui/EmptyState.jsx";
 import { Skeleton } from "./components/ui/Skeleton.jsx";
-import { ChipGroup } from "./components/ui/SelectionControls.jsx";
 
 function App() {
   const [step] = useField("step");
+  const [setupStep] = useField("setupStep");
   const [view, setView, subroute] = useRoute();
   const [todayKey, setTodayKey] = useState(getDateKey);
   const [now, setNow] = useState(new Date());
@@ -60,6 +52,7 @@ function App() {
   const [reminderSettings, setReminderSettings] = useField("reminderSettings");
   const [groceryState, setGroceryState] = useField("groceryState");
   const state = useStore();
+  const athleteCount = Object.keys(state.doc.profiles).length;
   const [notificationError, setNotificationError] = useState("");
   // Store-level flag: a profile delete signs out before the next athlete
   // publishes, so this can never be a stale "signed in" copy.
@@ -118,16 +111,6 @@ function App() {
 
   const todayLog = dailyLogs[todayKey] || { entries: [], water: 0 };
 
-  // First-run setup only; You saves each sheet in place (YOU-06).
-  function saveProfile(nextProfile) {
-    changeData((data) => {
-      data.profile = nextProfile;
-      data.step = "dashboard";
-    }).then((ok) => {
-      if (ok) setView("today");
-    });
-  }
-
   function setTodayEntries(update) {
     setDailyLogs((logs) => {
       const current = logs[todayKey] || { entries: [] };
@@ -147,19 +130,17 @@ function App() {
     }));
   }
 
-  function finishAccountEntry() {
-    setSignedOut(false);
-    const url = new URL(window.location.href);
-    url.searchParams.delete("signedOut");
-    window.history.replaceState({}, "", url);
-    setView("today");
-  }
-  if (signedOut) return <LocalProfileEntry onComplete={finishAccountEntry} />;
-  if (view === "welcome")
-    return <LocalProfileEntry onComplete={finishAccountEntry} />;
+  // Welcome and setup (6.1, 6.2): "How Nourally works" opens About without
+  // the app navigation; a first visit shows Welcome; setup resumes at its step.
+  const firstRun =
+    !signedOut && step === "setup" && !setupStep && athleteCount === 1;
+  if (view === "you" && subroute === "about" && (signedOut || step === "setup"))
+    return <AboutPage standalone onNavigate={setView} />;
+  if (signedOut || view === "welcome" || firstRun)
+    return <WelcomePage firstRun={firstRun} onNavigate={setView} />;
   if (view === "notFound") return <NotFoundPage onNavigate={setView} />;
   if (step === "setup")
-    return <ProfileSetup profile={profile} onSave={saveProfile} />;
+    return <SetupFlow onNavigate={setView} now={now} todayKey={todayKey} />;
   if (view === "you")
     return (
       <YouPage
@@ -203,7 +184,7 @@ function App() {
         onNavigate={setView}
       />
     );
-  if (view === "today")
+  if (view === "today" || view === "setup")
     return (
       <Dashboard
         now={now}
@@ -233,140 +214,6 @@ function NotFoundPage({ onNavigate }) {
         <button className="primary" onClick={() => onNavigate("today")}>
           Go to Today
         </button>
-      </section>
-    </Shell>
-  );
-}
-
-// First-run setup. P1-11 replaces it with the schedule-first SetupFlow; the
-// You page no longer reuses this form (YOU-01).
-function ProfileSetup({ profile, onSave }) {
-  const [draft, setDraft] = useState(profile);
-  const dirty = JSON.stringify(draft) !== JSON.stringify(profile);
-  useEffect(() => {
-    const warn = (event) => {
-      if (dirty) {
-        event.preventDefault();
-        event.returnValue = "";
-      }
-    };
-    window.addEventListener("beforeunload", warn);
-    return () => window.removeEventListener("beforeunload", warn);
-  }, [dirty]);
-
-  function toggleList(key, value) {
-    setDraft((current) => ({
-      ...current,
-      [key]: current[key].includes(value)
-        ? current[key].filter((item) => item !== value)
-        : [...current[key], value],
-    }));
-  }
-
-  return (
-    <Shell navigation={false}>
-      <section className="intro split-intro">
-        <div>
-          <h1>
-            School to sport,
-            <br />
-            <em>without the guesswork.</em>
-          </h1>
-        </div>
-        <div className="profile-intro-side">
-          <p className="intro-copy">
-            Nourally turns your schedule, food access, budget, and dietary needs
-            into a practical next step—not a rigid prescription.
-          </p>
-        </div>
-      </section>
-      <section className="card profile-card">
-        <h2>Food needs & access</h2>
-        <p className="muted">
-          These details stay on this device and only filter the examples you
-          see.
-        </p>
-        <form
-          onSubmit={(event) => {
-            event.preventDefault();
-            const next = { ...draft, sport: normalizeSport(draft.sport) };
-            setDraft(next);
-            onSave(next);
-          }}
-        >
-          <label>
-            First name <span className="optional-label">Optional</span>
-            <input
-              value={draft.name}
-              onChange={(event) =>
-                setDraft({ ...draft, name: event.target.value })
-              }
-              placeholder="First name"
-            />
-          </label>
-          <SportField
-            value={draft.sport}
-            onChange={(sport) => setDraft({ ...draft, sport })}
-          />
-          <label className="check-row">
-            <input
-              type="checkbox"
-              checked={lowCostOn(draft)}
-              onChange={(event) =>
-                setDraft({
-                  ...draft,
-                  lowCostIdeas: event.target.checked,
-                  budget: event.target.checked ? "save" : "standard",
-                })
-              }
-            />
-            Keep ideas low-cost
-          </label>
-          <ChipGroup
-            legend="Dietary needs"
-            options={DIET_CHOICES}
-            selected={draft.dietaryNeeds}
-            onToggle={(value) => toggleList("dietaryNeeds", value)}
-          />
-          <LabelCheck />
-          {[
-            ["nutFree", "Nut-free"],
-            ["glutenFree", "Gluten-free"],
-            ["dairyFree", "Dairy-free"],
-          ]
-            .filter(([id]) => draft.dietaryNeeds.includes(id))
-            .map(([id, label]) => (
-              <p role="status" key={id}>
-                Your earlier {label} choice no longer filters foods. Review each
-                label and discuss allergy needs with a qualified professional.
-              </p>
-            ))}
-          <ChipGroup
-            legend="Food you can usually access"
-            options={FOOD_SOURCES}
-            selected={draft.foodSources}
-            onToggle={(value) => toggleList("foodSources", value)}
-          />
-          <label className="check-row">
-            <input
-              type="checkbox"
-              checked={draft.familyPrep}
-              onChange={(event) =>
-                setDraft({ ...draft, familyPrep: event.target.checked })
-              }
-            />
-            <span>
-              A parent or guardian can sometimes help pack or prep food.
-            </span>
-          </label>
-          <button
-            className="primary"
-            type="submit"
-            disabled={!draft.foodSources.length}
-          >
-            Save and see today
-          </button>
-        </form>
       </section>
     </Shell>
   );

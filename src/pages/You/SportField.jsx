@@ -1,9 +1,9 @@
 import { SPORT_SUGGESTIONS } from "../../domain/sport.js";
 
-export function SportField({ value, onChange }) {
+export function SportField({ value, onChange, required = false }) {
   return (
     <label>
-      Sport <span className="optional-label">Optional</span>
+      Sport {!required && <span className="optional-label">Optional</span>}
       <input
         value={value || ""}
         list="sport-suggestions"

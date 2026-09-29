@@ -1,13 +1,6 @@
 import { useState } from "react";
 import { ConfirmDialog } from "./ui/ConfirmDialog.jsx";
-import {
-  createProfile,
-  selectProfile,
-  useStore,
-  downloadJson,
-  exportBackup,
-  startRecoveryProfile,
-} from "../store.js";
+import { downloadJson, exportBackup, startRecoveryProfile } from "../store.js";
 
 export function Recovery({ message }) {
   const [confirmRecovery, setConfirmRecovery] = useState(false);
@@ -48,65 +41,6 @@ export function Recovery({ message }) {
           }}
         />
       )}
-    </main>
-  );
-}
-export function LocalProfileEntry({ onComplete }) {
-  const { doc } = useStore();
-  const [name, setName] = useState("");
-  const [busy, setBusy] = useState(false);
-  return (
-    <main className="shell">
-      <div className="brand">
-        <img src="/favicon.svg" width="32" height="32" alt="" />
-        <span>nourally</span>
-      </div>
-      <h1>
-        Your day.
-        <br />
-        <em>Your food plan.</em>
-      </h1>
-      <h2>Choose a device profile</h2>
-      <p>
-        Profiles keep separate plans on this browser. They are not
-        password-protected accounts. Anyone using this browser can open them;
-        there is no cloud sync.
-      </p>
-      <div className="profile-list">
-        {Object.values(doc.profiles).map((p) => (
-          <button
-            key={p.id}
-            onClick={() => {
-              selectProfile(p.id);
-              onComplete();
-            }}
-          >
-            Open {p.data.profile.name || p.name || "My profile"}
-          </button>
-        ))}
-      </div>
-      <form
-        onSubmit={async (e) => {
-          e.preventDefault();
-          if (!name.trim() || busy) return;
-          setBusy(true);
-          if (await createProfile(name.trim())) onComplete();
-          setBusy(false);
-        }}
-      >
-        <label>
-          New profile name
-          <input
-            required
-            maxLength={80}
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-          />
-        </label>
-        <button className="primary" disabled={busy || !name.trim()}>
-          Create separate profile
-        </button>
-      </form>
     </main>
   );
 }

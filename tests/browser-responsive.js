@@ -180,15 +180,24 @@ async (page) => {
     for (const width of widths) {
       await p.setViewportSize({ width, height: 850 });
       await p.goto(base);
-      await p.getByRole("textbox", { name: /First name/ }).waitFor();
+      await p.getByRole("button", { name: "Get started" }).waitFor();
       await check("welcome", width);
+    }
+    await p.getByRole("button", { name: "Get started" }).click();
+    for (const width of widths) {
+      await p.setViewportSize({ width, height: 850 });
+      await p.goto(`${base}#/setup`);
+      await p.getByRole("heading", { name: "What do you play?" }).waitFor();
+      await check("setup", width);
     }
 
     await p.setViewportSize({ width: 375, height: 812 });
-    await p.goto(base);
+    await p.goto(`${base}#/setup`);
     await p.getByRole("textbox", { name: /First name/ }).fill("Layout test");
     await p.getByRole("combobox", { name: /^Sport/ }).fill("Cross country");
-    await p.getByRole("button", { name: /Save and see today/ }).click();
+    await p.getByRole("button", { name: "Next", exact: true }).click();
+    await p.getByRole("heading", { name: "Your school day" }).waitFor();
+    await p.getByRole("button", { name: "Skip setup" }).click();
     await p.getByRole("heading", { name: "Today", exact: true }).waitFor();
     await p.goto(`${base}#/schedule`);
     await p.getByRole("button", { name: "+ Add", exact: true }).first().click();
@@ -259,7 +268,7 @@ async (page) => {
         `Design system:\n  ${problems.slice(0, 20).join("\n  ")}`,
       );
     result.checks.push(
-      `No horizontal scroll on welcome and ${routes.length} routes (Today, Schedule, Food tabs, You and its sheets) at ${widths.join("/")} px.`,
+      `No horizontal scroll on welcome, setup and ${routes.length} routes (Today, Schedule, Food tabs, You and its sheets) at ${widths.join("/")} px.`,
       "No text under 12 px; 12 px only in tab-bar labels and badges (DS-05).",
       "No negative margins on any visible element (DS-09).",
       "Every page column is centered, at most 720/960/1072 px, with 16/24/32 px gutters (DS-07, DS-08).",

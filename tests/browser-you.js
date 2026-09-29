@@ -10,9 +10,12 @@ async (page) => {
     "Reminders work while Nourally is open in a desktop browser. On phones, add Nourally to your home screen (coming soon).";
   try {
     await p.goto(base);
+    await p.getByRole("button", { name: "Get started" }).click();
     await p.getByRole("textbox", { name: /First name/ }).fill("You test");
     await p.getByRole("combobox", { name: /^Sport/ }).fill("Soccer");
-    await p.getByRole("button", { name: /Save and see today/ }).click();
+    await p.getByRole("button", { name: "Next", exact: true }).click();
+    await p.getByRole("heading", { name: "Your school day" }).waitFor();
+    await p.getByRole("button", { name: "Skip setup" }).click();
     await p.getByRole("heading", { name: "Today", exact: true }).waitFor();
     await p.goto(`${base}#/schedule`);
     await p.getByRole("button", { name: "+ Add", exact: true }).first().click();
@@ -89,6 +92,15 @@ async (page) => {
     result.checks.push(
       "Reminders opens at #/you/reminders (also from old #/reminders) with the honesty line, and closes to #/you.",
     );
+    await p.goto(`${base}#/you/device`);
+    await p.getByRole("heading", { name: "This device", level: 1 }).waitFor();
+    await p
+      .getByText(
+        "Nourally saves each athlete's plans in this browser. There is no account or cloud copy. Save a backup file now and then.",
+        { exact: true },
+      )
+      .waitFor();
+    result.checks.push("This device opens with the DATA-02 panel intro.");
     return result;
   } catch (e) {
     return {
