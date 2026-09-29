@@ -505,3 +505,4 @@ Made the Ideas add-missing toast state the real count, or say everything is alre
 Verified the gaps in P0-05, P0-06, P0-07, P0-09, P0-11 and P1-01 to P1-06 are closed, completed P1-06 Groceries, and checked P1-06, IA-12, TODAY-09, FOOD-05, GROC-01 to GROC-08 and DATA-06 in the tracker after npm run check and browser checks at 375 px. 2026.09.29
 Hid the Dairy-free chip and stopped filtering on unreviewed dairy flags, with a notice for a stored Dairy-free choice and test coverage. 2026.09.29
 Added a root AGENTS.md with shared handoff rules, commands and safety rules, and a CLAUDE.md that imports it, so Codex and Claude Code load the same instructions. 2026.09.29
+Added a pending qualified review section to NUTRITION-REVIEW.md covering every household amount, with 31 OK, 27 questions and 8 suggested changes, and a blank sign-off block. 2026.09.29
