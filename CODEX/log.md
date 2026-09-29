@@ -479,3 +479,11 @@ Committed and pushed the P1-05 Food home inventory, Ideas, and reusable redesign
 Fixed TypeScript inference in the ranking and timing helper input options so CI typecheck passes. 2026.09.29
 Restored subtraction of compatible queued grocery quantities from meal ingredient needs. 2026.09.29
 Passed workflow checks locally: typecheck, lint, 39 tests, production build, and diff check. 2026.09.29
+Hid the Gluten-free chip, stopped filtering ideas on unreviewed gluten and nut flags, and added a notice for a stored Gluten-free choice. 2026.09.29
+Added the label-check line to Ideas cards, planned food cards, and the log-as-planned dialog. 2026.09.29
+Made Ideas rank every moment with the same access, school, and travel inputs as Today, with a school-context test. 2026.09.29
+Added readable household amounts for every idea ingredient. 2026.09.29
+Showed the low-cost note only when it hides ideas, and kept saved meal ideas out of food search. 2026.09.29
+Showed plan status in plain words on planned food cards and pluralized the search serving text. 2026.09.29
+Added a typed offline error for food lookups and one offline line in search; verified barcode 404, outage, and camera preview. 2026.09.29
+Updated the provider browser check to the current search UI and passed it against the dev server. 2026.09.29
