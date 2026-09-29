@@ -6,8 +6,6 @@ import {
   useStore,
   downloadJson,
   exportBackup,
-  importBackup,
-  deleteCurrentProfile,
   startRecoveryProfile,
 } from "../store.js";
 
@@ -107,102 +105,5 @@ export function LocalProfileEntry({ onComplete }) {
         </button>
       </form>
     </main>
-  );
-}
-export function ProfileManager({ onSignOut }) {
-  const state = useStore();
-  const [status, setStatus] = useState("");
-  const [confirmDelete, setConfirmDelete] = useState(false);
-  const [includeAll, setIncludeAll] = useState(false);
-  return (
-    <section className="profile-tools">
-      <h2>This device</h2>
-      <p>
-        Your athlete's plans stay in this browser. Save a backup file to keep a
-        copy.
-      </p>
-      <label>
-        Current device profile
-        <select
-          value={state.current.id}
-          onChange={(e) => selectProfile(e.target.value)}
-        >
-          {Object.values(state.doc.profiles).map((p) => (
-            <option key={p.id} value={p.id}>
-              {p.data.profile.name || p.name}
-            </option>
-          ))}
-        </select>
-      </label>
-      <div className="button-row">
-        <button onClick={onSignOut}>Switch athlete</button>
-        <button
-          onClick={() =>
-            exportBackup({ scope: includeAll ? "all" : "current" })
-          }
-        >
-          Save backup
-        </button>
-        <label className="file-button">
-          Restore backup
-          <input
-            type="file"
-            accept="application/json,.json"
-            onChange={async (e) => {
-              try {
-                if (e.target.files[0]) {
-                  const ok = await importBackup(e.target.files[0]);
-                  setStatus(
-                    ok
-                      ? "Imported as separate profiles. Existing profiles were preserved."
-                      : "Import was not saved.",
-                  );
-                }
-              } catch (error) {
-                setStatus(error.message);
-              }
-              e.target.value = "";
-            }}
-          />
-        </label>
-        <button
-          className="danger-button"
-          onClick={() => setConfirmDelete(true)}
-        >
-          Delete this profile
-        </button>
-      </div>
-      <label className="check-row">
-        <input
-          type="checkbox"
-          checked={includeAll}
-          onChange={(event) => setIncludeAll(event.target.checked)}
-        />
-        <span>Include all athletes in the backup</span>
-      </label>
-      <p role="status">{status}</p>
-      <details>
-        <summary>About Nourally's guidance</summary>
-        <p>
-          Nourally offers practical examples, not calorie prescriptions or
-          medical advice. Allergies, medical conditions, eating concerns, and
-          individualized needs should be discussed with a qualified professional
-          and a parent or guardian.
-        </p>
-      </details>
-      {confirmDelete && (
-        <ConfirmDialog
-          title={`Delete ${state.current.name}'s data from this device?`}
-          body="Plans, food, and logs for this athlete are removed. Other athletes stay. You cannot undo this. A backup downloads first."
-          confirmLabel="Delete data"
-          destructive
-          requireText="DELETE"
-          onCancel={() => setConfirmDelete(false)}
-          onConfirm={async () => {
-            if (await deleteCurrentProfile()) setConfirmDelete(false);
-          }}
-        />
-      )}
-    </section>
   );
 }

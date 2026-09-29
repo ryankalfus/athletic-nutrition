@@ -85,8 +85,7 @@ export function Shell({
         {children}
         {footer && (
           <footer>
-            Your ally from school to sport <span>·</span> Your data stays on
-            this device
+            Saved on this device. Food search uses online food databases.
           </footer>
         )}
       </main>

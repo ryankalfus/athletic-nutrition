@@ -2,7 +2,11 @@ import { useSyncExternalStore } from "react";
 import { showToast } from "./components/ui/Toast.jsx";
 import { syncPlanPreparation } from "./domain/plans.js";
 import { signedOutFlag } from "./session.js";
-import { backupDocument, backupFilename } from "./domain/backup.js";
+import {
+  backupDocument,
+  backupFilename,
+  readBackupText,
+} from "./domain/backup.js";
 import {
   SCHEMA_VERSION,
   emptyData,
@@ -221,7 +225,7 @@ export function downloadJson(value, filename = "nourally-backup.json") {
   a.click();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
-export async function exportBackup({ scope = "current" } = {}) {
+export async function exportBackup({ scope = "current", stamp = false } = {}) {
   let saved;
   try {
     saved = db ? await read() : null;
@@ -252,7 +256,27 @@ export async function exportBackup({ scope = "current" } = {}) {
       : backup.profiles[currentId].data.profile.name ||
         backup.profiles[currentId].name;
   downloadJson(backup, backupFilename(name));
+  if (stamp) {
+    // You › This device shows "Last backup: Sep 12" (ADD-12).
+    const at = new Date().toISOString();
+    const ids = Object.keys(backup.profiles);
+    await transaction((doc) => {
+      for (const id of ids)
+        if (doc.profiles[id]) doc.profiles[id].data.profile.lastBackupAt = at;
+    });
+  }
   return true;
+}
+export async function renameProfile(id, name) {
+  const next = name.replace(/\s+/g, " ").trim().slice(0, 80);
+  if (!next) return false;
+  return transaction((doc) => {
+    const profile = doc.profiles[id];
+    if (!profile) throw new Error("This athlete is no longer on this device");
+    profile.name = next;
+    profile.data.profile.name = next;
+    delete profile.fromBackup;
+  });
 }
 export async function startRecoveryProfile() {
   if (!db) return false;
@@ -296,8 +320,17 @@ export async function startRecoveryProfile() {
     return false;
   }
 }
+// DATA-04: read a file for the restore preview; throws a plain-language error.
+export async function readBackupFile(file) {
+  return readBackupText(await file.text(), {
+    validate: validateDocument,
+    schemaVersion: SCHEMA_VERSION,
+  });
+}
 export async function importBackup(file) {
-  const imported = validateDocument(JSON.parse(await file.text()));
+  return importBackupDocument(await readBackupFile(file));
+}
+export async function importBackupDocument(imported) {
   let importedIds = [];
   const ok = await transaction((doc) => {
     importedIds = [];
@@ -307,14 +340,16 @@ export async function importBackup(file) {
       doc.profiles[id] = {
         ...profile,
         id,
-        name: `${profile.name} (imported)`,
+        // DATA-07: the list shows "(from backup)" until the athlete is renamed.
+        name: String(profile.name || "").replace(/ \(imported\)$/, ""),
+        fromBackup: true,
         data: validateData(profile.data),
       };
     }
   });
   if (ok) {
     const revision = snapshot.doc.revision;
-    showToast("Profiles imported.", async () => {
+    showToast("Added from backup.", async () => {
       if (snapshot.doc.revision !== revision) return false;
       return transaction((doc) => {
         for (const id of importedIds) delete doc.profiles[id];

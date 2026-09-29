@@ -506,3 +506,6 @@ Verified the gaps in P0-05, P0-06, P0-07, P0-09, P0-11 and P1-01 to P1-06 are cl
 Hid the Dairy-free chip and stopped filtering on unreviewed dairy flags, with a notice for a stored Dairy-free choice and test coverage. 2026.09.29
 Added You settings data (season, Not a fan of, low-cost switch from the budget tier, last backup date) with additive migration, validation and tests. 2026.09.29
 Made Ideas hide ideas that use a Not a fan of ingredient, with a test. 2026.09.29
+Built You › This device: athletes list with Open and Rename, Add athlete, last backup line, styled restore button with a preview before adding, newer-version and not-a-backup errors, Keep data on this device, and a separated delete zone. 2026.09.29
+Marked restored athletes "(from backup)" until renamed instead of adding "(imported)" to the name. 2026.09.29
+Changed the footer to "Saved on this device. Food search uses online food databases." 2026.09.29
