@@ -1,98 +1,155 @@
-// Playwright CLI helper for schedule CRUD, recurrence scope, and school exceptions.
+// Playwright snippet: schedule week view, activity validation, repeating scope prompts, school day skip/restore.
+// Everything is relative to today, so it works on any date.
 async (page) => {
+  const base = globalThis.BASE_URL ?? "http://127.0.0.1:5173/";
   const context = await page.context().browser().newContext();
   const p = await context.newPage();
   p.setDefaultTimeout(15000);
   const result = { checks: [], errors: [] };
   p.on("pageerror", (e) => result.errors.push(e.message));
+  const pad = (n) => String(n).padStart(2, "0");
+  const now = new Date();
+  const todayKey = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
+  const weekday = new Intl.DateTimeFormat("en-US", { weekday: "long" }).format(
+    now,
+  );
+  const inYear = (days) => {
+    const d = new Date(now);
+    d.setDate(d.getDate() + days);
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+  };
+  // Today's column in the week view is the only day heading ending in "· Today".
+  const today = () =>
+    p.getByRole("region", { name: /· Today$/ });
+  const rows = (title) =>
+    p.locator("article.schedule-week-row").filter({ hasText: title });
+  const actions = async (title) => {
+    const menu = today()
+      .locator("details.schedule-row-menu")
+      .filter({ has: p.getByLabel(`Actions for ${title}`, { exact: true }) })
+      .first();
+    // The menu can stay open after a previous action; only open it if closed.
+    if ((await menu.getAttribute("open")) === null)
+      await menu.locator("summary").click();
+  };
   try {
-    await p.goto("http://127.0.0.1:5173/");
-    await p
-      .getByRole("textbox", { name: "First name Optional" })
-      .fill("Schedule test");
-    await p
-      .getByRole("button", { name: "Save and see today", exact: false })
-      .click();
-    await p.getByRole("heading", { name: "Today, Schedule test" }).waitFor();
-    await p.goto("http://127.0.0.1:5173/#/calendar");
-    await p.getByRole("button", { name: "Agenda" }).click();
-    await p.getByRole("button", { name: "+ Add" }).click();
-    await p
-      .getByRole("textbox", { name: "Activity name" })
-      .fill("Practice test");
-    await p.getByRole("textbox", { name: "Ends" }).fill("15:00");
-    await p
-      .getByRole("button", { name: "Add to calendar", exact: false })
-      .click();
+    await p.goto(base);
+    await p.getByRole("textbox", { name: /First name/ }).fill("Schedule test");
+    await p.getByRole("button", { name: /Save and see today/ }).click();
+    await p.getByRole("heading", { name: "Today", exact: true }).waitFor();
+    await p.goto(`${base}#/schedule`);
+    await p.getByRole("heading", { name: "Schedule", level: 1 }).waitFor();
     if (
-      !(await p.getByRole("dialog").innerText()).includes(
-        "Overnight events are not supported",
-      )
+      !(await p
+        .getByRole("radio", { name: "Week" })
+        .getAttribute("aria-checked"))
     )
-      throw new Error("Invalid event time accepted");
-    result.checks.push("Invalid and overnight event times rejected.");
-    await p.getByRole("textbox", { name: "Ends" }).fill("17:30");
-    await p.getByRole("button", { name: "Away", exact: true }).click();
-    await p.getByRole("spinbutton", { name: /Travel time/ }).fill("25");
-    await p.getByRole("button", { name: "Every week" }).click();
-    await p
-      .getByRole("button", { name: "Add to calendar", exact: false })
-      .click();
-    await p.getByRole("heading", { name: "Practice test" }).waitFor();
+      throw new Error("Week view is not the default");
+    await p.getByRole("heading", { name: /· Today$/, level: 2 }).waitFor();
+    result.checks.push("Schedule opens in Week view with today marked.");
+
+    await p.getByRole("button", { name: "+ Add", exact: true }).first().click();
+    const sheet = p.getByRole("dialog", { name: "Add practice" });
+    await sheet.getByRole("textbox", { name: "Name" }).fill("Practice test");
+    await sheet.getByLabel("Ends").fill("15:00");
+    await sheet.getByRole("button", { name: "Add practice", exact: true }).click();
+    await sheet
+      .getByRole("alert")
+      .getByText("Overnight events are not supported", { exact: false })
+      .waitFor();
+    result.checks.push("An end time before the start is rejected with the overnight message.");
+
+    await sheet.getByLabel("Ends").fill("17:30");
+    await sheet.getByRole("button", { name: "Away", exact: true }).click();
+    await sheet.getByRole("spinbutton", { name: /Travel time/ }).fill("25");
+    await sheet.getByText("Leave by 3:35 PM").waitFor();
+    await sheet.getByRole("button", { name: "Every week" }).click();
     if (
-      !(await p.locator(".agenda-event").innerText())
-        .toLowerCase()
-        .includes("weekly series through")
+      (await sheet
+        .getByRole("button", { name: weekday, exact: true })
+        .getAttribute("aria-pressed")) !== "true"
     )
-      throw new Error("Weekly scope/end date missing");
+      throw new Error("Repeat does not default to today's weekday");
+    await sheet.getByRole("button", { name: "Add practice", exact: true }).click();
+    await sheet.waitFor({ state: "hidden" });
+    await rows("Practice test").first().waitFor();
+    if (!(await today().innerText()).includes("Away · Leave by 3:35 PM"))
+      throw new Error("Away practice with travel time is not on today");
     result.checks.push(
-      "Weekly away practice saved with travel and visible series end date.",
+      "A weekly away practice with 25 min travel shows on today with Leave by 3:35 PM.",
     );
-    await p.getByRole("button", { name: /Skip Practice test on/ }).click();
-    await p.getByRole("button", { name: "Restore this day" }).waitFor();
+
+    await actions("Practice test");
+    await today().getByRole("menuitem", { name: "Edit" }).click();
+    const scope = p.getByRole("dialog", { name: "Change repeating activity" });
+    await scope
+      .getByRole("button", { name: `Change all ${weekday} practices` })
+      .waitFor();
+    await scope.getByRole("button", { name: /^Change only / }).click();
+    const edit = p.getByRole("dialog", { name: /^Edit .* practice$/ });
+    await edit.getByText(/^Changing .* only\.$/).waitFor();
+    await edit.getByRole("button", { name: "Cancel" }).click();
+    await edit.waitFor({ state: "hidden" });
+    result.checks.push(
+      "Editing a repeating practice asks for scope; 'only this date' edits one day.",
+    );
+
+    await actions("Practice test");
+    await today().getByRole("menuitem", { name: "Skip this day" }).click();
+    await today().getByText("Practice test").waitFor({ state: "hidden" });
+    await p.getByRole("radio", { name: "Month" }).click();
     await p.getByRole("button", { name: "Restore this day" }).click();
-    await p.getByRole("heading", { name: "Practice test" }).waitFor();
-    result.checks.push("Single recurring occurrence skipped and restored.");
-    await p.getByRole("button", { name: "Edit Practice test series" }).click();
-    if (
-      !(await p.getByRole("dialog").innerText()).includes(
-        "changes affect every occurrence",
-      )
-    )
-      throw new Error("Series edit scope unclear");
-    await p
-      .getByRole("button", { name: "Close Edit series", exact: false })
-      .click();
-    p.once("dialog", (dialog) => dialog.dismiss());
-    await p
-      .getByRole("button", { name: "Delete Practice test series" })
-      .click();
-    await p.getByRole("heading", { name: "Practice test" }).waitFor();
-    p.once("dialog", (dialog) => dialog.accept());
-    await p
-      .getByRole("button", { name: "Delete Practice test series" })
-      .click();
-    await p
-      .getByRole("heading", { name: "Practice test" })
-      .waitFor({ state: "hidden" });
+    await p.locator(".agenda-event").filter({ hasText: "Practice test" }).waitFor();
+    await p.getByRole("radio", { name: "Week" }).click();
+    await today().getByText("Practice test").waitFor();
     result.checks.push(
-      "Series deletion requires confirmation and can be cancelled.",
+      "Skip this day hides one occurrence; Month view restores it.",
     );
-    await p.getByRole("button", { name: /School/ }).click();
-    await p
-      .getByRole("button", { name: "Save school schedule", exact: false })
+
+    await actions("Practice test");
+    await today().getByRole("menuitem", { name: "Delete…" }).click();
+    const del = p.getByRole("dialog", { name: "Delete repeating activity" });
+    await del.getByRole("button", { name: /^Close/ }).click();
+    await del.waitFor({ state: "hidden" });
+    await today().getByText("Practice test").waitFor();
+    await actions("Practice test");
+    await today().getByRole("menuitem", { name: "Delete…" }).click();
+    await del
+      .getByRole("button", { name: `Delete all ${weekday} practices` })
       .click();
-    await p
-      .getByRole("heading", { name: "School", exact: true, level: 3 })
-      .waitFor();
-    await p.getByRole("button", { name: /Cancel school on/ }).click();
-    await p.getByRole("button", { name: "Restore", exact: true }).waitFor();
-    await p.getByRole("button", { name: "Restore", exact: true }).click();
-    await p
-      .getByRole("heading", { name: "School", exact: true, level: 3 })
-      .waitFor();
+    await del.waitFor({ state: "hidden" });
+    await today().getByText("Practice test").waitFor({ state: "hidden" });
+    if (await rows("Practice test").count())
+      throw new Error("Series delete left occurrences");
     result.checks.push(
-      "School schedule and single-day cancellation/restoration work.",
+      "Deleting a repeating practice asks for scope, can be closed, and 'all' removes the series.",
+    );
+
+    await p.getByRole("button", { name: "School day", exact: true }).click();
+    const school = p.getByRole("dialog", { name: "School day" });
+    await school.getByLabel("School year starts").fill(inYear(-30));
+    await school.getByLabel("School year ends").fill(inYear(120));
+    const day = school.getByRole("button", { name: weekday, exact: true });
+    if ((await day.getAttribute("aria-pressed")) !== "true") await day.click();
+    await school.getByRole("button", { name: "Save school day" }).click();
+    await school.waitFor({ state: "hidden" });
+    await today().getByText("School", { exact: true }).waitFor();
+    await actions("School");
+    await today().getByRole("menuitem", { name: "Skip this day" }).click();
+    await p
+      .locator(`.schedule-week-day`)
+      .filter({ hasText: "· Today" })
+      .getByText("No school")
+      .first()
+      .waitFor();
+    await p.getByRole("radio", { name: "Month" }).click();
+    await p.getByText("No school this day.").waitFor();
+    await p.getByRole("button", { name: "Restore", exact: true }).click();
+    await p.getByText("No school this day.").waitFor({ state: "hidden" });
+    await p.getByRole("radio", { name: "Week" }).click();
+    await today().getByText("School", { exact: true }).waitFor();
+    result.checks.push(
+      `School day saves, today (${todayKey}) can be skipped to No school, and Month view restores it.`,
     );
     return result;
   } catch (e) {
