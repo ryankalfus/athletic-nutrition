@@ -40,6 +40,7 @@ export function buildRailRows({
     return [
       {
         kind: "activity",
+        game: e.type === "game",
         time: e.startTime,
         title: e.title,
         detail: `${formatTime(e.startTime)}–${formatTime(e.endTime)} · ${e.location === "away" ? "Away" : "Home"}`,

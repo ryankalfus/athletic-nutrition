@@ -1,5 +1,44 @@
-import { changeData } from "../../store.js";
+import { changeData, exportBackup } from "../../store.js";
 import { notificationPermission } from "../../domain/reminders.js";
+import { backupNudge } from "../../domain/backupNudge.js";
+import { showToast } from "../../components/ui/Toast.jsx";
+
+// DATA-08 / ADD-12: the monthly backup nudge, after any reminder prompt.
+function BackupPrompt({ nudge, pending, run, write }) {
+  return (
+    <aside className="today-prompt" aria-label="Backup">
+      <p>{nudge.message}</p>
+      <button
+        className="primary"
+        aria-busy={pending === "backup" || undefined}
+        disabled={!!pending}
+        onClick={() =>
+          run("backup", async () => {
+            const ok = await exportBackup({ stamp: true });
+            if (ok) showToast("Backup saved. Keep the file somewhere safe.");
+            return ok;
+          })
+        }
+      >
+        {pending === "backup" ? "Saving…" : "Save backup"}
+      </button>
+      <button
+        disabled={!!pending}
+        onClick={() =>
+          write(
+            "snooze-backup",
+            (d) => {
+              d.profile.backupNudgeSnoozedAt = new Date().toISOString();
+            },
+            "Backup reminder hidden for 30 days.",
+          )
+        }
+      >
+        Not now
+      </button>
+    </aside>
+  );
+}
 
 const dismiss = (d) => {
   d.profile.dismissedPrompts = [
@@ -16,7 +55,8 @@ function activityWord(type) {
 
 // TODAY-09 / IA-12: one contextual prompt at most. Settings live in
 // You › Reminders; this slot only offers a one-time shortcut or surfaces a
-// reminder problem with a way to fix it.
+// reminder problem with a way to fix it. Order: a reminder problem, then a
+// due backup nudge (data safety, at most monthly), then the reminder offer.
 export default function ContextPrompt({
   data,
   guidance,
@@ -25,6 +65,7 @@ export default function ContextPrompt({
   run,
   write,
   onNavigate,
+  now = new Date(),
 }) {
   const openReminders = {
     label: "Open",
@@ -39,6 +80,8 @@ export default function ContextPrompt({
         </button>
       </aside>
     );
+  const nudge = backupNudge(data, now);
+  if (nudge) return <BackupPrompt {...{ nudge, pending, run, write }} />;
   if (
     !guidance.nextEvent ||
     data.reminderSettings.enabled ||

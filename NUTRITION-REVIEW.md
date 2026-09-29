@@ -205,3 +205,17 @@ The approved line "Water works for most practices. Sports drinks can help in lon
 - Date: ______________________
 - Decision (Approve as written / Approve with changes listed / Not approved): ______________________
 - Changes required: ______________________
+
+## Pending qualified review — Tonight planner and sport context (2026.09.29)
+
+**Status: not approved.** Added in P1-12 after the approval above. No new food amounts, thresholds, or sport-specific nutrition were added. The wording below is new or newly shown, so it waits for review.
+
+| Where | Text | Note |
+|---|---|---|
+| Tonight task (school tomorrow, cafeteria access off) | "Pack lunch for school" | Logistics only; follows the approved BEFORE_SCHOOL title "Pack lunch and your after-school snack". |
+| Tonight tasks | Existing `tomorrowPrepTasks` labels ("Choose and set out breakfast", "Pack a familiar pre-activity snack", "Fill a water bottle", "Put uniform, shoes, and gear by the door", "Check the route and allow N minutes for travel", "Pack one extra shelf-stable snack") | Unchanged wording, but now built for any activity day after 7:00 PM, not only early starts. Due 30 min before school or the earliest Leave by (owner decision); breakfast only before a start before 10:00 AM. |
+| Tonight card | "Build the list to set out food, water, and gear tonight." · "Choose tomorrow's snack" | Links to Ideas › Tomorrow; no new guidance. |
+| Now card, Day rail, Tonight | "Game day" / "Game" chip | Label only. No game-specific food or fluid copy is shown (ACT-04 stays as reviewed). |
+| Today titles | "Soccer practice", "Soccer game" from You › Sport | Names only (audit 13.4: no sport-specific nutrition without review). |
+
+Code: `src/domain/tonight.js`, `src/domain/timing.js` (`sportEventTitle`), `src/pages/Today/TonightCard.jsx`.

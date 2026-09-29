@@ -550,3 +550,14 @@ Set aria-busy on buttons that show Saving… so they draw the spinner. 2026.09.2
 Moved loose dialog buttons into the sticky action footer and wrapped row menu items so each menu opens as one panel. 2026.09.29
 Extended the responsive browser check to fail on text under 12 px (13 px outside the tab bar and badges), negative margins, an uncentered or over-wide column, phone chrome over 112 px, clipped Food tabs and a clipped activity sheet, and to cover the welcome page. 2026.09.29
 Checked DS-05 to DS-12, DS-14, DS-16 to DS-19, RWD-01 to RWD-09, RWD-11 to RWD-13, CMP-03, CMP-07 and CMP-08, and noted DS-13, DS-15, CMP-02, CMP-04 and CMP-17 as partial. 2026.09.29
+Named untitled or generic activities after the athlete's sport on Today (for example "Soccer game in 1 hr 50 min") through sportEventTitle in timing.js, with no sport-specific nutrition. 2026.09.29
+Added a Game day chip to the Now card, the Day rail and Tonight, and colored game chips in the Today header. 2026.09.29
+Fixed Tonight never appearing: it looked up tomorrow with a Date instead of a date key; the evening planner now lives in domain/tonight.js. 2026.09.29
+Made Tonight show every activity tomorrow with times, Away and Leave by, and build one list for all of them with tasks due 30 minutes before school or the earliest Leave by, plus Pack lunch for school when cafeteria access is off. 2026.09.29
+Added one Checklist component for Pack & prep and tomorrow's list, with a Remove button that offers Undo and a "Was due" line for missed tasks today. 2026.09.29
+Made the Now card's evening button read Open tomorrow's list once the list is built. 2026.09.29
+Added Share list (Web Share) or Copy list (clipboard, then a legacy copy) to Pack & prep, Tonight and Groceries, sharing plain text with one item per line and no IDs; Groceries shares only unchecked items. 2026.09.29
+Added the monthly backup nudge to Today's prompt slot ("Last backup 32 days ago. Save a backup file?") with Save backup and Not now, which hides it for 30 days. 2026.09.29
+Added tests/evening-share.test.js for sport titles, the evening planner, share text and the backup nudge, and tests/browser-evening-share.js with a fixed 8 PM clock. 2026.09.29
+Recorded the new Tonight and task wording as pending in NUTRITION-REVIEW.md. 2026.09.29
+Checked P1-12, ADD-06, ADD-09, ADD-11, ADD-12, DATA-08, CMP-11 and CMP-12 after unit and browser checks. 2026.09.29

@@ -20,7 +20,10 @@ export default function NowCard({
 }) {
   return (
     <section className="now-card" aria-labelledby="now-title">
-      <p className="today-countdown">{guidance.label}</p>
+      <p className="today-countdown">
+        {guidance.label}
+        {guidance.gameDay && <span className="badge badge-game">Game day</span>}
+      </p>
       <h2 id="now-title">
         {plan
           ? `${plan.template.name} is ${formatPlanStatus(plan.status).toLowerCase()}`
