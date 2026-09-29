@@ -31,7 +31,7 @@
 .idea-card,
 .meal-plan-card {
   background: var(--color-surface);
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--color-line);
   border-radius: 16px;
   padding: 20px;
   display: flex;
@@ -141,7 +141,7 @@
   gap: 12px;
   padding: 12px 0;
   min-height: 56px;
-  border-bottom: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--color-line);
   flex-wrap: wrap;
 }
 .stock-row > div:first-child {
@@ -192,7 +192,7 @@
 }
 .low-summary {
   align-self: start;
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--color-line);
   padding: 20px;
   border-radius: 16px;
   background: var(--color-surface);
@@ -237,5 +237,166 @@
   .low-summary {
     position: sticky;
     top: 80px;
+  }
+}
+.tab-badge {
+  margin-left: 6px;
+}
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+.groceries-page {
+  display: grid;
+  gap: var(--space-4);
+  max-width: 640px;
+}
+.week-ideas-prompt {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-4);
+}
+.week-ideas-prompt p {
+  margin: 0;
+}
+.grocery-list,
+.week-ideas,
+.put-away-list,
+.trip-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.grocery-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: 56px;
+  padding: var(--space-2) 0;
+  border-bottom: 1px solid var(--color-line);
+}
+.grocery-check {
+  display: grid;
+  place-items: center;
+  min-width: 44px;
+  min-height: 44px;
+  cursor: pointer;
+}
+.grocery-check input {
+  appearance: none;
+  width: 28px;
+  height: 28px;
+  margin: 0;
+  border: 2px solid var(--color-line-strong);
+  border-radius: var(--radius-full);
+  background: var(--color-surface);
+  cursor: pointer;
+  transition: background var(--motion-check);
+}
+.grocery-check input:checked {
+  border-color: var(--color-primary);
+  background: var(--color-primary)
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12l5 5 9-10'/%3E%3C/svg%3E")
+    center / 18px no-repeat;
+}
+.grocery-check input:focus-visible {
+  outline: 3px solid var(--color-focus);
+  outline-offset: 2px;
+}
+.grocery-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px var(--space-2);
+}
+.grocery-main strong {
+  font-size: 16px;
+}
+.grocery-main small {
+  color: var(--color-ink-muted);
+  font-size: 14px;
+}
+.grocery-main .muted {
+  flex-basis: 100%;
+}
+.grocery-row.checked strong {
+  text-decoration: line-through;
+  color: var(--color-ink-muted);
+}
+.reason-chip {
+  display: inline-block;
+  padding: 2px var(--space-2);
+  border-radius: var(--radius-full);
+  background: var(--color-surface-muted);
+  color: var(--color-ink-muted);
+  font-size: 13px;
+}
+.week-ideas .reason-chip {
+  margin-left: var(--space-2);
+}
+.finish-bar {
+  position: sticky;
+  bottom: calc(72px + env(safe-area-inset-bottom));
+  z-index: var(--z-sticky);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2) var(--space-4);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-2);
+}
+.finish-bar p {
+  margin: 0;
+}
+.finish-bar button {
+  min-height: 44px;
+}
+.grocery-footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+.grocery-estimate {
+  color: var(--color-ink-muted);
+}
+.grocery-sheet {
+  display: grid;
+  gap: var(--space-4);
+}
+.put-away-list li,
+.trip-list li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  min-height: 56px;
+  border-bottom: 1px solid var(--color-line);
+}
+.put-away-list small {
+  display: block;
+  color: var(--color-ink-muted);
+}
+.put-away-list select,
+.trip-list button {
+  min-height: 44px;
+}
+@media (min-width: 1024px) {
+  .finish-bar {
+    bottom: var(--space-4);
   }
 }
