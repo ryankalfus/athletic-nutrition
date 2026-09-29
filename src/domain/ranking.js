@@ -3,8 +3,10 @@ import { ingredientsForMeal } from "./food.js";
 
 export function rankIdeas(
   ideas,
-  { pantry = [], favorites = [], hiddenIdeas = [], date } = {},
+  options = {},
 ) {
+  /** @type {any} */
+  const { pantry = [], favorites = [], hiddenIdeas = [], date } = options;
   const saved = new Set(
     favorites.map((food) => (typeof food === "string" ? food : food.id)),
   );
@@ -29,7 +31,9 @@ export function rankIdeas(
     .map((item) => item.idea);
 }
 
-export function ideasFor({
+/** @param {any} options */
+export function ideasFor(options) {
+  const {
   moment = "regular",
   date,
   profile = {},
@@ -39,7 +43,7 @@ export function ideasFor({
   inSchool = false,
   schoolAccess = {},
   travelMode = false,
-}) {
+  } = options;
   const sources = access ||
     profile.foodSources || ["home", "packed", "cafeteria"];
   const needs = profile.avoid || profile.dietaryNeeds || [];

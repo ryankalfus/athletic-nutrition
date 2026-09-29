@@ -170,15 +170,38 @@ export function quantityIn(item, unit) {
   return null;
 }
 export function missingGroceries(ingredients, items) {
-  return generateGroceryItems({
-    needs: ingredients.filter((ingredient) => !ingredient.sufficient).map((ingredient) => ({
-      id: ingredient.ingredientId,
-      name: ingredient.name,
-      reason: "For a planned food",
-      amount: ingredient.missing || ingredient.amount || 1,
-      amountUnit: ingredient.unit,
-    })),
-    existing: items,
+  return ingredients.flatMap((ingredient) => {
+    const queued = items.filter(
+      (item) => ingredientId(item) === ingredient.ingredientId,
+    );
+    if (
+      ingredient.approximate ||
+      queued.some((item) => quantityIn(item, ingredient.unit) == null)
+    )
+      return [];
+    const remaining = Math.max(
+      ingredient.missing -
+        queued.reduce(
+          (total, item) => total + (quantityIn(item, ingredient.unit) || 0),
+          0,
+        ),
+      0,
+    );
+    return remaining > 0
+      ? [
+          {
+            id: uid(),
+            name: ingredient.name,
+            ingredientId: ingredient.ingredientId,
+            catalogId: ingredient.ingredientId,
+            quantity: remaining,
+            unit: ingredient.unit,
+            price: null,
+            status: "list",
+            origin: "meal",
+          },
+        ]
+      : [];
   });
 }
 

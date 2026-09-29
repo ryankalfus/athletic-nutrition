@@ -476,3 +476,6 @@ Accepted P1-05 after targeted tests, lint, build and isolated quick-add, details
 Simplified REDESIGN-CHECKLIST.md tracker entries to checkbox IDs, removing per-step summaries and implementation notes while preserving the embedded full audit specification. 2026.09.29
 Reconciled all nine §13.7 owner decisions and qualified review gate statuses against the user’s confirmations, retaining the owner-reported attribution for Emily Cornelius, RDN approval. 2026.09.29
 Committed and pushed the P1-05 Food home inventory, Ideas, and reusable redesign changes to main. 2026.09.29
+Fixed TypeScript inference in the ranking and timing helper input options so CI typecheck passes. 2026.09.29
+Restored subtraction of compatible queued grocery quantities from meal ingredient needs. 2026.09.29
+Passed workflow checks locally: typecheck, lint, 39 tests, production build, and diff check. 2026.09.29

@@ -109,10 +109,10 @@ export function eventsForDate(events, dateKey) {
     .sort((a, b) => (a.startTime || "").localeCompare(b.startTime || ""));
 }
 
-export function planTasksForIdea(
-  idea,
-  { travelMode = false, inSchool = false, schoolSchedule, event, date } = {},
-) {
+/** @param {any} options */
+export function planTasksForIdea(idea, options = {}) {
+  const { travelMode = false, inSchool = false, schoolSchedule, event, date } =
+    options;
   const verb = idea.portable ? "Pack" : "Plan";
   /** @type {Array<{label: string, kind: string, foodId?: string}>} */
   const tasks = [
