@@ -169,29 +169,17 @@
 /* ---------- Chips (DS-12, CMP-03): multi-select and filters ---------- */
 
 .chip-group,
-.choice-grid,
 .stock-filters,
 .moment-picker,
 .quick-add > div,
 .school-weekdays,
-.food-access-options,
 .today-alternates {
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-2);
 }
 
-:is(
-    .chip-group,
-    .choice-grid,
-    .stock-filters,
-    .moment-picker,
-    .quick-add > div,
-    .school-weekdays,
-    .food-access-options
-  )
-  > button,
-.chip {
+:is(.chip-group, .stock-filters, .moment-picker, .quick-add > div, .school-weekdays) > button {
   position: relative;
   min-height: 36px;
   margin-block: var(--space-1);
@@ -203,34 +191,15 @@
 }
 
 /* 44px touch area around a 36px chip. */
-:is(
-    .chip-group,
-    .choice-grid,
-    .stock-filters,
-    .moment-picker,
-    .quick-add > div,
-    .school-weekdays,
-    .food-access-options
-  )
-  > button::after,
-.chip::after {
+:is(.chip-group, .stock-filters, .moment-picker, .quick-add > div, .school-weekdays) > button::after {
   position: absolute;
   inset: calc(var(--space-1) * -1) 0;
   content: "";
 }
 
-/* State and semantics are styled together (A11Y-08). */
-:is(
-    .chip-group,
-    .choice-grid,
-    .stock-filters,
-    .moment-picker,
-    .quick-add > div,
-    .school-weekdays,
-    .food-access-options
-  )
-  > button:is([aria-pressed="true"], [aria-checked="true"]),
-.chip:is([aria-pressed="true"], [aria-checked="true"]) {
+/* State and semantics are styled together (A11Y-08): fill, 2px border, check. */
+:is(.chip-group, .stock-filters, .moment-picker, .quick-add > div, .school-weekdays)
+  > button[aria-pressed="true"] {
   padding-left: var(--space-3);
   border-color: var(--color-primary);
   background: var(--color-selected-bg);
@@ -238,17 +207,7 @@
   color: var(--color-primary-pressed);
 }
 
-:is(
-    .chip-group,
-    .choice-grid,
-    .stock-filters,
-    .moment-picker,
-    .quick-add > div,
-    .school-weekdays,
-    .food-access-options
-  )
-  > button:is([aria-pressed="true"], [aria-checked="true"])::before,
-.chip:is([aria-pressed="true"], [aria-checked="true"])::before {
+:is(.chip-group, .stock-filters, .moment-picker, .quick-add > div) > button[aria-pressed="true"]::before {
   width: 16px;
   height: 16px;
   background: var(--icon-check-primary) center / 16px no-repeat;
@@ -270,12 +229,7 @@
 
 /* ---------- Segmented control (DS-12, CMP-03): 2-4 single choices ---------- */
 
-.segmented,
-.schedule-view-control,
-.stock-control,
-.intensity-options,
-.activity-type-options,
-.choice-grid[role="radiogroup"] {
+.segmented {
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-1);
@@ -284,69 +238,34 @@
   background: var(--color-surface-muted);
 }
 
-:is(
-    .segmented,
-    .schedule-view-control,
-    .stock-control,
-    .intensity-options,
-    .activity-type-options,
-    .choice-grid[role="radiogroup"]
-  )
-  > button {
+.segmented > button {
   flex: 1 1 auto;
   min-height: 36px;
-  margin: 0;
   padding: var(--space-1) var(--space-3);
   border: 1px solid transparent;
   border-radius: var(--radius-sm);
   background: transparent;
-  box-shadow: none;
   color: var(--color-ink-muted);
   font-weight: 500;
 }
 
-:is(
-    .segmented,
-    .schedule-view-control,
-    .stock-control,
-    .intensity-options,
-    .activity-type-options,
-    .choice-grid[role="radiogroup"]
-  )
-  > button::before {
-  content: none;
-}
-
 @media (hover: hover) {
-  :is(
-      .segmented,
-      .schedule-view-control,
-      .stock-control,
-      .intensity-options,
-      .activity-type-options,
-      .choice-grid[role="radiogroup"]
-    )
-    > button:hover:not(:disabled) {
+  .segmented > button:hover:not(:disabled) {
     background: var(--color-surface);
     color: var(--color-ink);
   }
 }
 
-:is(
-    .segmented,
-    .schedule-view-control,
-    .stock-control,
-    .intensity-options,
-    .activity-type-options,
-    .choice-grid[role="radiogroup"]
-  )
-  > button:is([aria-pressed="true"], [aria-checked="true"], [aria-current="page"]) {
-  padding-left: var(--space-3);
+.segmented > button:is([aria-pressed="true"], [aria-checked="true"]) {
   border-color: var(--color-line-strong);
   background: var(--color-surface);
   box-shadow: var(--shadow-1);
   color: var(--color-ink);
   font-weight: 600;
+}
+
+.segmented > button:disabled {
+  background: transparent;
 }
 
 /* ---------- Cards (DS-14) ---------- */
@@ -542,8 +461,7 @@
 
 /* ---------- Empty states (CMP-07) ---------- */
 
-.empty-state,
-.agenda-empty {
+.empty-state {
   display: grid;
   justify-items: center;
   gap: var(--space-2);
@@ -554,22 +472,28 @@
   text-align: center;
 }
 
-:is(.empty-state, .agenda-empty) :is(h3, p) {
+.empty-state :is(h3, p) {
   margin: 0;
 }
 
-:is(.empty-state, .agenda-empty) h3 {
+.empty-state h3 {
   color: var(--color-ink);
 }
 
-:is(.empty-state, .agenda-empty) button {
+.empty-state .button-row {
+  justify-content: center;
   margin-top: var(--space-2);
 }
 
 /* Skeleton (CMP-08) */
-.skeleton,
-.food-search-loading span {
+.skeleton-list {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.skeleton {
   display: block;
+  height: 56px;
   border-radius: var(--radius-md);
   background: var(--color-surface-muted);
   animation: pulse 1.2s ease-in-out infinite alternate;

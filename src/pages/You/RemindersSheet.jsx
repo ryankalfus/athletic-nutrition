@@ -8,6 +8,10 @@ import {
   notificationPermission,
 } from "../../domain/reminders.js";
 import { SettingsSheet } from "./SettingsSheet.jsx";
+import {
+  SegmentedControl,
+  SwitchRow,
+} from "../../components/ui/SelectionControls.jsx";
 
 // You › Reminders (IA-12, YOU-05, DATA-06).
 export function RemindersSheet({ settings, onClose }) {
@@ -46,33 +50,22 @@ export function RemindersSheet({ settings, onClose }) {
       onClose={onClose}
       className="reminders-sheet"
     >
-      <label className="check-row switch-row">
-        <input
-          type="checkbox"
-          role="switch"
-          checked={draft.enabled}
-          onChange={(event) =>
-            setDraft({ ...draft, enabled: event.target.checked })
-          }
-        />
-        <span>Remind me before activities</span>
-      </label>
+      <SwitchRow
+        label="Remind me before activities"
+        checked={draft.enabled}
+        onChange={(enabled) => setDraft({ ...draft, enabled })}
+      />
       <fieldset className="choice-field" disabled={!draft.enabled}>
         <legend>How early</legend>
-        <div className="choice-grid" role="radiogroup" aria-label="How early">
-          {REMINDER_LEAD_OPTIONS.map((minutes) => (
-            <button
-              type="button"
-              role="radio"
-              key={minutes}
-              aria-checked={draft.leadMinutes === minutes}
-              className={draft.leadMinutes === minutes ? "selected" : ""}
-              onClick={() => setDraft({ ...draft, leadMinutes: minutes })}
-            >
-              {minutes} min before
-            </button>
-          ))}
-        </div>
+        <SegmentedControl
+          label="How early"
+          options={REMINDER_LEAD_OPTIONS.map((minutes) => [
+            minutes,
+            `${minutes} min before`,
+          ])}
+          value={draft.leadMinutes}
+          onChange={(minutes) => setDraft({ ...draft, leadMinutes: minutes })}
+        />
       </fieldset>
       <label className="check-row">
         <input

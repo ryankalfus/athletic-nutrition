@@ -106,6 +106,7 @@ export function PortionEditor({ food, initial = {}, onSave, onCancel }) {
       {error && <p role="alert">{error}</p>}
       <div className="button-row">
         <button
+          aria-busy={busy || undefined}
           className="primary"
           disabled={busy || !validPortion(amount, unit)}
         >

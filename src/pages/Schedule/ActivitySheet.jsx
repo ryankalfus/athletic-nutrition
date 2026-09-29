@@ -3,6 +3,7 @@ import { useAsyncAction } from "../../hooks/useAsyncAction.js";
 import { Dialog } from "../../components/Dialog.jsx";
 import { formatDate, formatTime } from "../../format.js";
 import { timeToMinutes } from "../../domain/timing.js";
+import { SegmentedControl } from "../../components/ui/SelectionControls.jsx";
 export function ActivitySheet({ model }) {
   const initialFocus = useRef(null);
   const { pending, run } = useAsyncAction();
@@ -57,25 +58,19 @@ export function ActivitySheet({ model }) {
         <div className="schedule-form-scroll">
           <fieldset>
             <legend>Type</legend>
-            <div className="activity-type-options">
-              {[
+            <SegmentedControl
+              mode="pressed"
+              label="Type"
+              firstRef={initialFocus}
+              options={[
                 ["practice", "Practice"],
                 ["game", "Game"],
                 ["workout", "Workout"],
                 ["other", "Other"],
-              ].map(([value, label]) => (
-                <button
-                  key={value}
-                  ref={value === "practice" ? initialFocus : undefined}
-                  type="button"
-                  aria-pressed={type === value}
-                  className={type === value ? "selected" : ""}
-                  onClick={() => setType(value)}
-                >
-                  {label}
-                </button>
-              ))}
-            </div>
+              ]}
+              value={type}
+              onChange={setType}
+            />
           </fieldset>
           <label>
             Name
@@ -90,24 +85,16 @@ export function ActivitySheet({ model }) {
           ) : (
             <fieldset>
               <legend>Date or days</legend>
-              <div className="intensity-options">
-                <button
-                  type="button"
-                  aria-pressed={repeatMode === "once"}
-                  className={repeatMode === "once" ? "selected" : ""}
-                  onClick={() => setRepeatMode("once")}
-                >
-                  One day
-                </button>
-                <button
-                  type="button"
-                  aria-pressed={repeatMode === "weekly"}
-                  className={repeatMode === "weekly" ? "selected" : ""}
-                  onClick={() => setRepeatMode("weekly")}
-                >
-                  Every week
-                </button>
-              </div>
+              <SegmentedControl
+                mode="pressed"
+                label="Date or days"
+                options={[
+                  ["once", "One day"],
+                  ["weekly", "Every week"],
+                ]}
+                value={repeatMode}
+                onChange={setRepeatMode}
+              />
               {repeatMode === "once" ? (
                 <label>
                   Activity date
@@ -193,24 +180,16 @@ export function ActivitySheet({ model }) {
           </div>
           <fieldset>
             <legend>Where</legend>
-            <div className="intensity-options">
-              <button
-                type="button"
-                aria-pressed={location === "home"}
-                className={location === "home" ? "selected" : ""}
-                onClick={() => setLocation("home")}
-              >
-                Home
-              </button>
-              <button
-                type="button"
-                aria-pressed={location === "away"}
-                className={location === "away" ? "selected" : ""}
-                onClick={() => setLocation("away")}
-              >
-                Away
-              </button>
-            </div>
+            <SegmentedControl
+              mode="pressed"
+              label="Where"
+              options={[
+                ["home", "Home"],
+                ["away", "Away"],
+              ]}
+              value={location}
+              onChange={setLocation}
+            />
           </fieldset>
           {location === "away" && (
             <label>
@@ -239,23 +218,17 @@ export function ActivitySheet({ model }) {
             <summary>More options</summary>
             <fieldset>
               <legend>Activity level</legend>
-              <div className="intensity-options">
-                {[
+              <SegmentedControl
+                mode="pressed"
+                label="Activity level"
+                options={[
                   ["low", "Easy"],
                   ["medium", "Normal"],
                   ["high", "Hard"],
-                ].map(([value, label]) => (
-                  <button
-                    type="button"
-                    key={value}
-                    aria-pressed={intensity === value}
-                    className={intensity === value ? "selected" : ""}
-                    onClick={() => setIntensity(value)}
-                  >
-                    {label}
-                  </button>
-                ))}
-              </div>
+                ]}
+                value={intensity}
+                onChange={setIntensity}
+              />
             </fieldset>
             <label>
               Notes (optional)
@@ -277,6 +250,7 @@ export function ActivitySheet({ model }) {
             Cancel
           </button>
           <button
+            aria-busy={pending || undefined}
             className="primary"
             type="submit"
             disabled={!!pending}

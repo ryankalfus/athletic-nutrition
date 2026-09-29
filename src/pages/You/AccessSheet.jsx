@@ -2,12 +2,11 @@ import { useState } from "react";
 import { changeData } from "../../store.js";
 import { FOOD_SOURCES, SCHOOL_ACCESS, parseBudget } from "../../domain/you.js";
 import { lowCostOn } from "../../domain/ranking.js";
+import { SettingsSheet, toggle } from "./SettingsSheet.jsx";
 import {
   ChipGroup,
-  SettingsSheet,
   SwitchRow,
-  toggle,
-} from "./SettingsSheet.jsx";
+} from "../../components/ui/SelectionControls.jsx";
 
 // You › Food access & budget (YOU-04). Price estimates default off (GROC-05).
 export function AccessSheet({ data, onClose, onNavigate }) {

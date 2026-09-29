@@ -2,7 +2,8 @@ import { useState } from "react";
 import { changeData } from "../../store.js";
 import { LabelCheck } from "../../components/ui/LabelCheck.jsx";
 import { DIET_CHOICES, DISLIKE_CHOICES } from "../../domain/you.js";
-import { ChipGroup, SettingsSheet, toggle } from "./SettingsSheet.jsx";
+import { SettingsSheet, toggle } from "./SettingsSheet.jsx";
+import { ChipGroup } from "../../components/ui/SelectionControls.jsx";
 
 const LEGACY_NOTICES = [
   ["nutFree", "Nut-free"],

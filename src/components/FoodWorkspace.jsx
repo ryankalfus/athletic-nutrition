@@ -26,6 +26,7 @@ import { Dialog } from "./Dialog.jsx";
 import { LabelCheck } from "./ui/LabelCheck.jsx";
 import { FoodSearch } from "./FoodSearch.jsx";
 import { PortionEditor } from "./PortionEditor.jsx";
+import { EmptyState } from "./ui/EmptyState.jsx";
 
 const foodFor = (item) =>
   item.food || {
@@ -178,9 +179,9 @@ export function FoodLog({ date }) {
       </div>
       <LabelCheck />
       {!log.entries.length && (
-        <p className="empty-state">
+        <EmptyState>
           Nothing logged yet. Log a meal or snack when you want to.
-        </p>
+        </EmptyState>
       )}
       <div className="data-list">
         {log.entries.map((entry) => (
@@ -383,7 +384,11 @@ function Consumption({ entry, onDone }) {
           />
         </label>
       ))}
-      <button className="primary" disabled={pending === "consume"}>
+      <button
+        aria-busy={pending === "consume" || undefined}
+        className="primary"
+        disabled={pending === "consume"}
+      >
         {pending === "consume" ? "Saving…" : "Save"}
       </button>
     </form>
@@ -493,7 +498,11 @@ function MealLog({ plan, date, onDone }) {
         </div>
       ))}
       {error && <p role="alert">{error}</p>}
-      <button className="primary" disabled={pending === "meal-log"}>
+      <button
+        aria-busy={pending === "meal-log" || undefined}
+        className="primary"
+        disabled={pending === "meal-log"}
+      >
         {pending === "meal-log" ? "Saving…" : "Log it"}
       </button>
     </form>

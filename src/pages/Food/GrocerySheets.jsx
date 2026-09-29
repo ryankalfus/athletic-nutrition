@@ -41,9 +41,7 @@ export function PutAwaySheet({ items, pantry, pending, onCancel, onConfirm }) {
             <li key={item.id}>
               <div>
                 <strong>{item.name}</strong>
-                <small>
-                  {match ? `Updates ${match.name} · Have` : "Have"}
-                </small>
+                <small>{match ? `Updates ${match.name} · Have` : "Have"}</small>
               </div>
               <label>
                 <span className="sr-only">Place for {item.name}</span>
@@ -68,7 +66,11 @@ export function PutAwaySheet({ items, pantry, pending, onCancel, onConfirm }) {
         <button type="button" onClick={onCancel} disabled={pending}>
           Cancel
         </button>
-        <button className="primary" disabled={pending}>
+        <button
+          aria-busy={pending || undefined}
+          className="primary"
+          disabled={pending}
+        >
           {pending ? "Saving…" : "Add to At home"}
         </button>
       </div>
@@ -118,7 +120,11 @@ export function WeekIdeasSheet({ ideas, summary, pending, onCancel, onAdd }) {
         <button type="button" onClick={onCancel} disabled={pending}>
           Cancel
         </button>
-        <button className="primary" disabled={!selected.length || pending}>
+        <button
+          aria-busy={pending || undefined}
+          className="primary"
+          disabled={!selected.length || pending}
+        >
           {pending ? "Adding…" : "Add selected"}
         </button>
       </div>
@@ -160,11 +166,7 @@ export function GroceryItemForm({
         const quantity = Number(draft.quantity);
         if (!draft.name.trim() || !(quantity > 0) || quantity > 100)
           return setError("Add a name and an amount from 1 to 100.");
-        if (
-          showPrices &&
-          draft.price !== "" &&
-          !(Number(draft.price) >= 0)
-        )
+        if (showPrices && draft.price !== "" && !(Number(draft.price) >= 0))
           return setError("Prices can't be negative.");
         setError("");
         onSave({
@@ -263,7 +265,11 @@ export function GroceryItemForm({
         <button type="button" onClick={onCancel} disabled={pending}>
           Cancel
         </button>
-        <button className="primary" disabled={pending}>
+        <button
+          aria-busy={pending || undefined}
+          className="primary"
+          disabled={pending}
+        >
           {pending ? "Saving…" : "Save"}
         </button>
       </div>

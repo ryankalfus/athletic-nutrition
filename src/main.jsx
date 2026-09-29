@@ -43,6 +43,9 @@ import { useRoute } from "./routing.js";
 import { formatDate } from "./format.js";
 
 import { getDateKey, addDays } from "./domain/timing.js";
+import { EmptyState } from "./components/ui/EmptyState.jsx";
+import { Skeleton } from "./components/ui/Skeleton.jsx";
+import { ChipGroup } from "./components/ui/SelectionControls.jsx";
 
 function App() {
   const [step] = useField("step");
@@ -319,24 +322,12 @@ function ProfileSetup({ profile, onSave }) {
             />
             Keep ideas low-cost
           </label>
-          <fieldset className="choice-field">
-            <legend>Dietary needs</legend>
-            <div className="choice-grid">
-              {DIET_CHOICES.map(([value, label]) => (
-                <button
-                  type="button"
-                  className={
-                    draft.dietaryNeeds.includes(value) ? "selected" : ""
-                  }
-                  aria-pressed={draft.dietaryNeeds.includes(value)}
-                  onClick={() => toggleList("dietaryNeeds", value)}
-                  key={value}
-                >
-                  {label}
-                </button>
-              ))}
-            </div>
-          </fieldset>
+          <ChipGroup
+            legend="Dietary needs"
+            options={DIET_CHOICES}
+            selected={draft.dietaryNeeds}
+            onToggle={(value) => toggleList("dietaryNeeds", value)}
+          />
           <LabelCheck />
           {[
             ["nutFree", "Nut-free"],
@@ -350,24 +341,12 @@ function ProfileSetup({ profile, onSave }) {
                 label and discuss allergy needs with a qualified professional.
               </p>
             ))}
-          <fieldset className="choice-field">
-            <legend>Food you can usually access</legend>
-            <div className="choice-grid">
-              {FOOD_SOURCES.map(([value, label]) => (
-                <button
-                  type="button"
-                  className={
-                    draft.foodSources.includes(value) ? "selected" : ""
-                  }
-                  aria-pressed={draft.foodSources.includes(value)}
-                  onClick={() => toggleList("foodSources", value)}
-                  key={value}
-                >
-                  {label}
-                </button>
-              ))}
-            </div>
-          </fieldset>
+          <ChipGroup
+            legend="Food you can usually access"
+            options={FOOD_SOURCES}
+            selected={draft.foodSources}
+            onToggle={(value) => toggleList("foodSources", value)}
+          />
           <label className="check-row">
             <input
               type="checkbox"
@@ -528,9 +507,9 @@ function WeeklyProgress({ dailyLogs, todayKey, onNavigate }) {
           ))}
         </div>
         {weeklyCheckIns === 0 && (
-          <p className="chart-empty">
+          <EmptyState>
             Use food check-ins to notice where busy days make fueling harder.
-          </p>
+          </EmptyState>
         )}
       </section>
       <section className="card weekly-water-card">
@@ -616,8 +595,8 @@ function StoreGate() {
   const state = useStore();
   if (state.loading)
     return (
-      <main className="shell" role="status">
-        Getting your day ready…
+      <main className="shell">
+        <Skeleton label="Getting your day ready…" rows={4} />
       </main>
     );
   if (!state.current) return <Recovery message={state.error} />;

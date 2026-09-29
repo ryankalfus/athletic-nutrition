@@ -16,6 +16,8 @@ import {
   stockToGroceries,
   toggleStockOut,
 } from "../../domain/food.js";
+import { EmptyState } from "../../components/ui/EmptyState.jsx";
+import { SegmentedControl } from "../../components/ui/SelectionControls.jsx";
 
 const places = [
   ["kitchen", "Kitchen & pantry", ["pantry", "kitchen"]],
@@ -144,11 +146,12 @@ export default function HomePage({ todayKey }) {
         ))}
       </div>
       {!rows.length && (
-        <div className="empty-state">
-          <h3>What’s in your kitchen?</h3>
-          <p>Add a few staples. Ideas that use them move to the top.</p>
-          <button onClick={() => setSearch(true)}>Add food</button>
-        </div>
+        <EmptyState
+          title="What’s in your kitchen?"
+          actions={<button onClick={() => setSearch(true)}>Add food</button>}
+        >
+          Add a few staples. Ideas that use them move to the top.
+        </EmptyState>
       )}
       <div className="home-layout">
         <div>
@@ -233,44 +236,30 @@ export default function HomePage({ todayKey }) {
                             )}
                           </div>
                         ) : (
-                          <div
-                            className="stock-control"
-                            role="radiogroup"
-                            aria-label={`${row.name} stock`}
-                          >
-                            {[
+                          <SegmentedControl
+                            label={`${row.name} stock`}
+                            options={[
                               ["have", "Have"],
                               ["low", "Low"],
                               ["out", "Out"],
-                            ].map(([status, text]) => (
-                              <button
-                                key={status}
-                                role="radio"
-                                aria-checked={stockStatus(row) === status}
-                                disabled={!!pending}
-                                onClick={() =>
-                                  write(
-                                    "status",
-                                    (d) => {
-                                      d.groceryState.pantry =
-                                        d.groceryState.pantry.map((i) =>
-                                          i.id === row.id
-                                            ? setStockStatus(
-                                                i,
-                                                status,
-                                                todayKey,
-                                              )
-                                            : i,
-                                        );
-                                    },
-                                    null,
-                                  )
-                                }
-                              >
-                                {text}
-                              </button>
-                            ))}
-                          </div>
+                            ]}
+                            value={stockStatus(row)}
+                            disabled={!!pending}
+                            onChange={(status) =>
+                              write(
+                                "status",
+                                (d) => {
+                                  d.groceryState.pantry =
+                                    d.groceryState.pantry.map((i) =>
+                                      i.id === row.id
+                                        ? setStockStatus(i, status, todayKey)
+                                        : i,
+                                    );
+                                },
+                                null,
+                              )
+                            }
+                          />
                         )}
                         <details className="row-menu">
                           <summary aria-label={`${row.name} options`}>
@@ -537,7 +526,11 @@ function CountsAsForm({ row, pending, onSkip, onSave }) {
         <button type="button" onClick={onSkip} disabled={pending}>
           Skip
         </button>
-        <button className="primary" disabled={pending}>
+        <button
+          aria-busy={pending || undefined}
+          className="primary"
+          disabled={pending}
+        >
           {pending ? "Saving…" : "Save"}
         </button>
       </div>
@@ -660,7 +653,11 @@ function HomeDetails({ initial, pending, onDirty, onCancel, onSave }) {
         <button type="button" onClick={onCancel} disabled={!!pending}>
           Cancel
         </button>
-        <button className="primary" disabled={!!pending}>
+        <button
+          aria-busy={pending || undefined}
+          className="primary"
+          disabled={!!pending}
+        >
           {pending ? "Saving…" : "Save details"}
         </button>
       </div>

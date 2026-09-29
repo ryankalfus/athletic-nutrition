@@ -23,6 +23,7 @@ import {
 } from "../../format.js";
 import { Dialog } from "../../components/Dialog.jsx";
 import { LabelCheck } from "../../components/ui/LabelCheck.jsx";
+import { EmptyState } from "../../components/ui/EmptyState.jsx";
 
 export default function IdeasPage({ now, todayKey }) {
   const { current } = useStore();
@@ -145,27 +146,35 @@ export default function IdeasPage({ now, todayKey }) {
         </p>
       )}
       {!ideas.length && !inputs.access.length && (
-        <div className="empty-state">
-          <h3>
-            {guidance.inSchool
+        <EmptyState
+          title={
+            guidance.inSchool
               ? "Nothing is available at school right now"
-              : "Nothing is available on the way right now"}
-          </h3>
-          <p>Pack a snack next time — see ideas for tomorrow.</p>
-          <button onClick={() => navigate("food/ideas?moment=tomorrow")}>
-            Ideas for tomorrow
-          </button>
-        </div>
+              : "Nothing is available on the way right now"
+          }
+          actions={
+            <button onClick={() => navigate("food/ideas?moment=tomorrow")}>
+              Ideas for tomorrow
+            </button>
+          }
+        >
+          Pack a snack next time — see ideas for tomorrow.
+        </EmptyState>
       )}
       {!ideas.length && inputs.access.length > 0 && (
-        <div className="empty-state">
-          <h3>No ideas fit these settings</h3>
-          <p>Check your food needs and access, or choose a different moment.</p>
-          <button onClick={() => navigate("you")}>Review food needs</button>
-          <button onClick={() => navigate("food/log")}>
-            Log food manually
-          </button>
-        </div>
+        <EmptyState
+          title="No ideas fit these settings"
+          actions={
+            <>
+              <button onClick={() => navigate("you")}>Review food needs</button>
+              <button onClick={() => navigate("food/log")}>
+                Log food manually
+              </button>
+            </>
+          }
+        >
+          Check your food needs and access, or choose a different moment.
+        </EmptyState>
       )}
       <div className="ideas-grid">
         {ideas.slice(0, limit).map((idea) => {
@@ -197,6 +206,7 @@ export default function IdeasPage({ now, todayKey }) {
                 <p className="muted">{SPORTS_DRINK_NOTE}</p>
               )}
               <button
+                aria-busy={pending === "plan" || undefined}
                 className="primary"
                 aria-label={`${replace ? "Change to" : "Plan"} ${idea.name}`}
                 disabled={!!pending}

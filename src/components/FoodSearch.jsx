@@ -10,6 +10,7 @@ import { LabelCheck } from "./ui/LabelCheck.jsx";
 import { searchableFavorites } from "../domain/ranking.js";
 import { plural } from "../format.js";
 import { changeData, useStore } from "../store.js";
+import { Skeleton } from "./ui/Skeleton.jsx";
 const BarcodeScanner = lazy(() => import("./BarcodeScanner.jsx"));
 export function FoodSearch({
   onChoose,
@@ -227,15 +228,7 @@ export function FoodSearch({
         </div>
       )}
       {loading && !results && (
-        <div
-          role="status"
-          aria-label="Finding foods"
-          className="food-search-loading"
-        >
-          {[0, 1, 2].map((row) => (
-            <span key={row} aria-hidden="true" />
-          ))}
-        </div>
+        <Skeleton label="Finding foods" />
       )}
       {error && (
         <div role="alert">

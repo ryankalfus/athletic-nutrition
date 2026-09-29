@@ -4,6 +4,7 @@ import { normalizeSport } from "../../domain/sport.js";
 import { SEASONS } from "../../domain/you.js";
 import { SportField } from "./SportField.jsx";
 import { SettingsSheet } from "./SettingsSheet.jsx";
+import { SegmentedControl } from "../../components/ui/SelectionControls.jsx";
 
 // You › Sport & season (ADD-09). Names only; no sport-specific nutrition.
 export function SportSheet({ profile, onClose }) {
@@ -32,25 +33,17 @@ export function SportSheet({ profile, onClose }) {
         <legend>
           Season <span className="optional-label">Optional</span>
         </legend>
-        <div className="choice-grid" role="radiogroup" aria-label="Season">
-          {SEASONS.map(([value, label]) => (
-            <button
-              type="button"
-              role="radio"
-              key={value}
-              aria-checked={draft.season === value}
-              className={draft.season === value ? "selected" : ""}
-              onClick={() =>
-                setDraft({
-                  ...draft,
-                  season: draft.season === value ? "" : value,
-                })
-              }
-            >
-              {label}
-            </button>
-          ))}
-        </div>
+        <SegmentedControl
+          label="Season"
+          options={SEASONS}
+          value={draft.season}
+          onChange={(value) =>
+            setDraft({
+              ...draft,
+              season: draft.season === value ? "" : value,
+            })
+          }
+        />
       </fieldset>
     </SettingsSheet>
   );

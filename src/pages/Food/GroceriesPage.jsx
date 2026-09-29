@@ -27,6 +27,7 @@ import {
   WeekIdeasSheet,
   money,
 } from "./GrocerySheets.jsx";
+import { EmptyState } from "../../components/ui/EmptyState.jsx";
 
 const GROUPS = [
   ["plans", "For your plans", (i) => i.origin === "meal"],
@@ -254,11 +255,14 @@ export default function GroceriesPage({ todayKey }) {
         <p className="muted">{week.summary}</p>
       </div>
       {!grocery.items.length && (
-        <div className="empty-state">
-          <h3>Your list is empty</h3>
-          <p>Add missing items from an idea, or add food yourself.</p>
-          <button onClick={() => setSheet({ type: "add" })}>Add food</button>
-        </div>
+        <EmptyState
+          title="Your list is empty"
+          actions={
+            <button onClick={() => setSheet({ type: "add" })}>Add food</button>
+          }
+        >
+          Add missing items from an idea, or add food yourself.
+        </EmptyState>
       )}
       {GROUPS.map(([id, label, test]) => {
         const list = grocery.items

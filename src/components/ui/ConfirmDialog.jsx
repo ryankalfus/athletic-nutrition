@@ -33,6 +33,7 @@ export function ConfirmDialog({
           {cancelLabel}
         </button>
         <button
+          aria-busy={pending || undefined}
           type="button"
           className={destructive ? "danger-button" : "primary"}
           disabled={pending || (requireText && typed !== requireText)}

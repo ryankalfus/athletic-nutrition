@@ -46,15 +46,6 @@
   min-height: var(--control-height);
 }
 
-.food-search-loading {
-  display: grid;
-  gap: var(--space-3);
-}
-
-.food-search-loading span {
-  height: 56px;
-}
-
 .food-result-list.stale {
   opacity: 0.5;
 }

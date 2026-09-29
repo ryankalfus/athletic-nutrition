@@ -421,7 +421,7 @@
   line-height: var(--leading-small);
 }
 
-.day-agenda .agenda-empty {
+.day-agenda .empty-state {
   margin-top: var(--space-4);
 }
 

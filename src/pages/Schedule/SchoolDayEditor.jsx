@@ -3,6 +3,7 @@ import { useAsyncAction } from "../../hooks/useAsyncAction.js";
 import { ConfirmDialog } from "../../components/ui/ConfirmDialog.jsx";
 import { Dialog } from "../../components/Dialog.jsx";
 import { formatDate } from "../../format.js";
+import { ChipGroup } from "../../components/ui/SelectionControls.jsx";
 export function SchoolDayEditor({ model }) {
   const { pending, run } = useAsyncAction();
   const [discard, setDiscard] = useState(false);
@@ -221,27 +222,19 @@ export function SchoolDayEditor({ model }) {
                 </small>
               </label>
               <h3>Food at school</h3>
-              <fieldset>
-                <legend>Food access at school</legend>
-                <div className="food-access-options">
-                  {[
-                    ["cafeteria", "Cafeteria"],
-                    ["refrigerator", "Refrigerator"],
-                    ["microwave", "Microwave"],
-                    ["eatInClass", "Can eat in class"],
-                  ].map(([option, label]) => (
-                    <button
-                      type="button"
-                      className={foodAccess[option] ? "selected" : ""}
-                      aria-pressed={Boolean(foodAccess[option])}
-                      onClick={() => toggleFoodAccess(option)}
-                      key={option}
-                    >
-                      {label}
-                    </button>
-                  ))}
-                </div>
-              </fieldset>
+              <ChipGroup
+                legend="Food access at school"
+                options={[
+                  ["cafeteria", "Cafeteria"],
+                  ["refrigerator", "Refrigerator"],
+                  ["microwave", "Microwave"],
+                  ["eatInClass", "Can eat in class"],
+                ]}
+                selected={Object.keys(foodAccess).filter(
+                  (option) => foodAccess[option],
+                )}
+                onToggle={toggleFoodAccess}
+              />
             </div>
             <section className="school-days-off">
               <h3>Days off</h3>
@@ -331,6 +324,7 @@ export function SchoolDayEditor({ model }) {
               Cancel
             </button>
             <button
+              aria-busy={pending || undefined}
               className="primary"
               type="submit"
               disabled={!!pending}

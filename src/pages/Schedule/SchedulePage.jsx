@@ -27,6 +27,8 @@ import { ActivitySheet } from "./ActivitySheet.jsx";
 import { activityTitle } from "../../domain/sport.js";
 import ScheduleWeek from "./ScheduleWeek.jsx";
 import MonthGrid from "./MonthGrid.jsx";
+import { EmptyState } from "../../components/ui/EmptyState.jsx";
+import { SegmentedControl } from "../../components/ui/SelectionControls.jsx";
 export default function ScheduleCalendar({
   events,
   setEvents,
@@ -776,26 +778,15 @@ export default function ScheduleCalendar({
             />
           </label>
         )}
-        <div
-          className="schedule-view-control"
-          role="radiogroup"
-          aria-label="Schedule view"
-        >
-          {[
+        <SegmentedControl
+          label="Schedule view"
+          options={[
             ["week", "Week"],
             ["month", "Month"],
-          ].map(([mode, label]) => (
-            <button
-              key={mode}
-              role="radio"
-              aria-checked={calendarMode === mode}
-              className={calendarMode === mode ? "selected" : ""}
-              onClick={() => chooseCalendarMode(mode)}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
+          ]}
+          value={calendarMode}
+          onChange={chooseCalendarMode}
+        />
       </div>
       {calendarMode === "week" && (
         <ScheduleWeek
@@ -991,18 +982,10 @@ export default function ScheduleCalendar({
                   </div>
                 ) : (
                   !selectedSchoolCanceled && (
-                    <div className="agenda-empty">
-                      <CalendarPlus
-                        size={24}
-                        strokeWidth={1.75}
-                        aria-hidden="true"
-                      />
-                      <h3>Nothing scheduled.</h3>
-                      <p>
-                        Add a workout, practice, or game—or set your school
-                        schedule.
-                      </p>
-                    </div>
+                    <EmptyState icon={CalendarPlus} title="Nothing scheduled.">
+                      Add a workout, practice, or game—or set your school
+                      schedule.
+                    </EmptyState>
                   )
                 )}
               </>

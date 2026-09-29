@@ -109,6 +109,7 @@ export default function NowCard({
         )}
       {guidance.state !== "late" && (
         <button
+          aria-busy={pending || undefined}
           className="primary today-primary"
           disabled={
             !!pending ||

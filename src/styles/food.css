@@ -251,11 +251,11 @@
   padding: 0;
 }
 
-.stock-control {
+.stock-row .segmented {
   flex-wrap: nowrap;
 }
 
-.stock-control > button {
+.stock-row .segmented > button {
   min-width: var(--control-height);
   padding-inline: var(--space-2);
 }
@@ -617,12 +617,8 @@
   color: var(--color-primary);
 }
 
-.chart-empty {
-  margin: var(--space-4) 0 0;
-  color: var(--color-ink-muted);
-  font-size: var(--text-small);
-  line-height: var(--leading-small);
-  text-align: center;
+.weekly-chart-card .empty-state {
+  margin-top: var(--space-4);
 }
 
 .water-week {

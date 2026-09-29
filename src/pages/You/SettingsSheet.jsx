@@ -67,7 +67,12 @@ export function SettingsSheet({
           <button type="button" onClick={close}>
             Cancel
           </button>
-          <button className="primary" type="submit" disabled={!!pending}>
+          <button
+            aria-busy={pending || undefined}
+            className="primary"
+            type="submit"
+            disabled={!!pending}
+          >
             {pending ? "Saving…" : "Save"}
           </button>
         </div>
@@ -87,46 +92,6 @@ export function SettingsSheet({
         />
       )}
     </Dialog>
-  );
-}
-
-// A chip group backed by a list (aria-pressed toggles).
-export function ChipGroup({ legend, hint, options, selected, onToggle }) {
-  return (
-    <fieldset className="choice-field">
-      <legend>{legend}</legend>
-      {hint && <p className="muted field-hint">{hint}</p>}
-      <div className="choice-grid">
-        {options.map(([value, label]) => (
-          <button
-            type="button"
-            key={value}
-            className={selected.includes(value) ? "selected" : ""}
-            aria-pressed={selected.includes(value)}
-            onClick={() => onToggle(value)}
-          >
-            {label}
-          </button>
-        ))}
-      </div>
-    </fieldset>
-  );
-}
-
-export function SwitchRow({ checked, onChange, label, hint }) {
-  return (
-    <label className="check-row switch-row">
-      <input
-        type="checkbox"
-        role="switch"
-        checked={checked}
-        onChange={(event) => onChange(event.target.checked)}
-      />
-      <span>
-        {label}
-        {hint && <small className="muted field-hint">{hint}</small>}
-      </span>
-    </label>
   );
 }
 
