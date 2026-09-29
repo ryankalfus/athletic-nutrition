@@ -9,7 +9,12 @@ const routes = new Set([
   "food/log",
   "food/log/week",
   "you",
+  "you/sport",
+  "you/needs",
+  "you/access",
   "you/reminders",
+  "you/device",
+  "you/about",
   "welcome",
 ]);
 const redirects = {

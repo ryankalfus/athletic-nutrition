@@ -13,9 +13,9 @@ import { Shell } from "./components/AppFrame.jsx";
 import Dashboard from "./pages/Today/TodayPage.jsx";
 import "./styles/today.css";
 import "./styles/food.css";
+import "./styles/you.css";
 import ScheduleCalendar from "./pages/Schedule/SchedulePage.jsx";
 import FoodHub from "./components/FoodWorkspace.jsx";
-import { ConfirmDialog } from "./components/ui/ConfirmDialog.jsx";
 import { ToastProvider } from "./components/ui/Toast.jsx";
 import { LabelCheck } from "./components/ui/LabelCheck.jsx";
 import {
@@ -24,10 +24,11 @@ import {
   deliverReminders,
   notificationPermission,
 } from "./domain/reminders.js";
-import { RemindersRow, RemindersSheet } from "./pages/You/RemindersSheet.jsx";
-import { PriceEstimatesRow } from "./pages/You/PriceEstimatesRow.jsx";
+import YouPage from "./pages/You/YouPage.jsx";
 import { SportField } from "./pages/You/SportField.jsx";
 import { normalizeSport } from "./domain/sport.js";
+import { DIET_CHOICES, FOOD_SOURCES } from "./domain/you.js";
+import { lowCostOn } from "./domain/ranking.js";
 import { addHydration, undoHydration } from "./domain/hydration.js";
 import {
   useField,
@@ -36,11 +37,7 @@ import {
   useSignedOut,
   setSignedOut,
 } from "./store.js";
-import {
-  ProfileManager,
-  LocalProfileEntry,
-  Recovery,
-} from "./components/Profiles.jsx";
+import { LocalProfileEntry, Recovery } from "./components/Profiles.jsx";
 import { useRoute } from "./routing.js";
 import { formatDate } from "./format.js";
 
@@ -117,14 +114,13 @@ function App() {
 
   const todayLog = dailyLogs[todayKey] || { entries: [], water: 0 };
 
+  // First-run setup only; You saves each sheet in place (YOU-06).
   function saveProfile(nextProfile) {
-    const fromSetup = step === "setup";
     changeData((data) => {
       data.profile = nextProfile;
       data.step = "dashboard";
     }).then((ok) => {
-      // YOU-06: saving on You keeps the athlete on You.
-      if (ok && fromSetup) setView("today");
+      if (ok) setView("today");
     });
   }
 
@@ -162,27 +158,9 @@ function App() {
     return <ProfileSetup profile={profile} onSave={saveProfile} />;
   if (view === "you")
     return (
-      <ProfileSetup
-        profile={profile}
-        onSave={saveProfile}
+      <YouPage
+        subroute={subroute === "ideas" ? "" : subroute}
         onNavigate={setView}
-        tabbed
-        reminders={
-          <>
-            <PriceEstimatesRow />
-            <RemindersRow
-              settings={reminderSettings}
-              onOpen={() => setView("you/reminders")}
-            />
-            {subroute === "reminders" && (
-              <RemindersSheet
-                settings={reminderSettings}
-                onClose={() => setView("you")}
-              />
-            )}
-          </>
-        }
-        manager={<ProfileManager onSignOut={() => setSignedOut(true)} />}
       />
     );
   if (view === "food" && subroute === "log/week")
@@ -256,16 +234,10 @@ function NotFoundPage({ onNavigate }) {
   );
 }
 
-function ProfileSetup({
-  profile,
-  onSave,
-  onNavigate,
-  tabbed = false,
-  manager,
-  reminders,
-}) {
+// First-run setup. P1-11 replaces it with the schedule-first SetupFlow; the
+// You page no longer reuses this form (YOU-01).
+function ProfileSetup({ profile, onSave }) {
   const [draft, setDraft] = useState(profile);
-  const [pendingNavigation, setPendingNavigation] = useState(null);
   const dirty = JSON.stringify(draft) !== JSON.stringify(profile);
   useEffect(() => {
     const warn = (event) => {
@@ -277,22 +249,6 @@ function ProfileSetup({
     window.addEventListener("beforeunload", warn);
     return () => window.removeEventListener("beforeunload", warn);
   }, [dirty]);
-  const navigate = (next) => {
-    if (dirty) setPendingNavigation(next);
-    else onNavigate(next);
-  };
-  const needs = [
-    ["vegetarian", "Vegetarian"],
-    ["vegan", "Vegan"],
-    // No Gluten-free, Nut-free or Dairy-free chip until ADD-03 reviewed allergen tags
-    // exist; the old hand-coded flags do not prove an idea is safe (P0-06).
-  ];
-  const sources = [
-    ["packed", "Packed from home"],
-    ["cafeteria", "School cafeteria"],
-    ["home", "Home kitchen"],
-    ["store", "Nearby store"],
-  ];
 
   function toggleList(key, value) {
     setDraft((current) => ({
@@ -304,19 +260,15 @@ function ProfileSetup({
   }
 
   return (
-    <Shell navigation={tabbed} onNavigate={navigate}>
+    <Shell navigation={false}>
       <section className="intro split-intro">
         <div>
           <p className="kicker">FUELING THAT FITS REAL LIFE</p>
-          {tabbed ? (
-            <h1>You</h1>
-          ) : (
-            <h1>
-              School to sport,
-              <br />
-              <em>without the guesswork.</em>
-            </h1>
-          )}
+          <h1>
+            School to sport,
+            <br />
+            <em>without the guesswork.</em>
+          </h1>
         </div>
         <div className="profile-intro-side">
           <p className="intro-copy">
@@ -357,10 +309,11 @@ function ProfileSetup({
           <label className="check-row">
             <input
               type="checkbox"
-              checked={draft.budget === "save"}
+              checked={lowCostOn(draft)}
               onChange={(event) =>
                 setDraft({
                   ...draft,
+                  lowCostIdeas: event.target.checked,
                   budget: event.target.checked ? "save" : "standard",
                 })
               }
@@ -370,7 +323,7 @@ function ProfileSetup({
           <fieldset className="choice-field">
             <legend>Dietary needs</legend>
             <div className="choice-grid">
-              {needs.map(([value, label]) => (
+              {DIET_CHOICES.map(([value, label]) => (
                 <button
                   type="button"
                   className={
@@ -386,30 +339,22 @@ function ProfileSetup({
             </div>
           </fieldset>
           <LabelCheck />
-          {draft.dietaryNeeds.includes("nutFree") && (
-            <p role="status">
-              Your earlier Nut-free choice no longer filters foods. Review each
-              label and discuss allergy needs with a qualified professional.
-            </p>
-          )}
-          {draft.dietaryNeeds.includes("glutenFree") && (
-            <p role="status">
-              Your earlier Gluten-free choice no longer filters foods. Review
-              each label and discuss allergy needs with a qualified
-              professional.
-            </p>
-          )}
-          {draft.dietaryNeeds.includes("dairyFree") && (
-            <p role="status">
-              Your earlier Dairy-free choice no longer filters foods. Review
-              each label and discuss allergy needs with a qualified
-              professional.
-            </p>
-          )}
+          {[
+            ["nutFree", "Nut-free"],
+            ["glutenFree", "Gluten-free"],
+            ["dairyFree", "Dairy-free"],
+          ]
+            .filter(([id]) => draft.dietaryNeeds.includes(id))
+            .map(([id, label]) => (
+              <p role="status" key={id}>
+                Your earlier {label} choice no longer filters foods. Review each
+                label and discuss allergy needs with a qualified professional.
+              </p>
+            ))}
           <fieldset className="choice-field">
             <legend>Food you can usually access</legend>
             <div className="choice-grid">
-              {sources.map(([value, label]) => (
+              {FOOD_SOURCES.map(([value, label]) => (
                 <button
                   type="button"
                   className={
@@ -441,26 +386,10 @@ function ProfileSetup({
             type="submit"
             disabled={!draft.foodSources.length}
           >
-            {tabbed ? "Save changes" : "Save and see today"} <span>→</span>
+            Save and see today <span>→</span>
           </button>
         </form>
       </section>
-      {reminders}
-      {manager}
-      {pendingNavigation && (
-        <ConfirmDialog
-          title="Discard changes?"
-          body="Your unsaved changes will be lost."
-          confirmLabel="Discard changes"
-          destructive
-          onCancel={() => setPendingNavigation(null)}
-          onConfirm={() => {
-            const destination = pendingNavigation;
-            setPendingNavigation(null);
-            onNavigate(destination);
-          }}
-        />
-      )}
     </Shell>
   );
 }

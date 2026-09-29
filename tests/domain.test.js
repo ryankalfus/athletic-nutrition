@@ -63,7 +63,24 @@ import { ideasForMoment } from "../src/domain/ideaMoments.js";
 import { ideaFitsProfile } from "../src/domain/timing.js";
 import { MEAL_INGREDIENTS } from "../src/domain/catalog.js";
 import { api } from "../server/api.js";
-import { backupDocument, backupFilename } from "../src/domain/backup.js";
+import {
+  BACKUP_ERRORS,
+  backupDocument,
+  backupFilename,
+  readBackupText,
+} from "../src/domain/backup.js";
+import {
+  DIET_CHOICES,
+  DISLIKE_CHOICES,
+  accessSummary,
+  athleteLabel,
+  backupPreview,
+  backupPreviewText,
+  lastBackupText,
+  needsSummary,
+  parseBudget,
+  sportSummary,
+} from "../src/domain/you.js";
 import {
   canDeliverReminders,
   reminderCandidates,
@@ -1680,4 +1697,204 @@ test("P0-06: grocery suggestions ignore unreviewed gluten and nut flags", () => 
       plain,
       `${need} changed grocery suggestions`,
     );
+});
+
+test("YOU-01 to YOU-04: You settings migrate additively and validate", () => {
+  const fresh = emptyData().profile;
+  assert.equal(fresh.lowCostIdeas, true);
+  assert.equal(fresh.season, "");
+  assert.deepEqual(fresh.dislikes, []);
+  assert.equal(fresh.lastBackupAt, null);
+  // Budget tiers map to one boolean; "Flexible" is dropped (J10).
+  for (const [budget, on] of [
+    ["save", true],
+    ["standard", false],
+    ["flexible", false],
+  ]) {
+    const profile = validateData({
+      profile: { ...DEFAULT_PROFILE, budget },
+    }).profile;
+    assert.equal(profile.lowCostIdeas, on);
+    assert.equal(profile.budget, on ? "save" : "standard");
+  }
+  // lowCostIdeas wins over a stale budget (Ideas "Show all" writes it).
+  const shown = validateData({
+    profile: { ...DEFAULT_PROFILE, budget: "save", lowCostIdeas: false },
+  }).profile;
+  assert.equal(shown.budget, "standard");
+  const kept = validateData({
+    profile: {
+      ...DEFAULT_PROFILE,
+      season: "in",
+      dislikes: ["bananas", "bananas", "eggs", 4],
+      lastBackupAt: "2026-09-12T10:00:00.000Z",
+    },
+  }).profile;
+  assert.equal(kept.season, "in");
+  assert.deepEqual(kept.dislikes, ["bananas"]);
+  assert.equal(kept.lastBackupAt, "2026-09-12T10:00:00.000Z");
+  assert.equal(
+    validateData({ profile: { ...DEFAULT_PROFILE, season: "winter" } }).profile
+      .season,
+    "",
+  );
+  for (const bad of [
+    { season: 3 },
+    { dislikes: "bananas" },
+    { lowCostIdeas: "yes" },
+    { lastBackupAt: "not a date" },
+  ])
+    assert.throws(() =>
+      validateData({ profile: { ...DEFAULT_PROFILE, ...bad } }),
+    );
+});
+
+test("YOU-01: row summaries match the settings list copy", () => {
+  assert.equal(
+    sportSummary({ sport: "Soccer", season: "in" }),
+    "Soccer · In season",
+  );
+  assert.equal(sportSummary({}), "Not set");
+  assert.equal(
+    needsSummary({ dietaryNeeds: ["vegetarian", "nutFree"], dislikes: [] }),
+    "Vegetarian",
+  );
+  assert.equal(
+    needsSummary({ dietaryNeeds: [], dislikes: ["bananas"] }),
+    "Not a fan of bananas",
+  );
+  assert.equal(
+    needsSummary({ dietaryNeeds: ["vegan"], dislikes: ["rice", "pasta"] }),
+    "Vegan · Not a fan of 2 foods",
+  );
+  assert.equal(needsSummary({}), "None set");
+  assert.equal(
+    accessSummary(
+      { foodSources: ["cafeteria"], lowCostIdeas: false },
+      { foodAccess: { refrigerator: true } },
+    ),
+    "Cafeteria, fridge · Low-cost ideas off",
+  );
+  assert.equal(
+    accessSummary({ foodSources: [], budget: "save" }),
+    "No food access set · Low-cost ideas on",
+  );
+});
+
+test("YOU-02/03: no allergen chips; Not a fan of hides ideas by ingredient", () => {
+  const ids = [...DIET_CHOICES, ...DISLIKE_CHOICES].map(([id]) => id);
+  for (const hidden of ["nutFree", "glutenFree", "dairyFree"])
+    assert.ok(!ids.includes(hidden));
+  // No disliked food carries a major allergen, so it can't pose as an allergy filter.
+  for (const allergen of [
+    "eggs",
+    "yogurt",
+    "cheese-sticks",
+    "chocolate-milk",
+    "tuna-pouches",
+    "tofu",
+    "edamame",
+    "soy-milk",
+    "soy-yogurt",
+    "hummus",
+    "bread",
+  ])
+    assert.ok(!ids.includes(allergen), allergen);
+  const base = {
+    ...DEFAULT_PROFILE,
+    lowCostIdeas: false,
+    foodSources: ["packed", "cafeteria", "home", "store"],
+  };
+  const all = ideasFor({ moment: "pre", profile: base });
+  assert.ok(all.some((idea) => idea.id === "banana-pretzels"));
+  const noBananas = ideasFor({
+    moment: "pre",
+    profile: { ...base, dislikes: ["bananas"] },
+  });
+  assert.ok(noBananas.length > 0);
+  for (const idea of noBananas)
+    assert.ok(
+      !(MEAL_INGREDIENTS[idea.id] || []).some(([, id]) => id === "bananas"),
+      idea.id,
+    );
+  assert.equal(
+    ideaFitsProfile(
+      FOOD_IDEAS.find((i) => i.id === "banana-pretzels"),
+      { ...base, dislikes: ["bananas"] },
+    ),
+    false,
+  );
+});
+
+test("YOU-04: grocery budget is optional and never negative", () => {
+  assert.deepEqual(parseBudget(""), { amount: null });
+  assert.deepEqual(parseBudget("  "), { amount: null });
+  assert.deepEqual(parseBudget("$40"), { amount: 40 });
+  assert.deepEqual(parseBudget("1,250.555"), { amount: 1250.56 });
+  assert.ok(parseBudget("-5").error);
+  assert.ok(parseBudget("lots").error);
+});
+
+test("DATA-04/07 ADD-12: restore preview, backup errors, names, last backup", () => {
+  const data = emptyData();
+  data.dailyLogs["2026-09-20"] = { entries: [], water: 0 };
+  data.schedule = [{ id: "e", title: "Practice", date: "2026-09-27" }];
+  const doc = {
+    version: 3,
+    revision: 1,
+    defaultProfileId: "a",
+    profiles: { a: { id: "a", name: "Maya", data } },
+  };
+  const read = (value) =>
+    readBackupText(JSON.stringify(value), {
+      validate: validateDocument,
+      schemaVersion: 3,
+    });
+  const preview = backupPreview(read(doc));
+  assert.deepEqual(preview, {
+    count: 1,
+    names: ["Maya"],
+    through: "2026-09-27",
+  });
+  assert.equal(
+    backupPreviewText(preview),
+    "This file has 1 athlete: Maya. Plans and logs through Sep 27. Nothing on this device will be removed.",
+  );
+  assert.match(
+    backupPreviewText({ count: 2, names: ["Maya", "Sam"], through: "" }),
+    /^This file has 2 athletes: Maya, Sam\. It has no plans/,
+  );
+  assert.throws(() => read({ ...doc, version: 9 }), {
+    message: BACKUP_ERRORS.newer,
+  });
+  assert.throws(
+    () =>
+      readBackupText("not json", {
+        validate: validateDocument,
+        schemaVersion: 3,
+      }),
+    { message: BACKUP_ERRORS.notBackup },
+  );
+  assert.throws(() => read({ hello: "world" }), {
+    message: BACKUP_ERRORS.notBackup,
+  });
+  assert.equal(
+    athleteLabel({ name: "Maya", fromBackup: true, data }),
+    "Maya (from backup)",
+  );
+  assert.equal(
+    athleteLabel({ name: "Sam (imported)", data: emptyData() }),
+    "Sam (from backup)",
+  );
+  assert.equal(athleteLabel({ name: "Sam", data: emptyData() }), "Sam");
+  const now = new Date(2026, 8, 28, 9);
+  assert.equal(lastBackupText(null, now), "No backup saved yet.");
+  assert.equal(
+    lastBackupText(new Date(2026, 8, 12, 20).toISOString(), now),
+    "Last backup: Sep 12 (16 days ago)",
+  );
+  assert.equal(
+    lastBackupText(new Date(2026, 8, 28, 7).toISOString(), now),
+    "Last backup: Sep 28 (today)",
+  );
 });

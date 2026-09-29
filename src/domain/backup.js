@@ -22,3 +22,30 @@ export function backupFilename(name, date = new Date()) {
   const day = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
   return `nourally-${safeName}-${day}.json`;
 }
+
+export const BACKUP_ERRORS = {
+  notBackup: "This file isn't a Nourally backup.",
+  newer:
+    "This backup comes from a newer version of Nourally. Update the app, then try again.",
+};
+
+// DATA-04: parse and validate a backup file before anything is added.
+// `validate` is storage.js validateDocument; the file itself is never changed.
+/** @param {string} text @param {{validate: (doc: any) => any, schemaVersion: number}} options */
+export function readBackupText(text, { validate, schemaVersion }) {
+  let doc;
+  try {
+    doc = JSON.parse(text);
+  } catch {
+    throw new Error(BACKUP_ERRORS.notBackup);
+  }
+  if (!doc || typeof doc !== "object" || Array.isArray(doc))
+    throw new Error(BACKUP_ERRORS.notBackup);
+  if (Number.isInteger(doc.version) && doc.version > schemaVersion)
+    throw new Error(BACKUP_ERRORS.newer);
+  try {
+    return validate(doc);
+  } catch {
+    throw new Error(BACKUP_ERRORS.notBackup);
+  }
+}

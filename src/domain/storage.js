@@ -1,11 +1,11 @@
 import { DEFAULT_PROFILE } from "./catalog.js";
-import { normalizeSport } from "./sport.js";
+import { normalizeYouProfile, validateYouProfile } from "./you.js";
 
 export const SCHEMA_VERSION = 3;
 export const uid = () => globalThis.crypto.randomUUID();
 export const emptyData = () => ({
   step: "setup",
-  profile: { ...structuredClone(DEFAULT_PROFILE), sport: "" },
+  profile: normalizeYouProfile(structuredClone(DEFAULT_PROFILE)),
   schedule: [],
   schoolSchedule: null,
   dailyLogs: {},
@@ -127,6 +127,7 @@ export function validateData(data) {
     typeof data.profile.sport !== "string"
   )
     throw new Error("Invalid profile sport.");
+  validateYouProfile(data.profile);
   for (const log of Object.values(data.dailyLogs || {}))
     if (
       log.waterEntries !== undefined &&
@@ -224,11 +225,14 @@ export function validateData(data) {
     ...data,
     mealPlans,
     dayPlans,
-    profile: {
+    // The low-cost default must not mask a stored budget tier, so only the
+    // stored profile decides it (normalizeYouProfile maps budget → lowCostIdeas).
+    profile: normalizeYouProfile({
       ...defaults.profile,
+      lowCostIdeas: undefined,
+      budget: undefined,
       ...data.profile,
-      sport: normalizeSport(data.profile?.sport),
-    },
+    }),
     groceryState: {
       ...defaults.groceryState,
       ...data.groceryState,

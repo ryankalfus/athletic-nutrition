@@ -1,5 +1,6 @@
-import { ideasFor, ideaAccess, DIET_FILTERS } from "./ranking.js";
+import { ideasFor, ideaAccess, DIET_FILTERS, lowCostOn } from "./ranking.js";
 import { formatCountdown, formatTime as formatClock } from "../format.js";
+import { ideaUsesDislike } from "./you.js";
 
 export function getDateKey(date = new Date()) {
   const year = date.getFullYear();
@@ -173,7 +174,8 @@ export function ideaFitsProfile(idea, profile) {
   );
   if (needs.includes("vegan") && !idea.vegan) return false;
   if (needs.includes("vegetarian") && !idea.vegetarian) return false;
-  if (profile.budget === "save" && idea.cost !== "save") return false;
+  if (lowCostOn(profile) && idea.cost !== "save") return false;
+  if (ideaUsesDislike(idea, profile.dislikes)) return false;
   return true;
 }
 
