@@ -126,48 +126,4 @@ export function legacyAllergyPrompts(
   );
 }
 
-// Open Food Facts allergen tags ("en:milk") as plain names for product views.
-const OFF_NAMES = {
-  "en:milk": "milk",
-  "en:eggs": "eggs",
-  "en:fish": "fish",
-  "en:crustaceans": "shellfish (crustaceans)",
-  "en:molluscs": "molluscs",
-  "en:nuts": "tree nuts",
-  "en:peanuts": "peanuts",
-  "en:gluten": "gluten",
-  "en:soybeans": "soy",
-  "en:sesame-seeds": "sesame",
-  "en:mustard": "mustard",
-  "en:celery": "celery",
-  "en:lupin": "lupin",
-  "en:sulphur-dioxide-and-sulphites": "sulphites",
-};
-export function offAllergenNames(tags = []) {
-  const names = (Array.isArray(tags) ? tags : [])
-    .filter((tag) => typeof tag === "string" && tag.trim())
-    .map(
-      (tag) =>
-        OFF_NAMES[tag.toLowerCase()] ||
-        tag
-          .replace(/^[a-z]{2}:/i, "")
-          .replace(/-/g, " ")
-          .toLowerCase(),
-    );
-  return [...new Set(names)];
-}
-
-// Product label lines from Open Food Facts data; null when the product has no
-// listed allergens. Never implies a product is free of anything.
-export function productAllergenText(food) {
-  const contains = offAllergenNames(food?.allergenTags);
-  const traces = offAllergenNames(food?.traceTags).filter(
-    (name) => !contains.includes(name),
-  );
-  if (!contains.length && !traces.length) return null;
-  const parts = [];
-  if (contains.length) parts.push(`Label lists: ${joinNames(contains)}.`);
-  if (traces.length) parts.push(`May contain: ${joinNames(traces)}.`);
-  parts.push("From Open Food Facts; this list may be incomplete.");
-  return parts.join(" ");
-}
+// Product allergen text lives in one place: allergenLine in search.js.

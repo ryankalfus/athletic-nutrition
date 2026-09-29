@@ -19,9 +19,13 @@ import {
   ideaAllergyMatches,
   legacyAllergyPrompts,
   normalizeAllergies,
-  offAllergenNames,
-  productAllergenText,
 } from "../src/domain/allergens.js";
+import * as allergenModule from "../src/domain/allergens.js";
+import {
+  allergenLine,
+  offAllergenNames,
+  resultSubline,
+} from "../src/domain/search.js";
 import { ideasFor } from "../src/domain/ranking.js";
 import { ideaFitsProfile } from "../src/domain/timing.js";
 import { groceryFitsProfile, weeklyGroceryIdeas } from "../src/domain/food.js";
@@ -243,11 +247,19 @@ test("P1-09: Open Food Facts allergen and trace tags become label text", () => {
   assert.deepEqual(food.allergenTags, ["en:milk", "en:nuts", "en:gluten"]);
   assert.deepEqual(food.traceTags, ["en:peanuts", "en:milk"]);
   assert.equal(
-    productAllergenText(food),
-    "Label lists: milk, tree nuts and gluten. May contain: peanuts. From Open Food Facts; this list may be incomplete.",
+    allergenLine(food),
+    "Allergens listed: milk, tree nuts, gluten. May contain: peanuts. This list may be incomplete. Check the package.",
   );
-  assert.equal(productAllergenText({ allergenTags: [], traceTags: [] }), null);
-  assert.equal(productAllergenText({}), null);
+  // A scanned product without a brand is still a product, never "Basic food".
+  assert.equal(resultSubline(food), "Packaged food");
+  // No tags never reads as allergen-free.
+  const untagged = normalizeOffFood({ product_name: "Water" }, "12345670");
+  assert.equal(allergenLine(untagged), "Allergens: check the package.");
+  assert.doesNotMatch(allergenLine(untagged), /free|none|safe/i);
+  // Basic foods carry no Open Food Facts data, so no product line.
+  assert.equal(allergenLine({ name: "Bananas, raw", source: "USDA" }), null);
+  // One source of product allergen text (the merge removed the second one).
+  assert.equal("productAllergenText" in allergenModule, false);
   assert.deepEqual(offAllergenNames(["fr:lait-de-coco", "en:soybeans"]), [
     "lait de coco",
     "soy",

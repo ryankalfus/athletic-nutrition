@@ -9,7 +9,6 @@ import { GROCERY_CATALOG } from "../domain/catalog.js";
 import { LabelCheck } from "./ui/LabelCheck.jsx";
 import { searchableFavorites } from "../domain/ranking.js";
 import {
-  allergenLine,
   portionHint,
   resultSubline,
   searchSchedule,
@@ -25,14 +24,12 @@ const BarcodeScanner = lazy(() => import("./BarcodeScanner.jsx"));
 function FoodResult({ food, saved, onFavorite, onChoose }) {
   const name = sentenceCaseFoodName(food.name);
   const hint = portionHint(food);
-  const allergens = allergenLine(food);
   return (
     <li className="food-result-row">
       <div>
         <h3>{name}</h3>
         <p>{resultSubline(food)}</p>
-        {allergens && <p className="allergen-line">{allergens}</p>}
-        <LabelCheck />
+        <LabelCheck food={food} />
       </div>
       <button
         className="icon-button"

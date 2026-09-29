@@ -594,3 +594,9 @@ Removed the WeeklyProgress page from main.jsx and the old weekly chart styles; P
 Added Log unit tests (tests/log.test.js, including 4 activities with 3 plans) and the Log browser check (tests/browser-log.js); updated the food workflow check for the row menu and added dated Log routes to the responsive check. 2026.09.29
 Added the Changed it and Today Now-card checks to the Log browser check. 2026.09.29
 Checked P1-07, P1-08, SRCH-07, LOG-01 to LOG-08, WEEK-01 to WEEK-04, HIST-02, HIST-03, CMP-13 and CMP-16 after unit and browser checks; WEEK-05 stays open for P2-05, and live USDA ranking was verified with fixtures because DEMO_KEY was rate-limited. 2026.09.29
+Updated the evening-share, Log and search browser checks to the merged first run (Get started, step 1, Skip setup) instead of the removed one-page setup form. 2026.09.29
+Made allergenLine in search.js the one source of product allergen text: it now maps Open Food Facts tags to everyday names ("tree nuts", "soy"); removed productAllergenText and offAllergenNames from allergens.js. 2026.09.29
+Search rows now show the allergen line through LabelCheck like the barcode result, portion sheet and grocery item sheet; renamed .label-allergens to .allergen-line. 2026.09.29
+A scanned product without a brand now reads "Packaged food" instead of "Basic food" and gets no basic-food portion hint. 2026.09.29
+Moved the P1-09 label-text unit test to allergenLine and extended the allergens browser check to the portion sheet and grocery item sheet, with a once-per-view check; search rows are checked for duplicate lines. 2026.09.29
+Updated NUTRITION-REVIEW.md to the single allergen wording (still pending review). 2026.09.29

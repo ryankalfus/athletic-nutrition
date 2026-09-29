@@ -33,9 +33,12 @@ async (page) => {
     p.getByRole("status").getByText(text, { exact: true }).waitFor();
   const setup = async (p, name) => {
     await p.goto(base);
+    await p.getByRole("button", { name: "Get started" }).click();
     await p.getByRole("textbox", { name: /First name/ }).fill(name);
     await p.getByRole("combobox", { name: /^Sport/ }).fill("Soccer");
-    await p.getByRole("button", { name: /Save and see today/ }).click();
+    await p.getByRole("button", { name: "Next", exact: true }).click();
+    await p.getByRole("heading", { name: "Your school day" }).waitFor();
+    await p.getByRole("button", { name: "Skip setup" }).click();
     await p.getByRole("heading", { name: "Today", exact: true }).waitFor();
   };
   try {

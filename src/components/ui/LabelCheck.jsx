@@ -7,7 +7,7 @@ export function LabelCheck({ food = null }) {
   const listed = food ? allergenLine(food) : null;
   return (
     <>
-      {listed && <p className="label-allergens">{listed}</p>}
+      {listed && <p className="allergen-line">{listed}</p>}
       <p className="label-check">Allergies: check every label.</p>
     </>
   );

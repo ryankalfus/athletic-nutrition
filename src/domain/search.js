@@ -231,7 +231,7 @@ export function portionHint(food) {
       amount: round(measure.grams),
       unit: "g",
     };
-  if (food.brand) return null;
+  if (isPackagedProduct(food)) return null;
   const first = normalizeFoodText(clean(food.name).split(",")[0]);
   const known = BASIC_PORTIONS[first];
   return known
@@ -242,34 +242,70 @@ export function portionHint(food) {
 /** The one sub-line under a result: "Basic food · 1 medium, 118 g". */
 export function resultSubline(food) {
   const hint = portionHint(food);
-  return [food.brand ? `Brand: ${food.brand}` : "Basic food", hint?.label]
+  const kind = food.brand
+    ? `Brand: ${food.brand}`
+    : isPackagedProduct(food)
+      ? "Packaged food"
+      : "Basic food";
+  return [kind, hint?.label]
     .filter(Boolean)
     .join(" · ");
 }
 
-// Open Food Facts tags look like "en:peanuts".
-const tagName = (tag) =>
-  String(tag)
-    .replace(/^[a-z]{2}:/, "")
-    .replace(/-/g, " ")
-    .trim();
+// Open Food Facts allergen tags ("en:milk") as plain names. Known tags get
+// their everyday name; others drop the language prefix and dashes.
+const OFF_NAMES = {
+  "en:milk": "milk",
+  "en:eggs": "eggs",
+  "en:fish": "fish",
+  "en:crustaceans": "shellfish (crustaceans)",
+  "en:molluscs": "molluscs",
+  "en:nuts": "tree nuts",
+  "en:peanuts": "peanuts",
+  "en:gluten": "gluten",
+  "en:soybeans": "soy",
+  "en:sesame-seeds": "sesame",
+  "en:mustard": "mustard",
+  "en:celery": "celery",
+  "en:lupin": "lupin",
+  "en:sulphur-dioxide-and-sulphites": "sulphites",
+};
+export function offAllergenNames(tags = []) {
+  const names = (Array.isArray(tags) ? tags : [])
+    .filter((tag) => typeof tag === "string" && tag.trim())
+    .map(
+      (tag) =>
+        OFF_NAMES[tag.trim().toLowerCase()] ||
+        tag
+          .trim()
+          .replace(/^[a-z]{2}:/i, "")
+          .replace(/-/g, " ")
+          .toLowerCase(),
+    );
+  return [...new Set(names)].filter(Boolean);
+}
+
+/** A packaged product rather than a basic food. */
+export function isPackagedProduct(food) {
+  return (
+    Boolean(food?.brand) ||
+    food?.source === "Open Food Facts" ||
+    food?.dataType === "Branded"
+  );
+}
 
 /**
- * The allergen line for a packaged product (SRCH-07). Basic foods return
+ * The allergen line for a packaged product (SRCH-07, P1-09). The one source
+ * of product allergen text: search rows, the barcode result, the portion
+ * sheet and grocery sheets all show it through LabelCheck. Basic foods return
  * null; the "Allergies: check every label." line still shows everywhere.
  * @returns {string|null}
  */
 export function allergenLine(food) {
-  const isProduct =
-    Boolean(food.brand) ||
-    food.source === "Open Food Facts" ||
-    food.dataType === "Branded";
-  if (!isProduct) return null;
-  const listed = [...new Set((food.allergenTags || []).map(tagName))].filter(
-    Boolean,
-  );
-  const traces = [...new Set((food.traceTags || []).map(tagName))].filter(
-    (name) => name && !listed.includes(name),
+  if (!isPackagedProduct(food)) return null;
+  const listed = offAllergenNames(food.allergenTags);
+  const traces = offAllergenNames(food.traceTags).filter(
+    (name) => !listed.includes(name),
   );
   if (!listed.length && !traces.length) return "Allergens: check the package.";
   return [

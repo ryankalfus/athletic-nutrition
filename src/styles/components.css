@@ -565,7 +565,7 @@
 }
 
 /* Open Food Facts allergens on a product view (P1-09). */
-.label-allergens {
+.allergen-line {
   margin: 0 0 var(--space-2);
   color: var(--color-ink);
   font-size: var(--text-small);

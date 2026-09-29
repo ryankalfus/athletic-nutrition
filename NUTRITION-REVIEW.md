@@ -226,7 +226,7 @@ Code: `src/domain/tonight.js`, `src/domain/timing.js` (`sportEventTitle`), `src/
 **Safety gate:** `ALLERGY_TAGS_REVIEWED = false` in `src/domain/catalog.js`. While it is false:
 - You › Food needs & allergies and setup step 5 show no allergy chips. They show "Allergy filtering is waiting for review. Check every label."
 - Ideas, Today and grocery suggestions are **not** filtered by allergy (`activeAllergies` returns nothing).
-- Product views (search portion editor, barcode result, grocery item sheet) list allergens that Open Food Facts reports in `allergens_tags` / `traces_tags`, followed by "From Open Food Facts; this list may be incomplete." and the existing "Allergies: check every label." USDA results carry no allergen fields, so nothing extra shows for them.
+- Product views (search rows, barcode result, portion sheet, grocery item sheet) show one product allergen line from `allergenLine` (see SRCH-07 below) above the existing "Allergies: check every label." Basic USDA foods carry no allergen fields, so nothing extra shows for them.
 
 Flip the flag to `true` only after the sign-off below is filled in. `tests/allergens.test.js` covers both states.
 
@@ -297,7 +297,7 @@ Shellfish: no built-in ingredient is tagged, so a shellfish allergy hides nothin
 6. **Rice cakes (A29), fruit cups (A18), juice (A23), sports drink (A34), salsa (A30), jam (A22):** untagged. Flavored rice cakes can contain milk. Confirm plain versions only.
 7. **Tuna pouches (A38):** tagged Contains fish and may contain soy (vegetable broth). Confirm.
 8. **Filtering rule:** hiding on "may contain" as well as "contains" is stricter than some allergy plans need. Confirm or change.
-9. **Open Food Facts wording:** "Label lists: … May contain: … From Open Food Facts; this list may be incomplete." Confirm that it does not read as a safety claim. Nothing is shown when Open Food Facts lists no allergens.
+9. **Open Food Facts wording:** "Allergens listed: … May contain: … This list may be incomplete. Check the package.", or "Allergens: check the package." when a product has no tags. Confirm that it does not read as a safety claim. (The earlier "Label lists: …" wording was merged into this one line on 2026.09.29.)
 
 ### Setup copy added with P1-11 (pending the same review)
 
@@ -318,5 +318,5 @@ Shellfish: no built-in ingredient is tagged, so a shellfish allergy hides nothin
 Added with P1-07 and P1-08. Not approved; recorded for the reviewer.
 
 - **Search portion hints (`BASIC_PORTIONS` in `src/domain/search.js`).** Common household portions for basic foods, taken from USDA SR Legacy food measures, shown under results ("Basic food · 1 medium, 118 g") and used as the starting amount in the log portion sheet: apple 1 medium 182 g; banana 1 medium 118 g; orange 1 medium 131 g; grapes 1 cup 151 g; rice 1 cup cooked 158 g; pasta 1 cup cooked 140 g; oats 1 cup cooked 234 g; peanut butter 2 tbsp 32 g; egg 1 large 50 g; bread 1 slice 28 g; milk 1 cup 244 g; yogurt 1 container 170 g; baby carrots 10 carrots 100 g; pretzels 1 oz 28 g; bagel 1 medium 105 g; sweet potato 1 medium 114 g; potato 1 medium 173 g; chicken breast 3 oz cooked 85 g. Reviewer: confirm these read as a typical portion, not an amount to eat. Packaged foods use the label serving; USDA food measures are used when the API returns them.
-- **Product allergen line (SRCH-07, `allergenLine`).** Products with no Open Food Facts data: "Allergens: check the package." With data: "Allergens listed: peanuts, milk. May contain: tree nuts. This list may be incomplete. Check the package." Tag names are shown as Open Food Facts spells them after removing the language prefix. "Allergies: check every label." still shows on every result.
+- **Product allergen line (SRCH-07, `allergenLine`).** Products with no Open Food Facts data: "Allergens: check the package." With data: "Allergens listed: peanuts, milk. May contain: tree nuts. This list may be incomplete. Check the package." Common tags get everyday names ("en:nuts" reads "tree nuts", "en:soybeans" reads "soy"); other tags drop the language prefix and dashes. A scanned product without a brand reads "Packaged food", never "Basic food". "Allergies: check every label." still shows on every result.
 - **Log › Week sentence (`weekSentence`).** Counts only: "3 practices and 1 game. You planned food for 3 of them.", "None had a food plan.", "Nothing logged this week. That's fine — logging is optional.", footer "This is a record of what you logged. It is not a score."

@@ -38,8 +38,12 @@ async (page) => {
     );
   try {
     await p.goto(base);
+    await p.getByRole("button", { name: "Get started" }).click();
     await p.getByRole("textbox", { name: /First name/ }).fill("Log test");
-    await p.getByRole("button", { name: /Save and see today/ }).click();
+    await p.getByRole("combobox", { name: /^Sport/ }).fill("Soccer");
+    await p.getByRole("button", { name: "Next", exact: true }).click();
+    await p.getByRole("heading", { name: "Your school day" }).waitFor();
+    await p.getByRole("button", { name: "Skip setup" }).click();
     await p.getByRole("heading", { name: "Today", exact: true }).waitFor();
 
     // A practice today (context row) and bananas at home with an exact count.

@@ -97,8 +97,12 @@ async (page) => {
   };
   try {
     await p.goto(base);
+    await p.getByRole("button", { name: "Get started" }).click();
     await p.getByRole("textbox", { name: /First name/ }).fill("Search test");
-    await p.getByRole("button", { name: /Save and see today/ }).click();
+    await p.getByRole("combobox", { name: /^Sport/ }).fill("Soccer");
+    await p.getByRole("button", { name: "Next", exact: true }).click();
+    await p.getByRole("heading", { name: "Your school day" }).waitFor();
+    await p.getByRole("button", { name: "Skip setup" }).click();
     await p.getByRole("heading", { name: "Today", exact: true }).waitFor();
 
     // Local catalog: typing searches after 300 ms, once, with no button.
@@ -153,6 +157,12 @@ async (page) => {
           !rowText.includes("Allergens: check the package.")
         )
           throw new Error(`${query}: a product is missing the allergen line`);
+        for (const line of [
+          "Allergens: check the package.",
+          "Allergies: check every label.",
+        ])
+          if (rowText.split(line).length > 2)
+            throw new Error(`${query}: "${line}" shows twice on a row`);
       }
       if (query === "banana")
         await dialog
@@ -170,7 +180,7 @@ async (page) => {
       }
     }
     result.checks.push(
-      "banana, peanut butter, cheerios and rice: sentence-case names, “Basic food” or “Brand: …” with a portion hint, the allergen line on products, the label line on every row, and no database labels, kcal or counts.",
+      "banana, peanut butter, cheerios and rice: sentence-case names, “Basic food” or “Brand: …” with a portion hint, the allergen line on products and the label line on every row (each once), and no database labels, kcal or counts.",
     );
 
     // Add opens the portion sheet.
