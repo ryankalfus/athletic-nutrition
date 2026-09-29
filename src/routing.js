@@ -1,36 +1,57 @@
 import { useEffect, useSyncExternalStore } from "react";
-const destinations = new Set([
+
+const routes = new Set([
   "today",
-  "food",
-  "calendar",
-  "weekly",
-  "history",
-  "profile",
+  "schedule",
+  "food/ideas",
+  "food/home",
+  "food/groceries",
+  "food/log",
+  "food/log/week",
+  "you",
+  "welcome",
 ]);
+const redirects = {
+  calendar: "schedule",
+  weekly: "food/log/week",
+  history: "food/log",
+  profile: "you",
+  "food/overview": "food/ideas",
+  "food/pantry": "food/home",
+  "food/meals": "food/ideas",
+  food: "food/ideas",
+};
 const read = () => window.location.hash.replace(/^#\/?/, "") || "today";
+const canonical = (raw) => {
+  const [path, query] = raw.split("?", 2);
+  const target = redirects[path] || path;
+  return query ? `${target}?${query}` : target;
+};
 const subscribe = (callback) => {
   window.addEventListener("hashchange", callback);
   return () => window.removeEventListener("hashchange", callback);
 };
 export function navigate(path) {
   if (path === "food")
-    path = sessionStorage.getItem("nourally-food-route") || "food/overview";
-  if (path.startsWith("food/"))
+    path = sessionStorage.getItem("nourally-food-route") || "food/ideas";
+  path = canonical(path);
+  if (["food/ideas", "food/home", "food/groceries", "food/log"].includes(path))
     sessionStorage.setItem("nourally-food-route", path);
   window.location.hash = `/${path}`;
 }
 export function useRoute() {
-  const route = useSyncExternalStore(subscribe, read);
+  const raw = useSyncExternalStore(subscribe, read);
+  const route = canonical(raw);
   useEffect(() => {
+    if (raw !== route)
+      window.history.replaceState(null, "", `${window.location.pathname}${window.location.search}#/${route}`);
     window.scrollTo({ top: 0, behavior: "instant" });
-    document
-      .querySelectorAll(".mobile-more[open]")
-      .forEach((node) => node.removeAttribute("open"));
-  }, [route]);
-  const view = route.split("/")[0];
+  }, [raw, route]);
+  const path = route.split("?")[0];
+  const view = routes.has(path) ? path.split("/")[0] : "notFound";
   return [
-    destinations.has(view) ? view : "today",
+    view,
     navigate,
-    route.split("/")[1] || "overview",
+    path.split("/").slice(1).join("/") || "ideas",
   ];
 }

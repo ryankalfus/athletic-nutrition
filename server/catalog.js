@@ -41,6 +41,30 @@ function food(row) {
       })),
   };
 }
+export function rankFdcResults(foods, query) {
+  const needle = query.trim().toLocaleLowerCase();
+  const brandQuery =
+    /^\d{8,14}$/.test(needle) ||
+    foods.some(
+      (item) =>
+        String(item.brandOwner || item.brandName || "").toLocaleLowerCase() ===
+        needle,
+    );
+  function score(item) {
+    const name = String(item.description || "").toLocaleLowerCase();
+    const brand = String(
+      item.brandOwner || item.brandName || "",
+    ).toLocaleLowerCase();
+    const basic = item.dataType !== "Branded";
+    if (brandQuery && brand === needle) return 0;
+    if (basic && [`, raw`, `s, raw`].some((suffix) => name === needle + suffix))
+      return 1;
+    if (basic && name === needle) return 2;
+    if (basic && name.startsWith(`${needle},`)) return 3;
+    return basic ? 4 : 5;
+  }
+  return [...foods].sort((a, b) => score(a) - score(b));
+}
 export function searchLocal(query, type, page) {
   const db = localCatalog();
   if (!db) return null;
@@ -58,14 +82,30 @@ export function searchLocal(query, type, page) {
     : "food_search JOIN food f ON f.id=food_search.rowid";
   const where = barcode ? "f.barcode=?" : "food_search MATCH ?";
   const term = barcode ? query : tokens.map((t) => `"${t}"*`).join(" AND ");
+  const brandQuery = Boolean(
+    db
+      .prepare(
+        `SELECT 1 FROM ${from} WHERE ${where} AND lower(f.brand)=lower(?) LIMIT 1`,
+      )
+      .get(term, query),
+  );
   const totalHits = db
     .prepare(`SELECT COUNT(*) count FROM ${from} WHERE ${where}${filter}`)
     .get(term).count;
   const rows = db
     .prepare(
-      `SELECT f.* FROM ${from} WHERE ${where}${filter} ORDER BY CASE WHEN lower(f.name)=lower(?) THEN 0 WHEN lower(f.brand)=lower(?) THEN 1 WHEN f.type!='Branded' AND lower(f.name) IN (lower(?) || ', raw', lower(?) || 's, raw') THEN 2 ELSE 3 END, ${barcode ? "f.id" : "bm25(food_search)"}, f.id LIMIT 18 OFFSET ?`,
+      `SELECT f.* FROM ${from} WHERE ${where}${filter} ORDER BY CASE WHEN ? AND lower(f.brand)=lower(?) THEN 0 WHEN f.type!='Branded' AND lower(f.name) IN (lower(?) || ', raw', lower(?) || 's, raw') THEN 1 WHEN f.type!='Branded' AND lower(f.name)=lower(?) THEN 2 WHEN f.type!='Branded' AND lower(f.name) LIKE lower(?) || ',%' THEN 3 WHEN f.type!='Branded' THEN 4 ELSE 5 END, ${barcode ? "f.id" : "bm25(food_search)"}, f.id LIMIT 18 OFFSET ?`,
     )
-    .all(term, query, query, query, query, (page - 1) * 18);
+    .all(
+      term,
+      Number(brandQuery || barcode),
+      query,
+      query,
+      query,
+      query,
+      query,
+      (page - 1) * 18,
+    );
   return {
     foods: rows.map(food),
     totalHits,

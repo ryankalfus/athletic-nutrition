@@ -1,0 +1,76 @@
+.app-dialog.food-search-dialog[open] {
+  width: min(640px, calc(100vw - 32px));
+  max-height: min(80dvh, 760px);
+}
+.food-search-dialog > header {
+  position: sticky;
+  top: -24px;
+  z-index: var(--z-sticky);
+  padding: var(--space-4) 0;
+  background: var(--color-surface);
+}
+.food-search > form {
+  position: sticky;
+  top: 36px;
+  z-index: var(--z-sticky);
+  padding-bottom: var(--space-3);
+  background: var(--color-surface);
+}
+.food-search-loading {
+  display: grid;
+  gap: var(--space-3);
+  margin-top: var(--space-5);
+}
+.food-search-loading span {
+  display: block;
+  height: 52px;
+  border-radius: var(--radius-md);
+  background: var(--color-selected-bg);
+}
+.food-search-field {
+  display: flex;
+  align-items: end;
+  gap: var(--space-2);
+  position: relative;
+}
+.food-search-field label {
+  flex: 1;
+  min-width: 0;
+}
+.food-search-field input {
+  width: 100%;
+  padding-left: 38px;
+}
+.food-search-field::before {
+  content: "⌕";
+  position: absolute;
+  left: 13px;
+  bottom: 11px;
+  color: var(--color-ink-muted);
+  font-size: 22px;
+  pointer-events: none;
+}
+.food-search-field button {
+  min-height: 44px;
+}
+.food-result-list.stale {
+  opacity: 0.5;
+}
+.food-source {
+  display: block;
+  color: var(--color-ink-muted);
+  font-size: 12px;
+}
+@media (max-width: 600px) {
+  .app-dialog.food-search-dialog[open] {
+    width: 100vw;
+    max-width: none;
+    height: 100dvh;
+    max-height: 100dvh;
+    margin: 0;
+    border-radius: 0;
+  }
+  .food-search-field button {
+    font-size: 13px;
+  }
+}

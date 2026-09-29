@@ -1,7 +1,5 @@
-@import url("https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,600;1,600&display=swap");
-
 :root {
-  font-family: "DM Sans", sans-serif;
+  font-family: var(--font-ui), sans-serif;
   color: #12313c;
   background: #f2f7f6;
   font-synthesis: none;
@@ -64,7 +62,7 @@ button {
 .eyebrow,
 .section-label,
 .kicker {
-  font-family: "DM Mono", monospace;
+  font-family: var(--font-ui), monospace;
   letter-spacing: 0.1em;
   font-size: 11px;
   color: #788680;
@@ -108,7 +106,7 @@ h1 {
   font-weight: 600;
 }
 h1 em {
-  font-family: "Playfair Display", serif;
+  font-family: var(--font-ui), serif;
   font-weight: 600;
   letter-spacing: -0.045em;
 }
@@ -234,7 +232,7 @@ select:focus {
 }
 .goal-input-wrap span {
   font:
-    11px "DM Mono",
+    11px var(--font-ui),
     monospace;
   color: var(--muted);
 }
@@ -263,7 +261,7 @@ footer {
   padding-top: 60px;
   color: #a1aaa5;
   font:
-    11px "DM Mono",
+    11px var(--font-ui),
     monospace;
 }
 footer span {
@@ -394,7 +392,7 @@ footer span {
 .summary-row small,
 .entry small {
   font:
-    10px "DM Mono",
+    10px var(--font-ui),
     monospace;
   color: var(--muted);
 }
@@ -533,7 +531,7 @@ footer span {
 }
 .history-day h2 small {
   font:
-    11px "DM Mono",
+    11px var(--font-ui),
     monospace;
   color: var(--muted);
   letter-spacing: 0;
@@ -544,7 +542,7 @@ footer span {
   color: #a6634d;
   padding: 7px 11px;
   font:
-    10px "DM Mono",
+    10px var(--font-ui),
     monospace;
   white-space: nowrap;
 }
@@ -662,7 +660,7 @@ footer span {
 .week-toolbar span {
   color: var(--muted);
   font:
-    10px "DM Mono",
+    10px var(--font-ui),
     monospace;
 }
 .week-arrow {
@@ -704,7 +702,7 @@ footer span {
   margin-left: 6px;
   color: var(--muted);
   font:
-    9px "DM Mono",
+    9px var(--font-ui),
     monospace;
 }
 .weekly-chart-card {
@@ -720,7 +718,7 @@ footer span {
 }
 .chart-heading h2 small {
   font:
-    10px "DM Mono",
+    10px var(--font-ui),
     monospace;
   color: var(--muted);
   letter-spacing: 0;
@@ -730,7 +728,7 @@ footer span {
   gap: 18px;
   color: var(--muted);
   font:
-    10px "DM Mono",
+    10px var(--font-ui),
     monospace;
 }
 .chart-key span {
@@ -766,7 +764,7 @@ footer span {
 .bar-value {
   color: var(--muted);
   font:
-    9px "DM Mono",
+    9px var(--font-ui),
     monospace;
   white-space: nowrap;
 }
@@ -806,7 +804,7 @@ footer span {
 .chart-day small {
   color: var(--muted);
   font:
-    9px "DM Mono",
+    9px var(--font-ui),
     monospace;
 }
 .chart-day.today strong {
@@ -889,7 +887,7 @@ footer span {
 }
 .water-title h2 small {
   font:
-    11px "DM Mono",
+    11px var(--font-ui),
     monospace;
   color: var(--muted);
   letter-spacing: 0;
@@ -987,7 +985,7 @@ footer span {
 .water-day-label span {
   color: var(--muted);
   font:
-    9px "DM Mono",
+    9px var(--font-ui),
     monospace;
 }
 .water-day > div:last-child {
@@ -1145,7 +1143,7 @@ footer span {
 .scan-guide p {
   margin: 0;
   font:
-    10px "DM Mono",
+    10px var(--font-ui),
     monospace;
 }
 .scanner-camera-actions {
@@ -1236,7 +1234,7 @@ footer span {
 .product-details > span {
   color: var(--muted);
   font:
-    9px "DM Mono",
+    9px var(--font-ui),
     monospace;
   text-transform: uppercase;
 }
@@ -1452,7 +1450,7 @@ footer span {
   margin-top: -21px;
   color: #94a09b;
   font:
-    8px "DM Mono",
+    8px var(--font-ui),
     monospace;
   text-transform: uppercase;
 }
@@ -1559,7 +1557,7 @@ footer span {
   padding: 0 8px 10px;
   color: var(--muted);
   font:
-    9px "DM Mono",
+    9px var(--font-ui),
     monospace;
   text-align: right;
 }
@@ -1671,7 +1669,7 @@ footer span {
 .agenda-head span {
   color: #e37d5d;
   font:
-    10px "DM Mono",
+    10px var(--font-ui),
     monospace;
   text-transform: uppercase;
   letter-spacing: 0.08em;
@@ -1781,7 +1779,7 @@ footer span {
 .event-details > span {
   color: var(--muted);
   font:
-    8px "DM Mono",
+    8px var(--font-ui),
     monospace;
   text-transform: uppercase;
 }
@@ -2006,7 +2004,7 @@ footer span {
   margin-top: -21px;
   color: #96a19c;
   font:
-    8px "DM Mono",
+    8px var(--font-ui),
     monospace;
   text-transform: uppercase;
 }
@@ -2095,14 +2093,14 @@ footer span {
   background: #e9f5bc;
   color: #536c26;
   font:
-    9px "DM Mono",
+    9px var(--font-ui),
     monospace;
   letter-spacing: 0.06em;
 }
 .now-time {
   color: var(--muted);
   font:
-    10px "DM Mono",
+    10px var(--font-ui),
     monospace;
   text-align: right;
 }
@@ -2137,7 +2135,7 @@ footer span {
 .idea-card > span {
   color: #76903a;
   font:
-    8px "DM Mono",
+    8px var(--font-ui),
     monospace;
   letter-spacing: 0.08em;
 }
@@ -2193,7 +2191,7 @@ footer span {
 .swap-tray > div span {
   color: #76903a;
   font:
-    8px "DM Mono",
+    8px var(--font-ui),
     monospace;
   letter-spacing: 0.08em;
 }
@@ -2256,7 +2254,7 @@ footer span {
   padding-top: 1px;
   color: var(--muted);
   font:
-    9px "DM Mono",
+    9px var(--font-ui),
     monospace;
   text-align: right;
 }
@@ -2330,7 +2328,7 @@ footer span {
 .prep-callout span {
   color: #d9f56a;
   font:
-    8px "DM Mono",
+    8px var(--font-ui),
     monospace;
   letter-spacing: 0.08em;
 }
@@ -2374,7 +2372,7 @@ footer span {
   background: #eaf4c8;
   color: #557025;
   font:
-    10px "DM Mono",
+    10px var(--font-ui),
     monospace;
 }
 .checklist-items {
@@ -2425,7 +2423,7 @@ footer span {
   margin-bottom: 2px;
   color: #8c9993;
   font:
-    7px "DM Mono",
+    7px var(--font-ui),
     monospace;
   font-style: normal;
   text-transform: uppercase;
@@ -2456,7 +2454,7 @@ footer span {
 .tomorrow-event > span {
   color: #39747a;
   font:
-    9px "DM Mono",
+    9px var(--font-ui),
     monospace;
   text-transform: uppercase;
 }
@@ -2591,7 +2589,7 @@ footer span {
   align-self: center;
   color: #8c9994;
   font:
-    9px "DM Mono",
+    9px var(--font-ui),
     monospace;
 }
 .schedule-form label small {
@@ -2634,7 +2632,7 @@ footer span {
 .grocery-summary-card > span {
   color: var(--muted);
   font:
-    8px "DM Mono",
+    8px var(--font-ui),
     monospace;
   text-transform: uppercase;
   letter-spacing: 0.08em;
@@ -2755,7 +2753,7 @@ footer span {
 .workspace-head > span {
   color: var(--muted);
   font:
-    9px "DM Mono",
+    9px var(--font-ui),
     monospace;
   text-align: right;
 }
@@ -2781,7 +2779,7 @@ footer span {
   width: 100%;
   color: #8b9892;
   font:
-    8px "DM Mono",
+    8px var(--font-ui),
     monospace;
   text-transform: uppercase;
 }
@@ -2841,7 +2839,7 @@ footer span {
 }
 .quantity-stepper span {
   font:
-    9px "DM Mono",
+    9px var(--font-ui),
     monospace;
 }
 .grocery-list-column {
@@ -2869,7 +2867,7 @@ footer span {
   padding: 7px 10px;
   color: #39513f;
   font:
-    8px "DM Mono",
+    8px var(--font-ui),
     monospace;
   font-style: normal;
   text-align: center;
@@ -2911,7 +2909,7 @@ footer span {
 .grocery-item-copy > span {
   color: #7b9638;
   font:
-    7px "DM Mono",
+    7px var(--font-ui),
     monospace;
   text-transform: uppercase;
 }
@@ -3102,14 +3100,14 @@ select:focus-visible {
   background: var(--accent);
   color: #173426;
   font:
-    0.72rem "DM Mono",
+    0.72rem var(--font-ui),
     monospace;
   letter-spacing: 0.07em;
 }
 .action-hero-top > strong {
   color: #c5d6d5;
   font:
-    0.78rem "DM Mono",
+    0.78rem var(--font-ui),
     monospace;
   font-weight: 400;
   text-align: right;
@@ -3269,7 +3267,7 @@ select:focus-visible {
   background: var(--accent);
   color: #17352a;
   font:
-    0.75rem "DM Mono",
+    0.75rem var(--font-ui),
     monospace;
 }
 .auth-card {
@@ -3424,7 +3422,7 @@ select:focus-visible {
   min-width: 18px;
   color: inherit;
   font:
-    0.66rem "DM Mono",
+    0.66rem var(--font-ui),
     monospace;
 }
 .fdc-search-card {
@@ -3561,7 +3559,7 @@ select:focus-visible {
 .fdc-result-copy > span {
   color: #5f888a;
   font:
-    0.61rem "DM Mono",
+    0.61rem var(--font-ui),
     monospace;
   text-transform: uppercase;
 }
@@ -3624,7 +3622,7 @@ select:focus-visible {
 .food-summary-grid span {
   color: var(--muted);
   font:
-    0.65rem "DM Mono",
+    0.65rem var(--font-ui),
     monospace;
   text-transform: uppercase;
 }
@@ -3666,7 +3664,7 @@ select:focus-visible {
 .food-next-card p {
   color: #c8d7d7;
   font:
-    0.72rem "DM Mono",
+    0.72rem var(--font-ui),
     monospace;
 }
 .food-next-card button {
@@ -3712,7 +3710,7 @@ select:focus-visible {
   background: #e8f5bd;
   color: #536b28;
   font:
-    0.68rem "DM Mono",
+    0.68rem var(--font-ui),
     monospace;
 }
 .food-connection-card button span {
@@ -3737,7 +3735,7 @@ select:focus-visible {
   margin-bottom: 4px;
   color: #4d8588;
   font:
-    0.58rem "DM Mono",
+    0.58rem var(--font-ui),
     monospace;
   text-transform: uppercase;
 }

@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { LabelCheck } from "./ui/LabelCheck.jsx";
 import { lookupBarcode as lookupFoodBarcode } from "../usda.js";
 export default function BarcodeScanner({ onAdd, onClose }) {
   const [barcode, setBarcode] = useState("");
@@ -174,8 +175,13 @@ export default function BarcodeScanner({ onAdd, onClose }) {
   return (
     <section className="scanner-card">
       <h3>Scan or enter a barcode</h3>
-      <div className="camera-frame">
+      <div className={`camera-frame${cameraActive ? " active" : ""}`}>
         <video ref={videoRef} muted playsInline />
+        {cameraActive && (
+          <div className="scan-guide" aria-hidden="true">
+            <span />
+          </div>
+        )}
         {capturedImage && (
           <img
             className="captured-frame"
@@ -219,6 +225,7 @@ export default function BarcodeScanner({ onAdd, onClose }) {
       {product && (
         <div className="product-result">
           <h3>{product.displayName}</h3>
+          <LabelCheck />
           <p>
             {product.nutrients.calories == null
               ? "Calories unknown"

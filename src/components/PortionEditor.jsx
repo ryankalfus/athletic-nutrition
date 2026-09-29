@@ -5,6 +5,7 @@ import {
   portionCalories,
   validPortion,
 } from "../domain/food.js";
+import { LabelCheck } from "./ui/LabelCheck.jsx";
 export function PortionEditor({
   food,
   initial = {},
@@ -45,7 +46,7 @@ export function PortionEditor({
   );
   const [location, setLocation] = useState(initial.location || "pantry");
   const [expiry, setExpiry] = useState(initial.expiry || "");
-  const [threshold, setThreshold] = useState(initial.lowThreshold ?? 1);
+  const [threshold, setThreshold] = useState(initial.lowThreshold ?? 0);
   const [notes, setNotes] = useState(initial.notes || "");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
@@ -106,12 +107,15 @@ export function PortionEditor({
         />
       </label>
       <p className="muted">
-        {food.source || "Manual food"} ·{" "}
         {food.nutrients?.calories == null
           ? "Energy unknown"
           : `${food.nutrients.calories} kcal per 100 ${food.nutrientBasis || "g"}`}
         {food.householdServing && ` · Label serving: ${food.householdServing}`}
       </p>
+      <small className="food-source">
+        Source: {food.source || "Manual food"}
+      </small>
+      <LabelCheck />
       <div className="form-grid">
         <label>
           {destination === "log" ? "Amount eaten" : "Quantity"}
@@ -157,20 +161,16 @@ export function PortionEditor({
               onChange={(e) => setOverride(e.target.value)}
             />
           </label>
-          <p className="muted">
-            An override is saved separately from the original nutrition record.
-            Zero is valid; blank means unknown when no conversion is available.
-          </p>
         </>
       ) : (
         <>
           <label>
-            Ingredient relationship
+            Counts as
             <select
               value={identity}
               onChange={(e) => setIdentity(e.target.value)}
             >
-              <option value="">Unresolved — do not count toward a meal</option>
+              <option value="">Choose an ingredient</option>
               {INGREDIENTS.map((i) => (
                 <option key={i.id} value={i.id}>
                   {i.name}
@@ -178,10 +178,7 @@ export function PortionEditor({
               ))}
             </select>
           </label>
-          <p className="muted">
-            Confirm the actual ingredient. This is not an allergy-safety check;
-            always check the package label.
-          </p>
+          <p className="muted">Ideas that need bananas will use this match.</p>
           <div className="form-grid">
             <label>
               Package contents (optional)

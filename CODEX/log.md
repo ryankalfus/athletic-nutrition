@@ -276,3 +276,203 @@ Created a standalone Claude prompt for a full Nourally source and screenshot rev
 Committed and pushed all current workspace changes to GitHub. 2026.09.28
 Added the Claude redesign audit document to the project. 2026.09.29
 Committed and pushed the redesign audit document to main. 2026.09.29
+Created REDESIGN-CHECKLIST.md with individual phase and recommendation checkboxes, owner and review gates, MVP criteria, and the full audit specification. 2026.09.29
+Added the audit color, spacing, radius, motion, typography, and compatibility tokens for the redesign. 2026.09.29
+Added base element, focus, and reduced-motion styles that use redesign tokens. 2026.09.29
+Self-hosted DM Sans and Barlow Semi Condensed fonts, removed Google Fonts and legacy font families, and installed Lucide icons. 2026.09.29
+Added the light color-scheme metadata and verified the P0-01 production build and diff. 2026.09.29
+Marked P0-01 and implemented design-system recommendations in REDESIGN-CHECKLIST.md and filled missing DS and ADD checkboxes. 2026.09.29
+Prepared a shared four-destination app frame with Lucide navigation, desktop rail, tablet bar, and phone tab bar pending the owner D07 decision. 2026.09.29
+Moved the device-profile panel inside the Profile main content before its footer and removed per-page navigation instances. 2026.09.29
+Verified the frame with a production build, targeted lint, breakpoint navigation measurements, and Food and You placement checks. 2026.09.29
+Marked P0-02 and dependent P0-03 blocked pending the owner navigation decision in REDESIGN-CHECKLIST.md. 2026.09.29
+Recorded the owner decision to use four main destinations and four Food sections and accepted P0-02 in REDESIGN-CHECKLIST.md. 2026.09.29
+Recorded that the owner will arrange qualified nutrition and allergen review; reviewer sign-off remains pending. 2026.09.29
+Added canonical Schedule, You, Welcome, and four Food routes with history-replacing redirects from legacy URLs. 2026.09.29
+Added Page not found for unknown routes and removed the unreachable groceries route branch and separate History page. 2026.09.29
+Opened Today after athlete selection and changed the You page heading to match its route. 2026.09.29
+Verified legacy redirects, Back behavior, the Welcome chooser, and the new route views with targeted browser checks and lint. 2026.09.29
+Marked P0-03 and its completed route recommendation IDs in REDESIGN-CHECKLIST.md. 2026.09.29
+Added ToastProvider with timed action feedback and revision-guarded Undo for data and reversible profile writes. 2026.09.29
+Added inline dialog save errors and retry of the failed write, with a fallback to reopen the database. 2026.09.29
+Added ConfirmDialog for overlapping activities, activity deletion, profile deletion, recovery, unsaved setup changes, and shopping-trip undo. 2026.09.29
+Added an async action guard and pending states to prevent repeat food planning, logging, shopping, and pantry submissions. 2026.09.29
+Removed the Food workspace shared status line and routed validation and instruction feedback to action toasts. 2026.09.29
+Kept the Schedule edit form open until a save succeeds and normalized save-error punctuation. 2026.09.29
+Verified P0-04 with a targeted build, lint, toast Undo and typed deletion browser checks, and a native-confirm search. 2026.09.29
+Marked P0-04 and its completed feedback recommendation IDs in REDESIGN-CHECKLIST.md. 2026.09.29
+Added shared human date, time, duration, countdown, plural, amount, and enum formatting helpers. 2026.09.29
+Replaced raw dates, times, activity labels, and recurrence wording on Today and Schedule. 2026.09.29
+Replaced raw quantities, dates, status labels, and source labels in Food and weekly Log. 2026.09.29
+Updated reminder titles and the timing clock to use the shared human formatters. 2026.09.29
+Verified P0-05 with formatter examples, a production build, targeted lint, and a rendered-text scan of nine routes. 2026.09.29
+Marked P0-05 and COPY-14 through COPY-17 complete in REDESIGN-CHECKLIST.md. 2026.09.29
+Removed inert Nut-free catalog flags and filtering while warning profiles that an older choice no longer filters foods. 2026.09.29
+Changed conventional oats and the oatmeal idea so neither claims gluten-free status. 2026.09.29
+Removed the Nut-free claim from a seed-mix idea and peanut-butter placeholder examples. 2026.09.29
+Added label-check reminders to the profile, Ideas, Food, search, portion editor, and barcode product views. 2026.09.29
+Verified the local P0-06 draft with targeted build, lint, inert-flag checks, and You/Ideas browser checks. 2026.09.29
+Marked P0-06 and YOU-03 as pending qualified nutrition and allergen review in REDESIGN-CHECKLIST.md. 2026.09.29
+Changed timing labels to human countdowns, removed arrival-buffer wording, and named the snack in packing copy. 2026.09.29
+Replaced search provider and database labels with top matches, brand or basic-food labels, serving text, and optional nutrition details. 2026.09.29
+Removed nutrition-record and ingredient-relationship jargon from the portion editor. 2026.09.29
+Removed the dead Food Overview and rewrote At home, price, and activity copy in plain language. 2026.09.29
+Merged Groceries into one checklist with Got it controls and a Finish shopping action. 2026.09.29
+Reworded Today and Schedule actions, reminder text, school controls, and recurring-activity editing labels. 2026.09.29
+Removed weekly logging streak and pressure copy and clarified the water and log summaries. 2026.09.29
+Changed the profile budget choice to a low-cost switch and moved guidance text into You under About Nourally's guidance. 2026.09.29
+Verified P0-07 copy with a targeted build, lint, nine-route text and button scans, and the grocery-to-At-home browser flow. 2026.09.29
+Marked completed copy IDs and P0-07's review and P1 layout dependencies in REDESIGN-CHECKLIST.md. 2026.09.29
+Normalized null and missing optional purchase fields before pantry matching. 2026.09.29
+Scoped purchase undo deductions and zero-row removal to the trip's own pantry records. 2026.09.29
+Made newly added At home food use exact stock with a zero low-stock threshold. 2026.09.29
+Preserved quantity and prior availability when marking At home food Out and back. 2026.09.29
+Preserved a food log entry's original time when editing its portion. 2026.09.29
+Restored linked pantry deductions on food log removal and blocked removal when stock could not be restored. 2026.09.29
+Connected Today's Log it action to planned-meal logging and plan status update. 2026.09.29
+Added an explicit choice before merging a newly added duplicate food. 2026.09.29
+Added focused P0-08 domain regression cases and passed targeted build, lint, and browser checks. 2026.09.29
+Marked P0-08 complete in REDESIGN-CHECKLIST.md. 2026.09.29
+Mapped unknown Open Food Facts barcodes to a distinct 404 message while keeping provider outages separate. 2026.09.29
+Checked food API response status before JSON parsing and handled offline and non-JSON failures. 2026.09.29
+Added a live offline message to food search while retaining recent and saved foods. 2026.09.29
+Made the camera preview visible while active and added a visual barcode scan guide. 2026.09.29
+Connected food search's input ref to dialog initial focus in both add and log flows. 2026.09.29
+Verified P0-09 with targeted response checks, build, lint, diff check, and browser focus check. 2026.09.29
+Marked P0-09 and SRCH-04 through SRCH-06 complete in REDESIGN-CHECKLIST.md. 2026.09.29
+Added focused P0-10 timing cases for 30, 90, and 180-minute boundaries and lunch before practice. 2026.09.29
+Kept the active or upcoming school food window visible alongside a later activity. 2026.09.29
+Removed school-handoff wording on non-school days and zero-minute travel wording. 2026.09.29
+Added SETUP and quiet LATE timing states without a Today action idea. 2026.09.29
+Updated Today's SETUP and LATE actions to reflect the timing state. 2026.09.29
+Verified the P0-10 local draft with targeted timing tests, build, lint, and diff check. 2026.09.29
+Marked P0-10 pending qualified timing review and source documentation in REDESIGN-CHECKLIST.md. 2026.09.29
+Moved away-session reminder timing to Leave by and kept singular minute wording through the shared countdown formatter. 2026.09.29
+Guarded reminder delivery when an athlete is closed or browser notification permission is revoked. 2026.09.29
+Changed Today's reminder availability text to desktop-browser scope without promising phone delivery. 2026.09.29
+Added targeted Leave by, plural, and closed-athlete reminder tests and passed build and lint. 2026.09.29
+Marked P0-11 and DATA-09 complete while retaining DATA-06's later You and service-worker work. 2026.09.29
+Changed default backups to contain only the current athlete while preserving the version 2 document format. 2026.09.29
+Added an explicit Include all athletes backup option and a scope field. 2026.09.29
+Named backup files with the athlete and local calendar date. 2026.09.29
+Made profile deletion stop when backup fails and open Welcome after a successful typed confirmation. 2026.09.29
+Kept recovery exports scoped to the full database so recovery can preserve all profiles. 2026.09.29
+Added a targeted backup privacy test and passed build, lint, and diff checks. 2026.09.29
+Marked P0-12, DATA-03, and DATA-05 complete in REDESIGN-CHECKLIST.md. 2026.09.29
+Marked P1-01 blocked by P0-10's qualified timing review before starting the independent Schedule phase. 2026.09.29
+Made Week the default Schedule view with a saved Week/Month choice and direct week navigation. 2026.09.29
+Rebuilt Schedule day sections with human activity labels, time, location, and action menus. 2026.09.29
+Moved school settings into a sectioned School day sheet opened from Schedule rows. 2026.09.29
+Added persistent school days-off ranges alongside existing single-day exceptions. 2026.09.29
+Added a dated pause-school control and excluded paused dates from school timing. 2026.09.29
+Restyled Month cells with activity dots, overflow count, and a single today ring. 2026.09.29
+Used ConfirmDialog for activity overlap and deletion instead of native confirmation. 2026.09.29
+Prepared sport-based default activity titles pending the profile sport control in P1-10. 2026.09.29
+Reordered ActivitySheet controls and limited location to Home and Away with conditional travel time. 2026.09.29
+Added per-date edit scope and recurrence overrides while preserving other weekly occurrences. 2026.09.29
+Added per-date or all-occurrence delete scope for repeating activities. 2026.09.29
+Kept ActivitySheet actions visible at the audited phone and desktop viewports. 2026.09.29
+Added a dirty-form discard confirmation to ActivitySheet. 2026.09.29
+Added the desktop week-at-a-glance column and explicit days-off summary. 2026.09.29
+Passed targeted P1-02 timing tests, build, lint, diff checks, and browser checks of Week, Month, Away, footer, and discard. 2026.09.29
+Marked SCH-02 through SCH-08, ACT-01 through ACT-03, ACT-05, and ADD-07 complete; left ACT-04 and SCH-09 pending dependencies. 2026.09.29
+Replaced the Food search filter and submit control with a field, barcode action, idle lists, and local 300 ms search. 2026.09.29
+Ranked basic foods first in local USDA search and API fallback, with brand and barcode exceptions. 2026.09.29
+Changed search pagination to Show more results and kept the manual-add action at the end. 2026.09.29
+Passed targeted build, lint, diff, four-query catalog checks, and live banana search; marked SRCH-01 complete. 2026.09.29
+Displayed sentence-case search names with brand on a separate line. 2026.09.29
+Collapsed same-name and same-brand food records within and across search result pages. 2026.09.29
+Normalized gram aliases and suppressed unsupported portion units in search hints. 2026.09.29
+Passed targeted duplicate, build, lint, diff, and live Cheerios checks; marked SRCH-02 complete. 2026.09.29
+Removed provider, result-count, and calorie-density text from Food search results. 2026.09.29
+Kept food provenance as a subdued Source line in the portion editor. 2026.09.29
+Passed targeted build, lint, and diff checks; marked SRCH-03 complete. 2026.09.29
+Marked P1-07 partial and SRCH-07 blocked pending qualified review of allergen-tag display. 2026.09.29
+Marked COPY-29 complete after Schedule gained a named School day row and editor action. 2026.09.29
+Marked COPY-30 complete after the dated Pause school control replaced Shown and Hidden. 2026.09.29
+Updated P0-07's remaining dependencies to COPY-23 review and COPY-33 Today layout. 2026.09.29
+Requested Open Food Facts allergen and trace tags and normalized valid tag arrays without displaying them. 2026.09.29
+Passed targeted tag-normalization, build, lint, and diff checks; kept SRCH-07 pending qualified review. 2026.09.29
+Recorded P1-03 as waiting for reviewed P1-01 ranking and the P1-02 ActivitySheet. 2026.09.29
+Recorded P1-04 as waiting for P1-01 shared ranking and plan lifecycle. 2026.09.29
+Recorded P1-05 as waiting for the P1-04 Food frame. 2026.09.29
+Recorded P1-06 as waiting for P1-05 At home. 2026.09.29
+Recorded P1-08 as waiting for P1-01 lifecycle and P1-07 review. 2026.09.29
+Recorded P1-09 as waiting for qualified allergy review and P0-06/P1-04. 2026.09.29
+Recorded P1-10 as waiting for P1-09's reviewed allergy model. 2026.09.29
+Recorded P1-11 as waiting for P1-02, P1-09, and P1-10. 2026.09.29
+Recorded P1-12 as waiting for P1-03 and P1-10. 2026.09.29
+Recorded P1-13 as waiting for P1-03 through P1-11 page work. 2026.09.29
+Marked RWD-10 complete because Week agenda is now the phone Schedule default. 2026.09.29
+Marked RWD-14 complete after Month cells switched from truncated chips to dots and a full-title agenda. 2026.09.29
+Marked RWD-15 complete after replacing viewport-derived mode with a saved Week/Month control. 2026.09.29
+Renamed Month's duplicate Today action to Go to today and marked A11Y-10 complete after targeted checks. 2026.09.29
+Created a qualified-review packet listing current timing thresholds, copy, source starting points, and evidence gaps without approving guidance. 2026.09.29
+Recorded pending age, allergen, game-day, and sports-drink review questions and sign-off fields in NUTRITION-REVIEW.md. 2026.09.29
+Updated P0-10 to link the prepared review packet while keeping the qualified-review gate open. 2026.09.29
+Displayed the total activity count alongside up to three Month-view dots and passed targeted build, lint, and diff checks. 2026.09.29
+Moved Recent and Saved ahead of Quick basics in the idle Food search dialog. 2026.09.29
+Added sticky search controls, skeleton loading, and a full-screen phone search sheet. 2026.09.29
+Announced no matches politely only for the current query and passed targeted build, lint, diff, idle-order, and 390x844 checks. 2026.09.29
+Cleared stale Food search results when the query drops below two characters and passed targeted lint and diff checks. 2026.09.29
+Recorded owner-reported qualified review approval from Emily Cornelius, RDN, dated September 29, 2026, with the approved audit scope. 2026.09.29
+Recorded the owner confirmation of the previously presented recommended product decisions and preparation offsets. 2026.09.29
+Accepted P0-06 after its existing targeted checks and the supplied qualified-review approval. 2026.09.29
+Added named school Lunch and Snack time rows to Today after removing the food-window band. 2026.09.29
+Replaced the remaining clinician and food-window wording in Ideas and timing with the approved plain copy. 2026.09.29
+Passed the P0-07 rendered banned-text, ISO-date, and bare-time scan on all nine routes and accepted COPY-23 and COPY-33. 2026.09.29
+Passed four targeted P0-10 timing tests, changed-file lint, build, and diff checks; accepted P0-07 and P0-10 with supplied RDN approval. 2026.09.29
+Cleared the P1-01 prerequisite blocker after all P0 phase items were accepted. 2026.09.29
+Started the local app on port 4173 for targeted redesign checks. 2026.09.29
+Added meaningful P1-01 ranking, lifecycle, duplicate-log, and version 2 migration tests before implementing the domain changes. 2026.09.29
+Created one pure pantry-aware ranking and ideasFor function and connected both Today and Ideas to it. 2026.09.29
+Made Have stock sufficient for idea readiness while keeping exact-quantity checks. 2026.09.29
+Added intended eat time, packed and eaten timestamps, log links, same-write preparation synchronization, and idempotent plan logging. 2026.09.29
+Added additive schema 3 plan migration with the complete original document retained alongside legacyBackup. 2026.09.29
+Saved and downloaded the original version 2 document before the first schema 3 write. 2026.09.29
+Updated existing planned-meal logging and status display to use Eaten and preserve the log link. 2026.09.29
+Published the migrated schema 3 snapshot while keeping version 2 backup preservation before the first database write. 2026.09.29
+Passed three P1-01 acceptance tests and six related cases plus changed-file lint, build, and diff checks. 2026.09.29
+Accepted P1-01, FOOD-02, and ADD-02 and advanced the checklist to P1-02 reusable Schedule sheets. 2026.09.29
+Extracted Schedule from main.jsx into its page with reusable SchoolDayEditor and ActivitySheet field components. 2026.09.29
+Collapsed empty Schedule days while retaining a named date and Add practice action. 2026.09.29
+Focused ActivitySheet on the type control and guarded both editor submissions against repeat taps. 2026.09.29
+Added SchoolDayEditor dirty-close confirmation and a sticky footer with visible Save and Cancel actions. 2026.09.29
+Added the approved Game day chip for game context without introducing additional game-specific nutrition claims. 2026.09.29
+Passed targeted Schedule, timing, and lifecycle tests plus changed-file lint and build after extracting reusable editors. 2026.09.29
+Verified ActivitySheet footers at 390×844 and 1470×800 and SchoolDayEditor footer and dirty-close confirmation at 390×844. 2026.09.29
+Accepted P1-02, ACT-04, and SCH-09 and advanced the checklist to P1-03. 2026.09.29
+Added reviewed before-school, travel, rest, evening and lunch-preserving Today timing states. 2026.09.29
+Assigned packing task due times from school departure and away activity travel context. 2026.09.29
+Allowed individual store changes to provide a specific save toast while preserving guarded Undo and retry. 2026.09.29
+Replaced the old Today Dashboard with a Now card, ordered day rail, packing list, compact water row and conditional Tonight list. 2026.09.29
+Added Today plan status actions and stale schedule Update or Keep choices with pending guards. 2026.09.29
+Removed Today’s footer and reminder settings form and added one dismissible reminder prompt. 2026.09.29
+Aligned the Today clock refresh to minute boundaries and opened the activity sheet directly from Add practice. 2026.09.29
+Passed eight targeted timing, ranking, migration and lifecycle tests and checked mobile setup layout and water-save Undo. 2026.09.29
+Extracted NowCard into a reusable component and measured fifteen timing states with real rendered cards at 390×844. 2026.09.29
+Fixed the activity-sheet initial dirty baseline for Today’s direct Add practice entry. 2026.09.29
+Moved completed pre-activity plans to the recovery planning moment and included weekly rest patterns in empty-schedule detection. 2026.09.29
+Extracted DayRail, PackPrep, WaterRow and TonightCard while retaining Today’s shared controller and pending guards. 2026.09.29
+Accepted P1-03 after fifteen state-layout fixtures, isolated plan-title and task creation checks, eight domain tests, lint and build. 2026.09.29
+Advanced the durable checklist to P1-04 Food frame and Ideas. 2026.09.29
+Extracted IdeasPage and MealPlanCard with status-based next actions and no repeated Food workspace heading. 2026.09.29
+Added sticky Food section links with low-stock and unchecked-grocery badges. 2026.09.29
+Added URL-backed Now, Before practice, After practice and Tomorrow idea selection with shared ranking. 2026.09.29
+Added visible saved hearts and Not for me with athlete-scoped hidden ideas and guarded Undo. 2026.09.29
+Added readable display amounts while retaining existing numeric ingredient amounts for calculations. 2026.09.29
+Prevented duplicate identical plans and repeat double-click actions on newly inserted planned cards. 2026.09.29
+Corrected missing-grocery generation to skip sufficient stock while retaining low approximate stock as missing. 2026.09.29
+Accepted P1-04 after targeted domain tests, lint, build and isolated Tomorrow planning, saved, hidden and navigation checks. 2026.09.29
+Extracted At home into HomePage with place groups, filters and Have, Low and Out controls. 2026.09.29
+Added exact stock steppers with 600 ms saves and preserved exact quantity through Out and Have. 2026.09.29
+Added eight food-needs-filtered quick adds that create Have stock and offer Undo and Edit details. 2026.09.29
+Added an explicit Update or Keep both choice when adding duplicate stock. 2026.09.29
+Added compact stock details with Counts as, place, amount type, use-by date, notes and dirty-close confirmation. 2026.09.29
+Added individual and all-low restock actions with duplicate prevention. 2026.09.29
+Migrated stored some availability to have and renamed stock labels to Have and Low. 2026.09.29
+Allowed silent stock-control saves and an optional action beside guarded Undo in save toasts. 2026.09.29
+Accepted P1-05 after targeted tests, lint, build and isolated quick-add, details and exact-stock restoration checks. 2026.09.29
+Simplified REDESIGN-CHECKLIST.md tracker entries to checkbox IDs, removing per-step summaries and implementation notes while preserving the embedded full audit specification. 2026.09.29
+Reconciled all nine §13.7 owner decisions and qualified review gate statuses against the user’s confirmations, retaining the owner-reported attribution for Emily Cornelius, RDN approval. 2026.09.29
+Committed and pushed the P1-05 Food home inventory, Ideas, and reusable redesign changes to main. 2026.09.29

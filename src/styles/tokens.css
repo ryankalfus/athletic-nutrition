@@ -1,0 +1,76 @@
+:root {
+  color-scheme: light;
+
+  --color-paper: #f7f6f2;
+  --color-surface: #fff;
+  --color-surface-muted: #efeee8;
+  --color-ink: #14333c;
+  --color-ink-muted: #52656b;
+  --color-ink-subtle: #66746f;
+  --color-line: #dddbd2;
+  --color-line-strong: #7a847f;
+  --color-pitch: #0f3640;
+  --color-pitch-end: #16484a;
+  --color-lime: #d7f45f;
+  --color-primary: #08777c;
+  --color-primary-hover: #065f65;
+  --color-primary-pressed: #054f54;
+  --color-focus: #05666d;
+  --color-focus-dark: #e5ff91;
+  --color-selected-bg: #e3f1ef;
+  --color-success: #1e6b3a;
+  --color-success-tint: #e6f2e9;
+  --color-warning: #8a5300;
+  --color-warning-tint: #fdf1dc;
+  --color-error: #a12c24;
+  --color-error-tint: #fbeae8;
+  --color-info: #1f5a96;
+  --color-info-tint: #e7f0fa;
+  --color-school: #5b6b8a;
+  --color-practice: #08777c;
+  --color-game: #c2410c;
+  --color-workout: #6d4fb3;
+  --color-travel: #9a6700;
+  --color-food-moment: #3f7d20;
+
+  --font-ui: "DM Sans Variable", "DM Sans", sans-serif;
+  --font-numeral: "Barlow Semi Condensed", var(--font-ui);
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --radius-full: 999px;
+  --shadow-1: 0 1px 2px rgb(20 51 60 / 0.06);
+  --shadow-2: 0 -1px 0 var(--color-line), 0 -8px 24px rgb(20 51 60 / 0.08);
+  --shadow-3: 0 24px 64px rgb(15 44 56 / 0.24);
+  --z-rail: 10;
+  --z-sticky: 20;
+  --z-toast: 40;
+  --z-dialog: 50;
+  --motion-fast: 150ms;
+  --motion-standard: 200ms;
+  --motion-check: 250ms;
+
+  /* Compatibility aliases for the existing screens while they are rebuilt. */
+  --ink: var(--color-ink);
+  --muted: var(--color-ink-muted);
+  --line: var(--color-line);
+  --accent: var(--color-lime);
+  --teal: var(--color-primary);
+  --navy: var(--color-pitch);
+  --surface: var(--color-surface);
+  --danger: var(--color-error);
+  --radius: var(--radius-lg);
+}
+
+/* Layout breakpoints: 480px, 768px, 1024px, 1200px. */

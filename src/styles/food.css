@@ -1,0 +1,241 @@
+.food-sections {
+  position: sticky;
+  top: 0;
+  background: var(--color-paper);
+  z-index: 3;
+  padding: 8px 0;
+}
+.food-sections button {
+  min-height: 44px;
+}
+.moment-picker {
+  display: flex;
+  gap: 8px;
+  overflow: auto;
+  margin-bottom: 16px;
+}
+.moment-picker button {
+  white-space: nowrap;
+  min-height: 44px;
+}
+.moment-picker [aria-pressed="true"] {
+  background: var(--color-ink);
+  color: white;
+}
+.ideas-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+  max-width: 960px;
+}
+.idea-card,
+.meal-plan-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 16px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.idea-card h3,
+.idea-card p,
+.meal-plan-card h3,
+.meal-plan-card p {
+  margin: 0;
+}
+.idea-card ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.idea-card li {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+.idea-card small {
+  font-size: 13px;
+  white-space: nowrap;
+}
+.idea-card .primary {
+  min-height: 48px;
+  margin-top: auto;
+}
+.idea-secondary {
+  display: flex;
+  gap: 12px;
+}
+.idea-secondary button {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  min-height: 44px;
+}
+.idea-readiness {
+  font-size: 13px;
+  color: var(--color-ink-muted);
+}
+.planned-meals {
+  display: grid;
+  gap: 16px;
+  margin: 24px 0;
+}
+.idea-card summary,
+.meal-plan-card summary {
+  min-height: 44px;
+  padding: 12px 0;
+}
+.section-toolbar {
+  margin-top: 16px;
+}
+@media (min-width: 1024px) {
+  .ideas-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (min-width: 1280px) {
+  .ideas-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+.food-sections a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  text-decoration: none;
+  color: var(--color-ink);
+  white-space: nowrap;
+}
+.food-sections a[aria-current="page"] {
+  background: var(--color-ink);
+  color: white;
+}
+.stock-filters {
+  display: flex;
+  gap: 8px;
+  margin: 16px 0;
+}
+.stock-filters button {
+  min-height: 44px;
+}
+.stock-filters [aria-pressed="true"] {
+  background: var(--color-ink);
+  color: white;
+}
+.home-layout {
+  display: grid;
+  gap: 24px;
+}
+.stock-list {
+  list-style: none;
+  padding: 0;
+}
+.stock-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 0;
+  min-height: 56px;
+  border-bottom: 1px solid var(--color-border);
+  flex-wrap: wrap;
+}
+.stock-row > div:first-child {
+  flex: 1;
+  min-width: 100px;
+}
+.stock-row strong {
+  font-size: 16px;
+}
+.stock-row small {
+  display: block;
+  font-size: 13px;
+}
+.stock-control,
+.stock-amount {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.stock-control button,
+.stock-amount button {
+  min-width: 44px;
+  min-height: 44px;
+  padding: 8px;
+}
+.stock-control [aria-checked="true"] {
+  background: var(--color-ink);
+  color: white;
+}
+.row-menu {
+  position: relative;
+}
+.row-menu summary {
+  min-height: 44px;
+  min-width: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+.row-menu[open] {
+  z-index: 2;
+}
+.row-menu[open] button {
+  display: block;
+  min-height: 44px;
+  min-width: 160px;
+}
+.low-summary {
+  align-self: start;
+  border: 1px solid var(--color-border);
+  padding: 20px;
+  border-radius: 16px;
+  background: var(--color-surface);
+}
+.quick-add {
+  margin-top: 32px;
+}
+.quick-add > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.quick-add button {
+  min-height: 44px;
+}
+.stock-warning {
+  color: var(--color-warning);
+}
+.home-details {
+  display: grid;
+  gap: 16px;
+}
+.home-details input,
+.home-details select,
+.home-details textarea {
+  width: 100%;
+  min-height: 44px;
+}
+.sheet-footer {
+  position: sticky;
+  bottom: 0;
+  background: var(--color-surface);
+  padding: 16px 0;
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+}
+@media (min-width: 1200px) {
+  .home-layout {
+    grid-template-columns: minmax(0, 640px) 320px;
+  }
+  .low-summary {
+    position: sticky;
+    top: 80px;
+  }
+}

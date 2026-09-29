@@ -1,8 +1,13 @@
-import { searchLocal, detailLocal, localCatalog } from "./catalog.js";
+import {
+  searchLocal,
+  detailLocal,
+  localCatalog,
+  rankFdcResults,
+} from "./catalog.js";
 const cache = new Map();
 const rates = new Map();
 const TTL = 5 * 60 * 1000;
-async function cached(url) {
+async function cached(url, { notFoundMessage } = {}) {
   const prior = cache.get(url);
   if (prior && Date.now() - prior.time < TTL) return prior.data;
   const response = await fetch(url, {
@@ -15,9 +20,14 @@ async function cached(url) {
     const error = new Error(
       response.status === 429
         ? "Food provider rate limit reached. Try later or use saved/manual food."
-        : "Food provider unavailable or product not found.",
+        : response.status === 404 && notFoundMessage
+          ? notFoundMessage
+          : "Food provider unavailable or product not found.",
     );
-    error.status = response.status === 429 ? 429 : 502;
+    error.status =
+      response.status === 429 || (response.status === 404 && notFoundMessage)
+        ? response.status
+        : 502;
     throw error;
   }
   const data = await response.json();
@@ -82,10 +92,12 @@ export async function api(req, res, next) {
             ? "Foundation,SR Legacy,Survey (FNDDS)"
             : "Branded",
         );
+      const remote = await cached(
+        `https://api.nal.usda.gov/fdc/v1/foods/search?${params}`,
+      );
       return send(200, {
-        ...(await cached(
-          `https://api.nal.usda.gov/fdc/v1/foods/search?${params}`,
-        )),
+        ...remote,
+        foods: rankFdcResults(remote.foods || [], query),
         mode: key === "DEMO_KEY" ? "limited-demo" : "server-key",
       });
     }
@@ -103,7 +115,11 @@ export async function api(req, res, next) {
       return send(
         200,
         await cached(
-          `https://world.openfoodfacts.org/api/v3/product/${barcode[1]}?fields=code,product_name,brands,serving_size,serving_quantity,serving_quantity_unit,nutriments`,
+          `https://world.openfoodfacts.org/api/v3/product/${barcode[1]}?fields=code,product_name,brands,serving_size,serving_quantity,serving_quantity_unit,nutriments,allergens_tags,traces_tags`,
+          {
+            notFoundMessage:
+              "We couldn't find that barcode. Add the food yourself.",
+          },
         ),
       );
     return send(404, { error: "Unknown API endpoint." });

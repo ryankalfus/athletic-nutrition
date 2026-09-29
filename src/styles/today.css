@@ -1,0 +1,173 @@
+.today-heading {
+  margin-bottom: 24px;
+}
+.today-heading h1 {
+  margin-bottom: 8px;
+}
+.today-heading p {
+  margin: 0 0 12px;
+}
+.today-chips,
+.today-alternates {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.today-chips span {
+  font-size: 13px;
+  background: var(--color-surface);
+  padding: 8px 12px;
+  border-radius: 24px;
+}
+.today-layout {
+  display: grid;
+  gap: 24px;
+  max-width: 1072px;
+}
+.today-layout section {
+  border: 1px solid var(--color-border);
+  border-radius: 20px;
+  padding: 20px;
+  background: var(--color-surface);
+  margin: 0;
+}
+.today-layout .now-card {
+  background: var(--color-paper);
+  padding: 24px;
+}
+.now-card h2 {
+  font-size: 26px;
+  margin: 12px 0;
+}
+.today-countdown {
+  font-family: "Barlow Semi Condensed", sans-serif;
+  font-size: 18px;
+  margin: 0;
+}
+.today-pick {
+  margin: 16px 0;
+}
+.today-pick p {
+  font-size: 13px;
+  margin: 8px 0;
+}
+.today-alternates button,
+.today-text {
+  font-size: 13px;
+  padding: 8px;
+  min-height: 44px;
+}
+.today-primary {
+  width: 100%;
+  min-height: 52px;
+}
+.today-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+.today-section-header h2 {
+  margin: 0;
+  font-size: 22px;
+}
+.day-rail ol {
+  list-style: none;
+  padding: 0;
+  margin: 20px 0 0;
+}
+.day-rail li {
+  display: grid;
+  grid-template-columns: 56px 1fr;
+  gap: 12px;
+  border-left: 2px solid var(--color-border);
+  padding: 8px 0 8px 12px;
+  align-items: center;
+}
+.day-rail time {
+  font-family: "Barlow Semi Condensed", sans-serif;
+  font-size: 13px;
+}
+.day-rail li button {
+  text-align: left;
+  background: transparent;
+  display: grid;
+  padding: 8px;
+  min-height: 44px;
+}
+.day-rail li span {
+  font-size: 13px;
+}
+.day-rail .rail-now {
+  background: var(--color-lime);
+  color: var(--color-ink);
+  border-radius: 8px;
+  min-height: 44px;
+}
+.rail-past {
+  color: var(--color-ink-muted);
+}
+.prep-row {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  min-height: 48px;
+}
+.prep-row input {
+  width: 24px;
+  height: 24px;
+}
+.prep-row small {
+  display: block;
+  font-size: 13px;
+}
+.water-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.water-row div {
+  display: flex;
+  gap: 8px;
+}
+.water-row button {
+  min-height: 44px;
+  min-width: 44px;
+}
+.tonight-card h2 {
+  margin-top: 0;
+}
+@media (min-width: 1200px) {
+  .today-layout {
+    grid-template-columns: minmax(0, 720px) 320px;
+  }
+  .now-card,
+  .pack-prep,
+  .water-row,
+  .tonight-card {
+    grid-column: 1;
+  }
+  .day-rail {
+    grid-column: 2;
+    grid-row: 1/5;
+    align-self: start;
+    position: sticky;
+    top: 24px;
+  }
+}
+@media (max-width: 767px) {
+  .today-layout .now-card {
+    padding: 20px;
+  }
+  .now-card h2 {
+    font-size: 24px;
+  }
+  .today-heading {
+    margin-bottom: 16px;
+  }
+  .today-layout {
+    gap: 24px;
+  }
+}

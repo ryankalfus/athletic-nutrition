@@ -1,6 +1,6 @@
 import { DEFAULT_PROFILE } from "./catalog.js";
 
-export const SCHEMA_VERSION = 2;
+export const SCHEMA_VERSION = 3;
 export const uid = () => globalThis.crypto.randomUUID();
 export const emptyData = () => ({
   step: "setup",
@@ -85,14 +85,30 @@ export function validateData(data) {
       (e) =>
         !object(e) ||
         typeof e.title !== "string" ||
-        (e.recurrence && !Array.isArray(e.recurrence.weekdays)),
+        (e.recurrence &&
+          (!Array.isArray(e.recurrence.weekdays) ||
+            (e.recurrence.overrides !== undefined &&
+              (!object(e.recurrence.overrides) ||
+                Object.entries(e.recurrence.overrides).some(
+                  ([date, override]) =>
+                    !/^\d{4}-\d{2}-\d{2}$/.test(date) || !object(override),
+                ))))),
     )
   )
     throw new Error("Invalid activity schedule.");
   if (
     data.schoolSchedule &&
     (!object(data.schoolSchedule) ||
-      !Array.isArray(data.schoolSchedule.weekdays))
+      !Array.isArray(data.schoolSchedule.weekdays) ||
+      (data.schoolSchedule.excludedRanges !== undefined &&
+        (!Array.isArray(data.schoolSchedule.excludedRanges) ||
+          data.schoolSchedule.excludedRanges.some(
+            (range) =>
+              !object(range) ||
+              !/^\d{4}-\d{2}-\d{2}$/.test(range.startDate) ||
+              !/^\d{4}-\d{2}-\d{2}$/.test(range.endDate) ||
+              range.endDate < range.startDate,
+          ))))
   )
     throw new Error("Invalid school schedule.");
   if (
@@ -153,15 +169,73 @@ export function validateData(data) {
       Number(data.groceryState.budgetAmount) < 0)
   )
     throw new Error("Invalid shop budget.");
+  const mealPlans = (data.mealPlans || []).map((plan) => {
+    const log = (data.dailyLogs?.[plan.date]?.entries || []).find(
+      (entry) => entry.mealPlanId === plan.id,
+    );
+    const originalStart = plan.eventStartTime ?? plan.intendedTime ?? "";
+    const minutes = originalStart
+      ? originalStart
+          .split(":")
+          .reduce((n, value, index) => n + Number(value) * (index ? 1 : 60), 0)
+      : null;
+    const eatMinutes = minutes == null ? null : Math.max(0, minutes - 90);
+    const eatAt =
+      plan.eatAt ??
+      (eatMinutes == null
+        ? ""
+        : `${String(Math.floor(eatMinutes / 60)).padStart(2, "0")}:${String(eatMinutes % 60).padStart(2, "0")}`);
+    const status =
+      plan.status === "logged" ? "eaten" : plan.status || "planned";
+    if (!["planned", "packed", "eaten"].includes(status))
+      throw new Error("Invalid food plan status.");
+    return {
+      ...plan,
+      status,
+      eatAt,
+      intendedTime: eatAt,
+      eventStartTime: originalStart,
+      moment: plan.moment || "regular",
+      packedAt: plan.packedAt ?? null,
+      eatenAt: plan.eatenAt ?? log?.createdAt ?? null,
+      logEntryId: plan.logEntryId ?? log?.id ?? null,
+    };
+  });
+  const dayPlans = Object.fromEntries(
+    Object.entries(data.dayPlans || {}).map(([date, tasks]) => [
+      date,
+      tasks.map((task) => ({
+        ...task,
+        planId: task.planId ?? task.owners?.[0] ?? null,
+      })),
+    ]),
+  );
   return {
     ...defaults,
     ...data,
+    mealPlans,
+    dayPlans,
     profile: { ...defaults.profile, ...data.profile },
-    groceryState: { ...defaults.groceryState, ...data.groceryState },
+    groceryState: {
+      ...defaults.groceryState,
+      ...data.groceryState,
+      pantry: (data.groceryState?.pantry || []).map((item) =>
+        item.availability === "some" ? { ...item, availability: "have" } : item,
+      ),
+    },
   };
 }
 
 export function validateDocument(doc) {
+  if (object(doc) && doc.version === 2) {
+    const original = structuredClone(doc);
+    doc = {
+      ...doc,
+      version: SCHEMA_VERSION,
+      migrationBackup: original,
+      migratedAt: new Date().toISOString(),
+    };
+  }
   if (!object(doc) || doc.version !== SCHEMA_VERSION)
     throw new Error(
       "Unsupported backup version. Keep this file; a matching app version is required.",

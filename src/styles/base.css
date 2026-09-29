@@ -1,0 +1,52 @@
+html {
+  font-family: var(--font-ui);
+  color: var(--color-ink);
+  background: var(--color-paper);
+  font-synthesis: none;
+}
+
+body {
+  margin: 0;
+  background: var(--color-paper);
+}
+
+.event-time strong,
+.mini-timeline > div > span,
+.water-title h2,
+.water-day-label strong {
+  font-family: var(--font-numeral);
+  font-variant-numeric: tabular-nums;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+button,
+input,
+select,
+textarea {
+  accent-color: var(--color-primary);
+}
+
+:where(button, a, input, select, textarea, summary):focus-visible {
+  outline: 3px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+:where(.action-hero, .now-card) :where(button, a, summary):focus-visible {
+  outline-color: var(--color-focus-dark);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+}

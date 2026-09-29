@@ -18,7 +18,6 @@ export const FOOD_IDEAS = [
     vegetarian: true,
     dairyFree: true,
     glutenFree: false,
-    nutFree: true,
     note: "Simple, portable carbs with no prep.",
   },
   {
@@ -32,7 +31,6 @@ export const FOOD_IDEAS = [
     vegetarian: true,
     dairyFree: true,
     glutenFree: true,
-    nutFree: true,
     note: "Easy to pack and usually gentle before activity.",
   },
   {
@@ -46,7 +44,6 @@ export const FOOD_IDEAS = [
     vegetarian: true,
     dairyFree: true,
     glutenFree: false,
-    nutFree: true,
     note: "A shelf-stable option for a bag or locker.",
   },
   {
@@ -60,7 +57,6 @@ export const FOOD_IDEAS = [
     vegetarian: true,
     dairyFree: true,
     glutenFree: false,
-    nutFree: true,
     note: "Easy carbs plus protein without needing a refrigerator.",
   },
   {
@@ -74,7 +70,6 @@ export const FOOD_IDEAS = [
     vegetarian: true,
     dairyFree: true,
     glutenFree: false,
-    nutFree: true,
     note: "A familiar option when you have a little time.",
   },
   {
@@ -88,7 +83,6 @@ export const FOOD_IDEAS = [
     vegetarian: true,
     dairyFree: true,
     glutenFree: false,
-    nutFree: true,
     note: "Packable fuel with carbs plus staying power.",
   },
   {
@@ -102,8 +96,7 @@ export const FOOD_IDEAS = [
     vegan: true,
     vegetarian: true,
     dairyFree: true,
-    glutenFree: true,
-    nutFree: true,
+    glutenFree: false,
     note: "A lower-cost warm option that can work before or after activity.",
   },
   {
@@ -118,7 +111,6 @@ export const FOOD_IDEAS = [
     vegetarian: true,
     dairyFree: true,
     glutenFree: false,
-    nutFree: true,
     note: "A packable mix of carbs and protein when kept cold.",
   },
   {
@@ -133,7 +125,6 @@ export const FOOD_IDEAS = [
     vegetarian: false,
     dairyFree: true,
     glutenFree: false,
-    nutFree: true,
     note: "A familiar full snack or meal for a busy handoff.",
   },
   {
@@ -147,7 +138,6 @@ export const FOOD_IDEAS = [
     vegetarian: false,
     dairyFree: true,
     glutenFree: false,
-    nutFree: true,
     note: "Shelf-stable protein and carbs for an away day.",
   },
   {
@@ -162,7 +152,6 @@ export const FOOD_IDEAS = [
     vegetarian: true,
     dairyFree: false,
     glutenFree: false,
-    nutFree: true,
     note: "A quick carb-and-protein recovery option when kept cold.",
   },
   {
@@ -177,7 +166,6 @@ export const FOOD_IDEAS = [
     vegetarian: true,
     dairyFree: true,
     glutenFree: false,
-    nutFree: true,
     note: "A dairy-free recovery option that packs well with an ice pack.",
   },
   {
@@ -192,7 +180,6 @@ export const FOOD_IDEAS = [
     vegetarian: true,
     dairyFree: true,
     glutenFree: true,
-    nutFree: true,
     note: "Budget-friendly and balanced for a full meal window.",
   },
   {
@@ -207,7 +194,6 @@ export const FOOD_IDEAS = [
     vegetarian: false,
     dairyFree: true,
     glutenFree: true,
-    nutFree: true,
     note: "A practical meal with carbs and protein after training.",
   },
   {
@@ -222,7 +208,6 @@ export const FOOD_IDEAS = [
     vegetarian: true,
     dairyFree: true,
     glutenFree: false,
-    nutFree: true,
     note: "A low-cost meal that can be packed and reheated.",
   },
   {
@@ -237,7 +222,6 @@ export const FOOD_IDEAS = [
     vegetarian: true,
     dairyFree: true,
     glutenFree: false,
-    nutFree: true,
     note: "Make-ahead carbs and protein for school-to-sport days.",
   },
   {
@@ -252,7 +236,6 @@ export const FOOD_IDEAS = [
     vegetarian: true,
     dairyFree: true,
     glutenFree: false,
-    nutFree: true,
     note: "A familiar recovery meal using basic ingredients.",
   },
   {
@@ -267,7 +250,6 @@ export const FOOD_IDEAS = [
     vegetarian: true,
     dairyFree: true,
     glutenFree: true,
-    nutFree: true,
     note: "A plant-based meal with carbs and protein.",
   },
   {
@@ -282,7 +264,6 @@ export const FOOD_IDEAS = [
     vegetarian: true,
     dairyFree: false,
     glutenFree: true,
-    nutFree: true,
     note: "Fast recovery fuel when a full meal is still a while away.",
   },
   {
@@ -297,12 +278,11 @@ export const FOOD_IDEAS = [
     vegetarian: true,
     dairyFree: false,
     glutenFree: false,
-    nutFree: true,
     note: "Easy to find at school or pack from home.",
   },
   {
     id: "seed-trail-mix",
-    name: "Nut-free seed mix + dried fruit",
+    name: "Seed mix + dried fruit",
     moments: ["quick", "regular", "during"],
     sources: ["packed", "store", "home"],
     cost: "standard",
@@ -311,7 +291,6 @@ export const FOOD_IDEAS = [
     vegetarian: true,
     dairyFree: true,
     glutenFree: true,
-    nutFree: true,
     note: "Compact, shelf-stable fuel for longer days.",
   },
   {
@@ -326,7 +305,6 @@ export const FOOD_IDEAS = [
     vegetarian: true,
     dairyFree: true,
     glutenFree: false,
-    nutFree: true,
     note: "A drinkable option when solid food is less appealing.",
   },
   {
@@ -340,7 +318,6 @@ export const FOOD_IDEAS = [
     vegetarian: true,
     dairyFree: true,
     glutenFree: false,
-    nutFree: true,
     note: "Most useful during longer or harder sessions; water is fine for many shorter ones.",
   },
   {
@@ -354,7 +331,6 @@ export const FOOD_IDEAS = [
     vegetarian: true,
     dairyFree: true,
     glutenFree: true,
-    nutFree: true,
     note: "A simple, easy-to-carry carb option when time is tight.",
   },
 ];
@@ -513,11 +489,24 @@ const exampleAmounts = {
   jam: [20, "g"],
   eggs: [2, "piece"],
 };
+const displayAmounts = {
+  bananas: "1 banana",
+  bread: "2 slices of bread",
+  pretzels: "1 small bag of pretzels",
+  "rice-cakes": "2 rice cakes",
+  eggs: "2 eggs",
+  rice: "Rice, to suit your appetite",
+};
 for (const key of Object.keys(MEAL_INGREDIENTS))
   MEAL_INGREDIENTS[key] = MEAL_INGREDIENTS[key].map(([name, id]) => [
     name,
     id,
     ...(exampleAmounts[id] || [1, "portion"]),
+    displayAmounts[id] ||
+      (exampleAmounts[id] &&
+      !["piece", "portion"].includes(exampleAmounts[id][1])
+        ? `${exampleAmounts[id][0]} ${exampleAmounts[id][1]} ${name.toLowerCase()}`
+        : `${name}, to suit your appetite`),
   ]);
 
 export const GROCERY_GOALS = [
@@ -565,7 +554,6 @@ export const GROCERY_CATALOG = [
     vegetarian: true,
     dairyFree: true,
     glutenFree: true,
-    nutFree: true,
   },
   {
     id: "apples",
@@ -577,7 +565,6 @@ export const GROCERY_CATALOG = [
     vegetarian: true,
     dairyFree: true,
     glutenFree: true,
-    nutFree: true,
   },
   {
     id: "frozen-berries",
@@ -589,7 +576,6 @@ export const GROCERY_CATALOG = [
     vegetarian: true,
     dairyFree: true,
     glutenFree: true,
-    nutFree: true,
   },
   {
     id: "baby-carrots",
@@ -601,7 +587,6 @@ export const GROCERY_CATALOG = [
     vegetarian: true,
     dairyFree: true,
     glutenFree: true,
-    nutFree: true,
   },
   {
     id: "bread",
@@ -613,7 +598,6 @@ export const GROCERY_CATALOG = [
     vegetarian: true,
     dairyFree: true,
     glutenFree: false,
-    nutFree: true,
   },
   {
     id: "tortillas",
@@ -625,7 +609,6 @@ export const GROCERY_CATALOG = [
     vegetarian: true,
     dairyFree: true,
     glutenFree: false,
-    nutFree: true,
   },
   {
     id: "oats",
@@ -636,8 +619,7 @@ export const GROCERY_CATALOG = [
     vegan: true,
     vegetarian: true,
     dairyFree: true,
-    glutenFree: true,
-    nutFree: true,
+    glutenFree: false,
   },
   {
     id: "rice",
@@ -649,7 +631,6 @@ export const GROCERY_CATALOG = [
     vegetarian: true,
     dairyFree: true,
     glutenFree: true,
-    nutFree: true,
   },
   {
     id: "pretzels",
@@ -661,7 +642,6 @@ export const GROCERY_CATALOG = [
     vegetarian: true,
     dairyFree: true,
     glutenFree: false,
-    nutFree: true,
   },
   {
     id: "applesauce",
@@ -673,7 +653,6 @@ export const GROCERY_CATALOG = [
     vegetarian: true,
     dairyFree: true,
     glutenFree: true,
-    nutFree: true,
   },
   {
     id: "fig-bars",
@@ -685,7 +664,6 @@ export const GROCERY_CATALOG = [
     vegetarian: true,
     dairyFree: true,
     glutenFree: false,
-    nutFree: true,
   },
   {
     id: "crackers",
@@ -697,7 +675,6 @@ export const GROCERY_CATALOG = [
     vegetarian: true,
     dairyFree: true,
     glutenFree: false,
-    nutFree: true,
   },
   {
     id: "beans",
@@ -709,7 +686,6 @@ export const GROCERY_CATALOG = [
     vegetarian: true,
     dairyFree: true,
     glutenFree: true,
-    nutFree: true,
   },
   {
     id: "eggs",
@@ -721,7 +697,6 @@ export const GROCERY_CATALOG = [
     vegetarian: true,
     dairyFree: true,
     glutenFree: true,
-    nutFree: true,
   },
   {
     id: "chicken",
@@ -733,7 +708,6 @@ export const GROCERY_CATALOG = [
     vegetarian: false,
     dairyFree: true,
     glutenFree: true,
-    nutFree: true,
   },
   {
     id: "tofu",
@@ -745,7 +719,6 @@ export const GROCERY_CATALOG = [
     vegetarian: true,
     dairyFree: true,
     glutenFree: true,
-    nutFree: true,
   },
   {
     id: "tuna-pouches",
@@ -757,7 +730,6 @@ export const GROCERY_CATALOG = [
     vegetarian: false,
     dairyFree: true,
     glutenFree: true,
-    nutFree: true,
   },
   {
     id: "sunbutter",
@@ -769,7 +741,6 @@ export const GROCERY_CATALOG = [
     vegetarian: true,
     dairyFree: true,
     glutenFree: true,
-    nutFree: true,
   },
   {
     id: "yogurt",
@@ -781,7 +752,6 @@ export const GROCERY_CATALOG = [
     vegetarian: true,
     dairyFree: false,
     glutenFree: true,
-    nutFree: true,
   },
   {
     id: "soy-milk",
@@ -793,7 +763,6 @@ export const GROCERY_CATALOG = [
     vegetarian: true,
     dairyFree: true,
     glutenFree: true,
-    nutFree: true,
   },
   {
     id: "sports-drink",
@@ -805,7 +774,6 @@ export const GROCERY_CATALOG = [
     vegetarian: true,
     dairyFree: true,
     glutenFree: true,
-    nutFree: true,
   },
   {
     id: "cheese-sticks",
@@ -817,7 +785,6 @@ export const GROCERY_CATALOG = [
     vegetarian: true,
     dairyFree: false,
     glutenFree: true,
-    nutFree: true,
   },
   {
     id: "hummus",
@@ -829,6 +796,5 @@ export const GROCERY_CATALOG = [
     vegetarian: true,
     dairyFree: true,
     glutenFree: true,
-    nutFree: true,
   },
 ];

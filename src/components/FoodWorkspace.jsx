@@ -1,35 +1,43 @@
+import HomePage from "../pages/Food/HomePage.jsx";
+import IdeasPage from "../pages/Food/IdeasPage.jsx";
 import { useEffect, useRef, useState } from "react";
 import { GROCERY_CATALOG, GROCERY_GOALS } from "../domain/catalog.js";
-import {
-  addDays,
-  eventsForDate,
-  getDateKey,
-  getFuelingGuidance,
-  planTasksForIdea,
-} from "../domain/timing.js";
+import { addDays, eventsForDate, getDateKey } from "../domain/timing.js";
 import {
   acceptRecommendations,
   consumeStock,
+  findMatchingFoodItem,
   groceryPreview,
   ingredientId,
   ingredientsForMeal,
   knownMoney,
   makeLog,
-  missingGroceries,
+  makeFoodRecord,
   portionCalories,
   purchase,
-  sameProduct,
+  removeLogEntry,
+  reviseLogEntry,
   undoConsumption,
   undoPurchase,
-  usable,
   validPortion,
 } from "../domain/food.js";
-import { planMeal, profileSignature, undoPlan } from "../domain/plans.js";
+import { markPlanLogged } from "../domain/plans.js";
 import { uid } from "../domain/storage.js";
 import { changeData, useStore } from "../store.js";
+import { useToast } from "./ui/Toast.jsx";
+import { useAsyncAction } from "../hooks/useAsyncAction.js";
 import { useRoute } from "../routing.js";
-import { AppNavigation, Shell } from "./AppFrame.jsx";
+import {
+  formatAmount,
+  formatDate,
+  formatOrigin,
+  formatTime,
+  plural,
+} from "../format.js";
+import { Shell } from "./AppFrame.jsx";
 import { Dialog } from "./Dialog.jsx";
+import { LabelCheck } from "./ui/LabelCheck.jsx";
+import { ConfirmDialog } from "./ui/ConfirmDialog.jsx";
 import { FoodSearch } from "./FoodSearch.jsx";
 import { PortionEditor } from "./PortionEditor.jsx";
 
@@ -47,37 +55,43 @@ const foodFor = (item) =>
     ingredientId: ingredientId(item),
   };
 const tabs = [
-  ["overview", "Overview"],
-  ["pantry", "At home"],
+  ["ideas", "Ideas"],
+  ["home", "At home"],
   ["groceries", "Groceries"],
-  ["meals", "Meals"],
-  ["log", "Food log"],
+  ["log", "Log"],
 ];
 
-export default function FoodHub({ now, todayKey, onNavigate }) {
+export default function FoodHub({ now, todayKey }) {
   const { current } = useStore();
   const data = current.data;
   const grocery = data.groceryState;
   const [, navigate, subroute] = useRoute();
-  const section = tabs.some(([key]) => key === subroute)
-    ? subroute
-    : "overview";
+  const section = tabs.some(([key]) => key === subroute) ? subroute : "ideas";
   const heading = useRef(null);
   const foodNav = useRef(null);
+  const searchInput = useRef(null);
   const [dialog, setDialog] = useState(null);
+  const [mergePrompt, setMergePrompt] = useState(null);
+  const [confirmation, setConfirmation] = useState(null);
   const [query, setQuery] = useState(
     () => sessionStorage.getItem(`food-query-${current.id}`) || "",
   );
   useEffect(() => {
     sessionStorage.setItem(`food-query-${current.id}`, query);
   }, [query, current.id]);
-  const [notice, setNotice] = useState("");
+  useEffect(() => {
+    const planId = sessionStorage.getItem("nourally-log-plan");
+    if (!planId) return;
+    sessionStorage.removeItem("nourally-log-plan");
+    const plan = data.mealPlans.find((entry) => entry.id === planId);
+    if (plan && plan.status !== "eaten") setDialog({ mealLog: plan });
+  }, [data.mealPlans]);
+  const { pending, run } = useAsyncAction();
+  const showToast = useToast();
   const [preview, setPreview] = useState(null);
   const [selected, setSelected] = useState([]);
   const [budget, setBudget] = useState(grocery.budgetAmount ?? "");
   const [tripDate, setTripDate] = useState(grocery.lastShopDate || "");
-  const [replaceId, setReplaceId] = useState("");
-  const [mealLimit, setMealLimit] = useState(6);
   useEffect(() => {
     heading.current?.focus({ preventScroll: true });
     foodNav.current
@@ -88,29 +102,6 @@ export default function FoodHub({ now, todayKey, onNavigate }) {
     setBudget(grocery.budgetAmount ?? "");
     setTripDate(grocery.lastShopDate || "");
   }, [grocery.budgetAmount, grocery.lastShopDate]);
-  const guidance = getFuelingGuidance({
-    now,
-    todayKey,
-    events: data.schedule,
-    schoolSchedule: data.schoolSchedule,
-    profile: data.profile,
-  });
-  const candidates = guidance.allIdeas;
-  const meals = candidates
-    .map((idea) => ({
-      idea,
-      ingredients: ingredientsForMeal(idea, grocery.pantry, todayKey),
-    }))
-    .sort((a, b) => {
-      const score = (meal) =>
-        (meal.ingredients.every((i) => i.sufficient) ? 1000 : 0) +
-        meal.ingredients.filter((i) => i.sufficient).length * 10 +
-        meal.ingredients.filter((i) => i.available).length * 2 +
-        (data.favorites.some((f) => f.id === meal.idea.id) ? 3 : 0) +
-        (!meal.idea.needsHeat ? 1 : 0);
-      return score(b) - score(a);
-    });
-  const plans = data.mealPlans.filter((p) => p.date === todayKey);
   const totals = knownMoney(grocery.items);
   const upcoming = Array.from({ length: 7 }, (_, i) =>
     eventsForDate(
@@ -118,74 +109,80 @@ export default function FoodHub({ now, todayKey, onNavigate }) {
       getDateKey(addDays(new Date(`${todayKey}T12:00:00`), i)),
     ),
   ).flat();
-  const low = grocery.pantry.filter(
-    (p) =>
-      p.availability === "low" ||
-      !usable(p, todayKey) ||
-      Number(p.quantity) <= Number(p.lowThreshold ?? 0),
-  );
   const openAdd = (destination) => setDialog({ destination });
-  async function saveFood(portion) {
+  async function saveFood(portion, mergeChoice = null) {
     const { destination, food, item, substitute } = dialog;
-    const ok = await changeData((draft) => {
-      draft.recentFoods = [
-        food,
-        ...draft.recentFoods.filter((f) => f.id !== food.id),
-      ].slice(0, 30);
-      const fields = {
-        ...portion,
-        quantity: portion.amount,
-        priceKind: portion.price == null ? null : "user-entered",
-        food,
-        updatedDate: todayKey,
-      };
-      delete fields.amount;
-      delete fields.override;
-      const list = destination === "pantry" ? "pantry" : "items";
-      if (item) {
-        const existing = draft.groceryState[list].find((i) => i.id === item.id);
-        if (!existing)
-          throw new Error(
-            "This item was removed in another tab. Add it again instead.",
-          );
-        Object.assign(
-          existing,
-          fields,
-          substitute
-            ? {
-                requirement: item.requirement || {
-                  name: item.name,
-                  ingredientId: ingredientId(item),
-                  quantity: item.quantity,
-                  unit: item.unit,
-                },
-              }
-            : {},
-        );
-      } else {
-        const existing = draft.groceryState[list].find(
-          (i) =>
-            sameProduct(i, fields) &&
-            i.unit === portion.unit &&
-            i.packageAmount === portion.packageAmount &&
-            i.expiry === portion.expiry &&
-            i.location === portion.location,
-        );
-        if (existing)
-          existing.quantity = Number(existing.quantity) + portion.amount;
-        else
-          draft.groceryState[list].push({
-            id: uid(),
-            ...fields,
-            status: "list",
-            origin: food.source === "Manual" ? "manual" : "search",
-          });
+    const fields = {
+      ...portion,
+      quantity: portion.amount,
+      priceKind: portion.price == null ? null : "user-entered",
+      food,
+      updatedDate: todayKey,
+    };
+    delete fields.amount;
+    delete fields.override;
+    const list = destination === "pantry" ? "pantry" : "items";
+    if (!item && !mergeChoice) {
+      const existing = findMatchingFoodItem(grocery[list], fields);
+      if (existing) {
+        setDialog({ ...dialog, portionDraft: portion });
+        setMergePrompt({ portion, existing });
+        return false;
       }
-    });
-    if (ok) {
-      setDialog(null);
-      setNotice("Saved.");
     }
+    return run("save-food", async () => {
+      const ok = await changeData((draft) => {
+        draft.recentFoods = [
+          food,
+          ...draft.recentFoods.filter((f) => f.id !== food.id),
+        ].slice(0, 30);
+        if (item) {
+          const existing = draft.groceryState[list].find(
+            (i) => i.id === item.id,
+          );
+          if (!existing)
+            throw new Error(
+              "This item was removed in another tab. Add it again instead.",
+            );
+          Object.assign(
+            existing,
+            fields,
+            substitute
+              ? {
+                  requirement: item.requirement || {
+                    name: item.name,
+                    ingredientId: ingredientId(item),
+                    quantity: item.quantity,
+                    unit: item.unit,
+                  },
+                }
+              : {},
+          );
+        } else {
+          const existing = findMatchingFoodItem(
+            draft.groceryState[list],
+            fields,
+          );
+          if (mergeChoice === "merge" && !existing)
+            throw new Error(
+              "That matching food changed. Review the list and try again.",
+            );
+          if (mergeChoice === "merge")
+            existing.quantity = Number(existing.quantity) + portion.amount;
+          else
+            draft.groceryState[list].push(
+              makeFoodRecord(fields, {
+                origin: food.source === "Manual" ? "manual" : "search",
+              }),
+            );
+        }
+      });
+      if (ok) {
+        setDialog(null);
+        setMergePrompt(null);
+      }
+      return ok;
+    });
   }
   function buildPreview() {
     const goals = [
@@ -198,7 +195,9 @@ export default function FoodHub({ now, todayKey, onNavigate }) {
     const candidates = GROCERY_CATALOG.filter(
       (item) =>
         goals.some((goal) => item.goals.includes(goal)) &&
-        data.profile.dietaryNeeds.every((need) => item[need]),
+        data.profile.dietaryNeeds
+          .filter((need) => need !== "nutFree")
+          .every((need) => item[need]),
     ).sort(
       (a, b) =>
         Number(b.goals.includes(grocery.goal)) -
@@ -219,7 +218,7 @@ export default function FoodHub({ now, todayKey, onNavigate }) {
         return {
           ...item,
           activityReason: matchingEvent
-            ? `Useful around ${matchingEvent.title} (${matchingEvent.date})${["away", "travel"].includes(matchingEvent.location) ? " — pack for travel" : ""}`
+            ? `Useful around ${matchingEvent.title} (${formatDate(matchingEvent.date)})${["away", "travel"].includes(matchingEvent.location) ? " — pack for travel" : ""}`
             : "For your selected shopping goal and regular meals",
         };
       }),
@@ -245,7 +244,6 @@ export default function FoodHub({ now, todayKey, onNavigate }) {
     });
     if (ok) {
       setPreview(null);
-      setNotice("Selected suggestions added. Existing items kept.");
     }
   }
   const remove = (list, id) =>
@@ -259,56 +257,58 @@ export default function FoodHub({ now, todayKey, onNavigate }) {
   const latestRemove = [...data.operations]
     .reverse()
     .find((o) => o.type === "remove-food" && !o.undone);
-  const addMissing = (idea) =>
-    changeData((draft) => {
-      const required = ingredientsForMeal(
-        idea,
-        draft.groceryState.pantry,
-        todayKey,
-      );
-      const additions = missingGroceries(required, draft.groceryState.items);
-      draft.groceryState.items.push(...additions);
-      setNotice(
-        additions.length
-          ? `${additions.length} missing ingredients added. Prices need confirmation.`
-          : "Already queued or stocked. Confirm approximate amounts before adding more.",
-      );
-    });
 
   return (
     <Shell eyebrow="NOURALLY / FOOD">
       <section className="dashboard-head">
         <div>
-          <p className="kicker">YOUR FOOD WORKSPACE</p>
           <h1>Food</h1>
         </div>
-        <AppNavigation active="food" onNavigate={onNavigate} />
       </section>
-      <nav className="food-sections" aria-label="Food workspace" ref={foodNav}>
+      <nav className="food-sections" aria-label="Food sections" ref={foodNav}>
         {tabs.map(([key, label]) => (
-          <button
+          <a
             key={key}
+            href={`#/food/${key}`}
             aria-current={section === key ? "page" : undefined}
             className={section === key ? "active" : ""}
             onClick={() => navigate(`food/${key}`)}
           >
             {label}
-          </button>
+            {key === "groceries" &&
+              grocery.items.filter((i) => !i.checked && i.status !== "bought")
+                .length > 0 && (
+                <span
+                  aria-label={`${grocery.items.filter((i) => !i.checked && i.status !== "bought").length} unchecked items`}
+                >
+                  {" "}
+                  {
+                    grocery.items.filter(
+                      (i) => !i.checked && i.status !== "bought",
+                    ).length
+                  }
+                </span>
+              )}
+            {key === "home" &&
+              grocery.pantry.some((i) =>
+                ["low", "out"].includes(i.availability),
+              ) && <span aria-label="Some items are low or out"> ·</span>}
+          </a>
         ))}
       </nav>
       <div className="section-toolbar">
-        <h2 ref={heading} tabIndex={-1}>
+        <span ref={heading} tabIndex={-1} className="sr-only">
           {tabs.find(([key]) => key === section)[1]}
-        </h2>
-        {["pantry", "groceries"].includes(section) && (
-          <button className="primary small" onClick={() => openAdd(section)}>
+        </span>
+        {section === "groceries" && (
+          <button
+            className="primary small"
+            onClick={() => openAdd(section === "home" ? "pantry" : section)}
+          >
             + Add food
           </button>
         )}
       </div>
-      <p role="status" className="status-line">
-        {notice}
-      </p>
       {latestRemove && (
         <button
           className="text-button"
@@ -329,157 +329,38 @@ export default function FoodHub({ now, todayKey, onNavigate }) {
         </button>
       )}
 
-      {section === "overview" && (
-        <div className="food-overview-grid">
-          <article className="card">
-            <p className="kicker">UP NEXT</p>
-            <h3>{plans[0]?.template.name || guidance.title}</h3>
-            <p>{guidance.timing}</p>
-            <button onClick={() => navigate("food/meals")}>
-              {plans.length ? "Review meal & prep" : "Choose a meal"}
-            </button>
-          </article>
-          <article className="card">
-            <h3>{low.length} low, out, or past use-by</h3>
-            <p>
-              {low
-                .slice(0, 3)
-                .map((i) => i.name)
-                .join(", ") || "Your tracked stock looks up to date."}
-            </p>
-            <button onClick={() => navigate("food/pantry")}>
-              Review at home
-            </button>
-          </article>
-          <article className="card">
-            <h3>{grocery.items.length} items to shop</h3>
-            <p>
-              {money(totals.subtotal)} known subtotal
-              {totals.unknown ? ` · ${totals.unknown} need prices` : ""}
-            </p>
-            <button onClick={() => navigate("food/groceries")}>
-              Open groceries
-            </button>
-          </article>
-          <article className="card">
-            <h3>
-              {data.dailyLogs[todayKey]?.entries.length || 0} food check-ins
-              today
-            </h3>
-            <p>
-              {data.dailyLogs[todayKey]?.entries.at(-1)?.name ||
-                "Capture what you ate, with optional nutrition details."}
-            </p>
-            <button onClick={() => navigate("food/log")}>Open food log</button>
-          </article>
-        </div>
-      )}
-
-      {section === "pantry" && (
-        <>
-          <p className="muted">
-            Track exact quantities or use Some / Low / Out. Ingredient
-            relationships are explicit, not guessed from similar product names.
-          </p>
-          {!grocery.pantry.length && (
-            <div className="empty-state">
-              <h3>Start with what is already at home</h3>
-              <p>
-                Add staples like bread, peanut butter, or fruit. Groceries
-                marked bought will appear here too.
-              </p>
-              <button onClick={() => openAdd("pantry")}>
-                Add your first food
-              </button>
-            </div>
-          )}
-          <div className="data-list">
-            {grocery.pantry.map((item) => (
-              <article className="data-row" key={item.id}>
-                <div>
-                  <h3>{item.name}</h3>
-                  <p>
-                    {item.availability && item.availability !== "exact"
-                      ? item.availability
-                      : `${item.quantity} ${item.unit || "package"}`}{" "}
-                    · {item.location || "pantry"}
-                    {item.packageAmount
-                      ? ` · ${item.packageAmount} ${item.packageUnit} per package`
-                      : ""}
-                  </p>
-                  <p>
-                    {ingredientId(item)
-                      ? `Ingredient: ${ingredientId(item).replaceAll("-", " ")}`
-                      : "Ingredient unresolved — edit to connect to meals"}
-                    {item.expiry
-                      ? ` · Use by ${item.expiry}${item.expiry < todayKey ? " (past date)" : ""}`
-                      : ""}
-                    {item.updatedDate ? ` · Updated ${item.updatedDate}` : ""}
-                  </p>
-                  {item.notes && <p>{item.notes}</p>}
-                </div>
-                <div className="row-actions">
-                  <button
-                    onClick={() =>
-                      setDialog({
-                        destination: "pantry",
-                        food: foodFor(item),
-                        item,
-                      })
-                    }
-                  >
-                    Edit
-                  </button>
-                  <button
-                    onClick={() =>
-                      changeData((draft) => {
-                        const p = draft.groceryState.pantry.find(
-                          (p) => p.id === item.id,
-                        );
-                        if (p) {
-                          p.availability =
-                            p.availability === "out" ? "some" : "out";
-                          p.updatedDate = todayKey;
-                        }
-                      })
-                    }
-                  >
-                    {item.availability === "out" ? "Some left" : "Mark out"}
-                  </button>
-                  <button
-                    onClick={() => remove("pantry", item.id)}
-                    aria-label={`Remove ${item.name}`}
-                  >
-                    Remove
-                  </button>
-                </div>
-              </article>
-            ))}
-          </div>
-        </>
-      )}
+      {section === "home" && <HomePage todayKey={todayKey} />}
 
       {section === "groceries" && (
         <>
+          <LabelCheck />
           <div className="budget-banner">
             <div>
-              <h3>{money(totals.subtotal)} known subtotal</h3>
+              <h3>
+                {!grocery.items.length
+                  ? "Your list is empty"
+                  : totals.unknown
+                    ? "Prices still needed"
+                    : `About ${money(totals.subtotal)} so far`}
+              </h3>
               <p>
-                {totals.unknown
-                  ? `${totals.unknown} unpriced items — total and remaining budget are incomplete.`
-                  : grocery.budgetAmount == null
-                    ? "No budget limit set."
-                    : `${money(Math.max(grocery.budgetAmount - totals.subtotal, 0))} remaining estimate${totals.subtotal > grocery.budgetAmount ? ` · ${money(totals.subtotal - grocery.budgetAmount)} over budget` : ""}`}
+                {!grocery.items.length
+                  ? "Add foods you need this week."
+                  : totals.unknown
+                    ? totals.unknown === 1
+                      ? "1 item needs a price."
+                      : `${totals.unknown} items need prices.`
+                    : grocery.budgetAmount == null
+                      ? "No budget limit set."
+                      : `${money(Math.max(grocery.budgetAmount - totals.subtotal, 0))} remaining estimate${totals.subtotal > grocery.budgetAmount ? ` · ${money(totals.subtotal - grocery.budgetAmount)} over budget` : ""}`}
               </p>
             </div>
             <button onClick={buildPreview}>Suggest groceries</button>
           </div>
           <p className="muted">
             {upcoming.length
-              ? `${upcoming.length} upcoming activities in 7 days inform packable fuel and recovery basics.`
-              : "No upcoming sports saved. Suggestions use your selected shopping goal."}{" "}
-            Estimates are not live store prices. The cart is an in-app
-            checklist, not retailer checkout.
+              ? `Based on your ${upcoming.length} upcoming ${plural(upcoming.length, "activity")} this week.`
+              : "Add a practice or game for tailored grocery ideas."}
           </p>
           <details className="settings-details">
             <summary>Budget, shopping goal & last trip</summary>
@@ -490,20 +371,19 @@ export default function FoodHub({ now, todayKey, onNavigate }) {
                   budget !== "" &&
                   (!Number.isFinite(Number(budget)) || Number(budget) < 0)
                 )
-                  return setNotice(
+                  return showToast(
                     "Budget must be zero or greater, or blank for no limit.",
                   );
                 if (tripDate && tripDate > todayKey)
-                  return setNotice("Last trip cannot be in the future.");
-                if (
-                  await changeData((draft) => {
+                  return showToast("Last trip cannot be in the future.");
+                await run("shopping-settings", () =>
+                  changeData((draft) => {
                     draft.groceryState.budgetAmount =
                       budget === "" ? null : Number(budget);
                     draft.groceryState.lastShopDate = tripDate;
                     draft.groceryState.recency = "";
-                  })
-                )
-                  setNotice("Shopping settings saved.");
+                  }),
+                );
               }}
             >
               <div className="form-grid">
@@ -531,7 +411,11 @@ export default function FoodHub({ now, todayKey, onNavigate }) {
                 Blank budget means no limit. $0 means no spending. Future trip
                 dates cannot be saved.
               </p>
-              <button>Save shopping settings</button>
+              <button disabled={pending === "shopping-settings"}>
+                {pending === "shopping-settings"
+                  ? "Saving…"
+                  : "Save shopping settings"}
+              </button>
             </form>
             <label>
               Approximate last trip
@@ -584,118 +468,107 @@ export default function FoodHub({ now, todayKey, onNavigate }) {
               Undo last accepted suggestions
             </button>
           )}
-          {["list", "cart"].map((status) => (
-            <section className="list-section" key={status}>
-              <div className="section-toolbar">
-                <h3>{status === "list" ? "Shopping list" : "In-app cart"}</h3>
-                {status === "cart" && (
+          <section className="list-section">
+            <div className="section-toolbar">
+              <h3>Shopping list</h3>
+              <button
+                disabled={
+                  !grocery.items.some((i) => i.status === "cart") ||
+                  pending === "finish-shopping"
+                }
+                onClick={() =>
+                  run("finish-shopping", () =>
+                    changeData((draft) => {
+                      draft.groceryState = purchase(
+                        draft.groceryState,
+                        draft.groceryState.items
+                          .filter((i) => i.status === "cart")
+                          .map((i) => i.id),
+                        todayKey,
+                      );
+                    }),
+                  )
+                }
+              >
+                {pending === "finish-shopping" ? "Saving…" : "Finish shopping"}
+              </button>
+            </div>
+            {!grocery.items.length && (
+              <p className="muted">
+                Your list is empty. Add foods or preview suggestions.
+              </p>
+            )}
+            {grocery.items.map((item) => (
+              <article className="data-row" key={item.id}>
+                <div>
+                  <h3>{item.name}</h3>
+                  <p>
+                    {item.quantity}{" "}
+                    {plural(item.quantity, item.unit || "package")} ·{" "}
+                    {item.price == null
+                      ? "Price unknown"
+                      : `${money(item.price)} per ${item.unit || "package"}${item.priceKind === "estimate" ? " (estimate)" : ""}`}{" "}
+                    · {formatOrigin(item.origin || "preserved")}
+                  </p>
+                  {item.requirement && (
+                    <p>Originally needed: {item.requirement.name}</p>
+                  )}
+                  {item.notes && <p>{item.notes}</p>}
+                </div>
+                <div className="row-actions">
                   <button
-                    disabled={!grocery.items.some((i) => i.status === "cart")}
                     onClick={() =>
-                      changeData((draft) => {
-                        draft.groceryState = purchase(
-                          draft.groceryState,
-                          draft.groceryState.items
-                            .filter((i) => i.status === "cart")
-                            .map((i) => i.id),
-                          todayKey,
-                        );
+                      setDialog({
+                        destination: "groceries",
+                        food: foodFor(item),
+                        item,
                       })
                     }
                   >
-                    Record cart as bought
+                    Edit
                   </button>
-                )}
-              </div>
-              {!grocery.items.some((i) => (i.status || "list") === status) && (
-                <p className="muted">
-                  {status === "list"
-                    ? "Your list is empty. Add foods or preview suggestions."
-                    : "Add list items to your cart as you shop."}
-                </p>
-              )}
-              {grocery.items
-                .filter((i) => (i.status || "list") === status)
-                .map((item) => (
-                  <article className="data-row" key={item.id}>
-                    <div>
-                      <h3>{item.name}</h3>
-                      <p>
-                        {item.quantity} {item.unit || "package"} ·{" "}
-                        {item.price == null
-                          ? "Price unknown"
-                          : `${money(item.price)} per ${item.unit || "package"}${item.priceKind === "estimate" ? " (estimate)" : ""}`}{" "}
-                        · {item.origin || "preserved"}
-                      </p>
-                      {item.requirement && (
-                        <p>Originally needed: {item.requirement.name}</p>
-                      )}
-                      {item.notes && <p>{item.notes}</p>}
-                    </div>
-                    <div className="row-actions">
-                      <button
-                        onClick={() =>
-                          setDialog({
-                            destination: "groceries",
-                            food: foodFor(item),
-                            item,
-                          })
-                        }
-                      >
-                        Edit
-                      </button>
-                      <button
-                        onClick={() =>
-                          setDialog({
-                            destination: "groceries",
-                            item,
-                            substitute: true,
-                          })
-                        }
-                      >
-                        Substitute
-                      </button>
-                      <button
-                        onClick={() =>
-                          changeData((draft) => {
-                            const target = draft.groceryState.items.find(
-                              (i) => i.id === item.id,
-                            );
-                            if (target)
-                              target.status =
-                                status === "list" ? "cart" : "list";
-                          })
-                        }
-                      >
-                        {status === "list" ? "Add to cart" : "Back to list"}
-                      </button>
-                      <button
-                        onClick={() =>
-                          changeData((draft) => {
-                            draft.groceryState = purchase(
-                              draft.groceryState,
-                              [item.id],
-                              todayKey,
-                            );
-                          })
-                        }
-                      >
-                        Bought
-                      </button>
-                      <button
-                        onClick={() => remove("items", item.id)}
-                        aria-label={`Remove ${item.name}`}
-                      >
-                        Remove
-                      </button>
-                    </div>
-                  </article>
-                ))}
-            </section>
-          ))}
+                  <button
+                    onClick={() =>
+                      setDialog({
+                        destination: "groceries",
+                        item,
+                        substitute: true,
+                      })
+                    }
+                  >
+                    Substitute
+                  </button>
+                  <label className="check-row">
+                    <input
+                      type="checkbox"
+                      checked={item.status === "cart"}
+                      onChange={() =>
+                        changeData((draft) => {
+                          const target = draft.groceryState.items.find(
+                            (i) => i.id === item.id,
+                          );
+                          if (target)
+                            target.status =
+                              target.status === "cart" ? "list" : "cart";
+                        })
+                      }
+                    />
+                    Got it
+                  </label>
+                  <button
+                    onClick={() => remove("items", item.id)}
+                    aria-label={`Remove ${item.name}`}
+                  >
+                    Remove
+                  </button>
+                </div>
+              </article>
+            ))}
+          </section>
           <details className="settings-details">
             <summary>
-              Purchase history ({grocery.purchases.length} items)
+              Past trips ({grocery.purchases.length}{" "}
+              {plural(grocery.purchases.length, "item")})
             </summary>
             {!grocery.purchases.length && <p>No purchases recorded.</p>}
             {grocery.purchases.map((record) => (
@@ -703,8 +576,9 @@ export default function FoodHub({ now, todayKey, onNavigate }) {
                 <div>
                   <h3>{record.name}</h3>
                   <p>
-                    {record.quantity} {record.unit || "package"} ·{" "}
-                    {record.purchasedDate} ·{" "}
+                    {record.quantity}{" "}
+                    {plural(record.quantity, record.unit || "package")} ·{" "}
+                    {formatDate(record.purchasedDate)} ·{" "}
                     {record.price == null
                       ? "Price unknown"
                       : money(record.price * record.quantity)}
@@ -714,11 +588,22 @@ export default function FoodHub({ now, todayKey, onNavigate }) {
                 {record.transactionId && !record.undone && (
                   <button
                     onClick={() =>
-                      changeData((draft) => {
-                        draft.groceryState = undoPurchase(
-                          draft.groceryState,
-                          record.transactionId,
-                        );
+                      setConfirmation({
+                        title: "Undo this shopping trip?",
+                        body: "Purchased quantities will be removed from At home and returned to Groceries. This cannot proceed if some of that stock has already been used.",
+                        confirmLabel: "Undo trip",
+                        destructive: true,
+                        onConfirm: async () => {
+                          if (
+                            await changeData((draft) => {
+                              draft.groceryState = undoPurchase(
+                                draft.groceryState,
+                                record.transactionId,
+                              );
+                            })
+                          )
+                            setConfirmation(null);
+                        },
                       })
                     }
                   >
@@ -731,217 +616,50 @@ export default function FoodHub({ now, todayKey, onNavigate }) {
         </>
       )}
 
-      {section === "meals" && (
-        <>
-          <p>{guidance.timing}</p>
-          <p className="muted">
-            Example meal amounts, not a prescribed target. Adjust to appetite
-            and your team or clinician’s guidance. Check actual product labels
-            for dietary needs.
-          </p>
-          {plans.length > 0 && (
-            <section className="planned-meals">
-              <h3>Planned today</h3>
-              {plans.map((plan) => (
-                <article className="data-row" key={plan.id}>
-                  <div>
-                    <h3>{plan.template.name}</h3>
-                    <p>
-                      {plan.servings} serving(s) ·{" "}
-                      {plan.intendedTime || "Time flexible"} · {plan.status}
-                    </p>
-                    {plan.profileSignature !==
-                      profileSignature(data.profile) && (
-                      <p role="status">
-                        Preferences changed — review this meal before using it.
-                      </p>
-                    )}
-                  </div>
-                  <div className="row-actions">
-                    <button
-                      onClick={() => {
-                        setReplaceId(plan.id);
-                        setNotice(
-                          "Choose a new meal below to replace this plan. Shared gear tasks will stay.",
-                        );
-                      }}
-                    >
-                      Replace
-                    </button>
-                    <button
-                      onClick={() =>
-                        changeData((draft) => {
-                          const tasks = draft.dayPlans[todayKey] || [];
-                          for (const t of planTasksForIdea(
-                            plan.template,
-                            guidance,
-                          ))
-                            if (
-                              !tasks.some(
-                                (existing) => existing.label === t.label,
-                              )
-                            )
-                              tasks.push({
-                                ...t,
-                                id: uid(),
-                                owners: [plan.id],
-                                done: false,
-                              });
-                          draft.dayPlans[todayKey] = tasks;
-                        })
-                      }
-                    >
-                      Rebuild missing prep
-                    </button>
-                    <button onClick={() => setDialog({ mealLog: plan })}>
-                      Log what I ate
-                    </button>
-                    <button
-                      onClick={() =>
-                        changeData((draft) => undoPlan(draft, plan.id))
-                      }
-                    >
-                      Undo plan
-                    </button>
-                  </div>
-                </article>
-              ))}
-            </section>
-          )}
-          {!meals.length && (
-            <div className="empty-state">
-              <h3>No meals fit the current access settings</h3>
-              <p>
-                {guidance.emptyReason ||
-                  "Your timing, budget, dietary needs, or school food access exclude the current examples."}
-              </p>
-              <button onClick={() => onNavigate("profile")}>
-                Review food preferences
-              </button>
-              <button onClick={() => onNavigate("calendar")}>
-                Review school access
-              </button>
-              <button onClick={() => navigate("food/log")}>
-                Log food manually
-              </button>
-            </div>
-          )}
-          <div className="meal-grid">
-            {meals.slice(0, mealLimit).map(({ idea, ingredients }) => (
-              <article className="card meal-card" key={idea.id}>
-                <p className="kicker">
-                  {ingredients.every((i) => i.sufficient)
-                    ? "READY NOW"
-                    : ingredients.some((i) => i.available)
-                      ? "PARTLY STOCKED / CHECK AMOUNTS"
-                      : "NEEDS INGREDIENTS"}
-                </p>
-                <h3>{idea.name}</h3>
-                <p>{idea.note}</p>
-                <ul>
-                  {ingredients.map((i) => (
-                    <li key={i.ingredientId}>
-                      <strong>
-                        {i.amount} {i.unit} {i.name}
-                      </strong>
-                      <span>
-                        {i.matches.length
-                          ? `At home: ${i.matches.map((m) => m.name).join(", ")}${i.approximate ? " — confirm amount" : i.sufficient ? " — enough" : ` — need ${i.missing} ${i.unit} more`}`
-                          : `Missing ${i.amount} ${i.unit}`}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-                <details>
-                  <summary>Preparation & storage</summary>
-                  <ol>
-                    <li>
-                      Check package labels and adjust these example portions.
-                    </li>
-                    <li>
-                      {idea.needsHeat
-                        ? "Prepare and heat the ingredients safely; confirm kitchen or microwave access."
-                        : "Assemble the ingredients before your next food window."}
-                    </li>
-                    <li>
-                      {idea.needsCold
-                        ? "Keep perishable ingredients refrigerated or use an insulated bag with ice packs."
-                        : idea.portable
-                          ? "Pack in a sealed container for school or sport."
-                          : "Serve when ready."}
-                    </li>
-                  </ol>
-                </details>
-                <div className="button-row">
-                  <button
-                    className="primary small"
-                    onClick={async () => {
-                      if (
-                        await changeData((draft) =>
-                          planMeal(
-                            draft,
-                            idea,
-                            todayKey,
-                            guidance,
-                            replaceId || null,
-                          ),
-                        )
-                      ) {
-                        setReplaceId("");
-                        setNotice(
-                          "Meal planned. Preparation tasks are on Today.",
-                        );
-                      }
-                    }}
-                  >
-                    {replaceId ? "Replace selected meal" : "Plan meal"}
-                  </button>
-                  <button onClick={() => addMissing(idea)}>
-                    Add missing to groceries
-                  </button>
-                  <button
-                    aria-pressed={data.favorites.some((f) => f.id === idea.id)}
-                    onClick={() =>
-                      changeData((draft) => {
-                        draft.favorites = draft.favorites.some(
-                          (f) => f.id === idea.id,
-                        )
-                          ? draft.favorites.filter((f) => f.id !== idea.id)
-                          : [
-                              ...draft.favorites,
-                              { ...idea, source: "Meal example" },
-                            ];
-                      })
-                    }
-                  >
-                    Favorite
-                  </button>
-                </div>
-              </article>
-            ))}
-          </div>
-          {meals.length > mealLimit && (
-            <button
-              className="show-more-meals"
-              onClick={() => setMealLimit((count) => count + 6)}
-            >
-              Show more meals ({meals.length - mealLimit} remaining)
-            </button>
-          )}
-        </>
-      )}
+      {section === "ideas" && <IdeasPage now={now} todayKey={todayKey} />}
 
       {section === "log" && <FoodLog date={todayKey} />}
       {dialog && !dialog.mealLog && (
         <Dialog
           title={`${dialog.item && !dialog.substitute ? "Edit" : "Add"} ${dialog.destination === "pantry" ? "food at home" : "grocery food"}`}
-          onClose={() => setDialog(null)}
+          initialFocusRef={searchInput}
+          className={!dialog.food && !mergePrompt ? "food-search-dialog" : ""}
+          onClose={() => {
+            setMergePrompt(null);
+            setDialog(null);
+          }}
         >
-          {dialog.food ? (
+          {mergePrompt ? (
+            <div className="merge-prompt">
+              <p>
+                {mergePrompt.existing.name} is already here. Add the amount to
+                that food, or keep this as a separate item?
+              </p>
+              <div className="dialog-actions">
+                <button autoFocus onClick={() => setMergePrompt(null)}>
+                  Review details
+                </button>
+                <button
+                  disabled={pending === "save-food"}
+                  onClick={() => saveFood(mergePrompt.portion, "separate")}
+                >
+                  Keep separate
+                </button>
+                <button
+                  className="primary"
+                  disabled={pending === "save-food"}
+                  onClick={() => saveFood(mergePrompt.portion, "merge")}
+                >
+                  Add to existing
+                </button>
+              </div>
+            </div>
+          ) : dialog.food ? (
             <PortionEditor
               food={dialog.food}
               initial={
-                dialog.item
+                dialog.portionDraft ||
+                (dialog.item
                   ? {
                       ...dialog.item,
                       amount: dialog.item.quantity,
@@ -952,7 +670,7 @@ export default function FoodHub({ now, todayKey, onNavigate }) {
                           }
                         : {}),
                     }
-                  : {}
+                  : {})
               }
               destination={dialog.destination}
               onSave={saveFood}
@@ -960,6 +678,7 @@ export default function FoodHub({ now, todayKey, onNavigate }) {
             />
           ) : (
             <FoodSearch
+              searchInputRef={searchInput}
               initialQuery={query}
               onQuery={setQuery}
               onChoose={(food) => setDialog({ ...dialog, food })}
@@ -1029,12 +748,18 @@ export default function FoodHub({ now, todayKey, onNavigate }) {
           </details>
           <button
             className="primary"
-            onClick={acceptPreview}
-            disabled={!selected.length}
+            onClick={() => run("accept-preview", acceptPreview)}
+            disabled={!selected.length || pending === "accept-preview"}
           >
             Add selected suggestions
           </button>
         </Dialog>
+      )}
+      {confirmation && (
+        <ConfirmDialog
+          {...confirmation}
+          onCancel={() => setConfirmation(null)}
+        />
       )}
     </Shell>
   );
@@ -1042,6 +767,8 @@ export default function FoodHub({ now, todayKey, onNavigate }) {
 
 export function FoodLog({ date }) {
   const { current } = useStore();
+  const { run } = useAsyncAction();
+  const searchInput = useRef(null);
   const [dialog, setDialog] = useState(null);
   const [query, setQuery] = useState(
     () => sessionStorage.getItem(`food-query-${current.id}`) || "",
@@ -1051,44 +778,41 @@ export function FoodLog({ date }) {
   }, [query, current.id]);
   const log = current.data.dailyLogs[date] || { entries: [] };
   async function save(portion) {
-    const ok = await changeData((data) => {
-      const entry = makeLog(dialog.food, portion, date, { name: portion.name });
-      const day = data.dailyLogs[date] || { entries: [], water: 0 };
-      if (dialog.entry) {
-        const old = day.entries.find((e) => e.id === dialog.entry.id);
-        if (!old) throw new Error("This entry was removed in another tab.");
-        day.entries = day.entries.map((e) =>
-          e.id === old.id
-            ? {
-                ...old,
-                ...entry,
-                id: old.id,
-                createdAt: old.createdAt,
-                original: old.original || structuredClone(old),
-                correctedAt: new Date().toISOString(),
-              }
-            : e,
-        );
-      } else day.entries.push(entry);
-      data.dailyLogs[date] = day;
-      data.recentFoods = [
-        dialog.food,
-        ...data.recentFoods.filter((f) => f.id !== dialog.food.id),
-      ].slice(0, 30);
+    return run("save-food-log", async () => {
+      const ok = await changeData((data) => {
+        const entry = makeLog(dialog.food, portion, date, {
+          name: portion.name,
+        });
+        const day = data.dailyLogs[date] || { entries: [], water: 0 };
+        if (dialog.entry) {
+          const old = day.entries.find((e) => e.id === dialog.entry.id);
+          if (!old) throw new Error("This entry was removed in another tab.");
+          day.entries = day.entries.map((e) =>
+            e.id === old.id ? reviseLogEntry(old, entry) : e,
+          );
+        } else day.entries.push(entry);
+        data.dailyLogs[date] = day;
+        data.recentFoods = [
+          dialog.food,
+          ...data.recentFoods.filter((f) => f.id !== dialog.food.id),
+        ].slice(0, 30);
+      });
+      if (ok) setDialog(null);
+      return ok;
     });
-    if (ok) setDialog(null);
   }
   return (
     <section>
       <div className="section-toolbar">
-        <p>Food check-ins · {date}</p>
+        <p>Food check-ins · {formatDate(date)}</p>
         <button className="primary small" onClick={() => setDialog({})}>
           + Log food
         </button>
       </div>
+      <LabelCheck />
       {!log.entries.length && (
         <p className="empty-state">
-          No foods logged for this day. Calories are optional.
+          Nothing logged yet. Log a meal or snack when you want to.
         </p>
       )}
       <div className="data-list">
@@ -1098,7 +822,7 @@ export function FoodLog({ date }) {
               <h3>{entry.name}</h3>
               <p>
                 {entry.portion
-                  ? `${entry.portion.amount} ${entry.portion.unit} · `
+                  ? `${formatAmount(entry.portion.amount, entry.portion.unit)} · `
                   : entry.servingGrams
                     ? `${entry.servingGrams} g (legacy) · `
                     : ""}
@@ -1106,10 +830,11 @@ export function FoodLog({ date }) {
                   ? "Calories unknown"
                   : `${entry.calories} kcal`}
                 {entry.userAdjusted ? " · user-adjusted" : ""} ·{" "}
-                {entry.time || "Checked in"}
+                {entry.time ? formatTime(entry.time) : "Checked in"}
               </p>
               <details>
                 <summary>Source & details</summary>
+                <LabelCheck />
                 <p>
                   {entry.source || "Manual / legacy record"}
                   {entry.food?.fdcId ? ` · USDA ${entry.food.fdcId}` : ""}
@@ -1119,13 +844,13 @@ export function FoodLog({ date }) {
                 </p>
                 {entry.food?.retrievedAt && (
                   <p>
-                    Source retrieved {entry.food.retrievedAt}. This saved
-                    snapshot is not changed by later provider updates.
+                    Source retrieved {formatDate(entry.food.retrievedAt)}. This
+                    saved snapshot is not changed by later provider updates.
                   </p>
                 )}
                 {entry.ingredients?.map((i, index) => (
                   <p key={index}>
-                    {i.amount} {i.unit} {i.name} ·{" "}
+                    {formatAmount(i.amount, i.unit, i.name)} ·{" "}
                     {i.calories == null
                       ? "unknown calories"
                       : `${i.calories} kcal`}
@@ -1162,17 +887,7 @@ export function FoodLog({ date }) {
               )}
               <button
                 onClick={() =>
-                  changeData((data) => {
-                    const day = data.dailyLogs[date];
-                    const removed = day.entries.find((e) => e.id === entry.id);
-                    data.operations.push({
-                      id: uid(),
-                      type: "remove-log",
-                      date,
-                      entry: removed,
-                    });
-                    day.entries = day.entries.filter((e) => e.id !== entry.id);
-                  })
+                  changeData((data) => removeLogEntry(data, date, entry.id))
                 }
               >
                 Remove check-in
@@ -1205,6 +920,10 @@ export function FoodLog({ date }) {
         ))}
       {dialog && (
         <Dialog
+          initialFocusRef={searchInput}
+          className={
+            !dialog.food && !dialog.consume ? "food-search-dialog" : ""
+          }
           title={
             dialog.consume
               ? "Confirm pantry used"
@@ -1245,6 +964,7 @@ export function FoodLog({ date }) {
             />
           ) : (
             <FoodSearch
+              searchInputRef={searchInput}
               initialQuery={query}
               onQuery={setQuery}
               onChoose={(food) => setDialog({ ...dialog, food })}
@@ -1258,6 +978,7 @@ export function FoodLog({ date }) {
 
 function Consumption({ entry, onDone }) {
   const { current } = useStore();
+  const { pending, run } = useAsyncAction();
   const [amounts, setAmounts] = useState({});
   const items = current.data.groceryState.pantry.filter(
     (p) =>
@@ -1268,14 +989,16 @@ function Consumption({ entry, onDone }) {
       onSubmit={async (e) => {
         e.preventDefault();
         if (
-          await changeData((data) =>
-            consumeStock(
-              data,
-              entry.id,
-              Object.entries(amounts).map(([id, amount]) => ({
-                id,
-                amount: Number(amount),
-              })),
+          await run("consume", () =>
+            changeData((data) =>
+              consumeStock(
+                data,
+                entry.id,
+                Object.entries(amounts).map(([id, amount]) => ({
+                  id,
+                  amount: Number(amount),
+                })),
+              ),
             ),
           )
         )
@@ -1294,7 +1017,8 @@ function Consumption({ entry, onDone }) {
       )}
       {items.map((item) => (
         <label key={item.id}>
-          {item.name} — {item.quantity} {item.unit || "package"} available
+          {item.name} — {item.quantity}{" "}
+          {plural(item.quantity, item.unit || "package")} available
           <input
             type="number"
             step="any"
@@ -1307,13 +1031,16 @@ function Consumption({ entry, onDone }) {
           />
         </label>
       ))}
-      <button className="primary">Confirm quantities used</button>
+      <button className="primary" disabled={pending === "consume"}>
+        {pending === "consume" ? "Saving…" : "Confirm quantities used"}
+      </button>
     </form>
   );
 }
 
 function MealLog({ plan, date, onDone }) {
   const { current } = useStore();
+  const { pending, run } = useAsyncAction();
   const [ingredients, setIngredients] = useState(() =>
     ingredientsForMeal(
       plan.template,
@@ -1338,35 +1065,36 @@ function MealLog({ plan, date, onDone }) {
         e.preventDefault();
         if (ingredients.some((i) => !validPortion(i.amount, i.unit)))
           return setError("Check each amount and unit.");
-        const ok = await changeData((data) => {
-          const actual = ingredients.map((i) => ({
-            name: i.name,
-            food: i.food,
-            amount: Number(i.amount),
-            unit: i.unit,
-            calories: portionCalories(i.food, i.amount, i.unit),
-          }));
-          const day = data.dailyLogs[date] || { entries: [], water: 0 };
-          day.entries.push({
-            id: uid(),
-            name: plan.template.name,
-            date,
-            time: new Date().toLocaleTimeString([], {
-              hour: "numeric",
-              minute: "2-digit",
-            }),
-            calories: actual.every((i) => i.calories != null)
-              ? actual.reduce((n, i) => n + i.calories, 0)
-              : null,
-            ingredients: actual,
-            mealPlanId: plan.id,
-            source: "Meal with actual ingredient portions",
-            createdAt: new Date().toISOString(),
-          });
-          data.dailyLogs[date] = day;
-          const target = data.mealPlans.find((p) => p.id === plan.id);
-          if (target) target.status = "logged";
-        });
+        const ok = await run("meal-log", () =>
+          changeData((data) => {
+            const actual = ingredients.map((i) => ({
+              name: i.name,
+              food: i.food,
+              amount: Number(i.amount),
+              unit: i.unit,
+              calories: portionCalories(i.food, i.amount, i.unit),
+            }));
+            const day = data.dailyLogs[date] || { entries: [], water: 0 };
+            day.entries.push({
+              id: uid(),
+              name: plan.template.name,
+              date,
+              time: new Date().toLocaleTimeString([], {
+                hour: "numeric",
+                minute: "2-digit",
+              }),
+              calories: actual.every((i) => i.calories != null)
+                ? actual.reduce((n, i) => n + i.calories, 0)
+                : null,
+              ingredients: actual,
+              mealPlanId: plan.id,
+              source: "Meal with actual ingredient portions",
+              createdAt: new Date().toISOString(),
+            });
+            data.dailyLogs[date] = day;
+            markPlanLogged(data, plan.id, day.entries.at(-1).id);
+          }),
+        );
         if (ok) onDone();
       }}
     >
@@ -1413,7 +1141,9 @@ function MealLog({ plan, date, onDone }) {
         </div>
       ))}
       {error && <p role="alert">{error}</p>}
-      <button className="primary">Log actual meal</button>
+      <button className="primary" disabled={pending === "meal-log"}>
+        {pending === "meal-log" ? "Saving…" : "Log actual meal"}
+      </button>
     </form>
   );
 }

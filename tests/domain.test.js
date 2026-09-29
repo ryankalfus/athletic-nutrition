@@ -7,22 +7,33 @@ import {
 } from "../src/domain/catalog.js";
 import {
   addDays,
+  applyOccurrenceOverride,
   getDateKey,
   getFuelingGuidance,
   eventsForDate,
   isSchoolDay,
+  skipOccurrence,
+  tomorrowPrepTasks,
 } from "../src/domain/timing.js";
 import {
   acceptRecommendations,
   consumeStock,
+  findMatchingFoodItem,
   groceryPreview,
   ingredientId,
   ingredientsForMeal,
   knownMoney,
   makeLog,
+  makeFoodRecord,
   missingGroceries,
   portionCalories,
   purchase,
+  removeLogEntry,
+  reviseLogEntry,
+  toggleStockOut,
+  stockStatus,
+  setStockStatus,
+  stockToGroceries,
   undoConsumption,
   undoPurchase,
   validPortion,
@@ -34,8 +45,18 @@ import {
   validateDocument,
 } from "../src/domain/storage.js";
 import { addHydration, undoHydration } from "../src/domain/hydration.js";
-import { planMeal, undoPlan } from "../src/domain/plans.js";
 import {
+  logPlanAsEaten,
+  markPlanLogged,
+  markPlanPacked,
+  planMeal,
+  syncPlanPreparation,
+  undoPlan,
+} from "../src/domain/plans.js";
+import { ideasFor, rankIdeas } from "../src/domain/ranking.js";
+import { backupDocument, backupFilename } from "../src/domain/backup.js";
+import {
+  canDeliverReminders,
   reminderCandidates,
   deliverReminders,
 } from "../src/domain/reminders.js";
@@ -397,7 +418,7 @@ test("B12: reminder uses remaining time and deduplicates a changed lead setting"
   );
   assert.equal(first.length, 1);
   assert.equal(first[0].key, second[0].key);
-  assert.match(first[0].title, /in 28 minutes/);
+  assert.match(first[0].title, /in 28 min/);
   let stored = "",
     deliveries = 0;
   const storage = {
@@ -456,4 +477,516 @@ test("Grouped purchases and stock deductions cannot overdraw one pantry row", ()
     ]),
   );
   assert.equal(data.groceryState.pantry[0].quantity, 2);
+});
+test("P0-08a: purchase matches missing and null optional package fields", () => {
+  const state = emptyData().groceryState;
+  state.pantry = [
+    {
+      id: "existing",
+      name: "Rice",
+      quantity: 2,
+      unit: "package",
+      packageAmount: null,
+      packageUnit: null,
+      expiry: null,
+      availability: "exact",
+    },
+  ];
+  state.items = [{ id: "new", name: "Rice", quantity: 1, unit: "package" }];
+  const bought = purchase(state, ["new"], day, "null-match");
+  assert.equal(bought.pantry.length, 1);
+  assert.equal(bought.pantry[0].id, "existing");
+  assert.equal(bought.pantry[0].quantity, 3);
+});
+test("P0-08b: undo purchase touches only rows from its trip", () => {
+  const state = emptyData().groceryState;
+  state.pantry = [
+    {
+      id: "untouched",
+      name: "Apples",
+      quantity: 0,
+      unit: "piece",
+      availability: "out",
+    },
+  ];
+  state.items = [{ id: "rice", name: "Rice", quantity: 1, unit: "package" }];
+  const undone = undoPurchase(
+    purchase(state, ["rice"], day, "scoped"),
+    "scoped",
+  );
+  assert.deepEqual(undone.pantry, state.pantry);
+});
+test("P0-08c/d: new food is exact and Out round-trip keeps exact quantity", () => {
+  const item = makeFoodRecord(
+    { name: "Bananas", quantity: 1, unit: "piece" },
+    { id: "banana" },
+  );
+  assert.equal(item.lowThreshold, 0);
+  assert.equal(item.availability, "exact");
+  const out = toggleStockOut(item, day);
+  assert.equal(out.availability, "out");
+  assert.equal(out.quantity, 1);
+  const back = toggleStockOut(out, day);
+  assert.equal(back.availability, "exact");
+  assert.equal(back.quantity, 1);
+});
+test("P0-08e: editing a food log preserves its original time", () => {
+  const original = {
+    id: "entry",
+    name: "Rice",
+    time: "8:15 AM",
+    createdAt: "earlier",
+  };
+  const revised = reviseLogEntry(original, {
+    name: "Rice bowl",
+    time: "5:00 PM",
+  });
+  assert.equal(revised.time, "8:15 AM");
+  assert.equal(revised.id, "entry");
+  assert.equal(revised.createdAt, "earlier");
+});
+test("P0-08f: removing a logged food restores linked stock or blocks if missing", () => {
+  const data = emptyData();
+  data.dailyLogs[day] = { entries: [{ id: "meal", name: "Rice" }], water: 0 };
+  data.groceryState.pantry = [
+    {
+      id: "stock",
+      name: "Rice",
+      quantity: 3,
+      unit: "g",
+      availability: "exact",
+    },
+  ];
+  consumeStock(data, "meal", [{ id: "stock", amount: 2 }]);
+  removeLogEntry(data, day, "meal");
+  assert.equal(data.groceryState.pantry[0].quantity, 3);
+  assert.equal(data.dailyLogs[day].entries.length, 0);
+  const blocked = emptyData();
+  blocked.dailyLogs[day] = {
+    entries: [{ id: "meal", name: "Rice" }],
+    water: 0,
+  };
+  blocked.operations.push({
+    id: "deduction",
+    type: "consume",
+    logId: "meal",
+    deductions: [{ id: "missing", amount: 1 }],
+  });
+  assert.throws(() => removeLogEntry(blocked, day, "meal"));
+  assert.equal(blocked.dailyLogs[day].entries.length, 1);
+});
+test("P0-08g: logging a planned meal changes its plan status", () => {
+  const data = emptyData();
+  const plan = planMeal(data, idea("banana-pretzels"), day, {});
+  markPlanLogged(data, plan.id);
+  assert.equal(data.mealPlans[0].status, "eaten");
+});
+test("P0-08h: adding an exact duplicate can be detected before merging", () => {
+  const list = [
+    {
+      id: "one",
+      name: "Bananas",
+      quantity: 1,
+      unit: "package",
+      packageAmount: null,
+      expiry: null,
+      location: null,
+    },
+  ];
+  const candidate = { name: "Bananas", quantity: 1, unit: "package" };
+  assert.equal(findMatchingFoodItem(list, candidate)?.id, "one");
+});
+test("P0-10: 30, 90, and 180-minute practice boundaries keep their states", () => {
+  const events = [
+    {
+      id: "practice",
+      title: "Practice",
+      date: day,
+      startTime: "16:00",
+      endTime: "17:30",
+    },
+  ];
+  assert.equal(guidance("15:30", events).moment, "quick");
+  assert.equal(guidance("14:30", events).moment, "pre");
+  assert.equal(guidance("13:00", events).moment, "regular");
+  assert.match(guidance("12:59", events).label, /Practice at 4:00 PM/);
+});
+test("P0-10: lunch at 11:45 remains visible before 4 PM practice", () => {
+  const events = [
+    {
+      id: "practice",
+      title: "Practice",
+      date: day,
+      startTime: "16:00",
+      endTime: "17:30",
+    },
+  ];
+  const result = guidance("11:45", events);
+  assert.equal(result.activeSchoolWindow.label, "Lunch");
+  assert.match(result.timing, /Lunch now/);
+  assert.match(result.timing, /Practice/);
+});
+test("P0-10: an empty schedule is setup and a quiet late night has no action idea", () => {
+  const withoutSchool = { ...school, enabled: false };
+  const setup = guidance("12:00", [], { schoolSchedule: withoutSchool });
+  assert.equal(setup.state, "setup");
+  assert.equal(setup.ideas.length, 0);
+  const late = guidance("22:00", [], { schoolSchedule: withoutSchool });
+  assert.equal(late.state, "late");
+  assert.equal(late.ideas.length, 0);
+});
+test("P0-10: non-school days avoid school handoff and zero travel durations", () => {
+  const events = [
+    {
+      id: "game",
+      title: "Game",
+      date: day,
+      startTime: "17:00",
+      endTime: "18:00",
+      location: "away",
+      travelMinutes: 0,
+    },
+  ];
+  const result = guidance("10:00", events, {
+    schoolSchedule: { ...school, enabled: false },
+  });
+  assert.doesNotMatch(result.title, /school to sport/i);
+  assert.doesNotMatch(result.timing, /0 min travel/);
+  assert.equal(
+    tomorrowPrepTasks(events[0]).some((task) =>
+      /allow 0 minutes/.test(task.label),
+    ),
+    false,
+  );
+});
+test("P0-11: away reminder fires before Leave by and uses singular minutes", () => {
+  const event = {
+    id: "away",
+    title: "Game",
+    date: day,
+    startTime: "16:00",
+    endTime: "18:00",
+    location: "away",
+    travelMinutes: 45,
+  };
+  const settings = { enabled: true, leadMinutes: 30 };
+  assert.equal(
+    reminderCandidates([event], settings, new Date(`${day}T14:44:00`)).length,
+    0,
+  );
+  const oneMinute = reminderCandidates(
+    [event],
+    settings,
+    new Date(`${day}T15:14:00`),
+  );
+  assert.equal(oneMinute.length, 1);
+  assert.match(oneMinute[0].title, /Leave.*in 1 min/);
+  assert.match(oneMinute[0].title, /3:15 PM/);
+  assert.equal(
+    reminderCandidates([event], settings, new Date(`${day}T15:16:00`)).length,
+    0,
+  );
+});
+test("P0-11: closed athlete and revoked permission block delivery", () => {
+  assert.equal(
+    canDeliverReminders({
+      signedOut: true,
+      enabled: true,
+      permission: "granted",
+    }),
+    false,
+  );
+  assert.equal(
+    canDeliverReminders({
+      signedOut: false,
+      enabled: true,
+      permission: "denied",
+    }),
+    false,
+  );
+  assert.equal(
+    canDeliverReminders({
+      signedOut: false,
+      enabled: true,
+      permission: "granted",
+    }),
+    true,
+  );
+});
+test("P0-12: athlete backup excludes other athletes and keeps version 2", () => {
+  const document = {
+    version: 2,
+    revision: 4,
+    defaultProfileId: "a",
+    profiles: {
+      a: { id: "a", name: "Ava", data: emptyData() },
+      b: { id: "b", name: "Ben", data: emptyData() },
+    },
+  };
+  const single = backupDocument(document, "a");
+  assert.equal(single.scope, "current");
+  assert.deepEqual(Object.keys(single.profiles), ["a"]);
+  assert.equal(validateDocument(single).version, 3);
+  const all = backupDocument(document, "a", "all");
+  assert.deepEqual(Object.keys(all.profiles), ["a", "b"]);
+  assert.equal(
+    backupFilename("Ava", new Date(2026, 8, 29)),
+    "nourally-ava-2026-09-29.json",
+  );
+});
+test("P1-02: editing one weekly occurrence leaves its other dates unchanged", () => {
+  const recurring = {
+    id: "practice",
+    title: "Soccer practice",
+    type: "practice",
+    startTime: "16:00",
+    endTime: "17:30",
+    recurrence: {
+      startDate: "2026-09-14",
+      endDate: "2026-10-31",
+      weekdays: [1],
+      excludedDates: [],
+    },
+  };
+  const edited = applyOccurrenceOverride(recurring, "2026-09-21", {
+    title: "Field practice",
+    startTime: "15:30",
+  });
+  assert.equal(
+    eventsForDate([edited], "2026-09-21")[0].title,
+    "Field practice",
+  );
+  assert.equal(eventsForDate([edited], "2026-09-21")[0].startTime, "15:30");
+  assert.equal(
+    eventsForDate([edited], "2026-09-28")[0].title,
+    "Soccer practice",
+  );
+  assert.equal(eventsForDate([edited], "2026-09-28")[0].startTime, "16:00");
+  const skipped = skipOccurrence(edited, "2026-09-21");
+  assert.equal(eventsForDate([skipped], "2026-09-21").length, 0);
+  assert.equal(eventsForDate([skipped], "2026-09-28").length, 1);
+});
+test("P1-02: days-off range and pause remove school from timing", () => {
+  const off = {
+    ...school,
+    excludedRanges: [{ startDate: day, endDate: "2026-09-15" }],
+  };
+  assert.equal(isSchoolDay(day, off), false);
+  assert.equal(
+    guidance("11:45", [], { schoolSchedule: off }).schoolToday,
+    false,
+  );
+  assert.equal(isSchoolDay("2026-09-16", off), true);
+  const paused = { ...school, pausedFrom: day, pausedUntil: "2026-09-30" };
+  assert.equal(isSchoolDay(day, paused), false);
+  assert.equal(isSchoolDay("2026-10-01", paused), true);
+});
+
+test("P1-01: Today and Ideas share pantry-aware ranking and exclude hidden ideas", () => {
+  const pantry = [
+    {
+      id: "b",
+      name: "Bananas",
+      ingredientId: "bananas",
+      availability: "have",
+      quantity: 1,
+    },
+    {
+      id: "p",
+      name: "Pretzels",
+      ingredientId: "pretzels",
+      availability: "have",
+      quantity: 1,
+    },
+  ];
+  const options = {
+    moment: "pre",
+    date: day,
+    profile,
+    pantry,
+    access: profile.foodSources,
+  };
+  const ranked = ideasFor(options);
+  const current = guidance(
+    "14:30",
+    [
+      {
+        id: "practice",
+        title: "Practice",
+        date: day,
+        startTime: "16:00",
+        endTime: "17:30",
+      },
+    ],
+    { pantry, schoolSchedule: null },
+  );
+  assert.equal(ranked[0].id, "banana-pretzels");
+  assert.equal(current.ideas[0].id, ranked[0].id);
+  assert.equal(
+    ingredientsForMeal(ranked[0], pantry, day).every((i) => i.sufficient),
+    true,
+  );
+  assert.equal(
+    rankIdeas(ranked, { pantry, date: day, hiddenIdeas: [ranked[0].id] }).some(
+      (i) => i.id === ranked[0].id,
+    ),
+    false,
+  );
+  assert.equal(
+    ideasFor({ ...options, favorites: [{ id: "bagel-jam" }] })[0].id,
+    "bagel-jam",
+  );
+});
+
+test("P1-01: preparation and one-tap eating advance a plan without duplicate logs", () => {
+  const data = emptyData();
+  const plan = planMeal(data, idea("banana-pretzels"), day, {
+    moment: "pre",
+    event: { id: "p", startTime: "16:00" },
+  });
+  assert.equal(plan.eatAt, "14:30");
+  assert.equal(plan.intendedTime, "14:30");
+  assert.equal(plan.eventStartTime, "16:00");
+  data.dayPlans[day]
+    .filter((t) => t.kind === "food")
+    .forEach((t) => {
+      t.done = true;
+    });
+  syncPlanPreparation(data, day);
+  assert.equal(plan.status, "packed");
+  assert.ok(plan.packedAt);
+  const entry = logPlanAsEaten(data, plan.id, new Date(`${day}T14:30:00`));
+  assert.equal(plan.status, "eaten");
+  assert.equal(plan.logEntryId, entry.id);
+  assert.equal(entry.mealPlanId, plan.id);
+  assert.equal(logPlanAsEaten(data, plan.id).id, entry.id);
+  assert.equal(data.dailyLogs[day].entries.length, 1);
+  assert.throws(() => markPlanPacked(data, plan.id), /already eaten/);
+});
+
+test("P1-01: v2 migration preserves original backup and links eaten plans to logs", () => {
+  const data = emptyData();
+  const plan = planMeal(data, idea("banana-pretzels"), day, {
+    event: { id: "p", startTime: "16:00" },
+  });
+  plan.status = "logged";
+  delete plan.eatAt;
+  plan.intendedTime = "16:00";
+  data.dailyLogs[day] = {
+    entries: [
+      {
+        id: "entry",
+        name: plan.template.name,
+        mealPlanId: plan.id,
+        createdAt: "2026-09-14T18:00:00Z",
+      },
+    ],
+  };
+  const original = {
+    version: 2,
+    revision: 4,
+    defaultProfileId: "athlete",
+    profiles: { athlete: { id: "athlete", name: "Sam", data } },
+    legacyBackup: { kept: "original" },
+  };
+  const upgraded = validateDocument(structuredClone(original));
+  assert.equal(upgraded.version, 3);
+  assert.deepEqual(upgraded.legacyBackup, { kept: "original" });
+  assert.deepEqual(upgraded.migrationBackup, original);
+  assert.equal(upgraded.profiles.athlete.data.mealPlans[0].status, "eaten");
+  assert.equal(upgraded.profiles.athlete.data.mealPlans[0].logEntryId, "entry");
+  assert.equal(upgraded.profiles.athlete.data.mealPlans[0].eatAt, "14:30");
+  const reloaded = validateDocument(upgraded);
+  assert.deepEqual(reloaded.migrationBackup, original);
+});
+
+test("P1-03: school morning, evening and rest states match the day", () => {
+  const events = [
+    {
+      id: "practice",
+      type: "practice",
+      title: "Soccer practice",
+      date: day,
+      startTime: "16:00",
+      endTime: "17:30",
+    },
+    {
+      id: "tomorrow",
+      title: "Practice",
+      date: "2026-09-15",
+      startTime: "16:00",
+      endTime: "17:30",
+    },
+  ];
+  assert.equal(guidance("07:00", events).state, "before_school");
+  assert.match(guidance("07:00", events).title, /Pack/);
+  assert.equal(guidance("19:01", events).state, "evening");
+  assert.equal(
+    guidance("12:00", [], { profile: { ...profile, restDays: [day] } }).state,
+    "rest",
+  );
+  assert.match(guidance("11:45", events).title, /Lunch/);
+});
+
+test("P1-04: ideas use readable amounts and tomorrow plans stay on tomorrow", () => {
+  const date = "2026-09-15";
+  const data = emptyData();
+  const ideas = ideasFor({
+    moment: "tomorrow",
+    date,
+    profile: data.profile,
+    pantry: [],
+  });
+  assert.ok(ideas.length);
+  for (const idea of ideas)
+    for (const ingredient of ingredientsForMeal(idea, [], date))
+      assert.doesNotMatch(
+        ingredient.displayAmount,
+        /\b(piece|portion|servings?)\b/i,
+      );
+  const plan = planMeal(data, ideas[0], date, {
+    moment: "regular",
+    event: { id: "next", startTime: "16:00", endTime: "17:30" },
+  });
+  const repeated = planMeal(data, ideas[0], date, {
+    moment: "regular",
+    event: { id: "next", startTime: "16:00", endTime: "17:30" },
+  });
+  assert.equal(repeated.id, plan.id);
+  assert.equal(data.mealPlans.length, 1);
+  assert.equal(plan.date, date);
+  assert.equal(plan.eatAt, "14:30");
+  data.profile.hiddenIdeas = [ideas[0].id];
+  assert.ok(
+    !ideasFor({ moment: "tomorrow", date, profile: data.profile }).some(
+      (i) => i.id === ideas[0].id,
+    ),
+  );
+});
+
+test("P1-05: quick Have, exact restoration, legacy migration and low restock", () => {
+  const data = emptyData();
+  const date = "2026-09-29";
+  const row = makeFoodRecord({
+    name: "Bananas",
+    ingredientId: "bananas",
+    availability: "have",
+    quantity: 1,
+    unit: "package",
+  });
+  assert.equal(stockStatus(row), "have");
+  const exact = { ...row, availability: "exact", quantity: 3 };
+  const restored = setStockStatus(
+    setStockStatus(exact, "out", date),
+    "have",
+    date,
+  );
+  assert.equal(restored.quantity, 3);
+  assert.equal(restored.availability, "exact");
+  data.groceryState.pantry = [{ ...row, availability: "some" }];
+  assert.equal(validateData(data).groceryState.pantry[0].availability, "have");
+  stockToGroceries(data, [setStockStatus(row, "low", date)]);
+  stockToGroceries(data, [row]);
+  assert.equal(data.groceryState.items.length, 1);
+  assert.equal(data.groceryState.items[0].checked, false);
 });

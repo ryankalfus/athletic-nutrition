@@ -1,0 +1,344 @@
+.app-frame {
+  min-height: 100dvh;
+  background: var(--color-paper);
+}
+
+.frame-header {
+  position: sticky;
+  top: 0;
+  z-index: var(--z-rail);
+  display: flex;
+  align-items: center;
+  height: 56px;
+  padding: 0 var(--space-4);
+  background: var(--color-paper);
+  border-bottom: 1px solid var(--color-line);
+}
+
+.frame-brand {
+  display: none;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.04em;
+}
+
+.frame-mobile-title {
+  order: -1;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.frame-nav {
+  position: fixed;
+  inset: auto 0 0;
+  z-index: var(--z-rail);
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  height: calc(64px + env(safe-area-inset-bottom));
+  padding: 0 0 env(safe-area-inset-bottom);
+  background: var(--color-surface);
+  border-top: 1px solid var(--color-line);
+  box-shadow: var(--shadow-2);
+}
+
+.frame-nav .frame-nav-item {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  min-width: 0;
+  min-height: 64px;
+  padding: 5px 2px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--color-ink-muted);
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 600;
+}
+
+.frame-nav .frame-nav-item[aria-current="page"] {
+  color: var(--color-primary);
+}
+
+.frame-nav .frame-nav-item[aria-current="page"]::before {
+  position: absolute;
+  top: 3px;
+  width: 6px;
+  height: 6px;
+  border-radius: var(--radius-full);
+  background: var(--color-lime);
+  content: "";
+}
+
+.frame-athlete {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: auto;
+  width: 44px;
+  height: 44px;
+  min-height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-full);
+  background: transparent;
+  color: var(--color-ink);
+}
+
+.frame-avatar {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-full);
+  background: var(--color-selected-bg);
+  color: var(--color-primary);
+  font-weight: 700;
+}
+
+.frame-athlete-name,
+.frame-switch {
+  display: none;
+}
+
+.app-frame.has-navigation .shell {
+  width: calc(100% - 32px);
+  max-width: 720px;
+  min-height: calc(100dvh - 120px);
+  margin: 0 auto;
+  padding: 0 0 calc(88px + env(safe-area-inset-bottom));
+}
+
+.app-frame.has-navigation .eyebrow,
+.app-frame.has-navigation .kicker {
+  display: none;
+}
+
+.app-frame.has-navigation .profile-tools {
+  margin-top: var(--space-8);
+  width: 100%;
+}
+
+.app-toast {
+  position: fixed;
+  z-index: var(--z-toast);
+  bottom: calc(80px + env(safe-area-inset-bottom));
+  left: var(--space-4);
+  right: var(--space-4);
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: fit-content;
+  max-width: calc(100% - 32px);
+  min-height: 48px;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  background: var(--color-ink);
+  box-shadow: var(--shadow-2);
+  color: white;
+  font-size: 14px;
+  line-height: 20px;
+}
+
+.app-toast button {
+  min-width: 44px;
+  min-height: 44px;
+  padding: var(--space-2);
+  border: 0;
+  background: transparent;
+  color: var(--color-lime);
+  font-weight: 700;
+}
+
+.app-toast .toast-dismiss {
+  margin-left: auto;
+  color: white;
+  font-size: 20px;
+}
+
+.inline-error {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin: var(--space-4) 0;
+  padding: var(--space-3);
+  border: 1px solid var(--color-error);
+  border-radius: var(--radius-md);
+  background: var(--color-error-tint);
+  color: var(--color-error);
+  font-size: 14px;
+}
+.label-check {
+  margin: 0.65rem 0;
+  padding: 0.65rem 0.8rem;
+  border-left: 3px solid var(--color-warning, #9c661e);
+  background: var(--color-surface-muted, #f7f4ec);
+  color: var(--color-text, #242b27);
+  font-size: 0.875rem;
+}
+
+.inline-error button {
+  margin-left: auto;
+  border: 1px solid var(--color-error);
+  color: var(--color-error);
+}
+
+.confirm-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-3);
+  padding: var(--space-4) 0;
+}
+
+.confirm-actions .danger-button {
+  background: var(--color-error);
+  color: white;
+}
+
+@media (max-width: 767px) {
+  .app-frame.has-navigation .dashboard-head {
+    display: none;
+  }
+
+  .app-frame.has-navigation .calendar-head {
+    margin: var(--space-2) 0 var(--space-4);
+  }
+
+  .app-frame.has-navigation .calendar-head > div:first-child {
+    display: none;
+  }
+
+  .app-frame.has-navigation .intro {
+    margin-top: var(--space-4);
+  }
+}
+
+@media (min-width: 768px) {
+  .frame-header {
+    height: 64px;
+    padding: 0 var(--space-6);
+  }
+
+  .frame-brand {
+    display: flex;
+  }
+
+  .frame-mobile-title {
+    display: none;
+  }
+
+  .frame-nav {
+    position: static;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+    height: 64px;
+    padding: 0;
+    background: transparent;
+    border: 0;
+    box-shadow: none;
+  }
+
+  .frame-nav .frame-nav-item {
+    flex-direction: row;
+    gap: var(--space-2);
+    min-height: 48px;
+    padding: var(--space-2) var(--space-3);
+    font-size: 15px;
+  }
+
+  .frame-nav .frame-nav-item svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  .frame-nav .frame-nav-item[aria-current="page"]::before {
+    top: auto;
+    bottom: 0;
+    width: 28px;
+    height: 4px;
+  }
+
+  .app-frame.has-navigation .shell {
+    width: calc(100% - 48px);
+    padding: 0 0 var(--space-12);
+  }
+}
+
+@media (min-width: 1024px) {
+  .app-toast {
+    left: 264px;
+    right: auto;
+    bottom: var(--space-6);
+  }
+  .frame-header {
+    position: fixed;
+    inset: 0 auto 0 0;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    width: 232px;
+    height: 100dvh;
+    padding: var(--space-6) var(--space-4);
+    border-right: 1px solid var(--color-line);
+    border-bottom: 0;
+  }
+
+  .frame-nav {
+    flex: 0 0 auto;
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--space-1);
+    height: auto;
+    margin-top: var(--space-8);
+  }
+
+  .frame-nav .frame-nav-item {
+    justify-content: flex-start;
+    min-height: 48px;
+    padding: var(--space-3) var(--space-4);
+    border-radius: var(--radius-md);
+  }
+
+  .frame-nav .frame-nav-item[aria-current="page"]::before {
+    inset: var(--space-2) auto var(--space-2) 0;
+    width: 4px;
+    height: auto;
+  }
+
+  .frame-athlete {
+    justify-content: flex-start;
+    gap: var(--space-2);
+    width: 100%;
+    margin: auto 0 0;
+    border-radius: var(--radius-md);
+  }
+
+  .frame-athlete-name,
+  .frame-switch {
+    display: inline;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .frame-switch {
+    margin-left: auto;
+    color: var(--color-primary);
+    font-size: 13px;
+  }
+
+  .app-frame.has-navigation .shell {
+    width: min(1280px, calc(100% - 296px));
+    max-width: none;
+    margin: 0 var(--space-8) 0 264px;
+    padding-top: var(--space-8);
+  }
+}

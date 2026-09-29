@@ -5,6 +5,11 @@ import {
   getDateKey,
   timeToMinutes,
 } from "./timing.js";
+import { formatCountdown } from "../format.js";
+
+export function canDeliverReminders({ signedOut, enabled, permission }) {
+  return !signedOut && Boolean(enabled) && permission === "granted";
+}
 
 export function reminderCandidates(schedule, settings, now) {
   if (!settings.enabled) return [];
@@ -12,14 +17,22 @@ export function reminderCandidates(schedule, settings, now) {
     minutes = now.getHours() * 60 + now.getMinutes();
   const lead = Number(settings.leadMinutes || 60);
   const candidates = eventsForDate(schedule, date).flatMap((event) => {
-    const remaining = timeToMinutes(event.startTime) - minutes;
+    const travel = ["away", "travel"].includes(event.location)
+      ? Number(event.travelMinutes || 0)
+      : 0;
+    const targetMinutes = timeToMinutes(event.startTime) - travel;
+    if (targetMinutes < 0) return [];
+    const remaining = targetMinutes - minutes;
+    const targetTime = `${String(Math.floor(targetMinutes / 60)).padStart(2, "0")}:${String(targetMinutes % 60).padStart(2, "0")}`;
     return remaining < 0 || remaining > lead
       ? []
       : [
           {
-            key: `${event.id}-${date}-${event.startTime}`,
-            title: `${event.title} ${remaining === 0 ? "starts now" : `in ${remaining} minutes`} (${formatClock(event.startTime)})`,
-            body: ["away", "travel"].includes(event.location)
+            key: `${event.id}-${date}-${event.startTime}-${targetTime}`,
+            title: travel
+              ? `${event.title}: Leave ${formatCountdown(remaining)} (${formatClock(targetTime)})`
+              : `${event.title} ${remaining === 0 ? "starts now" : `starts ${formatCountdown(remaining)}`} (${formatClock(event.startTime)})`,
+            body: travel
               ? "Grab your packed food, water, and travel gear."
               : "Check your food plan, water, and gear before you go.",
           },

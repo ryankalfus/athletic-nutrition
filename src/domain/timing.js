@@ -1,4 +1,5 @@
-import { FOOD_IDEAS } from "./catalog.js";
+import { ideasFor } from "./ranking.js";
+import { formatCountdown, formatTime as formatClock } from "../format.js";
 
 export function getDateKey(date = new Date()) {
   const year = date.getFullYear();
@@ -19,26 +20,58 @@ export function timeToMinutes(value) {
   return hours * 60 + minutes;
 }
 
-export function formatClock(value) {
-  if (!/^\d{2}:\d{2}$/.test(value || "")) return "Time TBD";
-  const [hours, minutes] = value.split(":").map(Number);
-  return new Intl.DateTimeFormat("en-US", {
-    hour: "numeric",
-    minute: "2-digit",
-  }).format(new Date(2000, 0, 1, hours, minutes));
-}
+export { formatClock };
 
 export function isSchoolDay(dateKey, schoolSchedule) {
   if (
     !schoolSchedule?.enabled ||
     dateKey < schoolSchedule.startDate ||
     dateKey > schoolSchedule.endDate ||
-    schoolSchedule.excludedDates?.includes(dateKey)
+    schoolSchedule.excludedDates?.includes(dateKey) ||
+    schoolSchedule.excludedRanges?.some(
+      (range) => dateKey >= range.startDate && dateKey <= range.endDate,
+    ) ||
+    (schoolSchedule.pausedFrom &&
+      schoolSchedule.pausedUntil &&
+      dateKey >= schoolSchedule.pausedFrom &&
+      dateKey <= schoolSchedule.pausedUntil)
   )
     return false;
   return schoolSchedule.weekdays.includes(
     new Date(`${dateKey}T12:00:00`).getDay(),
   );
+}
+
+export function applyOccurrenceOverride(event, dateKey, changes) {
+  if (!event.recurrence) throw new Error("This activity does not repeat.");
+  const fields = Object.fromEntries(
+    Object.entries(changes).filter(
+      ([key]) => !["date", "recurrence", "id"].includes(key),
+    ),
+  );
+  return {
+    ...event,
+    recurrence: {
+      ...event.recurrence,
+      overrides: {
+        ...event.recurrence.overrides,
+        [dateKey]: { ...event.recurrence.overrides?.[dateKey], ...fields },
+      },
+    },
+  };
+}
+
+export function skipOccurrence(event, dateKey) {
+  if (!event.recurrence) throw new Error("This activity does not repeat.");
+  return {
+    ...event,
+    recurrence: {
+      ...event.recurrence,
+      excludedDates: [
+        ...new Set([...(event.recurrence.excludedDates || []), dateKey]),
+      ],
+    },
+  };
 }
 
 export function eventOccursOn(event, dateKey) {
@@ -66,6 +99,7 @@ export function eventsForDate(events, dateKey) {
       event.recurrence
         ? {
             ...event,
+            ...(event.recurrence.overrides?.[dateKey] || {}),
             date: dateKey,
             occurrenceId: `${event.id}-${dateKey}`,
             recurringSeries: true,
@@ -77,7 +111,7 @@ export function eventsForDate(events, dateKey) {
 
 export function planTasksForIdea(
   idea,
-  { travelMode = false, inSchool = false } = {},
+  { travelMode = false, inSchool = false, schoolSchedule, event, date } = {},
 ) {
   const verb = idea.portable ? "Pack" : "Plan";
   /** @type {Array<{label: string, kind: string, foodId?: string}>} */
@@ -92,10 +126,22 @@ export function planTasksForIdea(
     tasks.push({ label: "Fill and pack a water bottle", kind: "gear" });
   if (idea.portable)
     tasks.push({
-      label: "Set it beside your school or team bag",
+      label: `Put ${idea.name} in your school bag`,
       kind: "gear",
     });
-  return tasks;
+  let dueMinutes = null;
+  if (schoolSchedule && date && isSchoolDay(date, schoolSchedule))
+    dueMinutes = timeToMinutes(schoolSchedule.startTime) - 30;
+  if (event?.location === "away" && Number(event.travelMinutes) > 0)
+    dueMinutes =
+      timeToMinutes(event.startTime) - Number(event.travelMinutes) - 30;
+  return tasks.map((task) => ({
+    ...task,
+    dueAt:
+      dueMinutes == null
+        ? null
+        : `${String(Math.floor(Math.max(0, dueMinutes) / 60)).padStart(2, "0")}:${String(Math.max(0, dueMinutes) % 60).padStart(2, "0")}`,
+  }));
 }
 
 export function tomorrowPrepTasks(event) {
@@ -106,10 +152,11 @@ export function tomorrowPrepTasks(event) {
     { label: "Put uniform, shoes, and gear by the door", kind: "gear" },
   ];
   if (event.location === "away" || Number(event.travelMinutes || 0) >= 30) {
-    tasks.push({
-      label: `Check the route and allow ${event.travelMinutes || 0} minutes for travel`,
-      kind: "prep",
-    });
+    if (Number(event.travelMinutes) > 0)
+      tasks.push({
+        label: `Check the route and allow ${event.travelMinutes} minutes for travel`,
+        kind: "prep",
+      });
     tasks.push({ label: "Pack one extra shelf-stable snack", kind: "food" });
   }
   return tasks;
@@ -121,7 +168,6 @@ export function ideaFitsProfile(idea, profile) {
   if (needs.includes("vegetarian") && !idea.vegetarian) return false;
   if (needs.includes("dairyFree") && !idea.dairyFree) return false;
   if (needs.includes("glutenFree") && !idea.glutenFree) return false;
-  if (needs.includes("nutFree") && !idea.nutFree) return false;
   if (profile.budget === "save" && idea.cost !== "save") return false;
   return true;
 }
@@ -132,6 +178,8 @@ export function getFuelingGuidance({
   events,
   schoolSchedule,
   profile,
+  pantry = [],
+  favorites = [],
 }) {
   const currentMinutes = now.getHours() * 60 + now.getMinutes();
   const training = eventsForDate(events, todayKey)
@@ -159,7 +207,7 @@ export function getFuelingGuidance({
   const schoolWindows = inSchool
     ? [
         schoolSchedule.morningSnackTime && {
-          label: "Morning snack window",
+          label: "Morning snack time",
           start: schoolSchedule.morningSnackTime,
         },
         schoolSchedule.lunchStartTime && {
@@ -168,7 +216,7 @@ export function getFuelingGuidance({
           end: schoolSchedule.lunchEndTime,
         },
         schoolSchedule.afternoonSnackTime && {
-          label: "Afternoon snack window",
+          label: "Afternoon snack time",
           start: schoolSchedule.afternoonSnackTime,
         },
       ]
@@ -188,18 +236,22 @@ export function getFuelingGuidance({
     schoolWindows.find(
       (window) => timeToMinutes(window.start) > currentMinutes,
     );
+  const schoolWindowTiming = nextSchoolWindow
+    ? `${nextSchoolWindow.label} ${activeSchoolWindow ? `now${nextSchoolWindow.end ? ` until ${formatClock(nextSchoolWindow.end)}` : ""}` : `at ${formatClock(nextSchoolWindow.start)}`}.`
+    : "";
 
   let moment = "regular";
+  let state = "regular";
   let label = "STEADY-DAY FUELING";
   let title = "Keep a regular eating rhythm today.";
   let explanation =
-    "No training is coming up soon. Choose a familiar meal or snack and use the next food window instead of waiting until you are drained.";
+    "No training is coming up soon. Choose a familiar meal or snack and use the next meal or snack instead of waiting until you are drained.";
   let timing = nextSchoolWindow
-    ? `${nextSchoolWindow.label} ${activeSchoolWindow ? `now${nextSchoolWindow.end ? ` until ${formatClock(nextSchoolWindow.end)}` : ""}` : `at ${formatClock(nextSchoolWindow.start)}`}.`
+    ? schoolWindowTiming
     : inSchool
       ? schoolSchedule.foodAccess?.eatInClass
         ? "Use an allowed class or passing-period window."
-        : "Use your next allowed food window."
+        : "Use your next allowed meal or snack time."
       : "Eat when you are comfortably hungry.";
   let focusEvent = null;
 
@@ -209,7 +261,7 @@ export function getFuelingGuidance({
       active.end - active.start >= 75 || active.intensity === "high"
         ? "during"
         : "quick";
-    label = `${active.title.toUpperCase()} / IN PROGRESS`;
+    label = `${active.title} in progress`;
     title = "Hydrate now; keep mid-session fuel familiar.";
     explanation =
       "For a longer or harder session, a familiar easy-to-carry carb may help. Avoid trying a brand-new food during competition or practice.";
@@ -217,7 +269,7 @@ export function getFuelingGuidance({
   } else if (recent) {
     focusEvent = recent;
     moment = "recovery";
-    label = `${recent.title.toUpperCase()} / RECOVERY`;
+    label = `After ${recent.title}`;
     title = "Refuel with carbs, protein, and fluids.";
     explanation =
       "Choose a familiar option you can actually get now. A regular meal works; a snack can bridge the gap if dinner is later.";
@@ -229,30 +281,33 @@ export function getFuelingGuidance({
     const minutesUntil = next.start - currentMinutes;
     if (minutesUntil <= 30) {
       moment = "quick";
-      label = `${next.title.toUpperCase()} / ${minutesUntil} MIN`;
+      label = `${next.title} ${formatCountdown(minutesUntil)}`;
       title = "Choose something small and easy right now.";
       explanation =
         "There is not much digestion time. A familiar carb-forward snack and a few sips of water are the practical move.";
     } else if (minutesUntil <= 90) {
       moment = "pre";
-      label = `${next.title.toUpperCase()} / ${minutesUntil} MIN`;
+      label = `${next.title} ${formatCountdown(minutesUntil)}`;
       title = "Have a practical pre-activity snack now.";
       explanation =
         "Choose familiar carbs that fit where you are. Keep heavy, greasy, or brand-new foods for another time.";
     } else if (minutesUntil <= 180) {
       moment = "regular";
-      label = `${next.title.toUpperCase()} / ${Math.round(minutesUntil / 15) * 15} MIN`;
+      label = `${next.title} ${formatCountdown(minutesUntil)}`;
       title = "Use this meal window before the rush.";
       explanation =
         "A balanced meal or substantial snack now can make the school-to-sport transition easier later.";
     } else {
-      label = `${next.title.toUpperCase()} / ${formatClock(next.startTime)}`;
-      title = "Plan the handoff from school to sport.";
+      label = `${next.title} at ${formatClock(next.startTime)}`;
+      title = schoolToday
+        ? "Plan the handoff from school to sport."
+        : "Choose what you'll eat before the activity.";
       explanation =
-        "Your activity is later today. Decide what you will eat, where it will come from, and whether it needs to be packed before the day gets busy.";
+        "Your activity is later today. Choose food you can get and pack it before the day gets busy.";
     }
-    timing = `${formatClock(next.startTime)} start${next.location === "away" ? ` · away · ${next.travelMinutes || 0} min travel` : ""}`;
+    timing = `${next.title} at ${formatClock(next.startTime)}${next.location === "away" ? " · away" : ""}${Number(next.travelMinutes) > 0 ? ` · ${next.travelMinutes} min travel` : ""}`;
   }
+  if (next && schoolWindowTiming) timing = `${schoolWindowTiming} · ${timing}`;
 
   const departure = next ? next.start - Number(next.travelMinutes || 0) : null;
   const departed =
@@ -260,9 +315,34 @@ export function getFuelingGuidance({
   const departureLabel =
     departure == null || !Number(next.travelMinutes)
       ? ""
-      : `Leave by ${formatClock(`${String(Math.floor(Math.max(departure, 0) / 60)).padStart(2, "0")}:${String(Math.max(departure, 0) % 60).padStart(2, "0")}`)} · ${next.travelMinutes} min travel (no arrival buffer)`;
+      : `Leave by ${formatClock(`${String(Math.floor(Math.max(departure, 0) / 60)).padStart(2, "0")}:${String(Math.max(departure, 0) % 60).padStart(2, "0")}`)} (${next.travelMinutes} min drive)`;
   if (departureLabel) timing += ` · ${departureLabel}`;
-  if (!training.length) {
+  const tomorrowKey = getDateKey(addDays(new Date(`${todayKey}T12:00:00`), 1));
+  const noSchedule =
+    !events.length &&
+    !schoolSchedule?.enabled &&
+    !profile.restDays?.includes(todayKey) &&
+    !profile.restWeekdays?.includes(new Date(`${todayKey}T12:00:00`).getDay());
+  const quietLate =
+    currentMinutes >= 21 * 60 + 30 &&
+    !active &&
+    !recent &&
+    !next &&
+    !eventsForDate(events, tomorrowKey).length &&
+    !isSchoolDay(tomorrowKey, schoolSchedule);
+  if (quietLate) {
+    state = "late";
+    label = "Tonight";
+    title = "Nothing to plan tonight.";
+    explanation = "There is no school or activity on tomorrow's schedule.";
+    timing = "";
+  } else if (noSchedule) {
+    state = "setup";
+    label = "SCHEDULE NOT SET";
+    title = "Let's time your food to your day.";
+    explanation = "Add school and sports to see what is coming up.";
+    timing = "";
+  } else if (!training.length) {
     label =
       events.length || profile.restDays?.includes(todayKey)
         ? "NO SPORT TODAY"
@@ -271,6 +351,86 @@ export function getFuelingGuidance({
       events.length || profile.restDays?.includes(todayKey)
         ? "No sport is scheduled today. Keep regular meals and snacks that fit your day."
         : "Add school and sports for activity-based timing, or mark today as a rest day.";
+  }
+  const tomorrowEvent = eventsForDate(events, tomorrowKey)[0];
+  const markedRest =
+    profile.restDays?.includes(todayKey) ||
+    profile.restWeekdays?.includes(new Date(`${todayKey}T12:00:00`).getDay());
+  if (!["late", "setup"].includes(state)) {
+    state = active
+      ? "during"
+      : recent
+        ? "recovery"
+        : next
+          ? next.start - currentMinutes > 180
+            ? "plan_ahead"
+            : next.start - currentMinutes > 90
+              ? "meal_window"
+              : next.start - currentMinutes > 30
+                ? "pre"
+                : "quick"
+          : "no_sport";
+    if (state === "plan_ahead")
+      title = schoolToday
+        ? "Choose your after-school snack"
+        : "Choose your pre-activity snack";
+    if (state === "meal_window")
+      title = `Eat a snack or small meal by ${formatClock(`${String(Math.floor((next.start - 90) / 60)).padStart(2, "0")}:${String((next.start - 90) % 60).padStart(2, "0")}`)}`;
+    if (state === "pre") title = "Have a small, familiar snack now";
+    if (state === "quick") title = "Something small and easy, plus sips";
+    if (state === "during") title = "Sip water. Keep food familiar.";
+    if (state === "no_sport") {
+      title = "No practice today";
+      label = "Today";
+    }
+    if (
+      schoolToday &&
+      next &&
+      currentMinutes < timeToMinutes(schoolSchedule.startTime)
+    ) {
+      state = "before_school";
+      label = `School ${formatCountdown(timeToMinutes(schoolSchedule.startTime) - currentMinutes)}`;
+      title = schoolSchedule.foodAccess?.cafeteria
+        ? "Pack your after-school snack"
+        : "Pack lunch and your after-school snack";
+      explanation = "Get your food ready before school starts.";
+    } else if (
+      next?.location === "away" &&
+      Number(next.travelMinutes) > 0 &&
+      !departed &&
+      departure - currentMinutes <= 90
+    ) {
+      state = "travel";
+      label = departureLabel;
+      title = "Pack food and water before leaving";
+      explanation =
+        "Choose food that travels well and check your departure time.";
+    }
+    if (activeSchoolWindow && !active && !recent) {
+      title =
+        activeSchoolWindow.label === "Lunch"
+          ? "Lunch time — choose something familiar"
+          : "Snack time — choose something familiar";
+      explanation = "Use the eating time in your school schedule.";
+    }
+    if (markedRest && !active && !next) {
+      state = "rest";
+      label = "Rest day";
+      title = "Rest day — keep regular meals";
+      explanation = "Keep regular meals and snacks that fit your day.";
+    }
+    if (
+      currentMinutes >= 19 * 60 &&
+      tomorrowEvent &&
+      !active &&
+      !next &&
+      !recent
+    ) {
+      state = "evening";
+      label = `Tomorrow: ${tomorrowEvent.title} at ${formatClock(tomorrowEvent.startTime)}`;
+      title = "Set up tomorrow tonight";
+      explanation = "Set out food, water, and gear for tomorrow.";
+    }
   }
   const availableSources = departed
     ? profile.foodSources.filter((source) =>
@@ -285,36 +445,21 @@ export function getFuelingGuidance({
   const travelMode =
     ["away", "travel"].includes(focusEvent?.location) ||
     Number(focusEvent?.travelMinutes || 0) >= 30;
-  let ideas = FOOD_IDEAS.filter(
-    (idea) => idea.moments.includes(moment) && ideaFitsProfile(idea, profile),
-  );
-  ideas = ideas.filter((idea) => {
-    const availableMatches = idea.sources.filter((source) =>
-      availableSources.includes(source),
-    );
-    if (!availableMatches.length || (travelMode && !idea.portable))
-      return false;
-    const cafeteriaProvidesIt =
-      inSchool && availableMatches.includes("cafeteria");
-    if (
-      inSchool &&
-      !cafeteriaProvidesIt &&
-      idea.needsCold &&
-      !schoolSchedule.foodAccess?.refrigerator
-    )
-      return false;
-    if (
-      inSchool &&
-      !cafeteriaProvidesIt &&
-      idea.needsHeat &&
-      !schoolSchedule.foodAccess?.microwave
-    )
-      return false;
-    return true;
+  const ideas = ideasFor({
+    moment,
+    date: todayKey,
+    profile,
+    pantry,
+    favorites,
+    access: availableSources,
+    inSchool,
+    schoolAccess: schoolSchedule?.foodAccess,
+    travelMode,
   });
 
   return {
     label,
+    state,
     moment,
     departureLabel,
     departed,
@@ -328,10 +473,14 @@ export function getFuelingGuidance({
     explanation,
     timing,
     allIdeas: ideas,
-    ideas: ideas.slice(0, 3),
+    ideas: ["setup", "late"].includes(state) ? [] : ideas.slice(0, 3),
     alternates: ideas.slice(3, 9),
     travelMode,
     event: focusEvent,
+    gameDay: focusEvent?.type === "game",
+    tomorrowEvent,
+    schoolSchedule,
+    date: todayKey,
     schoolToday,
     inSchool,
   };

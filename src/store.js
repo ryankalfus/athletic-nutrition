@@ -1,5 +1,9 @@
 import { useSyncExternalStore } from "react";
+import { showToast } from "./components/ui/Toast.jsx";
+import { syncPlanPreparation } from "./domain/plans.js";
+import { backupDocument, backupFilename } from "./domain/backup.js";
 import {
+  SCHEMA_VERSION,
   emptyData,
   migrateLegacy,
   uid,
@@ -9,7 +13,8 @@ import {
 
 let db,
   snapshot = { loading: true },
-  currentId;
+  currentId,
+  lastFailedWrite = null;
 const listeners = new Set();
 const channel =
   typeof BroadcastChannel !== "undefined"
@@ -33,7 +38,7 @@ const read = () =>
     request.onerror = () => reject(request.error);
   });
 function publish(doc) {
-  validateDocument(doc);
+  doc = validateDocument(doc);
   if (!doc.profiles[currentId]) currentId = doc.defaultProfileId;
   sessionStorage.setItem("nourally-profile-id", currentId);
   emit({ loading: false, doc, current: doc.profiles[currentId], error: null });
@@ -90,6 +95,10 @@ export async function transaction(reducer) {
       let next;
       request.onsuccess = () => {
         try {
+          if (request.result.version === 2) {
+            records.put(structuredClone(request.result), "before-schema-v3");
+            downloadJson(request.result, backupFilename("before-redesign"));
+          }
           next = validateDocument(request.result);
           reducer(next, targetId);
           validateDocument(next);
@@ -106,22 +115,56 @@ export async function transaction(reducer) {
     });
     publish(doc);
     channel?.postMessage(doc.revision);
+    lastFailedWrite = null;
     return true;
   } catch (error) {
+    lastFailedWrite = () => transaction(reducer);
+    const reason = String(error.message || "Could not save").replace(
+      /[.!?]+$/,
+      "",
+    );
     emit({
       ...snapshot,
-      error: `Not saved: ${error.message}. Export a backup before closing this tab.`,
+      error: `Not saved: ${reason}. Export a backup before closing this tab.`,
     });
     return false;
   }
 }
-export const changeData = (reducer) =>
-  transaction((doc, id) => {
+export async function retryLastWrite() {
+  return lastFailedWrite ? lastFailedWrite() : initializeStore();
+}
+export async function changeData(reducer, message = "Saved.", action) {
+  let before;
+  const profileId = currentId;
+  const ok = await transaction((doc, id) => {
+    before = structuredClone(doc.profiles[id].data);
     reducer(doc.profiles[id].data);
   });
+  if (!ok) {
+    lastFailedWrite = () => changeData(reducer, message, action);
+    return false;
+  }
+  const revision = snapshot.doc.revision;
+  if (message)
+    showToast(
+      message,
+      async () => {
+        if (currentId !== profileId || snapshot.doc.revision !== revision)
+          return false;
+        return transaction((doc) => {
+          doc.profiles[profileId].data = before;
+        });
+      },
+      action,
+    );
+  return true;
+}
 export const setField = (field, update) =>
   changeData((data) => {
     data[field] = typeof update === "function" ? update(data[field]) : update;
+    if (field === "dayPlans")
+      for (const date of Object.keys(data.dayPlans))
+        syncPlanPreparation(data, date);
   });
 export function useStore() {
   return useSyncExternalStore(subscribe, () => snapshot);
@@ -132,13 +175,28 @@ export function useField(field) {
 }
 export async function createProfile(name, email = "") {
   const id = uid();
+  const previousId = currentId;
   const ok = await transaction((doc) => {
     const data = emptyData();
     data.profile.name = name;
     doc.profiles[id] = { id, name, email, data };
   });
-  if (ok) selectProfile(id);
+  if (ok) {
+    selectProfile(id);
+    const revision = snapshot.doc.revision;
+    showToast("Profile created.", async () => {
+      if (snapshot.doc.revision !== revision) return false;
+      const undone = await transaction((doc) => {
+        delete doc.profiles[id];
+      });
+      if (undone && docHasProfile(previousId)) selectProfile(previousId);
+      return undone;
+    });
+  }
   return ok;
+}
+function docHasProfile(id) {
+  return Boolean(id && snapshot.doc?.profiles[id]);
 }
 export function selectProfile(id) {
   currentId = id;
@@ -158,7 +216,7 @@ export function downloadJson(value, filename = "nourally-backup.json") {
   a.click();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
-export async function exportBackup() {
+export async function exportBackup({ scope = "current" } = {}) {
   let saved;
   try {
     saved = db ? await read() : null;
@@ -166,13 +224,30 @@ export async function exportBackup() {
     /* Fall back to recoverable legacy data. */
   }
   if (!saved) {
+    if (scope === "current") {
+      emit({
+        ...snapshot,
+        error:
+          "Could not read this athlete's data for backup. Try again before deleting it.",
+      });
+      return false;
+    }
     try {
       saved = { raw: { ...localStorage } };
     } catch {
       saved = { error: "Browser storage is unavailable." };
     }
+    downloadJson(saved, backupFilename("all-athletes"));
+    return true;
   }
-  downloadJson(saved);
+  const backup = backupDocument(saved, currentId, scope);
+  const name =
+    scope === "all"
+      ? "all-athletes"
+      : backup.profiles[currentId].data.profile.name ||
+        backup.profiles[currentId].name;
+  downloadJson(backup, backupFilename(name));
+  return true;
 }
 export async function startRecoveryProfile() {
   if (!db) return false;
@@ -193,7 +268,7 @@ export async function startRecoveryProfile() {
           records.put(request.result, `recovery-${Date.now()}`);
         records.put(
           {
-            version: 2,
+            version: SCHEMA_VERSION,
             revision: 0,
             defaultProfileId: id,
             profiles: {
@@ -218,9 +293,12 @@ export async function startRecoveryProfile() {
 }
 export async function importBackup(file) {
   const imported = validateDocument(JSON.parse(await file.text()));
-  return transaction((doc) => {
+  let importedIds = [];
+  const ok = await transaction((doc) => {
+    importedIds = [];
     for (const profile of Object.values(imported.profiles)) {
       const id = uid();
+      importedIds.push(id);
       doc.profiles[id] = {
         ...profile,
         id,
@@ -229,10 +307,21 @@ export async function importBackup(file) {
       };
     }
   });
+  if (ok) {
+    const revision = snapshot.doc.revision;
+    showToast("Profiles imported.", async () => {
+      if (snapshot.doc.revision !== revision) return false;
+      return transaction((doc) => {
+        for (const id of importedIds) delete doc.profiles[id];
+      });
+    });
+  }
+  return ok;
 }
 export async function deleteCurrentProfile() {
-  await exportBackup();
-  return transaction((doc, id) => {
+  if (!(await exportBackup())) return false;
+  sessionStorage.setItem("nourally-signed-out", "1");
+  const ok = await transaction((doc, id) => {
     if (Object.keys(doc.profiles).length === 1) {
       const next = uid();
       doc.profiles[next] = { id: next, name: "New profile", data: emptyData() };
@@ -240,6 +329,11 @@ export async function deleteCurrentProfile() {
     delete doc.profiles[id];
     doc.defaultProfileId = Object.keys(doc.profiles)[0];
   });
+  if (ok) {
+    window.location.hash = "/welcome";
+    showToast("Profile deleted.");
+  } else sessionStorage.removeItem("nourally-signed-out");
+  return ok;
 }
 channel &&
   (channel.onmessage = async () => {

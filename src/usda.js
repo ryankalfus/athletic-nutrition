@@ -4,6 +4,21 @@ function cleanText(value) {
     .replace(/\s+/g, " ")
     .trim();
 }
+export function sentenceCaseFoodName(name) {
+  const text = cleanText(name);
+  return text && text === text.toLocaleUpperCase()
+    ? text[0].toLocaleUpperCase() + text.slice(1).toLocaleLowerCase()
+    : text;
+}
+export function collapseFoodMatches(foods) {
+  const seen = new Set();
+  return foods.filter((food) => {
+    const key = `${cleanText(food.name).toLocaleLowerCase()}|${cleanText(food.brand).toLocaleLowerCase()}`;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
 function nutrientValue(food, names, units = []) {
   const nutrient = (food.foodNutrients || []).find(
     (item) =>
@@ -42,7 +57,12 @@ export function normalizeFdcFood(food) {
     catalogSnapshot: food.catalogSnapshot || null,
     nutrientBasis: "g",
     servingSize: Number(food.servingSize) > 0 ? Number(food.servingSize) : null,
-    servingSizeUnit: cleanText(food.servingSizeUnit).toLowerCase() || null,
+    servingSizeUnit:
+      { grm: "g", gram: "g", grams: "g" }[
+        cleanText(food.servingSizeUnit).toLowerCase()
+      ] ||
+      cleanText(food.servingSizeUnit).toLowerCase() ||
+      null,
     householdServing: cleanText(food.householdServingFullText),
     nutrients: {
       calories:
@@ -66,6 +86,12 @@ export function normalizeOffFood(item, barcode) {
     brand,
     source: "Open Food Facts",
     dataType: "Community product",
+    allergenTags: Array.isArray(item.allergens_tags)
+      ? item.allergens_tags.filter((tag) => typeof tag === "string")
+      : [],
+    traceTags: Array.isArray(item.traces_tags)
+      ? item.traces_tags.filter((tag) => typeof tag === "string")
+      : [],
     retrievedAt: new Date().toISOString(),
     nutrientBasis: unit === "ml" ? "ml" : "g",
     servingSize:
@@ -82,13 +108,37 @@ export function normalizeOffFood(item, barcode) {
   };
 }
 async function json(url, signal) {
-  const response = await fetch(url, { signal });
-  const data = await response.json();
-  if (!response.ok)
+  let response;
+  try {
+    response = await fetch(url, { signal });
+  } catch (error) {
+    if (error.name === "AbortError") throw error;
     throw new Error(
-      data.error || "Food lookup unavailable. Try again or add manually.",
+      typeof navigator !== "undefined" && navigator.onLine === false
+        ? "You're offline. Recent and saved foods still work."
+        : "Food lookup isn't working right now. Try again or add manually.",
     );
-  return data;
+  }
+  if (!response.ok) {
+    let message =
+      url.startsWith("/api/barcode/") && response.status === 404
+        ? "We couldn't find that barcode. Add the food yourself."
+        : response.status === 429
+          ? "Search is busy. Try again in a minute."
+          : "Food lookup isn't working right now. Try again or add manually.";
+    try {
+      const details = await response.json();
+      if (
+        details?.error &&
+        !(url.startsWith("/api/barcode/") && response.status === 404)
+      )
+        message = details.error;
+    } catch {
+      // An upstream outage may return an HTML or empty response.
+    }
+    throw new Error(message);
+  }
+  return response.json();
 }
 export async function searchFoodDataCentral(
   query,
@@ -103,8 +153,10 @@ export async function searchFoodDataCentral(
   );
   return {
     ...data,
-    foods: (data.foods || []).map((food) =>
-      normalizeFdcFood({ ...food, catalogSnapshot: data.snapshot || null }),
+    foods: collapseFoodMatches(
+      (data.foods || []).map((food) =>
+        normalizeFdcFood({ ...food, catalogSnapshot: data.snapshot || null }),
+      ),
     ),
   };
 }
@@ -112,7 +164,8 @@ export async function lookupBarcode(barcode, signal) {
   if (!/^\d{8,14}$/.test(barcode))
     throw new Error("Enter 8–14 barcode digits.");
   const data = await json(`/api/barcode/${barcode}`, signal);
-  if (!data.product) throw new Error("No product found. Add it manually.");
+  if (!data.product)
+    throw new Error("We couldn't find that barcode. Add the food yourself.");
   return normalizeOffFood(data.product, barcode);
 }
 export async function foodDetails(id, signal) {

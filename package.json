@@ -16,8 +16,11 @@
     "index:usda": "python3 scripts/index-usda.py data/usda/FoodData_Central_csv_2026-04-30.zip data/usda/catalog.sqlite"
   },
   "dependencies": {
+    "@fontsource-variable/dm-sans": "^5.3.0",
+    "@fontsource/barlow-semi-condensed": "^5.3.0",
     "@vitejs/plugin-react": "6.0.4",
     "barcode-detector": "3.2.1",
+    "lucide-react": "^1.48.0",
     "react": "19.2.8",
     "react-dom": "19.2.8",
     "vite": "8.1.5"

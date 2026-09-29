@@ -170,7 +170,7 @@ p {
 }
 .intro:has(.app-tabs) h1 {
   font:
-    600 36px/1.12 "DM Sans",
+    600 36px/1.12 var(--font-ui),
     sans-serif;
   letter-spacing: -0.03em;
 }
