@@ -517,3 +517,4 @@ Added the grocery budget and school food access to Food access & budget, and sho
 Added About Nourally's guidance as the one full safety explanation. 2026.09.29
 Moved the You page out of main.jsx into src/pages/You, keeping the first-run form in main.jsx for setup only. 2026.09.29
 Fixed an 8 px sideways scroll on Today at 320 px by letting the Today grid column shrink. 2026.09.29
+Counted an exact At home count in another unit (for example 3 bunches of bananas) as available for ideas, marked approximate, with a test. 2026.09.29
