@@ -224,22 +224,22 @@ Each ID is an individual checkbox. Implementation notes and blockers go on the m
 
 ### YOU
 
-- [ ] **YOU-01**
-- [ ] **YOU-02**
-- [ ] **YOU-03**
-- [ ] **YOU-04**
-- [ ] **YOU-05**
-- [ ] **YOU-06**
+- [x] **YOU-01**
+- [ ] **YOU-02** — Partial: "I don't eat" (Vegetarian, Vegan) and "Not a fan of" built; Allergies and Dairy-free/Gluten-free wait on reviewed allergen tags (ADD-03, P1-09).
+- [ ] **YOU-03** — Partial: Nut-free removed; peanut and tree-nut allergies wait on reviewed allergen tags (ADD-03, P1-09).
+- [x] **YOU-04**
+- [x] **YOU-05**
+- [x] **YOU-06**
 
 ### DATA
 
-- [ ] **DATA-01**
+- [x] **DATA-01**
 - [ ] **DATA-02**
 - [x] **DATA-03**
-- [ ] **DATA-04**
+- [x] **DATA-04**
 - [x] **DATA-05**
 - [x] **DATA-06**
-- [ ] **DATA-07**
+- [x] **DATA-07**
 - [ ] **DATA-08**
 - [x] **DATA-09**
 
