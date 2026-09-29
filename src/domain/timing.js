@@ -1,6 +1,7 @@
 import { ideasFor, ideaAccess, DIET_FILTERS, lowCostOn } from "./ranking.js";
 import { formatCountdown, formatTime as formatClock } from "../format.js";
 import { ideaUsesDislike } from "./you.js";
+import { activityTitle, normalizeSport } from "./sport.js";
 
 export function getDateKey(date = new Date()) {
   const year = date.getFullYear();
@@ -110,6 +111,29 @@ export function eventsForDate(events, dateKey) {
     .sort((a, b) => (a.startTime || "").localeCompare(b.startTime || ""));
 }
 
+// ADD-09 sport context: a plain "Practice" or an untitled game reads as
+// "Soccer practice" / "Soccer game" once the athlete's sport is set. Names
+// only; no sport-specific nutrition (audit 13.4).
+const GENERIC_TITLES = new Set([
+  "practice",
+  "game",
+  "workout",
+  "activity",
+  "other",
+]);
+export function sportEventTitle(event, sport) {
+  const title = String(event?.title || "").trim();
+  if (title && !GENERIC_TITLES.has(title.toLowerCase())) return title;
+  if (!normalizeSport(sport)) return title || activityTitle("", event?.type);
+  return activityTitle(sport, event?.type || "practice");
+}
+export function withSportTitles(events, sport) {
+  return events.map((event) => ({
+    ...event,
+    title: sportEventTitle(event, sport),
+  }));
+}
+
 /** @param {any} options */
 export function planTasksForIdea(idea, options = {}) {
   const {
@@ -189,7 +213,8 @@ export function getFuelingGuidance({
   favorites = [],
 }) {
   const currentMinutes = now.getHours() * 60 + now.getMinutes();
-  const training = eventsForDate(events, todayKey)
+  const sport = profile?.sport;
+  const training = withSportTitles(eventsForDate(events, todayKey), sport)
     .map((event) => ({
       ...event,
       start: timeToMinutes(event.startTime),
@@ -359,7 +384,10 @@ export function getFuelingGuidance({
         ? "No sport is scheduled today. Keep regular meals and snacks that fit your day."
         : "Add school and sports for activity-based timing, or mark today as a rest day.";
   }
-  const tomorrowEvent = eventsForDate(events, tomorrowKey)[0];
+  const tomorrowEvent = withSportTitles(
+    eventsForDate(events, tomorrowKey),
+    sport,
+  )[0];
   const markedRest =
     profile.restDays?.includes(todayKey) ||
     profile.restWeekdays?.includes(new Date(`${todayKey}T12:00:00`).getDay());
