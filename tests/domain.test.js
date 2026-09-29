@@ -1199,7 +1199,7 @@ test("P0-06: no idea ranking or filter depends on unreviewed allergen flags", ()
     },
   ];
   for (const moment of ["quick", "pre", "regular", "recovery"])
-    for (const need of ["glutenFree", "nutFree"])
+    for (const need of ["glutenFree", "nutFree", "dairyFree"])
       assert.deepEqual(
         ids(
           ideasFor({
@@ -1674,7 +1674,7 @@ test("P0-06: grocery suggestions ignore unreviewed gluten and nut flags", () => 
   const plain = ids(
     weeklyGroceryIdeas({ ...base, profile: { dietaryNeeds: [] } }),
   );
-  for (const need of ["glutenFree", "nutFree"])
+  for (const need of ["glutenFree", "nutFree", "dairyFree"])
     assert.deepEqual(
       ids(weeklyGroceryIdeas({ ...base, profile: { dietaryNeeds: [need] } })),
       plain,

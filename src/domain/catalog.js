@@ -1,6 +1,6 @@
-// Diet choices backed by catalog data. Allergen flags (gluten, nuts) stay
+// Diet choices backed by catalog data. Allergen flags (gluten, nuts, dairy) stay
 // out until reviewed per-ingredient tags exist (P0-06, ADD-03).
-export const DIET_FILTERS = ["vegan", "vegetarian", "dairyFree"];
+export const DIET_FILTERS = ["vegan", "vegetarian"];
 
 export const DEFAULT_PROFILE = {
   name: "",

@@ -503,3 +503,4 @@ Stopped grocery suggestions and At home quick adds from filtering on unreviewed 
 Moved the Show price estimates switch to You › Food access & budget. 2026.09.29
 Made the Ideas add-missing toast state the real count, or say everything is already on the list. 2026.09.29
 Verified the gaps in P0-05, P0-06, P0-07, P0-09, P0-11 and P1-01 to P1-06 are closed, completed P1-06 Groceries, and checked P1-06, IA-12, TODAY-09, FOOD-05, GROC-01 to GROC-08 and DATA-06 in the tracker after npm run check and browser checks at 375 px. 2026.09.29
+Hid the Dairy-free chip and stopped filtering on unreviewed dairy flags, with a notice for a stored Dairy-free choice and test coverage. 2026.09.29

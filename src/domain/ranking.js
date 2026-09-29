@@ -110,7 +110,6 @@ export function ideasFor(options) {
     if (!idea.moments.includes(selectedMoment)) return false;
     if (needs.includes("vegan") && !idea.vegan) return false;
     if (needs.includes("vegetarian") && !idea.vegetarian) return false;
-    if (needs.includes("dairyFree") && !idea.dairyFree) return false;
     if (!ignoreLowCost && lowCostOn(profile) && idea.cost !== "save")
       return false;
     const matches = idea.sources.filter((source) => sources.includes(source));

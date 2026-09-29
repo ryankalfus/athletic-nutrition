@@ -111,8 +111,13 @@ export function eventsForDate(events, dateKey) {
 
 /** @param {any} options */
 export function planTasksForIdea(idea, options = {}) {
-  const { travelMode = false, inSchool = false, schoolSchedule, event, date } =
-    options;
+  const {
+    travelMode = false,
+    inSchool = false,
+    schoolSchedule,
+    event,
+    date,
+  } = options;
   const verb = idea.portable ? "Pack" : "Plan";
   /** @type {Array<{label: string, kind: string, foodId?: string}>} */
   const tasks = [
@@ -168,7 +173,6 @@ export function ideaFitsProfile(idea, profile) {
   );
   if (needs.includes("vegan") && !idea.vegan) return false;
   if (needs.includes("vegetarian") && !idea.vegetarian) return false;
-  if (needs.includes("dairyFree") && !idea.dairyFree) return false;
   if (profile.budget === "save" && idea.cost !== "save") return false;
   return true;
 }
