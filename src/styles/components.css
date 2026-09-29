@@ -367,6 +367,7 @@
 
 .check-row > span {
   display: grid;
+  justify-items: start;
   gap: var(--space-1);
   min-width: 0;
 }
@@ -522,6 +523,16 @@
   color: var(--color-error);
   font-size: var(--text-small);
   line-height: var(--leading-small);
+}
+
+/* Error icon (DS-13): Lucide circle-alert drawn in the text color. */
+:is(.inline-error, .schedule-error)::before {
+  flex: 0 0 auto;
+  width: 20px;
+  height: 20px;
+  background: currentcolor;
+  content: "";
+  mask: var(--icon-alert) center / 20px no-repeat;
 }
 
 .inline-error button,
@@ -764,7 +775,9 @@
   /* Bottom-left of the content column. */
   .app-toast {
     bottom: var(--space-6);
-    left: calc(var(--width-rail) + var(--gutter));
+    left: calc(
+      var(--width-rail) + max(var(--gutter), (100% - var(--width-rail) - var(--layout-max)) / 2)
+    );
     transform: none;
   }
 }

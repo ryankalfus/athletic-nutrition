@@ -282,7 +282,9 @@ export default function TodayPage({
               ))}
             </ul>
           )}
-          <button onClick={() => setOpenPlanId(null)}>Close</button>
+          <div className="dialog-actions">
+            <button onClick={() => setOpenPlanId(null)}>Close</button>
+          </div>
         </Dialog>
       )}
       {why && (

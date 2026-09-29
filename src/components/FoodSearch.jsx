@@ -11,6 +11,7 @@ import { searchableFavorites } from "../domain/ranking.js";
 import { plural } from "../format.js";
 import { changeData, useStore } from "../store.js";
 import { Skeleton } from "./ui/Skeleton.jsx";
+import { Star } from "lucide-react";
 const BarcodeScanner = lazy(() => import("./BarcodeScanner.jsx"));
 export function FoodSearch({
   onChoose,
@@ -128,15 +129,23 @@ export function FoodSearch({
           <LabelCheck />
         </div>
         <button
+          className="icon-button"
           aria-pressed={current.data.favorites.some(
             (item) => item.id === food.id,
           )}
           aria-label={`Favorite ${sentenceCaseFoodName(food.name)}`}
           onClick={() => favorite(food)}
         >
-          {current.data.favorites.some((item) => item.id === food.id)
-            ? "★"
-            : "☆"}
+          <Star
+            size={20}
+            strokeWidth={1.75}
+            fill={
+              current.data.favorites.some((item) => item.id === food.id)
+                ? "currentColor"
+                : "none"
+            }
+            aria-hidden="true"
+          />
         </button>
         <button
           onClick={() => onChoose(food)}
@@ -227,9 +236,7 @@ export function FoodSearch({
           </div>
         </div>
       )}
-      {loading && !results && (
-        <Skeleton label="Finding foods" />
-      )}
+      {loading && !results && <Skeleton label="Finding foods" />}
       {error && (
         <div role="alert">
           <p>{error}</p>

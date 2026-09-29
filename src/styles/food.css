@@ -231,6 +231,10 @@
   font-weight: 600;
 }
 
+.stock-row .row-menu {
+  margin-left: auto;
+}
+
 .stock-amount {
   display: flex;
   align-items: center;
@@ -383,10 +387,6 @@
   border-bottom: var(--border);
 }
 
-.week-ideas .reason-chip {
-  margin-left: var(--space-2);
-}
-
 .finish-bar {
   position: sticky;
   bottom: calc(var(--tab-bar) + var(--space-2) + env(safe-area-inset-bottom));
@@ -450,7 +450,11 @@
   gap: var(--space-4);
 }
 
-/* Log */
+/* Log: the reading column inside the Food frame (DS-08) */
+.log-page {
+  max-width: var(--width-reading);
+}
+
 .data-list + .empty-state,
 .label-check + .empty-state,
 .label-check + .data-list {
@@ -672,8 +676,7 @@
   color: var(--color-primary);
 }
 
-.weekly .table-wrap,
-.shell > .table-wrap {
+.log-page > .table-wrap {
   margin-bottom: var(--space-4);
 }
 

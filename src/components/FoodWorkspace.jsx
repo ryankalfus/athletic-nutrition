@@ -167,7 +167,7 @@ export function FoodLog({ date }) {
     });
   }
   return (
-    <section>
+    <section className="log-page">
       <div className="section-toolbar">
         <p>
           {date === getDateKey() ? "Today · " : ""}

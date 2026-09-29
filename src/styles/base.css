@@ -58,6 +58,10 @@ h3 {
 
 p {
   margin-bottom: var(--space-3);
+}
+
+/* Body copy keeps a readable measure (5.4). */
+p:not([class]) {
   max-width: 70ch;
 }
 

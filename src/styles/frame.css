@@ -127,8 +127,15 @@
 }
 
 /* Page column: centered, gutters 16/24/32, width by route (DS-08). */
-.shell {
+:root {
   --layout-max: var(--width-reading);
+}
+
+:root:has(.shell[data-layout="grid"]) {
+  --layout-max: var(--width-grid);
+}
+
+.shell {
   box-sizing: content-box;
   max-width: var(--layout-max);
   margin-inline: auto;
@@ -140,7 +147,6 @@
 }
 
 .shell[data-layout="grid"] {
-  --layout-max: var(--width-grid);
   /* Food: top bar 56 + 8 + section control 48 = 112px of chrome (RWD-04). */
   padding-top: var(--space-2);
 }
@@ -324,7 +330,7 @@
 
 @media (min-width: 1200px) {
   /* Today and Schedule add a 320px right column. */
-  .shell[data-layout="wide"] {
+  :root:has(.shell[data-layout="wide"]) {
     --layout-max: calc(var(--width-reading) + var(--space-8) + var(--width-aside));
   }
 }

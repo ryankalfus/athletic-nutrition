@@ -423,15 +423,20 @@ export default function HomePage({ todayKey }) {
                 : "Out"}
             ). Update it or keep both?
           </p>
-          <button
-            disabled={!!pending}
-            onClick={() => add(merge.food, "update")}
-          >
-            Update it
-          </button>
-          <button disabled={!!pending} onClick={() => add(merge.food, "both")}>
-            Keep both
-          </button>
+          <div className="dialog-actions">
+            <button
+              disabled={!!pending}
+              onClick={() => add(merge.food, "update")}
+            >
+              Update it
+            </button>
+            <button
+              disabled={!!pending}
+              onClick={() => add(merge.food, "both")}
+            >
+              Keep both
+            </button>
+          </div>
         </Dialog>
       )}
       {edit && (

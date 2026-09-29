@@ -103,7 +103,11 @@ export function PortionEditor({ food, initial = {}, onSave, onCancel }) {
           />
         </label>
       </details>
-      {error && <p role="alert">{error}</p>}
+      {error && (
+        <p className="inline-error" role="alert">
+          {error}
+        </p>
+      )}
       <div className="button-row">
         <button
           aria-busy={busy || undefined}

@@ -260,7 +260,11 @@ export function GroceryItemForm({
           onChange={(e) => set("notes", e.target.value)}
         />
       </label>
-      {error && <p role="alert">{error}</p>}
+      {error && (
+        <p className="inline-error" role="alert">
+          {error}
+        </p>
+      )}
       <div className="sheet-footer">
         <button type="button" onClick={onCancel} disabled={pending}>
           Cancel
