@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { LabelCheck } from "./ui/LabelCheck.jsx";
+import { resultSubline } from "../domain/search.js";
 import { lookupBarcode as lookupFoodBarcode } from "../usda.js";
 export default function BarcodeScanner({ onAdd, onClose }) {
   const [barcode, setBarcode] = useState("");
@@ -224,13 +225,9 @@ export default function BarcodeScanner({ onAdd, onClose }) {
       {loading && <p role="status">Looking up product…</p>}
       {product && (
         <div className="product-result">
-          <h3>{product.displayName}</h3>
+          <h3>{product.name}</h3>
+          <p>{resultSubline(product)}</p>
           <LabelCheck food={product} />
-          <p>
-            {product.nutrients.calories == null
-              ? "Calories unknown"
-              : `${product.nutrients.calories} kcal per 100 ${product.nutrientBasis}`}
-          </p>
           <button
             className="primary"
             onClick={() => {

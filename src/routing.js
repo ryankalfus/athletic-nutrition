@@ -56,7 +56,10 @@ export function useRoute() {
     window.scrollTo({ top: 0, behavior: "instant" });
   }, [raw, route]);
   const path = route.split("?")[0];
-  const view = routes.has(path) ? path.split("/")[0] : "notFound";
+  const view =
+    routes.has(path) || /^food\/log(\/week)?\/\d{4}-\d{2}-\d{2}$/.test(path)
+      ? path.split("/")[0]
+      : "notFound";
   return [
     view,
     navigate,

@@ -1,9 +1,10 @@
-import { productAllergenText } from "../../domain/allergens.js";
+import { allergenLine } from "../../domain/search.js";
 
-// Every product view keeps the label line. When Open Food Facts lists
-// allergens for the product, they show first, marked as possibly incomplete.
+// Every product view keeps the label line. For a packaged product, the
+// allergens from its label data show first, marked as possibly incomplete
+// (SRCH-07, P1-09).
 export function LabelCheck({ food = null }) {
-  const listed = food ? productAllergenText(food) : null;
+  const listed = food ? allergenLine(food) : null;
   return (
     <>
       {listed && <p className="label-allergens">{listed}</p>}

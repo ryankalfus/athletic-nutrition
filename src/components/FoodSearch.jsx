@@ -8,11 +8,55 @@ import { uid } from "../domain/storage.js";
 import { GROCERY_CATALOG } from "../domain/catalog.js";
 import { LabelCheck } from "./ui/LabelCheck.jsx";
 import { searchableFavorites } from "../domain/ranking.js";
-import { plural } from "../format.js";
+import {
+  allergenLine,
+  portionHint,
+  resultSubline,
+  searchSchedule,
+} from "../domain/search.js";
 import { changeData, useStore } from "../store.js";
 import { Skeleton } from "./ui/Skeleton.jsx";
-import { Star } from "lucide-react";
+import { ScanBarcode, Star } from "lucide-react";
 const BarcodeScanner = lazy(() => import("./BarcodeScanner.jsx"));
+
+// One search result (SRCH-01, SRCH-02, SRCH-07): name, one sub-line with the
+// brand or "Basic food" and a portion hint, the allergen line for products,
+// and one Add button.
+function FoodResult({ food, saved, onFavorite, onChoose }) {
+  const name = sentenceCaseFoodName(food.name);
+  const hint = portionHint(food);
+  const allergens = allergenLine(food);
+  return (
+    <li className="food-result-row">
+      <div>
+        <h3>{name}</h3>
+        <p>{resultSubline(food)}</p>
+        {allergens && <p className="allergen-line">{allergens}</p>}
+        <LabelCheck />
+      </div>
+      <button
+        className="icon-button"
+        aria-pressed={saved}
+        aria-label={`Save ${name}`}
+        onClick={() => onFavorite(food)}
+      >
+        <Star
+          size={20}
+          strokeWidth={1.75}
+          fill={saved ? "currentColor" : "none"}
+          aria-hidden="true"
+        />
+      </button>
+      <button
+        onClick={() => onChoose(food)}
+        aria-label={`Add ${name}${hint ? `, ${hint.label}` : ""}`}
+      >
+        Add
+      </button>
+    </li>
+  );
+}
+
 export function FoodSearch({
   onChoose,
   initialQuery = "",
@@ -20,7 +64,7 @@ export function FoodSearch({
   searchInputRef,
 }) {
   const [query, setQuery] = useState(initialQuery);
-  const [providerMode, setProviderMode] = useState("manual");
+  const [providerMode, setProviderMode] = useState("api");
   const [results, setResults] = useState(null);
   const [page, setPage] = useState(1);
   const [error, setError] = useState("");
@@ -30,19 +74,13 @@ export function FoodSearch({
   const request = useRef(null);
   const serial = useRef(0);
   const { current } = useStore();
+  const favorites = current.data.favorites;
   // Saved meal ideas live on Ideas; search lists saved foods only (IDEA-05).
-  const savedFoods = searchableFavorites(current.data.favorites);
+  const savedFoods = searchableFavorites(favorites);
   const recent = current.data.recentFoods.filter(
-    (food) =>
-      !current.data.favorites.some((favorite) => favorite.id === food.id),
+    (food) => !favorites.some((favorite) => favorite.id === food.id),
   );
-  function clear() {
-    ++serial.current;
-    request.current?.abort();
-    setError("");
-    setLoading(false);
-    setPage(1);
-  }
+  const term = query.trim();
   useEffect(
     () => () => {
       ++serial.current;
@@ -63,16 +101,20 @@ export function FoodSearch({
     fetch("/api/foods/status")
       .then((response) => (response.ok ? response.json() : null))
       .then((status) =>
-        setProviderMode(status?.mode === "local-snapshot" ? "local" : "manual"),
+        setProviderMode(status?.mode === "local-snapshot" ? "local" : "api"),
       )
-      .catch(() => setProviderMode("manual"));
+      .catch(() => setProviderMode("api"));
   }, []);
+  // With the local catalog, search 300 ms after typing stops; the live USDA
+  // key is limited, so API mode searches on Enter (6.15 Interactions).
   useEffect(() => {
-    if (providerMode !== "local" || query.trim().length < 2 || offline) return;
-    const timer = window.setTimeout(() => search(1, query), 300);
+    const plan = searchSchedule(query, { mode: providerMode, offline });
+    if (!plan.run) return;
+    const timer = window.setTimeout(() => search(1, query), plan.delay);
     return () => window.clearTimeout(timer);
   }, [query, providerMode, offline]);
-  async function search(nextPage = 1, term = query) {
+  async function search(nextPage = 1, text = query) {
+    const needle = text.trim();
     request.current?.abort();
     const controller = new AbortController();
     request.current = controller;
@@ -81,20 +123,20 @@ export function FoodSearch({
     setLoading(true);
     try {
       const data = await searchFoodDataCentral(
-        term,
+        needle,
         "all",
         controller.signal,
         nextPage,
       );
       if (id === serial.current) {
         setResults((previous) =>
-          nextPage > 1 && previous?.query === term
+          nextPage > 1 && previous?.query === needle
             ? {
                 ...data,
-                query: term,
+                query: needle,
                 foods: collapseFoodMatches([...previous.foods, ...data.foods]),
               }
-            : { ...data, query: term },
+            : { ...data, query: needle },
         );
         setPage(nextPage);
       }
@@ -108,66 +150,44 @@ export function FoodSearch({
     }
   }
   const favorite = (food) =>
-    changeData((data) => {
-      data.favorites = data.favorites.some((f) => f.id === food.id)
-        ? data.favorites.filter((f) => f.id !== food.id)
-        : [...data.favorites, food];
-    });
-  function foodRow(food) {
-    return (
-      <article className="food-result-row" key={food.id}>
-        <div>
-          <h3>{sentenceCaseFoodName(food.name)}</h3>
-          <p>
-            {food.brand ? `Brand: ${food.brand}` : "Basic food"}
-            {food.householdServing
-              ? ` · ${food.householdServing}`
-              : food.servingSize && ["g", "ml"].includes(food.servingSizeUnit)
-                ? ` · ${food.servingSize} ${food.servingSizeUnit || "g"} ${plural(1, "serving")}`
-                : ""}
-          </p>
-          <LabelCheck />
-        </div>
-        <button
-          className="icon-button"
-          aria-pressed={current.data.favorites.some(
-            (item) => item.id === food.id,
-          )}
-          aria-label={`Favorite ${sentenceCaseFoodName(food.name)}`}
-          onClick={() => favorite(food)}
-        >
-          <Star
-            size={20}
-            strokeWidth={1.75}
-            fill={
-              current.data.favorites.some((item) => item.id === food.id)
-                ? "currentColor"
-                : "none"
-            }
-            aria-hidden="true"
-          />
-        </button>
-        <button
-          onClick={() => onChoose(food)}
-          aria-label={`Add ${sentenceCaseFoodName(food.name)}${food.householdServing ? `, ${food.householdServing}` : ""}`}
-        >
-          Add
-        </button>
-      </article>
+    changeData(
+      (data) => {
+        data.favorites = data.favorites.some((f) => f.id === food.id)
+          ? data.favorites.filter((f) => f.id !== food.id)
+          : [...data.favorites, food];
+      },
+      favorites.some((f) => f.id === food.id)
+        ? `Removed ${sentenceCaseFoodName(food.name)} from Saved.`
+        : `Saved ${sentenceCaseFoodName(food.name)}.`,
     );
-  }
+  const list = (foods) => (
+    <ul className="food-result-list">
+      {foods.map((food) => (
+        <FoodResult
+          key={food.id}
+          food={food}
+          saved={favorites.some((item) => item.id === food.id)}
+          onFavorite={favorite}
+          onChoose={onChoose}
+        />
+      ))}
+    </ul>
+  );
   if (scan)
     return (
-      <Suspense fallback={<p role="status">Opening barcode tools…</p>}>
+      <Suspense fallback={<Skeleton label="Opening barcode tools" rows={2} />}>
         <BarcodeScanner onAdd={onChoose} onClose={() => setScan(false)} />
       </Suspense>
     );
+  const current$ = results?.query === term;
   return (
     <section className="food-search">
       <form
+        role="search"
         onSubmit={(e) => {
           e.preventDefault();
-          if (query.trim().length >= 2) search(1, query);
+          const plan = searchSchedule(query, { submitted: true, offline });
+          if (plan.run) search(1, query);
         }}
       >
         <div className="food-search-field">
@@ -175,12 +195,16 @@ export function FoodSearch({
             Search foods
             <input
               ref={searchInputRef}
-              autoFocus
               type="search"
+              enterKeyHint="search"
               maxLength={120}
               value={query}
               onChange={(e) => {
-                clear();
+                ++serial.current;
+                request.current?.abort();
+                setError("");
+                setLoading(false);
+                setPage(1);
                 if (e.target.value.trim().length < 2) setResults(null);
                 setQuery(e.target.value);
                 onQuery?.(e.target.value);
@@ -190,29 +214,33 @@ export function FoodSearch({
           </label>
           <button
             type="button"
+            className="icon-button"
             onClick={() => setScan(true)}
             aria-label="Scan barcode"
           >
-            Barcode
+            <ScanBarcode size={20} strokeWidth={1.75} aria-hidden="true" />
           </button>
         </div>
+        {providerMode === "api" && term.length >= 2 && !current$ && !loading && (
+          <p className="muted field-hint">Press Enter to search.</p>
+        )}
       </form>
       {offline && (
         <p role="status">You're offline. Recent and saved foods still work.</p>
       )}
-      {!query && recent.length > 0 && (
-        <section>
-          <h3>Recent</h3>
-          <div className="food-result-list">{recent.map(foodRow)}</div>
+      {!term && recent.length > 0 && (
+        <section aria-labelledby="search-recent">
+          <h3 id="search-recent">Recent</h3>
+          {list(recent)}
         </section>
       )}
-      {!query && savedFoods.length > 0 && (
-        <section>
-          <h3>Saved</h3>
-          <div className="food-result-list">{savedFoods.map(foodRow)}</div>
+      {!term && savedFoods.length > 0 && (
+        <section aria-labelledby="search-saved">
+          <h3 id="search-saved">Saved</h3>
+          {list(savedFoods)}
         </section>
       )}
-      {!query && !results && (
+      {!term && !results && (
         <div className="quick-basics">
           <h3>Quick basics</h3>
           <div className="button-row">
@@ -240,27 +268,27 @@ export function FoodSearch({
       {error && (
         <div role="alert">
           <p>{error}</p>
-          <button onClick={() => search()}>Retry</button>
+          <button onClick={() => search(page > 1 ? page : 1)}>Retry</button>
           <p>Saved foods and manual entry remain available.</p>
         </div>
       )}
-      {results?.query === query && results.totalHits === 0 && (
-        <p role="status">
-          No matching foods. Try a simpler name or add manually.
-        </p>
-      )}
-      {results && (
+      <p role="status" className={current$ && !results.foods.length ? "" : "sr-only"}>
+        {current$ && !results.foods.length
+          ? "No matching foods. Try a simpler name or add it yourself."
+          : ""}
+      </p>
+      {results && results.foods.length > 0 && (
         <div
-          className={`food-result-list${results.query !== query ? " stale" : ""}`}
+          className={`food-results${current$ ? "" : " stale"}`}
           aria-busy={loading}
         >
-          {results.foods.map(foodRow)}
+          {list(results.foods)}
         </div>
       )}
-      {results && page * 18 < results.totalHits && (
+      {results && current$ && results.hasMore && (
         <div className="button-row">
           <button disabled={loading} onClick={() => search(page + 1)}>
-            Show more results
+            {loading ? "Loading…" : "Show more results"}
           </button>
         </div>
       )}
@@ -269,7 +297,7 @@ export function FoodSearch({
         onClick={() =>
           onChoose({
             id: `manual-${uid()}`,
-            name: query.trim() || "Food",
+            name: term || "Food",
             source: "Manual",
             nutrients: { calories: null },
             nutrientBasis: "g",

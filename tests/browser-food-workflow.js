@@ -146,8 +146,11 @@ async (page) => {
 
     // Log: use from home, then put back.
     await p.goto(`${base}#/food/log`);
-    const entry = p.locator("article").filter({ hasText: "Banana + pretzels" });
-    await entry.getByRole("button", { name: "Use from home" }).click();
+    const entry = p
+      .locator("li.log-entry")
+      .filter({ hasText: "Banana + pretzels" });
+    await entry.locator("summary").click();
+    await entry.getByRole("button", { name: "Used from At home…" }).click();
     const use = p.getByRole("dialog", { name: "Use food from home" });
     await use.getByRole("spinbutton", { name: /^Bananas — 3/ }).fill("1");
     await use.getByRole("button", { name: "Save" }).click();
@@ -155,12 +158,14 @@ async (page) => {
     await p.goto(`${base}#/food/home`);
     await homeRow("Bananas").getByText("2 left").waitFor();
     await p.goto(`${base}#/food/log`);
-    await entry.getByRole("button", { name: "Put back" }).click();
+    await entry.getByText("Used from At home").waitFor();
+    await entry.locator("summary").click();
+    await entry.getByRole("button", { name: "Put back at home" }).click();
     await p.getByRole("status").getByText("Put the food back at home.").waitFor();
     await p.goto(`${base}#/food/home`);
     await homeRow("Bananas").getByText("3 left").waitFor();
     result.checks.push(
-      "Use from home takes 1 banana (3 -> 2 left) and Put back restores it.",
+      "Log row menu: Used from At home takes 1 banana (3 -> 2 left) and Put back at home restores it.",
     );
 
     // Price estimates on: the estimate line and the price field appear.

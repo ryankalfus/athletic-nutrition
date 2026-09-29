@@ -4,6 +4,7 @@ import {
   localCatalog,
   rankFdcResults,
 } from "./catalog.js";
+import { hasBasicMatch, isBarcodeQuery } from "../src/domain/search.js";
 const cache = new Map();
 const rates = new Map();
 const TTL = 5 * 60 * 1000;
@@ -34,6 +35,45 @@ async function cached(url, { notFoundMessage } = {}) {
   if (cache.size >= 200) cache.delete(cache.keys().next().value);
   cache.set(url, { time: Date.now(), data });
   return data;
+}
+const GENERIC_TYPES = "Foundation,SR Legacy,Survey (FNDDS)";
+const REMOTE_PAGE_SIZE = 25;
+// Live USDA search. The first page asks for basic foods separately only when
+// the mixed page has no basic food named by the query, so "banana" finds
+// "Bananas, raw" without spending a second request on most searches.
+export async function searchRemote(query, type, page, key, fetchJson = cached) {
+  const request = (dataType, pageSize, pageNumber) => {
+    const params = new URLSearchParams({
+      api_key: key,
+      query,
+      pageSize: String(pageSize),
+      pageNumber: String(pageNumber),
+    });
+    if (dataType) params.set("dataType", dataType);
+    return fetchJson(`https://api.nal.usda.gov/fdc/v1/foods/search?${params}`);
+  };
+  const remote = await request(
+    type === "all" ? "" : type === "generic" ? GENERIC_TYPES : "Branded",
+    REMOTE_PAGE_SIZE,
+    page,
+  );
+  let foods = remote.foods || [];
+  if (
+    type === "all" &&
+    page === 1 &&
+    !isBarcodeQuery(query) &&
+    !hasBasicMatch(foods, query)
+  ) {
+    const basics = (await request(GENERIC_TYPES, 10, 1)).foods || [];
+    const ids = new Set(foods.map((item) => item.fdcId));
+    foods = [...basics.filter((item) => !ids.has(item.fdcId)), ...foods];
+  }
+  return {
+    foods: rankFdcResults(foods, query),
+    totalHits: remote.totalHits ?? foods.length,
+    pageNumber: page,
+    hasMore: page < Number(remote.totalPages || 0),
+  };
 }
 export async function api(req, res, next) {
   const url = new URL(req.url, "http://localhost");
@@ -79,25 +119,8 @@ export async function api(req, res, next) {
         return send(400, { error: "Invalid query, type, or page." });
       const local = searchLocal(query, type, page);
       if (local) return send(200, local);
-      const params = new URLSearchParams({
-        api_key: key,
-        query,
-        pageSize: "18",
-        pageNumber: String(page),
-      });
-      if (type !== "all")
-        params.set(
-          "dataType",
-          type === "generic"
-            ? "Foundation,SR Legacy,Survey (FNDDS)"
-            : "Branded",
-        );
-      const remote = await cached(
-        `https://api.nal.usda.gov/fdc/v1/foods/search?${params}`,
-      );
       return send(200, {
-        ...remote,
-        foods: rankFdcResults(remote.foods || [], query),
+        ...(await searchRemote(query, type, page, key)),
         mode: key === "DEMO_KEY" ? "limited-demo" : "server-key",
       });
     }

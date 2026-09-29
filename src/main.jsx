@@ -1,6 +1,5 @@
 import { Component, StrictMode, useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
-import { ChevronLeft, ChevronRight } from "lucide-react";
 import "@fontsource-variable/dm-sans/wght.css";
 import "@fontsource/barlow-semi-condensed/600.css";
 import "./styles/tokens.css";
@@ -32,10 +31,8 @@ import { addHydration, undoHydration } from "./domain/hydration.js";
 import { useField, useStore, useSignedOut } from "./store.js";
 import { Recovery } from "./components/Profiles.jsx";
 import { useRoute } from "./routing.js";
-import { formatDate } from "./format.js";
 
-import { getDateKey, addDays } from "./domain/timing.js";
-import { EmptyState } from "./components/ui/EmptyState.jsx";
+import { getDateKey } from "./domain/timing.js";
 import { Skeleton } from "./components/ui/Skeleton.jsx";
 
 function App() {
@@ -148,14 +145,6 @@ function App() {
         onNavigate={setView}
       />
     );
-  if (view === "food" && subroute === "log/week")
-    return (
-      <WeeklyProgress
-        dailyLogs={dailyLogs}
-        todayKey={todayKey}
-        onNavigate={setView}
-      />
-    );
   if (view === "schedule")
     return (
       <ScheduleCalendar
@@ -215,214 +204,6 @@ function NotFoundPage({ onNavigate }) {
           Go to Today
         </button>
       </section>
-    </Shell>
-  );
-}
-
-function WeeklyProgress({ dailyLogs, todayKey, onNavigate }) {
-  const [weekOffset, setWeekOffset] = useState(0);
-  const today = new Date(`${todayKey}T12:00:00`);
-  const weekStart = addDays(today, -6 + weekOffset * 7);
-  const days = Array.from({ length: 7 }, (_, index) => {
-    const date = addDays(weekStart, index);
-    const key = getDateKey(date);
-    const log = dailyLogs[key] || { entries: [], water: 0 };
-    return {
-      date,
-      key,
-      checkIns: log.entries.length,
-      hasEntries: log.entries.length > 0,
-      water: log.water || 0,
-    };
-  });
-  const weeklyCheckIns = days.reduce((sum, day) => sum + day.checkIns, 0);
-  const weeklyWater = days.reduce((sum, day) => sum + day.water, 0);
-  const loggedDays = days.filter((day) => day.hasEntries).length;
-  const hydrationDays = days.filter((day) => day.water > 0).length;
-  const range = `${new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric" }).format(days[0].date)} – ${new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", year: "numeric" }).format(days[6].date)}`;
-  const maxCheckIns = Math.max(...days.map((item) => item.checkIns), 4);
-  const maxWater = Math.max(...days.map((item) => item.water), 64);
-
-  return (
-    <Shell>
-      <section className="dashboard-head weekly-head">
-        <div>
-          <h1 className="page-title">Food</h1>
-        </div>
-      </section>
-      <nav className="food-sections" aria-label="Food workspace">
-        {[
-          ["ideas", "Ideas"],
-          ["home", "At home"],
-          ["groceries", "Groceries"],
-          ["log", "Log"],
-        ].map(([path, label]) => (
-          <button
-            key={path}
-            aria-current={path === "log" ? "page" : undefined}
-            className={path === "log" ? "active" : ""}
-            onClick={() => onNavigate(`food/${path}`)}
-          >
-            {label}
-          </button>
-        ))}
-      </nav>
-      <div className="log-page">
-        <h2>Week</h2>
-        <section className="week-toolbar">
-          <button
-            className="week-arrow"
-            onClick={() => setWeekOffset((offset) => offset - 1)}
-            aria-label="Previous seven days"
-          >
-            <ChevronLeft size={20} strokeWidth={1.75} aria-hidden="true" />
-          </button>
-          <div>
-            <strong>{weekOffset === 0 ? "Last 7 days" : range}</strong>
-            <span>{range}</span>
-          </div>
-          <button
-            className="week-arrow"
-            disabled={weekOffset === 0}
-            onClick={() => setWeekOffset((offset) => Math.min(offset + 1, 0))}
-            aria-label="Next seven days"
-          >
-            <ChevronRight size={20} strokeWidth={1.75} aria-hidden="true" />
-          </button>
-        </section>
-        <section className="weekly-stats">
-          <article className="card weekly-stat">
-            <span>Food check-ins</span>
-            <strong>{weeklyCheckIns}</strong>
-            <small>this period</small>
-          </article>
-          <article className="card weekly-stat">
-            <span>Days with a food log</span>
-            <strong>
-              {loggedDays}
-              <i>/7</i>
-            </strong>
-            <small>days</small>
-          </article>
-          <article className="card weekly-stat">
-            <span>Hydration check-ins</span>
-            <strong>
-              {hydrationDays}
-              <i>/7</i>
-            </strong>
-            <small>days</small>
-          </article>
-          <article className="card weekly-stat">
-            <span>Water logged</span>
-            <strong>{weeklyWater}</strong>
-            <small>oz total</small>
-          </article>
-        </section>
-        <section className="card weekly-chart-card">
-          <div className="chart-heading">
-            <div>
-              <h2>
-                {weeklyCheckIns} <small>foods logged this week</small>
-              </h2>
-            </div>
-            <div className="chart-key">
-              <span>
-                <i className="key-fill" /> Check-ins
-              </span>
-            </div>
-          </div>
-          <div className="weekly-chart">
-            {days.map((day) => (
-              <div
-                className={`chart-day${day.key === todayKey ? " today" : ""}`}
-                key={day.key}
-              >
-                <div className="bar-value">{day.checkIns || "—"}</div>
-                <div className="bar-track">
-                  <span
-                    style={{
-                      height: `${Math.min((day.checkIns / maxCheckIns) * 100, 100)}%`,
-                    }}
-                  />
-                </div>
-                <strong>
-                  {new Intl.DateTimeFormat("en-US", {
-                    weekday: "short",
-                  }).format(day.date)}
-                </strong>
-                <small>{day.date.getDate()}</small>
-              </div>
-            ))}
-          </div>
-          {weeklyCheckIns === 0 && (
-            <EmptyState>
-              Use food check-ins to notice where busy days make fueling harder.
-            </EmptyState>
-          )}
-        </section>
-        <section className="card weekly-water-card">
-          <div className="chart-heading">
-            <div>
-              <h2>
-                {weeklyWater.toLocaleString()}{" "}
-                <small>oz logged over 7 days</small>
-              </h2>
-            </div>
-          </div>
-          <div className="water-week">
-            {days.map((day) => (
-              <div
-                className={`water-day${day.key === todayKey ? " today" : ""}`}
-                key={day.key}
-              >
-                <div className="water-day-label">
-                  <strong>
-                    {new Intl.DateTimeFormat("en-US", {
-                      weekday: "short",
-                    }).format(day.date)}
-                  </strong>
-                  <span>{day.water} oz</span>
-                </div>
-                <div>
-                  <span
-                    style={{
-                      width: `${Math.min((day.water / maxWater) * 100, 100)}%`,
-                    }}
-                  />
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-        <div className="table-wrap">
-          <table>
-            <caption>No entry means nothing was logged.</caption>
-            <thead>
-              <tr>
-                <th scope="col">Date</th>
-                <th scope="col">Food check-ins</th>
-                <th scope="col">Water logged</th>
-              </tr>
-            </thead>
-            <tbody>
-              {days.map((day) => (
-                <tr key={day.key}>
-                  <th scope="row">{formatDate(day.key)}</th>
-                  <td>{dailyLogs[day.key] ? day.checkIns : "Not logged"}</td>
-                  <td>
-                    {dailyLogs[day.key]?.waterEntries?.length || day.water > 0
-                      ? `${day.water} oz`
-                      : "Not logged"}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-        <p className="weekly-safety">
-          This is a record of what you logged. It is not a score.
-        </p>
-      </div>
     </Shell>
   );
 }

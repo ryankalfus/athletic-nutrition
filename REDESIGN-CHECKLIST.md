@@ -33,8 +33,8 @@ Owner Ryan Kalfus confirmed the recommended options previously presented for aud
 - [x] **P1-04**
 - [x] **P1-05**
 - [x] **P1-06**
-- [ ] **P1-07**
-- [ ] **P1-08**
+- [x] **P1-07**
+- [x] **P1-08**
 - [ ] **P1-09** — Built, not ticked: per-ingredient tags, `profile.allergies`, idea and grocery filters, Open Food Facts allergens on product views, and tests for both gate states are in; filtering stays off behind `ALLERGY_TAGS_REVIEWED = false` until the pending table in NUTRITION-REVIEW.md is signed.
 - [ ] **P1-10** — Blocked on P1-09 sign-off: 6.14 passes; 6.13's peanut-allergy criterion needs the review gate open. DATA-08 is done in P1-12.
 - [x] **P1-11** — Allergy chips in step 5 stay hidden behind the P1-09 review gate (ONB-04).
@@ -178,14 +178,14 @@ Each ID is an individual checkbox. Implementation notes and blockers go on the m
 
 ### LOG
 
-- [ ] **LOG-01**
-- [ ] **LOG-02**
-- [ ] **LOG-03**
-- [ ] **LOG-04**
-- [ ] **LOG-05**
-- [ ] **LOG-06**
-- [ ] **LOG-07**
-- [ ] **LOG-08**
+- [x] **LOG-01**
+- [x] **LOG-02**
+- [x] **LOG-03**
+- [x] **LOG-04**
+- [x] **LOG-05**
+- [x] **LOG-06**
+- [x] **LOG-07**
+- [x] **LOG-08**
 
 ### SCH
 
@@ -210,17 +210,17 @@ Each ID is an individual checkbox. Implementation notes and blockers go on the m
 
 ### WEEK
 
-- [ ] **WEEK-01**
-- [ ] **WEEK-02**
-- [ ] **WEEK-03**
-- [ ] **WEEK-04**
-- [ ] **WEEK-05**
+- [x] **WEEK-01**
+- [x] **WEEK-02**
+- [x] **WEEK-03**
+- [x] **WEEK-04**
+- [ ] **WEEK-05** — Open: optional P2 Monday "Last week" card on Today (P2-05); Today files are outside the P1-08 change.
 
 ### HIST
 
 - [x] **HIST-01**
-- [ ] **HIST-02**
-- [ ] **HIST-03**
+- [x] **HIST-02**
+- [x] **HIST-03**
 
 ### YOU
 
@@ -258,7 +258,7 @@ Each ID is an individual checkbox. Implementation notes and blockers go on the m
 - [x] **SRCH-04**
 - [x] **SRCH-05**
 - [x] **SRCH-06**
-- [ ] **SRCH-07**
+- [x] **SRCH-07**
 
 ### COPY
 
@@ -443,10 +443,10 @@ Each ID is an individual checkbox. Implementation notes and blockers go on the m
 - [ ] **CMP-10**
 - [x] **CMP-11**
 - [x] **CMP-12**
-- [ ] **CMP-13**
+- [x] **CMP-13**
 - [ ] **CMP-14**
 - [ ] **CMP-15**
-- [ ] **CMP-16**
+- [x] **CMP-16**
 - [ ] **CMP-17** — Partial: row menus share one details-based style with a 44 px trigger and one panel; no `Menu` component with menu keyboard semantics for At home and Groceries yet.
 
 ## Owner decisions and review gates (§13.7, §11.6)

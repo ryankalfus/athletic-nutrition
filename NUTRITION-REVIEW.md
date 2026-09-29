@@ -313,3 +313,10 @@ Shellfish: no built-in ingredient is tagged, so a shellfish allergy hides nothin
 - Decision (Approve as written / Approve with changes listed / Not approved): ______________________
 - Changes required: ______________________
 - After approval: set `ALLERGY_TAGS_REVIEWED = true` in `src/domain/catalog.js`, run `npm run check` and the browser checks, then tick P1-09, YOU-03 and ADD-03 in `REDESIGN-CHECKLIST.md`.
+## Pending qualified review — search portions, allergen line and Log copy (2026.09.29)
+
+Added with P1-07 and P1-08. Not approved; recorded for the reviewer.
+
+- **Search portion hints (`BASIC_PORTIONS` in `src/domain/search.js`).** Common household portions for basic foods, taken from USDA SR Legacy food measures, shown under results ("Basic food · 1 medium, 118 g") and used as the starting amount in the log portion sheet: apple 1 medium 182 g; banana 1 medium 118 g; orange 1 medium 131 g; grapes 1 cup 151 g; rice 1 cup cooked 158 g; pasta 1 cup cooked 140 g; oats 1 cup cooked 234 g; peanut butter 2 tbsp 32 g; egg 1 large 50 g; bread 1 slice 28 g; milk 1 cup 244 g; yogurt 1 container 170 g; baby carrots 10 carrots 100 g; pretzels 1 oz 28 g; bagel 1 medium 105 g; sweet potato 1 medium 114 g; potato 1 medium 173 g; chicken breast 3 oz cooked 85 g. Reviewer: confirm these read as a typical portion, not an amount to eat. Packaged foods use the label serving; USDA food measures are used when the API returns them.
+- **Product allergen line (SRCH-07, `allergenLine`).** Products with no Open Food Facts data: "Allergens: check the package." With data: "Allergens listed: peanuts, milk. May contain: tree nuts. This list may be incomplete. Check the package." Tag names are shown as Open Food Facts spells them after removing the language prefix. "Allergies: check every label." still shows on every result.
+- **Log › Week sentence (`weekSentence`).** Counts only: "3 practices and 1 game. You planned food for 3 of them.", "None had a food plan.", "Nothing logged this week. That's fine — logging is optional.", footer "This is a record of what you logged. It is not a score."
