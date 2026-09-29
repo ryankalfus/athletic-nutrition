@@ -26,7 +26,13 @@ This repo is worked on by both OpenAI Codex and Claude Code. Both read this file
 | Lint, typecheck, unit tests, build (CI runs this) | `npm run check` |
 | Unit tests only | `npm test` |
 | Dev server | `npm run dev` |
-| Browser checks (needs a dev server and Chromium) | `npm run test:browser` |
+| Browser checks (starts Vite on 5184 if needed) | `npm run test:browser` |
+| One browser check | `npm run test:browser -- schedule` |
+
+First run: `npx playwright install chromium`. The provider check calls the
+live USDA API; set `FDC_API_KEY` in `.env` (see `.env.example`) or it can hit
+the `DEMO_KEY` rate limit. Stop your own dev server before `npm ci` on Windows,
+or the install fails with EPERM on a locked binary.
 
 Run `npm run check` before you call work done. For UI changes also run the
 browser checks. Report what you ran and the result.

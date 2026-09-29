@@ -532,3 +532,4 @@ Updated the food workflow browser check to set 3 bunches before Ideas and assert
 Made the responsive browser check fail on page-level horizontal scroll at 320 px too and added the You sheet routes. 2026.09.29
 Made the provider browser check name the USDA DEMO_KEY rate limit when real search is throttled. 2026.09.29
 Checked YOU-01, YOU-04 to YOU-06, DATA-01, DATA-04 and DATA-07 after unit and browser checks, and noted YOU-02 and YOU-03 as partial pending reviewed allergen tags. 2026.09.29
+Documented browser-check setup, the USDA key, and the Windows npm ci lock issue in AGENTS.md. 2026.09.29
