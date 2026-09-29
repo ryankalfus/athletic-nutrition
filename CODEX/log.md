@@ -493,3 +493,9 @@ Moved the signed-out flag into a store-level session module so a deleted or clos
 Added profile.sport with validation, an empty migration default, and a setup/You field so new activities are titled like "Soccer practice". 2026.09.29
 Made Day rail food rows read "Snack · about 2:30 PM · Banana + pretzels · packed" and open plan details, added availability chips, the "Planned for [time]. Undo" toast, and sentence-case countdown labels. 2026.09.29
 Added unit tests for format.js helpers, sport titles, the reminders Welcome guard and settings, and Day rail rows; npm run check passes with 45 tests. 2026.09.29
+Merged grocery suggestions and missing-ingredient adds into one generator with shopping units, reasons, and unchecked items. 2026.09.29
+Migrated grocery cart status to checked items, defaulted budget to none, and added an off-by-default price estimate setting. 2026.09.29
+Made finishing a trip update matching At home rows in place, create new rows as Have, and scope trip undo to its own rows. 2026.09.29
+Moved Groceries into its own page with check-off rows, a finish bar, put-away sheet, swap, and latest-trip undo. 2026.09.29
+Split the portion editor to log-only, fixed Out restoring to Have, and asked Counts as only for unmatched foods. 2026.09.29
+Replaced leftover data-model copy in the food log and added pending states to its write buttons. 2026.09.29

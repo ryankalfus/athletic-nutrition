@@ -6,6 +6,7 @@ export function ConfirmDialog({
   title,
   body,
   confirmLabel = "Confirm",
+  cancelLabel = "Cancel",
   onConfirm,
   onCancel,
   destructive = false,
@@ -29,7 +30,7 @@ export function ConfirmDialog({
       )}
       <div className="confirm-actions">
         <button type="button" onClick={onCancel}>
-          Cancel
+          {cancelLabel}
         </button>
         <button
           type="button"

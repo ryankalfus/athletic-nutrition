@@ -86,7 +86,9 @@ export function sameProduct(a, b) {
     ? Boolean(first && first === second)
     : normalized(a.name) === normalized(b.name);
 }
-const sameOptional = (a, b) => (a ?? null) === (b ?? null);
+const optional = (value) =>
+  value === undefined || value === "" ? null : value;
+const sameOptional = (a, b) => optional(a) === optional(b);
 export function findMatchingFoodItem(list, item) {
   return list.find(
     (candidate) =>
@@ -99,12 +101,12 @@ export function findMatchingFoodItem(list, item) {
   );
 }
 export function makeFoodRecord(fields, { id = uid(), origin = "manual" } = {}) {
+  // Low is a status or an exact quantity of 1 or less; no separate threshold (HOME-03).
+  const { lowThreshold: _threshold, status: _status, ...rest } = fields;
   return {
     id,
-    ...fields,
+    ...rest,
     availability: fields.availability || "exact",
-    lowThreshold: fields.lowThreshold ?? 0,
-    status: fields.status || "list",
     origin: fields.origin || origin,
   };
 }
@@ -113,7 +115,7 @@ export function toggleStockOut(item, date) {
     const { previousAvailability, ...rest } = item;
     return {
       ...rest,
-      availability: previousAvailability || "some",
+      availability: previousAvailability || "have",
       updatedDate: date,
     };
   }
@@ -144,6 +146,7 @@ export function ingredientsForMeal(idea, pantry, date) {
       return {
         name,
         displayAmount: displayAmount || name,
+        forIdea: idea.name,
         ingredientId: id,
         amount,
         unit,
@@ -169,63 +172,251 @@ export function quantityIn(item, unit) {
     return Number(item.quantity) * item.packageAmount;
   return null;
 }
-export function missingGroceries(ingredients, items) {
-  return ingredients.flatMap((ingredient) => {
-    const queued = items.filter(
-      (item) => ingredientId(item) === ingredient.ingredientId,
+// Shopping units are what a family buys ("1 bag"), not the recipe amount ("30 g").
+const SHOPPING_UNITS = {
+  bananas: [1, "bunch"],
+  apples: [1, "bag"],
+  "frozen-berries": [1, "bag"],
+  "baby-carrots": [1, "bag"],
+  bread: [1, "loaf"],
+  tortillas: [1, "pack"],
+  oats: [1, "container"],
+  rice: [1, "bag"],
+  pretzels: [1, "bag"],
+  applesauce: [1, "box"],
+  "fig-bars": [1, "box"],
+  crackers: [1, "box"],
+  beans: [2, "can"],
+  chickpeas: [2, "can"],
+  eggs: [1, "carton"],
+  chicken: [1, "pack"],
+  tofu: [1, "block"],
+  "tuna-pouches": [1, "pack"],
+  sunbutter: [1, "jar"],
+  "peanut-butter": [1, "jar"],
+  yogurt: [1, "tub"],
+  "soy-yogurt": [1, "tub"],
+  "soy-milk": [1, "carton"],
+  milk: [1, "carton"],
+  "chocolate-milk": [1, "carton"],
+  "cheese-sticks": [1, "pack"],
+  hummus: [1, "tub"],
+  "rice-cakes": [1, "pack"],
+  cereal: [1, "box"],
+  granola: [1, "bag"],
+  jam: [1, "jar"],
+  pita: [1, "pack"],
+  grapes: [1, "bag"],
+  turkey: [1, "pack"],
+  salsa: [1, "jar"],
+  pasta: [1, "box"],
+  edamame: [1, "bag"],
+  "seed-mix": [1, "bag"],
+  "dried-fruit": [1, "bag"],
+  "fruit-cups": [1, "pack"],
+  juice: [1, "pack"],
+};
+export const SHOPPING_UNIT_CHOICES = [
+  "bag",
+  "box",
+  "bunch",
+  "can",
+  "carton",
+  "container",
+  "jar",
+  "loaf",
+  "pack",
+  "tub",
+  "bottle",
+  "package",
+  "piece",
+];
+export const shoppingDefaults = (id) => SHOPPING_UNITS[id] || [1, "package"];
+const unitWord = (count, unit) => {
+  if (Number(count) === 1 || ["g", "ml"].includes(unit)) return unit;
+  if (unit === "piece") return "pieces";
+  return /(ch|sh|x|s)$/.test(unit) ? `${unit}es` : `${unit}s`;
+};
+export function shoppingAmount(item) {
+  const quantity = Number(item.quantity ?? 1);
+  const unit = item.unit || "package";
+  return `${quantity} ${unitWord(quantity, unit)}`;
+}
+const requirementIn = (item, unit) =>
+  item.requirement?.unit === unit && item.requirement.amount != null
+    ? Number(item.requirement.amount)
+    : quantityIn(item, unit);
+function groceryItem(id, name, extra) {
+  const catalog = GROCERY_CATALOG.find((entry) => entry.id === id);
+  const [quantity, unit] = SHOPPING_UNITS[id] || [1, "package"];
+  return {
+    id: uid(),
+    name: name || catalog?.name || id,
+    ingredientId: id,
+    catalogId: id,
+    quantity,
+    unit,
+    price: catalog?.price ?? null,
+    priceKind: catalog?.price == null ? null : "estimate",
+    category: catalog?.category || "Other",
+    checked: false,
+    reason: null,
+    requirement: null,
+    origin: "generated",
+    ...extra,
+  };
+}
+/**
+ * The one grocery generator (GROC-04). `needs` are ingredient shortfalls from
+ * ideas; `candidates` are weekly staples. Output uses shopping units, carries a
+ * reason, and is never pre-checked.
+ * @param {{needs?: any[], candidates?: any[], existing?: any[], pantry?: any[], date?: string}} input
+ */
+export function generateGroceryItems({
+  needs = [],
+  candidates = [],
+  existing = [],
+  pantry = [],
+  date = getDateKey(),
+}) {
+  const out = new Map();
+  const queued = (id, item) =>
+    existing.filter(
+      (entry) =>
+        (id && ingredientId(entry) === id) || (item && sameProduct(entry, item)),
     );
-    if (
-      ingredient.approximate ||
-      queued.some((item) => quantityIn(item, ingredient.unit) == null)
-    )
-      return [];
+  for (const need of needs) {
+    const id = need.ingredientId;
+    if (!id || out.has(id) || need.approximate) continue;
+    const already = queued(id);
+    if (already.some((entry) => requirementIn(entry, need.unit) == null))
+      continue;
     const remaining = Math.max(
-      ingredient.missing -
-        queued.reduce(
-          (total, item) => total + (quantityIn(item, ingredient.unit) || 0),
+      Number(need.missing ?? need.amount ?? 1) -
+        already.reduce(
+          (total, entry) => total + (requirementIn(entry, need.unit) || 0),
           0,
         ),
       0,
     );
-    return remaining > 0
-      ? [
-          {
-            id: uid(),
-            name: ingredient.name,
-            ingredientId: ingredient.ingredientId,
-            catalogId: ingredient.ingredientId,
-            quantity: remaining,
-            unit: ingredient.unit,
-            price: null,
-            status: "list",
-            origin: "meal",
-          },
-        ]
-      : [];
-  });
-}
-
-const shoppingUnits = {
-  bananas: ["1", "bag"], pretzels: ["1", "bag"], bread: ["1", "loaf"],
-  "rice-cakes": ["1", "pack"], apples: ["1", "bag"], "frozen-berries": ["1", "bag"],
-  oats: ["1", "container"], cereal: ["1", "box"], "soy-milk": ["1", "carton"],
-};
-export function generateGroceryItems({ needs = [], candidates = [], existing = [] }) {
-  const queued = new Set(existing.map((item) => ingredientId(item)).filter(Boolean));
-  const combined = new Map();
-  for (const need of [...needs, ...candidates]) {
-    const id = need.ingredientId || need.id || ingredientId(need);
-    if (!id || queued.has(id) || combined.has(id)) continue;
-    const [quantity, unit] = shoppingUnits[id] || ["1", "pack"];
-    combined.set(id, {
-      id: uid(), name: need.name || GROCERY_CATALOG.find((item) => item.id === id)?.name || id,
-      ingredientId: id, catalogId: id, quantity: Number(quantity), unit,
-      price: null, status: "list", checked: false,
-      origin: need.reason ? "meal" : "generated", reason: need.reason || "Staple",
-      amountNeeded: need.amount ?? null, amountUnit: need.amountUnit ?? null,
-    });
+    if (!(remaining > 0)) continue;
+    out.set(
+      id,
+      groceryItem(id, need.name, {
+        origin: "meal",
+        reason: need.reason || (need.forIdea ? `For ${need.forIdea}` : null),
+        requirement: { name: need.name, amount: remaining, unit: need.unit },
+      }),
+    );
   }
-  return [...combined.values()];
+  for (const candidate of candidates) {
+    const id = candidate.ingredientId || candidate.id;
+    if (!id || out.has(id) || queued(id, candidate).length) continue;
+    if (
+      pantry.some(
+        (row) =>
+          ingredientId(row) === id &&
+          usable(row, date) &&
+          stockStatus(row) === "have",
+      )
+    )
+      continue;
+    out.set(
+      id,
+      groceryItem(id, candidate.name, {
+        origin: "generated",
+        reason: candidate.reason || "Staple",
+      }),
+    );
+  }
+  return [...out.values()];
+}
+export function missingGroceries(ingredients, items) {
+  return generateGroceryItems({ needs: ingredients, existing: items });
+}
+const weekday = (date) =>
+  new Date(`${date}T12:00:00`).toLocaleDateString("en-US", {
+    weekday: "short",
+  });
+const isAway = (event) => ["away", "travel"].includes(event.location);
+const eventLabel = (event) =>
+  event.type === "game"
+    ? isAway(event)
+      ? "away game"
+      : "game"
+    : event.type === "workout"
+      ? "workout"
+      : "practice";
+/**
+ * "Add food for this week": 5–8 unchecked staples with a reason each.
+ * Sports drinks are never suggested (NUTRITION-REVIEW accepts no new
+ * sports-drink recommendation).
+ * @param {{profile?: any, events?: any[], pantry?: any[], items?: any[], date?: string, limit?: number}} input
+ */
+export function weeklyGroceryIdeas({
+  profile = {},
+  events = [],
+  pantry = [],
+  items = [],
+  date = getDateKey(),
+  limit = 8,
+}) {
+  const needs = (profile.avoid || profile.dietaryNeeds || []).filter(
+    (need) => need !== "nutFree",
+  );
+  const sorted = [...events].sort((a, b) =>
+    `${a.date} ${a.startTime || ""}`.localeCompare(
+      `${b.date} ${b.startTime || ""}`,
+    ),
+  );
+  const away = sorted.find(isAway);
+  const first = sorted[0];
+  const reasonFor = (item) =>
+    away && item.goals.includes("away-game")
+      ? `For ${weekday(away.date)} ${eventLabel(away)}`
+      : first &&
+          item.goals.some((goal) =>
+            ["practice-fuel", "recovery-meals"].includes(goal),
+          )
+        ? `For ${weekday(first.date)} ${eventLabel(first)}`
+        : "Staple";
+  const goals = sorted.length
+    ? ["practice-fuel", "recovery-meals", "away-game", "school-week"]
+    : ["school-week", "restock-basics"];
+  const candidates = GROCERY_CATALOG.filter(
+    (item) =>
+      item.id !== "sports-drink" &&
+      item.goals.some((goal) => goals.includes(goal)) &&
+      needs.every((need) => item[need]),
+  )
+    .map((item) => ({ ...item, reason: reasonFor(item) }))
+    .sort(
+      (a, b) =>
+        Number(b.reason !== "Staple") - Number(a.reason !== "Staple") ||
+        Number(b.goals.includes("restock-basics")) -
+          Number(a.goals.includes("restock-basics")),
+    );
+  const counts = {};
+  for (const event of sorted) {
+    const label = eventLabel(event);
+    counts[label] = (counts[label] || 0) + 1;
+  }
+  const parts = Object.entries(counts).map(
+    ([label, count]) =>
+      `${count} ${count === 1 ? label : label.replace(/(game|practice|workout)$/, "$1s")}`,
+  );
+  const summary = parts.length
+    ? `Based on ${parts.length > 1 ? `${parts.slice(0, -1).join(", ")} and ${parts.at(-1)}` : parts[0]}.`
+    : "Staples for school days and practice.";
+  return {
+    items: generateGroceryItems({
+      candidates,
+      existing: items,
+      pantry,
+      date,
+    }).slice(0, limit),
+    summary,
+  };
 }
 export function knownMoney(items) {
   const unknown = items.filter(
@@ -239,101 +430,96 @@ export function knownMoney(items) {
     unknown: unknown.length,
   };
 }
-export function groceryPreview(state, candidates) {
-  const totals = knownMoney(state.items);
-  const unlimited = state.budgetAmount === null || state.budgetAmount === "";
-  let remaining = unlimited
-    ? Infinity
-    : Math.max(Number(state.budgetAmount) - totals.subtotal, 0);
-  const additions = [],
-    excluded = [];
-  for (const item of candidates) {
-    if (
-      state.items.some(
-        (existing) =>
-          ingredientId(existing) === item.id || sameProduct(existing, item),
-      ) ||
-      state.pantry.some(
-        (p) =>
-          ingredientId(p) === item.id &&
-          p.availability !== "low" &&
-          usable(p, getDateKey()),
-      )
-    )
-      continue;
-    if (totals.unknown && !unlimited) {
-      excluded.push({ ...item, reason: "Price existing items first" });
-      continue;
-    }
-    if (item.price == null || Number(item.price) > remaining) {
-      excluded.push({ ...item, reason: "Outside remaining estimate" });
-      continue;
-    }
-    additions.push({
-      ...item,
-      id: uid(),
-      catalogId: item.id,
-      ingredientId: item.id,
-      quantity: 1,
-      unit: "package",
-      status: "list",
-      origin: "generated",
-      priceKind: "estimate",
-    });
-    remaining -= Number(item.price);
-  }
-  return {
-    additions,
-    excluded,
-    knownSubtotal: totals.subtotal,
-    unknown: totals.unknown,
-  };
-}
-export function acceptRecommendations(state, selected, operationId = uid()) {
-  const additions = selected.filter(
-    (item) =>
-      !state.items.some(
-        (existing) =>
-          sameProduct(existing, item) ||
-          (ingredientId(existing) &&
-            ingredientId(existing) === ingredientId(item)),
-      ),
+const exactRow = (row) =>
+  !row.availability ||
+  row.availability === "exact" ||
+  (row.availability === "out" && row.previousAvailability === "exact");
+const compatible = (row, item) =>
+  (row.unit || "package") === (item.unit || "package") &&
+  sameOptional(row.packageAmount, item.packageAmount) &&
+  sameOptional(row.packageUnit, item.packageUnit);
+/** The At home row a grocery item updates when put away (GROC-06). */
+export function pantryMatch(pantry, item) {
+  const id = ingredientId(item);
+  const same = pantry.filter(
+    (row) => sameProduct(row, item) || (id && ingredientId(row) === id),
   );
-  return {
-    ...state,
-    items: [...state.items, ...additions],
-    recommendationsUndo: { id: operationId, ids: additions.map((i) => i.id) },
-  };
+  return (
+    same.find(
+      (row) =>
+        exactRow(row) &&
+        compatible(row, item) &&
+        sameOptional(row.expiry, item.expiry),
+    ) ||
+    same.find((row) => sameProduct(row, item)) ||
+    same[0] ||
+    null
+  );
 }
-export function purchase(state, ids, date, operationId = uid()) {
+export function putAwayPlace(pantry, item) {
+  return (
+    pantryMatch(pantry, item)?.location ||
+    (["Cold", "Protein"].includes(item.category) &&
+    !["beans", "tuna-pouches", "sunbutter"].includes(ingredientId(item))
+      ? "fridge"
+      : "pantry")
+  );
+}
+/**
+ * Finish shopping: put checked items away (GROC-03/06). Existing At home rows
+ * are updated in place; items with no match create a "Have" row.
+ * @param {any} state
+ * @param {string[]} ids
+ * @param {string} date
+ * @param {string} [operationId]
+ * @param {{places?: Record<string, string>}} [options]
+ */
+export function purchase(state, ids, date, operationId = uid(), options = {}) {
+  const places = options.places || {};
   if (state.purchases.some((p) => p.transactionId === operationId))
     return state;
   const items = state.items.filter((item) => ids.includes(item.id));
   if (!items.length) return state;
   const pantry = structuredClone(state.pantry);
   const records = items.map((item) => {
-    let target = pantry.find(
-      (p) =>
-        sameProduct(p, item) &&
-        (p.unit || "package") === (item.unit || "package") &&
-        sameOptional(p.packageAmount, item.packageAmount) &&
-        sameOptional(p.packageUnit, item.packageUnit) &&
-        (!p.availability || p.availability === "exact") &&
-        sameOptional(p.expiry, item.expiry),
-    );
+    let target = pantryMatch(pantry, item);
     const pantryCreated = !target;
+    const place = places[item.id];
+    let pantryBefore = null;
     if (!target) {
       target = {
-        ...item,
         id: uid(),
-        quantity: 0,
-        availability: "exact",
-        location: "pantry",
+        name: item.name,
+        ...(item.food ? { food: item.food } : {}),
+        ingredientId: ingredientId(item),
+        catalogId: item.catalogId ?? null,
+        quantity: Number(item.quantity ?? 1),
+        unit: item.unit || "package",
+        packageAmount: optional(item.packageAmount),
+        packageUnit: optional(item.packageUnit),
+        availability: "have",
+        location: place || putAwayPlace([], item),
+        origin: "groceries",
       };
       pantry.push(target);
+    } else {
+      pantryBefore = {
+        availability: target.availability ?? null,
+        previousAvailability: target.previousAvailability ?? null,
+        quantity: target.quantity ?? null,
+        location: target.location ?? null,
+        updatedDate: target.updatedDate ?? null,
+        purchasedDate: target.purchasedDate ?? null,
+      };
+      if (exactRow(target) && compatible(target, item)) {
+        target.quantity =
+          (target.availability === "out" ? 0 : Number(target.quantity) || 0) +
+          Number(item.quantity ?? 1);
+        target.availability = "exact";
+      } else target.availability = "have";
+      delete target.previousAvailability;
+      if (place) target.location = place;
     }
-    target.quantity = Number(target.quantity) + Number(item.quantity);
-    target.availability = "exact";
     target.updatedDate = date;
     target.purchasedDate = date;
     return {
@@ -342,10 +528,19 @@ export function purchase(state, ids, date, operationId = uid()) {
       transactionId: operationId,
       pantryId: target.id,
       pantryCreated,
+      pantryBefore,
       purchasedDate: date,
       previousShopDate: state.lastShopDate,
     };
   });
+  // Record what each touched row looks like after the trip, to detect later use.
+  for (const record of records) {
+    const row = pantry.find((p) => p.id === record.pantryId);
+    record.pantryAfter = {
+      availability: row.availability,
+      quantity: row.quantity ?? null,
+    };
+  }
   return {
     ...state,
     pantry,
@@ -354,55 +549,114 @@ export function purchase(state, ids, date, operationId = uid()) {
     purchases: [...records, ...state.purchases],
   };
 }
-export function undoPurchase(state, transactionId) {
+function tripGroups(state, transactionId) {
   const records = state.purchases.filter(
     (p) => p.transactionId === transactionId && !p.undone,
   );
-  if (!records.length) return state;
-  for (const pantryId of new Set(records.map((r) => r.pantryId))) {
-    const item = state.pantry.find((p) => p.id === pantryId);
-    const total = records
-      .filter((r) => r.pantryId === pantryId)
-      .reduce((sum, r) => sum + Number(r.quantity), 0);
-    if (!item || Number(item.quantity) < total)
-      throw new Error(
-        "Some purchased stock has been used. Restore that stock or correct the pantry before undoing this purchase.",
-      );
-  }
-  const deductions = new Map();
-  const created = new Set();
+  const groups = new Map();
+  // purchases are stored newest-first within a trip in item order; the last
+  // record for a row holds its final state, the first its original state.
   for (const record of records) {
-    deductions.set(
-      record.pantryId,
-      (deductions.get(record.pantryId) || 0) + Number(record.quantity),
-    );
-    if (record.pantryCreated) created.add(record.pantryId);
+    const group = groups.get(record.pantryId) || {
+      pantryId: record.pantryId,
+      created: record.pantryCreated,
+      before: record.pantryBefore,
+      after: record.pantryAfter,
+      records: [],
+    };
+    group.after = record.pantryAfter || group.after;
+    group.records.push(record);
+    groups.set(record.pantryId, group);
   }
+  return [...groups.values()].map((group) => {
+    const row = state.pantry.find((p) => p.id === group.pantryId);
+    const after = group.after;
+    const used =
+      !row ||
+      (after &&
+        (row.availability !== after.availability ||
+          (row.availability === "exact" &&
+            Number(row.quantity) < Number(after.quantity))));
+    return { ...group, row, used: Boolean(used) };
+  });
+}
+/** Which parts of a trip were already used (J6 "Undo the rest?"). */
+export function tripUsage(state, transactionId) {
+  const groups = tripGroups(state, transactionId);
+  return {
+    total: groups.length,
+    used: groups
+      .filter((g) => g.used)
+      .flatMap((g) => g.records.map((r) => r.name)),
+  };
+}
+const stripPurchase = ({
+  purchaseId: _purchaseId,
+  transactionId: _transactionId,
+  pantryId: _pantryId,
+  pantryCreated: _pantryCreated,
+  pantryBefore: _pantryBefore,
+  pantryAfter: _pantryAfter,
+  purchasedDate: _purchasedDate,
+  previousShopDate: _previousShopDate,
+  undone: _undone,
+  ...item
+}) => item;
+/**
+ * Undo one trip. Only rows the trip created or changed are touched (GROC-06).
+ * Rows used since the trip block the undo unless `skipUsed` is set, which
+ * undoes the rest and keeps the used food at home.
+ * @param {any} state
+ * @param {string} transactionId
+ * @param {{skipUsed?: boolean}} [options]
+ */
+export function undoPurchase(state, transactionId, options = {}) {
+  const groups = tripGroups(state, transactionId);
+  if (!groups.length) return state;
+  if (groups.some((g) => g.used) && !options.skipUsed)
+    throw new Error("Some of this trip's food was already used. Undo the rest?");
+  const undo = groups.filter((g) => !g.used);
+  const removeIds = new Set(undo.filter((g) => g.created).map((g) => g.pantryId));
+  const restore = new Map(
+    undo.filter((g) => !g.created).map((g) => [g.pantryId, g]),
+  );
+  const pantry = state.pantry
+    .filter((p) => !removeIds.has(p.id))
+    .map((p) => {
+      const group = restore.get(p.id);
+      if (!group) return p;
+      const before = group.before || {};
+      const next = {
+        ...p,
+        availability: before.availability ?? undefined,
+        location: before.location ?? p.location,
+        updatedDate: before.updatedDate ?? undefined,
+        purchasedDate: before.purchasedDate ?? undefined,
+      };
+      if (before.quantity != null)
+        next.quantity =
+          Number(before.quantity) +
+          (Number(p.quantity) - Number(group.after?.quantity ?? p.quantity));
+      if (before.previousAvailability)
+        next.previousAvailability = before.previousAvailability;
+      for (const key of [
+        "availability",
+        "location",
+        "updatedDate",
+        "purchasedDate",
+      ])
+        if (next[key] === undefined) delete next[key];
+      return next;
+    });
+  const returned = undo
+    .flatMap((g) => g.records)
+    .filter((r) => !state.items.some((i) => i.id === r.id))
+    .map(stripPurchase);
+  const first = groups[0].records[0];
   return {
     ...state,
-    pantry: state.pantry
-      .map((p) =>
-        deductions.has(p.id)
-          ? { ...p, quantity: Number(p.quantity) - deductions.get(p.id) }
-          : p,
-      )
-      .filter((p) => !created.has(p.id) || p.quantity > 0),
-    items: [
-      ...state.items,
-      ...records
-        .filter((r) => !state.items.some((i) => i.id === r.id))
-        .map(
-          ({
-            purchaseId,
-            transactionId: tx,
-            pantryId,
-            pantryCreated,
-            purchasedDate,
-            previousShopDate,
-            ...item
-          }) => item,
-        ),
-    ],
+    pantry,
+    items: [...state.items, ...returned],
     purchases: state.purchases.map((p) =>
       p.transactionId === transactionId ? { ...p, undone: true } : p,
     ),
@@ -410,11 +664,28 @@ export function undoPurchase(state, transactionId) {
       (p) =>
         !p.undone &&
         p.transactionId !== transactionId &&
-        p.purchasedDate >= records[0].purchasedDate,
+        p.purchasedDate >= first.purchasedDate,
     )
       ? state.lastShopDate
-      : records[0].previousShopDate,
+      : first.previousShopDate,
   };
+}
+/** Past trips, newest first (GROC-08). */
+export function groceryTrips(purchases) {
+  const trips = new Map();
+  for (const record of purchases) {
+    const id = record.transactionId || record.purchaseId || record.id;
+    const trip = trips.get(id) || {
+      id,
+      date: record.purchasedDate,
+      count: 0,
+      undone: Boolean(record.undone),
+      undoable: Boolean(record.transactionId),
+    };
+    trip.count += 1;
+    trips.set(id, trip);
+  }
+  return [...trips.values()];
 }
 export function validPortion(amount, unit = "g") {
   return (

@@ -13,6 +13,7 @@ import {
   stockStatus,
   setStockStatus,
   stockToGroceries,
+  toggleStockOut,
 } from "../../domain/food.js";
 
 const places = [
@@ -32,6 +33,7 @@ export default function HomePage({ todayKey }) {
   const [dirty, setDirty] = useState(false);
   const [discard, setDiscard] = useState(false);
   const [counts, setCounts] = useState({});
+  const [countsAs, setCountsAs] = useState(null);
   const timers = useRef({});
   const low = rows.filter((i) => stockStatus(i) !== "have");
   const write = (key, fn, message, action) =>
@@ -84,6 +86,9 @@ export default function HomePage({ todayKey }) {
     if (ok) {
       setSearch(false);
       setMerge(null);
+      // HOME-07: catalog foods resolve on their own; ask only when nothing matched.
+      if (!(existing && choice === "update") && !ingredientId(record))
+        setCountsAs(record);
     }
   };
   const step = (row, delta) => {
@@ -271,13 +276,7 @@ export default function HomePage({ todayKey }) {
                                   d.groceryState.pantry =
                                     d.groceryState.pantry.map((i) =>
                                       i.id === row.id
-                                        ? setStockStatus(
-                                            i,
-                                            i.availability === "out"
-                                              ? "have"
-                                              : "out",
-                                            todayKey,
-                                          )
+                                        ? toggleStockOut(i, todayKey)
                                         : i,
                                     );
                                 },
@@ -285,7 +284,9 @@ export default function HomePage({ todayKey }) {
                               )
                             }
                           >
-                            {row.availability === "out" ? "Have" : "Mark out"}
+                            {row.availability === "out"
+                              ? "Back in stock"
+                              : "Mark out"}
                           </button>
                           <button
                             onClick={() => {
@@ -451,6 +452,27 @@ export default function HomePage({ todayKey }) {
           />
         </Dialog>
       )}
+      {countsAs && (
+        <Dialog title="Counts as?" onClose={() => setCountsAs(null)}>
+          <CountsAsForm
+            row={countsAs}
+            pending={!!pending}
+            onSkip={() => setCountsAs(null)}
+            onSave={(id) =>
+              write(
+                "counts-as",
+                (d) => {
+                  const target = d.groceryState.pantry.find(
+                    (i) => i.id === countsAs.id,
+                  );
+                  if (target) target.ingredientId = id;
+                },
+                null,
+              ).then((ok) => ok && setCountsAs(null))
+            }
+          />
+        </Dialog>
+      )}
       {discard && (
         <ConfirmDialog
           title="Discard changes?"
@@ -465,6 +487,40 @@ export default function HomePage({ todayKey }) {
         />
       )}
     </div>
+  );
+}
+function CountsAsForm({ row, pending, onSkip, onSave }) {
+  const [id, setId] = useState("");
+  return (
+    <form
+      className="home-details"
+      onSubmit={(e) => {
+        e.preventDefault();
+        if (id) onSave(id);
+        else onSkip();
+      }}
+    >
+      <label>
+        What does {row.name} count as?
+        <select value={id} onChange={(e) => setId(e.target.value)}>
+          <option value="">Nothing specific</option>
+          {INGREDIENTS.map((i) => (
+            <option key={i.id} value={i.id}>
+              {i.name}
+            </option>
+          ))}
+        </select>
+        <small>Ideas that need this food will use it.</small>
+      </label>
+      <div className="sheet-footer">
+        <button type="button" onClick={onSkip} disabled={pending}>
+          Skip
+        </button>
+        <button className="primary" disabled={pending}>
+          {pending ? "Saving…" : "Save"}
+        </button>
+      </div>
+    </form>
   );
 }
 function HomeDetails({ initial, pending, onDirty, onCancel, onSave }) {

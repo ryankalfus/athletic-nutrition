@@ -16,7 +16,8 @@ export const emptyData = () => ({
   operations: [],
   reminderSettings: { enabled: false, leadMinutes: 60, eveningPrep: true },
   groceryState: {
-    budgetAmount: 50,
+    budgetAmount: null,
+    showPrices: false,
     goal: "school-week",
     lastShopDate: "",
     pantry: [],
@@ -234,8 +235,18 @@ export function validateData(data) {
       pantry: (data.groceryState?.pantry || []).map((item) =>
         item.availability === "some" ? { ...item, availability: "have" } : item,
       ),
+      items: (data.groceryState?.items || []).map(migrateGroceryItem),
     },
   };
+}
+
+// GROC-02: the in-app cart is gone; a carted item is simply checked off.
+function migrateGroceryItem(item) {
+  const { status, ...rest } = item;
+  const next = { ...rest, checked: Boolean(item.checked ?? status === "cart") };
+  return status && !["cart", "list"].includes(status)
+    ? { ...next, status }
+    : next;
 }
 
 export function validateDocument(doc) {
@@ -314,7 +325,7 @@ export function migrateLegacy(storage) {
     ...(!item.unit
       ? {
           unit: "package",
-          availability: "some",
+          availability: "have",
           notes: [
             item.notes,
             "Legacy amount: confirm the actual unit and quantity.",
