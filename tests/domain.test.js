@@ -68,6 +68,11 @@ import {
   canDeliverReminders,
   reminderCandidates,
   deliverReminders,
+  describePermission,
+  normalizeReminderSettings,
+  notificationPermission,
+  reminderSummary,
+  REMINDER_HONESTY_LINE,
 } from "../src/domain/reminders.js";
 import {
   lookupBarcode,
@@ -76,6 +81,22 @@ import {
   OfflineError,
   searchFoodDataCentral,
 } from "../src/usda.js";
+import {
+  formatAmount,
+  formatCountdown,
+  formatDate,
+  formatDuration,
+  formatPlanStatus,
+  formatTime,
+  plural,
+} from "../src/format.js";
+import { activityTitle, normalizeSport } from "../src/domain/sport.js";
+import {
+  availabilityLabel,
+  buildRailRows,
+  foodMomentLine,
+} from "../src/domain/dayRail.js";
+import { createSignedOutFlag } from "../src/session.js";
 const day = "2026-09-14";
 const profile = { ...DEFAULT_PROFILE, budget: "standard" };
 const idea = (id) => FOOD_IDEAS.find((i) => i.id === id);
@@ -1232,5 +1253,230 @@ test("P0-09: barcode 404, outage and offline stay distinct", async () => {
     });
   } finally {
     globalThis.fetch = realFetch;
+  }
+});
+
+test("P0-05: format helpers return human dates, times, durations, and counts", () => {
+  assert.equal(formatDate("2026-09-21"), "Mon, Sep 21");
+  assert.equal(formatDate("2026-09-21", { year: true }), "Mon, Sep 21, 2026");
+  assert.equal(formatDate(""), "Date TBD");
+  assert.equal(formatTime("16:00"), "4:00 PM");
+  assert.equal(formatTime("09:05"), "9:05 AM");
+  assert.equal(formatTime("25:00"), "25:00");
+  assert.equal(formatTime(""), "Time TBD");
+  assert.equal(formatDuration(90), "1 hr 30 min");
+  assert.equal(formatDuration(60), "1 hr");
+  assert.equal(formatDuration(1), "1 min");
+  assert.equal(formatDuration("15:00", "16:45"), "1 hr 45 min");
+  assert.equal(formatDuration("16:00", "15:00"), "Duration not set");
+  assert.equal(formatCountdown(110), "in 1 hr 50 min");
+  assert.equal(formatCountdown(0), "now");
+  assert.equal(formatCountdown(-5), "5 min ago");
+  assert.equal(formatCountdown(NaN), "Time TBD");
+  assert.equal(plural(1, "banana"), "banana");
+  assert.equal(plural(2, "banana"), "bananas");
+  assert.equal(plural(2, "activity"), "activities");
+  assert.equal(plural(3, "oz"), "oz");
+  assert.equal(formatAmount(1, "piece", "Bananas"), "1 banana");
+  assert.equal(formatAmount(2, "piece", "Bananas"), "2 bananas");
+  assert.equal(
+    formatAmount(2, "portion", "pretzels"),
+    "2 portions of pretzels",
+  );
+  assert.equal(formatAmount(12, "oz", "water"), "12 oz water");
+  assert.equal(formatPlanStatus("planned"), "Planned");
+  assert.equal(formatPlanStatus("packed"), "Packed");
+  assert.equal(formatPlanStatus("eaten"), "Eaten");
+  assert.equal(formatPlanStatus("logged"), "Eaten");
+});
+
+test("P1-02 SCH-09: sport names new activities and migrates as an empty default", () => {
+  assert.equal(activityTitle("soccer", "practice"), "Soccer practice");
+  assert.equal(activityTitle("Cross country", "game"), "Cross country game");
+  assert.equal(activityTitle("", "practice"), "Practice");
+  assert.equal(activityTitle("  Soccer  ", "other"), "Soccer activity");
+  assert.equal(normalizeSport(42), "");
+  assert.equal(normalizeSport("  Track   and field "), "Track and field");
+  assert.equal(emptyData().profile.sport, "");
+  const legacy = validateData({ profile: { ...DEFAULT_PROFILE } });
+  assert.equal(legacy.profile.sport, "");
+  const kept = validateData({
+    profile: { ...DEFAULT_PROFILE, sport: " Soccer " },
+  });
+  assert.equal(kept.profile.sport, "Soccer");
+  assert.throws(
+    () => validateData({ profile: { ...DEFAULT_PROFILE, sport: ["soccer"] } }),
+    /sport/,
+  );
+});
+
+test("P0-11 DATA-06/DATA-09: Welcome and a closed athlete never deliver reminders", () => {
+  const storage = new Map();
+  const fake = {
+    getItem: (k) => storage.get(k) ?? null,
+    setItem: (k, v) => storage.set(k, v),
+    removeItem: (k) => storage.delete(k),
+  };
+  const flag = createSignedOutFlag(fake);
+  let notified = 0;
+  flag.subscribe(() => notified++);
+  assert.equal(flag.get(), false);
+  flag.set(true);
+  assert.equal(flag.get(), true);
+  assert.equal(notified, 1);
+  assert.equal(
+    createSignedOutFlag(fake).get(),
+    true,
+    "a remounted app stays signed out",
+  );
+  const open = { enabled: true, permission: "granted" };
+  assert.equal(canDeliverReminders({ ...open, signedOut: flag.get() }), false);
+  assert.equal(
+    canDeliverReminders({ ...open, signedOut: false, view: "welcome" }),
+    false,
+  );
+  assert.equal(
+    canDeliverReminders({ ...open, signedOut: false, view: "today" }),
+    true,
+  );
+  flag.set(false);
+  assert.equal(storage.has("nourally-signed-out"), false);
+  assert.equal(
+    REMINDER_HONESTY_LINE,
+    "Reminders work while Nourally is open in a desktop browser. On phones, add Nourally to your home screen (coming soon).",
+  );
+});
+
+test("IA-12 YOU-05: reminder settings summary, permission state, and lead options", () => {
+  assert.equal(
+    reminderSummary({ enabled: true, leadMinutes: 90 }, "granted"),
+    "On · 90 min before",
+  );
+  assert.equal(
+    reminderSummary({ enabled: true, leadMinutes: 60 }, "denied"),
+    "Off",
+  );
+  assert.equal(reminderSummary({ enabled: false }, "granted"), "Off");
+  assert.deepEqual(normalizeReminderSettings({ enabled: 1, leadMinutes: 45 }), {
+    enabled: true,
+    leadMinutes: 60,
+    eveningPrep: true,
+  });
+  assert.equal(
+    normalizeReminderSettings({ leadMinutes: "30" }).leadMinutes,
+    30,
+  );
+  assert.equal(notificationPermission(undefined), "unsupported");
+  assert.equal(notificationPermission({ permission: "denied" }), "denied");
+  assert.match(describePermission("denied"), /blocked/);
+  assert.match(describePermission("unsupported"), /cannot/);
+  const early = {
+    id: "e",
+    title: "Soccer practice",
+    date: "2026-09-15",
+    startTime: "09:59",
+    endTime: "11:00",
+  };
+  const ten = { ...early, id: "t", startTime: "10:00" };
+  const evening = new Date(`${day}T19:30:00`);
+  const settings = { enabled: true, leadMinutes: 60, eveningPrep: true };
+  assert.equal(reminderCandidates([early], settings, evening).length, 1);
+  assert.equal(reminderCandidates([ten], settings, evening).length, 0);
+  assert.equal(
+    reminderCandidates([early], { ...settings, eveningPrep: false }, evening)
+      .length,
+    0,
+  );
+});
+
+test("TODAY-02: Day rail rows use readable sub-lines and open plans", () => {
+  const plan = {
+    id: "plan-1",
+    date: day,
+    moment: "regular",
+    eatAt: "14:30",
+    status: "packed",
+    template: { name: "Banana + pretzels" },
+  };
+  assert.equal(
+    foodMomentLine(plan),
+    "Snack · about 2:30 PM · Banana + pretzels · packed",
+  );
+  assert.equal(
+    foodMomentLine({ ...plan, moment: "recovery", status: "planned" }),
+    "Recovery snack · about 2:30 PM · Banana + pretzels · planned",
+  );
+  const practice = {
+    id: "p",
+    title: "Soccer practice",
+    date: day,
+    startTime: "16:00",
+    endTime: "17:30",
+    location: "away",
+    travelMinutes: 45,
+  };
+  const rows = buildRailRows({
+    events: [practice],
+    schoolSchedule: school,
+    schoolToday: true,
+    mealPlans: [plan, { ...plan, id: "other-day", date: "2026-09-15" }],
+    todayKey: day,
+    now: new Date(`${day}T14:08:00`),
+  });
+  assert.deepEqual(
+    rows.map((r) => r.kind),
+    ["school", "now", "window", "food", "travel", "activity", "recovery"],
+  );
+  assert.equal(rows[0].detail, "8:00 AM–3:00 PM · Lunch 11:30 AM");
+  assert.equal(rows[0].past, true);
+  assert.equal(rows[1].title, "Now · 2:08 PM");
+  const foodRow = rows.find((r) => r.kind === "food");
+  assert.equal(foodRow.planId, "plan-1");
+  assert.equal(foodRow.route, undefined, "food rows open plan details");
+  assert.equal(`${foodRow.title} · ${foodRow.detail}`, foodMomentLine(plan));
+  assert.equal(rows.find((r) => r.kind === "travel").title, "Leave by 3:15 PM");
+  assert.equal(
+    rows.find((r) => r.kind === "recovery").detail,
+    "5:30 PM–7:00 PM",
+  );
+  assert.equal(
+    rows.find((r) => r.kind === "activity").detail,
+    "4:00 PM–5:30 PM · Away",
+  );
+  for (const r of rows)
+    assert.doesNotMatch(
+      `${r.title} ${r.detail || ""}`,
+      / \d+ MIN|\d{4}-\d{2}-\d{2}/,
+    );
+  assert.equal(
+    availabilityLabel({ name: "Bananas", sufficient: true }),
+    "Bananas at home",
+  );
+  assert.equal(
+    availabilityLabel({ name: "Pretzels", sufficient: false }),
+    "Pretzels to buy",
+  );
+});
+
+test("TODAY-01/04: countdown labels are sentence case, never legacy codes", () => {
+  const later = {
+    id: "x",
+    title: "Game",
+    date: "2026-09-16",
+    startTime: "16:00",
+    endTime: "17:00",
+  };
+  const labels = [
+    guidance("10:00").label,
+    guidance("10:00", [], { schoolSchedule: null }).label,
+    guidance("10:00", [later], { schoolSchedule: null }).label,
+    guidance("13:00", [{ ...later, id: "y", date: day }]).label,
+  ];
+  for (const label of labels) {
+    assert.doesNotMatch(
+      label,
+      /SCHEDULE NOT SET|STEADY-DAY FUELING|NO SPORT TODAY|NEXT RECOMMENDED ACTION| \d+ MIN/,
+    );
+    assert.notEqual(label, label.toUpperCase());
   }
 });

@@ -7,8 +7,53 @@ import {
 } from "./timing.js";
 import { formatCountdown } from "../format.js";
 
-export function canDeliverReminders({ signedOut, enabled, permission }) {
-  return !signedOut && Boolean(enabled) && permission === "granted";
+export const REMINDER_LEAD_OPTIONS = [30, 60, 90];
+export const REMINDER_HONESTY_LINE =
+  "Reminders work while Nourally is open in a desktop browser. On phones, add Nourally to your home screen (coming soon).";
+
+export function canDeliverReminders({
+  signedOut,
+  view = "today",
+  enabled,
+  permission,
+}) {
+  return (
+    !signedOut &&
+    view !== "welcome" &&
+    Boolean(enabled) &&
+    permission === "granted"
+  );
+}
+
+export function notificationPermission(api = globalThis.Notification) {
+  return typeof api === "undefined" || !api ? "unsupported" : api.permission;
+}
+
+export function describePermission(permission) {
+  return (
+    {
+      granted: "Notifications are allowed in this browser.",
+      denied:
+        "Notifications are blocked. Allow them in your browser’s site settings, then turn reminders on.",
+      default:
+        "Your browser will ask to allow notifications when you turn reminders on.",
+      unsupported: "This browser cannot show notifications.",
+    }[permission] || "This browser cannot show notifications."
+  );
+}
+
+export function reminderSummary(settings, permission) {
+  if (!settings?.enabled || permission !== "granted") return "Off";
+  return `On · ${Number(settings.leadMinutes || 60)} min before`;
+}
+
+export function normalizeReminderSettings(settings) {
+  const lead = Number(settings?.leadMinutes);
+  return {
+    enabled: Boolean(settings?.enabled),
+    leadMinutes: REMINDER_LEAD_OPTIONS.includes(lead) ? lead : 60,
+    eveningPrep: settings?.eveningPrep !== false,
+  };
 }
 
 export function reminderCandidates(schedule, settings, now) {
@@ -40,7 +85,7 @@ export function reminderCandidates(schedule, settings, now) {
   });
   const tomorrow = getDateKey(addDays(now, 1));
   const early = eventsForDate(schedule, tomorrow).find(
-    (e) => timeToMinutes(e.startTime) <= 600,
+    (e) => timeToMinutes(e.startTime) < 600,
   );
   if (settings.eveningPrep && now.getHours() >= 19 && early)
     candidates.push({

@@ -22,9 +22,19 @@ import {
   canDeliverReminders,
   reminderCandidates,
   deliverReminders,
+  notificationPermission,
 } from "./domain/reminders.js";
+import { RemindersRow, RemindersSheet } from "./pages/You/RemindersSheet.jsx";
+import { SportField } from "./pages/You/SportField.jsx";
+import { normalizeSport } from "./domain/sport.js";
 import { addHydration, undoHydration } from "./domain/hydration.js";
-import { useField, useStore, changeData } from "./store.js";
+import {
+  useField,
+  useStore,
+  changeData,
+  useSignedOut,
+  setSignedOut,
+} from "./store.js";
 import {
   ProfileManager,
   LocalProfileEntry,
@@ -49,11 +59,10 @@ function App() {
   const [groceryState, setGroceryState] = useField("groceryState");
   const state = useStore();
   const [notificationError, setNotificationError] = useState("");
-  const [signedOut, setSignedOut] = useState(
-    () =>
-      new URLSearchParams(window.location.search).get("signedOut") === "1" ||
-      sessionStorage.getItem("nourally-signed-out") === "1",
-  );
+  // Store-level flag: a profile delete signs out before the next athlete
+  // publishes, so this can never be a stale "signed in" copy.
+  const signedOut = useSignedOut();
+  const onWelcome = signedOut || view === "welcome";
   useEffect(() => {
     let timer;
     const tick = () => {
@@ -65,11 +74,8 @@ function App() {
     return () => window.clearTimeout(timer);
   }, []);
   useEffect(() => {
-    if (signedOut) return;
-    const permission =
-      typeof Notification === "undefined"
-        ? "unsupported"
-        : Notification.permission;
+    if (onWelcome) return;
+    const permission = notificationPermission();
     if (reminderSettings.enabled && permission !== "granted") {
       setReminderSettings((settings) => ({ ...settings, enabled: false }));
       setNotificationError(
@@ -79,7 +85,7 @@ function App() {
     }
     if (
       !canDeliverReminders({
-        signedOut,
+        signedOut: onWelcome,
         enabled: reminderSettings.enabled,
         permission,
       })
@@ -106,16 +112,18 @@ function App() {
     return () => {
       cancelled = true;
     };
-  }, [now, reminderSettings, schedule, todayKey, state.current.id, signedOut]);
+  }, [now, reminderSettings, schedule, todayKey, state.current.id, onWelcome]);
 
   const todayLog = dailyLogs[todayKey] || { entries: [], water: 0 };
 
   function saveProfile(nextProfile) {
+    const fromSetup = step === "setup";
     changeData((data) => {
       data.profile = nextProfile;
       data.step = "dashboard";
     }).then((ok) => {
-      if (ok) setView("today");
+      // YOU-06: saving on You keeps the athlete on You.
+      if (ok && fromSetup) setView("today");
     });
   }
 
@@ -139,7 +147,6 @@ function App() {
   }
 
   function finishAccountEntry() {
-    sessionStorage.removeItem("nourally-signed-out");
     setSignedOut(false);
     const url = new URL(window.location.href);
     url.searchParams.delete("signedOut");
@@ -159,14 +166,21 @@ function App() {
         onSave={saveProfile}
         onNavigate={setView}
         tabbed
-        manager={
-          <ProfileManager
-            onSignOut={() => {
-              sessionStorage.setItem("nourally-signed-out", "1");
-              setSignedOut(true);
-            }}
-          />
+        reminders={
+          <>
+            <RemindersRow
+              settings={reminderSettings}
+              onOpen={() => setView("you/reminders")}
+            />
+            {subroute === "reminders" && (
+              <RemindersSheet
+                settings={reminderSettings}
+                onClose={() => setView("you")}
+              />
+            )}
+          </>
         }
+        manager={<ProfileManager onSignOut={() => setSignedOut(true)} />}
       />
     );
   if (view === "food" && subroute === "log/week")
@@ -246,6 +260,7 @@ function ProfileSetup({
   onNavigate,
   tabbed = false,
   manager,
+  reminders,
 }) {
   const [draft, setDraft] = useState(profile);
   const [pendingNavigation, setPendingNavigation] = useState(null);
@@ -319,7 +334,9 @@ function ProfileSetup({
         <form
           onSubmit={(event) => {
             event.preventDefault();
-            onSave(draft);
+            const next = { ...draft, sport: normalizeSport(draft.sport) };
+            setDraft(next);
+            onSave(next);
           }}
         >
           <label>
@@ -332,6 +349,10 @@ function ProfileSetup({
               placeholder="First name"
             />
           </label>
+          <SportField
+            value={draft.sport}
+            onChange={(sport) => setDraft({ ...draft, sport })}
+          />
           <label className="check-row">
             <input
               type="checkbox"
@@ -416,6 +437,7 @@ function ProfileSetup({
           </button>
         </form>
       </section>
+      {reminders}
       {manager}
       {pendingNavigation && (
         <ConfirmDialog

@@ -22,12 +22,24 @@ import {
   planMeal,
   markPlanPacked,
   logPlanAsEaten,
+  intendedEatTime,
 } from "../../domain/plans.js";
 import { addHydration } from "../../domain/hydration.js";
 import { uid } from "../../domain/storage.js";
-import { formatDate } from "../../format.js";
+import { formatDate, formatPlanStatus, formatTime } from "../../format.js";
+import {
+  availabilityLabel,
+  buildRailRows,
+  foodMomentLine,
+} from "../../domain/dayRail.js";
+import ContextPrompt from "./ContextPrompt.jsx";
 
-export default function TodayPage({ now, todayKey, onNavigate }) {
+export default function TodayPage({
+  now,
+  todayKey,
+  onNavigate,
+  notificationError,
+}) {
   const { current } = useStore();
   const data = current.data;
   const { pending, run } = useAsyncAction();
@@ -36,6 +48,7 @@ export default function TodayPage({ now, todayKey, onNavigate }) {
   const [custom, setCustom] = useState(false);
   const [amount, setAmount] = useState("");
   const [showTasks, setShowTasks] = useState(false);
+  const [openPlanId, setOpenPlanId] = useState(null);
   const guidance = advanceCompletedMoment(
     getFuelingGuidance({
       now,
@@ -100,7 +113,10 @@ export default function TodayPage({ now, todayKey, onNavigate }) {
     write(
       "plan",
       (d) => planMeal(d, idea, todayKey, guidance),
-      "Snack planned.",
+      // changeData attaches Undo to this toast (TODAY-01 "Plan this").
+      intendedEatTime(guidance)
+        ? `Planned for ${formatTime(intendedEatTime(guidance))}.`
+        : `${idea.name} is planned.`,
     );
   const primary = () => {
     if (guidance.state === "setup") return onNavigate("schedule?add=practice");
@@ -163,74 +179,18 @@ export default function TodayPage({ now, todayKey, onNavigate }) {
                       ? `Eat around ${formatClock(plan.eatAt)}`
                       : "Log it"
                     : "Mark packed";
-  const rows = events.flatMap((e) => [
-    {
-      time: e.startTime,
-      title: e.title,
-      detail: `${formatClock(e.startTime)}–${formatClock(e.endTime)} · ${e.location === "away" ? "Away" : "Home"}`,
-      route: "schedule",
-    },
-    ...(Number(e.travelMinutes) > 0
-      ? [
-          {
-            time: minutesClock(
-              timeToMinutes(e.startTime) - Number(e.travelMinutes),
-            ),
-            title: "Leave by",
-            detail: formatClock(
-              minutesClock(
-                timeToMinutes(e.startTime) - Number(e.travelMinutes),
-              ),
-            ),
-            route: "schedule",
-          },
-        ]
-      : []),
-    {
-      time: e.endTime,
-      title: "Recovery",
-      detail: "Choose a recovery option",
-      route: "food/ideas?moment=after",
-    },
-  ]);
-  if (guidance.schoolToday) {
-    rows.push({
-      time: data.schoolSchedule.startTime,
-      title: "School",
-      detail: `Until ${formatClock(data.schoolSchedule.endTime)}`,
-      route: "schedule",
-    });
-    if (data.schoolSchedule.lunchStartTime)
-      rows.push({
-        time: data.schoolSchedule.lunchStartTime,
-        title: "Lunch",
-        detail: "Your school eating time",
-        route: "food/ideas",
-      });
-    for (const w of [
-      data.schoolSchedule.morningSnackTime,
-      data.schoolSchedule.afternoonSnackTime,
-    ].filter(Boolean))
-      rows.push({
-        time: w,
-        title: "Snack time",
-        detail: "Your school eating time",
-        route: "food/ideas",
-      });
-  }
-  for (const p of data.mealPlans.filter((p) => p.date === todayKey))
-    rows.push({
-      time: p.eatAt,
-      title: p.template.name,
-      detail: p.status,
-      route: "food/ideas",
-    });
-  rows.push({
-    time: minutesClock(now.getHours() * 60 + now.getMinutes()),
-    title: "Now",
-    now: true,
+  const rows = buildRailRows({
+    events,
+    schoolSchedule: data.schoolSchedule,
+    schoolToday: guidance.schoolToday,
+    mealPlans: data.mealPlans,
+    todayKey,
+    now,
   });
-  rows.sort((a, b) => timeToMinutes(a.time) - timeToMinutes(b.time));
+  const openPlan = data.mealPlans.find((p) => p.id === openPlanId);
+  const openPlanIngredients = openPlan
+    ? ingredientsForMeal(openPlan.template, data.groceryState.pantry, todayKey)
+    : [];
   const stale =
     plan && guidance.event && plan.eventStartTime !== guidance.event.startTime;
   return (
@@ -263,6 +223,7 @@ export default function TodayPage({ now, todayKey, onNavigate }) {
             write,
             idea,
             missing,
+            ingredients,
             setChosen,
             onNavigate,
             early,
@@ -272,7 +233,7 @@ export default function TodayPage({ now, todayKey, onNavigate }) {
             todayKey,
           }}
         />
-        <DayRail {...{ rows, now, onNavigate }} />
+        <DayRail {...{ rows, onNavigate }} onOpenPlan={setOpenPlanId} />
         {tasks.length > 0 && (
           <PackPrep
             {...{
@@ -291,61 +252,39 @@ export default function TodayPage({ now, todayKey, onNavigate }) {
           <TonightCard {...{ next, pending, buildTomorrow, data, tomorrow }} />
         )}
       </div>
-      {guidance.nextEvent &&
-        !data.reminderSettings.enabled &&
-        !data.profile.dismissedPrompts?.includes("reminders") && (
-          <aside className="today-prompt">
-            <p>Get a heads-up 60 min before practice?</p>
-            <button
-              disabled={!!pending}
-              onClick={() =>
-                run("reminders", async () => {
-                  if (!("Notification" in window))
-                    return changeData((d) => {
-                      d.profile.dismissedPrompts = [
-                        ...(d.profile.dismissedPrompts || []),
-                        "reminders",
-                      ];
-                    }, "Reminders are unavailable in this browser.");
-                  const permission = await Notification.requestPermission();
-                  if (permission === "granted")
-                    return changeData((d) => {
-                      d.reminderSettings = {
-                        ...d.reminderSettings,
-                        enabled: true,
-                        leadMinutes: 60,
-                      };
-                    }, "Reminders turned on.");
-                  return changeData((d) => {
-                    d.profile.dismissedPrompts = [
-                      ...(d.profile.dismissedPrompts || []),
-                      "reminders",
-                    ];
-                  }, "You can try again in You › Reminders.");
-                })
-              }
-            >
-              Turn on
-            </button>
-            <button
-              disabled={!!pending}
-              onClick={() =>
-                write(
-                  "dismiss",
-                  (d) => {
-                    d.profile.dismissedPrompts = [
-                      ...(d.profile.dismissedPrompts || []),
-                      "reminders",
-                    ];
-                  },
-                  "Dismissed reminder prompt.",
-                )
-              }
-            >
-              Not now
-            </button>
-          </aside>
-        )}
+      <ContextPrompt
+        {...{
+          data,
+          guidance,
+          notificationError,
+          pending,
+          run,
+          write,
+          onNavigate,
+        }}
+      />
+      {openPlan && (
+        <Dialog
+          title={openPlan.template.name}
+          onClose={() => setOpenPlanId(null)}
+        >
+          <p>{foodMomentLine(openPlan)}</p>
+          <p>
+            Status: {formatPlanStatus(openPlan.status)}
+            {openPlan.eatAt ? ` · Eat about ${formatTime(openPlan.eatAt)}` : ""}
+          </p>
+          {openPlanIngredients.length > 0 && (
+            <ul className="today-availability" aria-label="What you need">
+              {openPlanIngredients.map((i) => (
+                <li key={i.ingredientId} data-have={i.sufficient}>
+                  {availabilityLabel(i)}
+                </li>
+              ))}
+            </ul>
+          )}
+          <button onClick={() => setOpenPlanId(null)}>Close</button>
+        </Dialog>
+      )}
       {why && (
         <Dialog title="Why this?" onClose={() => setWhy(false)}>
           <h3>Why it fits you</h3>
@@ -388,8 +327,4 @@ export default function TodayPage({ now, todayKey, onNavigate }) {
       )}
     </Shell>
   );
-}
-function minutesClock(n) {
-  const v = Math.max(0, n);
-  return `${String(Math.floor(v / 60) % 24).padStart(2, "0")}:${String(v % 60).padStart(2, "0")}`;
 }

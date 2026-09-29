@@ -243,7 +243,7 @@ export function getFuelingGuidance({
 
   let moment = "regular";
   let state = "regular";
-  let label = "STEADY-DAY FUELING";
+  let label = "Today";
   let title = "Keep a regular eating rhythm today.";
   let explanation =
     "No training is coming up soon. Choose a familiar meal or snack and use the next meal or snack instead of waiting until you are drained.";
@@ -339,15 +339,15 @@ export function getFuelingGuidance({
     timing = "";
   } else if (noSchedule) {
     state = "setup";
-    label = "SCHEDULE NOT SET";
+    label = "No schedule yet";
     title = "Let's time your food to your day.";
     explanation = "Add school and sports to see what is coming up.";
     timing = "";
   } else if (!training.length) {
     label =
       events.length || profile.restDays?.includes(todayKey)
-        ? "NO SPORT TODAY"
-        : "SCHEDULE NOT SET";
+        ? "No practice today"
+        : "No schedule yet";
     explanation =
       events.length || profile.restDays?.includes(todayKey)
         ? "No sport is scheduled today. Keep regular meals and snacks that fit your day."

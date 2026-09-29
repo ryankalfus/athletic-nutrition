@@ -9,6 +9,7 @@ const routes = new Set([
   "food/log",
   "food/log/week",
   "you",
+  "you/reminders",
   "welcome",
 ]);
 const redirects = {
@@ -16,6 +17,7 @@ const redirects = {
   weekly: "food/log/week",
   history: "food/log",
   profile: "you",
+  reminders: "you/reminders",
   "food/overview": "food/ideas",
   "food/pantry": "food/home",
   "food/meals": "food/ideas",

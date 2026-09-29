@@ -1,4 +1,6 @@
 import { formatClock, timeToMinutes } from "../../domain/timing.js";
+import { formatPlanStatus } from "../../format.js";
+import { availabilityLabel, minutesClock } from "../../domain/dayRail.js";
 export default function NowCard({
   guidance,
   plan,
@@ -7,6 +9,7 @@ export default function NowCard({
   write,
   idea,
   missing,
+  ingredients = [],
   setChosen,
   onNavigate,
   early,
@@ -19,7 +22,9 @@ export default function NowCard({
     <section className="now-card" aria-labelledby="now-title">
       <p className="today-countdown">{guidance.label}</p>
       <h2 id="now-title">
-        {plan ? `${plan.template.name} is ${plan.status}` : guidance.title}
+        {plan
+          ? `${plan.template.name} is ${formatPlanStatus(plan.status).toLowerCase()}`
+          : guidance.title}
       </h2>
       <p>{guidance.explanation}</p>
       {stale && (
@@ -70,11 +75,21 @@ export default function NowCard({
         ) && (
           <div className="today-pick">
             <strong>{idea.name}</strong>
-            <p>
-              {missing.length
-                ? `${missing.length} ${missing.length === 1 ? "item" : "items"} to buy`
-                : "Ready — you have everything"}
-            </p>
+            {ingredients.length > 0 ? (
+              <ul className="today-availability" aria-label="What you have">
+                {ingredients.map((i) => (
+                  <li key={i.ingredientId} data-have={i.sufficient}>
+                    {availabilityLabel(i)}
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p>
+                {missing.length
+                  ? `${missing.length} ${missing.length === 1 ? "item" : "items"} to buy`
+                  : "Ready — you have everything"}
+              </p>
+            )}
             {!plan && (
               <div className="today-alternates">
                 {guidance.allIdeas
@@ -130,8 +145,4 @@ export default function NowCard({
       )}
     </section>
   );
-}
-function minutesClock(n) {
-  const v = Math.max(0, n);
-  return `${String(Math.floor(v / 60) % 24).padStart(2, "0")}:${String(v % 60).padStart(2, "0")}`;
 }
