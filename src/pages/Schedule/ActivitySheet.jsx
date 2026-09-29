@@ -4,6 +4,7 @@ import { Dialog } from "../../components/Dialog.jsx";
 import { formatDate, formatTime } from "../../format.js";
 import { timeToMinutes } from "../../domain/timing.js";
 import { SegmentedControl } from "../../components/ui/SelectionControls.jsx";
+import { TimeRange, WeekdayPicker } from "./ScheduleFields.jsx";
 export function ActivitySheet({ model }) {
   const initialFocus = useRef(null);
   const { pending, run } = useAsyncAction();
@@ -107,43 +108,11 @@ export function ActivitySheet({ model }) {
                 </label>
               ) : (
                 <div className="repeat-settings">
-                  <fieldset>
-                    <legend>Repeat on</legend>
-                    <div className="school-weekdays">
-                      {[
-                        ["S", 0],
-                        ["M", 1],
-                        ["T", 2],
-                        ["W", 3],
-                        ["T", 4],
-                        ["F", 5],
-                        ["S", 6],
-                      ].map(([label, day]) => (
-                        <button
-                          type="button"
-                          key={day}
-                          aria-label={
-                            [
-                              "Sunday",
-                              "Monday",
-                              "Tuesday",
-                              "Wednesday",
-                              "Thursday",
-                              "Friday",
-                              "Saturday",
-                            ][day]
-                          }
-                          aria-pressed={repeatWeekdays.includes(day)}
-                          className={
-                            repeatWeekdays.includes(day) ? "selected" : ""
-                          }
-                          onClick={() => toggleRepeatDay(day)}
-                        >
-                          {label}
-                        </button>
-                      ))}
-                    </div>
-                  </fieldset>
+                  <WeekdayPicker
+                    legend="Repeat on"
+                    value={repeatWeekdays}
+                    onToggle={toggleRepeatDay}
+                  />
                   <label>
                     Until
                     <input
@@ -158,26 +127,15 @@ export function ActivitySheet({ model }) {
               )}
             </fieldset>
           )}
-          <div className="time-fields">
-            <label>
-              Starts
-              <input
-                required
-                type="time"
-                value={startTime}
-                onChange={(event) => setStartTime(event.target.value)}
-              />
-            </label>
-            <label>
-              Ends
-              <input
-                required
-                type="time"
-                value={endTime}
-                onChange={(event) => setEndTime(event.target.value)}
-              />
-            </label>
-          </div>
+          <TimeRange
+            className="time-fields"
+            startLabel="Starts"
+            endLabel="Ends"
+            start={startTime}
+            end={endTime}
+            onStart={setStartTime}
+            onEnd={setEndTime}
+          />
           <fieldset>
             <legend>Where</legend>
             <SegmentedControl

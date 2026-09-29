@@ -25,6 +25,7 @@ import {
 import { SchoolDayEditor } from "./SchoolDayEditor.jsx";
 import { ActivitySheet } from "./ActivitySheet.jsx";
 import { activityTitle } from "../../domain/sport.js";
+import { schoolDayError } from "../../domain/setup.js";
 import ScheduleWeek from "./ScheduleWeek.jsx";
 import MonthGrid from "./MonthGrid.jsx";
 import { EmptyState } from "../../components/ui/EmptyState.jsx";
@@ -491,26 +492,17 @@ export default function ScheduleCalendar({
 
   async function saveSchoolSchedule(event) {
     event.preventDefault();
-    if (schoolEndDate < schoolStartDate) {
-      setSchoolError("The school year must end after it starts.");
-      return;
-    }
-    if (schoolEndTime <= schoolStartTime) {
-      setSchoolError("The school day must end after it starts.");
-      return;
-    }
-    if (!schoolWeekdays.length) {
-      setSchoolError("Choose at least one school day.");
-      return;
-    }
-    if (
-      lunchEndTime <= lunchStartTime ||
-      lunchStartTime < schoolStartTime ||
-      lunchEndTime > schoolEndTime
-    ) {
-      setSchoolError(
-        "Lunch must fit inside the school day and end after it starts.",
-      );
+    const dayError = schoolDayError({
+      startDate: schoolStartDate,
+      endDate: schoolEndDate,
+      startTime: schoolStartTime,
+      endTime: schoolEndTime,
+      weekdays: schoolWeekdays,
+      lunchStartTime,
+      lunchEndTime,
+    });
+    if (dayError) {
+      setSchoolError(dayError);
       return;
     }
     if (
