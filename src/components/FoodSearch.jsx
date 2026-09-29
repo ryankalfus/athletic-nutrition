@@ -97,7 +97,10 @@ export function FoodSearch({
         setPage(nextPage);
       }
     } catch (e) {
-      if (id === serial.current && e.name !== "AbortError") setError(e.message);
+      // Offline shows one status line, not a second error (SRCH-06).
+      if (id === serial.current && e.name === "OfflineError") setOffline(true);
+      else if (id === serial.current && e.name !== "AbortError")
+        setError(e.message);
     } finally {
       if (id === serial.current) setLoading(false);
     }
