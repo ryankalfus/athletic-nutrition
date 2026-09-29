@@ -479,3 +479,9 @@ Committed and pushed the P1-05 Food home inventory, Ideas, and reusable redesign
 Fixed TypeScript inference in the ranking and timing helper input options so CI typecheck passes. 2026.09.29
 Restored subtraction of compatible queued grocery quantities from meal ingredient needs. 2026.09.29
 Passed workflow checks locally: typecheck, lint, 39 tests, production build, and diff check. 2026.09.29
+Split the Schedule week agenda and month grid into ScheduleWeek and MonthGrid components without changing behavior. 2026.09.29
+Added You › Reminders (on/off, 30/60/90 min lead, evening prep, permission state, DATA-06 honesty line) at #/you/reminders and pointed Today's prompt and toasts to it. 2026.09.29
+Moved the signed-out flag into a store-level session module so a deleted or closed athlete cannot fire reminders on Welcome. 2026.09.29
+Added profile.sport with validation, an empty migration default, and a setup/You field so new activities are titled like "Soccer practice". 2026.09.29
+Made Day rail food rows read "Snack · about 2:30 PM · Banana + pretzels · packed" and open plan details, added availability chips, the "Planned for [time]. Undo" toast, and sentence-case countdown labels. 2026.09.29
+Added unit tests for format.js helpers, sport titles, the reminders Welcome guard and settings, and Day rail rows; npm run check passes with 45 tests. 2026.09.29

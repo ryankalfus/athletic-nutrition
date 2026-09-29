@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Dialog } from "../../components/Dialog.jsx";
 import { changeData } from "../../store.js";
+import { showToast } from "../../components/ui/Toast.jsx";
 import { useAsyncAction } from "../../hooks/useAsyncAction.js";
 import {
   REMINDER_HONESTY_LINE,
@@ -61,8 +62,12 @@ export function RemindersSheet({ settings, onClose }) {
       }
       const ok = await changeData((data) => {
         data.reminderSettings = { ...data.reminderSettings, ...next };
-      }, "Saved.");
-      if (ok) onClose();
+      }, null);
+      if (ok) {
+        onClose();
+        // Closing changes the route, which clears toasts; show "Saved" after.
+        window.setTimeout(() => showToast("Saved."), 0);
+      }
       return ok;
     });
   };
