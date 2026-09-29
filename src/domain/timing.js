@@ -1,4 +1,4 @@
-import { ideasFor } from "./ranking.js";
+import { ideasFor, ideaAccess, DIET_FILTERS } from "./ranking.js";
 import { formatCountdown, formatTime as formatClock } from "../format.js";
 
 export function getDateKey(date = new Date()) {
@@ -163,11 +163,12 @@ export function tomorrowPrepTasks(event) {
 }
 
 export function ideaFitsProfile(idea, profile) {
-  const needs = profile.dietaryNeeds || [];
+  const needs = (profile.dietaryNeeds || []).filter((need) =>
+    DIET_FILTERS.includes(need),
+  );
   if (needs.includes("vegan") && !idea.vegan) return false;
   if (needs.includes("vegetarian") && !idea.vegetarian) return false;
   if (needs.includes("dairyFree") && !idea.dairyFree) return false;
-  if (needs.includes("glutenFree") && !idea.glutenFree) return false;
   if (profile.budget === "save" && idea.cost !== "save") return false;
   return true;
 }
@@ -432,29 +433,22 @@ export function getFuelingGuidance({
       explanation = "Set out food, water, and gear for tomorrow.";
     }
   }
-  const availableSources = departed
-    ? profile.foodSources.filter((source) =>
-        ["packed", "store"].includes(source),
-      )
-    : inSchool
-      ? [
-          ...(schoolSchedule.foodAccess?.cafeteria ? ["cafeteria"] : []),
-          ...(profile.foodSources.includes("packed") ? ["packed"] : []),
-        ]
-      : profile.foodSources;
-  const travelMode =
-    ["away", "travel"].includes(focusEvent?.location) ||
-    Number(focusEvent?.travelMinutes || 0) >= 30;
+  const context = ideaAccess({
+    profile,
+    schoolSchedule,
+    inSchool,
+    departed,
+    event: focusEvent,
+  });
+  const availableSources = context.access;
+  const travelMode = context.travelMode;
   const ideas = ideasFor({
     moment,
     date: todayKey,
     profile,
     pantry,
     favorites,
-    access: availableSources,
-    inSchool,
-    schoolAccess: schoolSchedule?.foodAccess,
-    travelMode,
+    ...context,
   });
 
   return {
