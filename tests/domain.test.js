@@ -53,14 +53,29 @@ import {
   syncPlanPreparation,
   undoPlan,
 } from "../src/domain/plans.js";
-import { ideasFor, rankIdeas } from "../src/domain/ranking.js";
+import {
+  ideasFor,
+  lowCostHiddenCount,
+  rankIdeas,
+  searchableFavorites,
+} from "../src/domain/ranking.js";
+import { ideasForMoment } from "../src/domain/ideaMoments.js";
+import { ideaFitsProfile } from "../src/domain/timing.js";
+import { MEAL_INGREDIENTS } from "../src/domain/catalog.js";
+import { api } from "../server/api.js";
 import { backupDocument, backupFilename } from "../src/domain/backup.js";
 import {
   canDeliverReminders,
   reminderCandidates,
   deliverReminders,
 } from "../src/domain/reminders.js";
-import { normalizeFdcFood, normalizeOffFood } from "../src/usda.js";
+import {
+  lookupBarcode,
+  normalizeFdcFood,
+  normalizeOffFood,
+  OfflineError,
+  searchFoodDataCentral,
+} from "../src/usda.js";
 const day = "2026-09-14";
 const profile = { ...DEFAULT_PROFILE, budget: "standard" };
 const idea = (id) => FOOD_IDEAS.find((i) => i.id === id);
@@ -989,4 +1004,233 @@ test("P1-05: quick Have, exact restoration, legacy migration and low restock", (
   stockToGroceries(data, [row]);
   assert.equal(data.groceryState.items.length, 1);
   assert.equal(data.groceryState.items[0].checked, false);
+});
+
+test("P0-06: no idea ranking or filter depends on unreviewed allergen flags", () => {
+  const ids = (list) => list.map((i) => i.id);
+  const base = { moment: "regular", date: day, pantry: [] };
+  const practice = [
+    {
+      id: "p",
+      title: "Practice",
+      date: day,
+      startTime: "16:00",
+      endTime: "17:30",
+    },
+  ];
+  for (const moment of ["quick", "pre", "regular", "recovery"])
+    for (const need of ["glutenFree", "nutFree"])
+      assert.deepEqual(
+        ids(
+          ideasFor({
+            ...base,
+            moment,
+            profile: { ...profile, dietaryNeeds: [need] },
+          }),
+        ),
+        ids(ideasFor({ ...base, moment, profile })),
+        `${need} changed ${moment} ideas`,
+      );
+  // Flipping every allergen flag must not change filtering or order.
+  const saved = FOOD_IDEAS.map((i) => [i.glutenFree, i.nutFree]);
+  const before = ids(
+    ideasFor({
+      ...base,
+      profile: { ...profile, dietaryNeeds: ["glutenFree"] },
+    }),
+  );
+  const guided = ids(guidance("14:40", practice).allIdeas);
+  try {
+    for (const i of FOOD_IDEAS) {
+      i.glutenFree = !i.glutenFree;
+      i.nutFree = !i.nutFree;
+    }
+    assert.deepEqual(
+      ids(
+        ideasFor({
+          ...base,
+          profile: { ...profile, dietaryNeeds: ["glutenFree"] },
+        }),
+      ),
+      before,
+    );
+    assert.deepEqual(
+      ids(
+        guidance("14:40", practice, {
+          profile: { ...profile, dietaryNeeds: ["glutenFree", "nutFree"] },
+        }).allIdeas,
+      ),
+      guided,
+    );
+    for (const i of FOOD_IDEAS)
+      assert.equal(
+        ideaFitsProfile(i, {
+          ...profile,
+          dietaryNeeds: ["glutenFree", "nutFree"],
+        }),
+        ideaFitsProfile(i, profile),
+      );
+  } finally {
+    FOOD_IDEAS.forEach((i, n) => ([i.glutenFree, i.nutFree] = saved[n]));
+  }
+  // Real diet preferences still filter.
+  assert.ok(
+    ideasFor({
+      ...base,
+      profile: { ...profile, dietaryNeeds: ["vegan"] },
+    }).every((i) => i.vegan),
+  );
+});
+
+test("P1-01: Ideas and Today rank with the same school-context inputs", () => {
+  const data = emptyData();
+  data.profile = { ...profile, foodSources: ["packed", "cafeteria", "home"] };
+  data.schoolSchedule = { ...school, foodAccess: { cafeteria: false } };
+  data.schedule = [
+    {
+      id: "p",
+      title: "Practice",
+      date: day,
+      startTime: "15:30",
+      endTime: "17:00",
+    },
+  ];
+  const at = (time) => new Date(`${day}T${time}:00`);
+  // 14:15 is 75 minutes before practice, inside school: Today ranks "pre".
+  const today = getFuelingGuidance({
+    now: at("14:15"),
+    todayKey: day,
+    events: data.schedule,
+    schoolSchedule: data.schoolSchedule,
+    profile: data.profile,
+    pantry: [],
+    favorites: [],
+  });
+  assert.equal(today.moment, "pre");
+  assert.equal(today.inSchool, true);
+  const ideasNow = ideasForMoment({
+    moment: "before",
+    now: at("14:15"),
+    todayKey: day,
+    data,
+  });
+  assert.deepEqual(
+    ideasNow.ideas.map((i) => i.id),
+    today.allIdeas.map((i) => i.id),
+  );
+  // Planning from the morning ranks for the eat time, still at school.
+  const early = ideasForMoment({
+    moment: "before",
+    now: at("10:00"),
+    todayKey: day,
+    data,
+  });
+  assert.equal(early.guidance.inSchool, true);
+  assert.equal(early.ideas[0].id, today.ideas[0].id);
+  assert.deepEqual(
+    early.ideas.map((i) => i.id),
+    today.allIdeas.map((i) => i.id),
+  );
+  // The old Ideas call had no school context and let home-only ideas in.
+  const naive = ideasFor({ moment: "pre", date: day, profile: data.profile });
+  assert.ok(naive.some((i) => !i.sources.includes("packed")));
+  assert.ok(early.ideas.every((i) => i.sources.includes("packed")));
+  // "Tomorrow" ranks the regular moment on tomorrow's date.
+  const tomorrow = ideasForMoment({
+    moment: "tomorrow",
+    now: at("10:00"),
+    todayKey: day,
+    data,
+  });
+  assert.equal(tomorrow.date, "2026-09-15");
+  assert.equal(tomorrow.guidance.moment, "regular");
+});
+
+test("P1-04: saved ideas rank first and stay out of food search", () => {
+  const favorites = [
+    { id: "fdc-1", name: "Cereal", source: "USDA FoodData Central" },
+    { ...idea("bagel-jam"), source: "Meal example" },
+    { id: "old-saved-meal", name: "Old saved meal", source: "Meal example" },
+  ];
+  assert.deepEqual(
+    searchableFavorites(favorites).map((f) => f.id),
+    ["fdc-1"],
+  );
+  const options = { moment: "regular", date: day, profile, pantry: [] };
+  assert.notEqual(ideasFor(options)[0].id, "bagel-jam");
+  assert.equal(ideasFor({ ...options, favorites })[0].id, "bagel-jam");
+});
+
+test("P1-04: every idea ingredient has a readable household amount", () => {
+  for (const [id, rows] of Object.entries(MEAL_INGREDIENTS))
+    for (const row of rows) {
+      const text = row[4];
+      assert.ok(text, `${id}/${row[1]} has no display amount`);
+      assert.doesNotMatch(
+        text,
+        /to suit|\b\d+\s?(g|ml)\b|\b(piece|portion|servings?)\b/i,
+        `${id}/${row[1]}: ${text}`,
+      );
+    }
+});
+
+test("P1-04: the low-cost note only appears when the setting hides ideas", () => {
+  const options = { moment: "regular", date: day, pantry: [] };
+  assert.equal(lowCostHiddenCount({ ...options, profile }), 0);
+  const saving = { ...profile, lowCostIdeas: true };
+  assert.ok(lowCostHiddenCount({ ...options, profile: saving }) > 0);
+  assert.ok(
+    ideasFor({ ...options, profile: saving }).every((i) => i.cost === "save"),
+  );
+});
+
+test("P0-09: barcode 404, outage and offline stay distinct", async () => {
+  const realFetch = globalThis.fetch;
+  const htmlBody = async () => {
+    throw new SyntaxError("Unexpected token <");
+  };
+  try {
+    // Server maps an Open Food Facts 404 to a 404 "not found" response.
+    globalThis.fetch = async () => ({ ok: false, status: 404 });
+    const sent = {};
+    await api(
+      {
+        url: "/api/barcode/00000000",
+        method: "GET",
+        socket: { remoteAddress: "p0-09" },
+      },
+      {
+        writeHead: (status) => (sent.status = status),
+        end: (body) => (sent.body = JSON.parse(body)),
+      },
+      () => {},
+    );
+    assert.equal(sent.status, 404);
+    assert.match(sent.body.error, /couldn't find that barcode/);
+    // Client: a 404 barcode reads as not found, without parsing the body.
+    globalThis.fetch = async () => ({ ok: false, status: 404, json: htmlBody });
+    await assert.rejects(lookupBarcode("00000000"), {
+      message: "We couldn't find that barcode. Add the food yourself.",
+    });
+    // An outage returning HTML is checked with response.ok before JSON.
+    globalThis.fetch = async () => ({ ok: false, status: 502, json: htmlBody });
+    await assert.rejects(searchFoodDataCentral("banana"), {
+      message:
+        "Food lookup isn't working right now. Try again or add manually.",
+    });
+    // A network TypeError becomes a typed offline error.
+    globalThis.fetch = async () => {
+      throw new TypeError("Failed to fetch");
+    };
+    await assert.rejects(searchFoodDataCentral("banana"), (error) => {
+      assert.ok(error instanceof OfflineError);
+      assert.equal(
+        error.message,
+        "You're offline. Recent and saved foods still work.",
+      );
+      return true;
+    });
+  } finally {
+    globalThis.fetch = realFetch;
+  }
 });

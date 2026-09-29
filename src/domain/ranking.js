@@ -1,10 +1,49 @@
 import { FOOD_IDEAS } from "./catalog.js";
 import { ingredientsForMeal } from "./food.js";
 
-export function rankIdeas(
-  ideas,
-  options = {},
-) {
+// Diet preferences the catalog flags reliably. Allergen-style flags
+// (nutFree, glutenFree) are hand-coded and not reviewed per ingredient, so no
+// idea is filtered on them until ADD-03 allergen tags exist (P0-06).
+export const DIET_FILTERS = ["vegan", "vegetarian", "dairyFree"];
+export const UNREVIEWED_ALLERGEN_NEEDS = ["nutFree", "glutenFree"];
+
+export const isMealFavorite = (favorite) =>
+  favorite?.source === "Meal example" ||
+  FOOD_IDEAS.some((idea) => idea.id === favorite?.id);
+
+// Food search shows saved foods only; saved meal ideas stay on Ideas (IDEA-05).
+export const searchableFavorites = (favorites = []) =>
+  favorites.filter((favorite) => !isMealFavorite(favorite));
+
+// The food access both Today and Ideas use for a moment (P1-01 shared ranking).
+/** @param {any} options */
+export function ideaAccess(options) {
+  const {
+    profile = {},
+    schoolSchedule,
+    inSchool = false,
+    departed = false,
+    event,
+  } = options;
+  const sources = profile.foodSources || [];
+  return {
+    access: departed
+      ? sources.filter((source) => ["packed", "store"].includes(source))
+      : inSchool
+        ? [
+            ...(schoolSchedule?.foodAccess?.cafeteria ? ["cafeteria"] : []),
+            ...(sources.includes("packed") ? ["packed"] : []),
+          ]
+        : sources,
+    inSchool,
+    schoolAccess: schoolSchedule?.foodAccess || {},
+    travelMode:
+      ["away", "travel"].includes(event?.location) ||
+      Number(event?.travelMinutes || 0) >= 30,
+  };
+}
+
+export function rankIdeas(ideas, options = {}) {
   /** @type {any} */
   const { pantry = [], favorites = [], hiddenIdeas = [], date } = options;
   const saved = new Set(
@@ -31,22 +70,38 @@ export function rankIdeas(
     .map((item) => item.idea);
 }
 
+export const lowCostOn = (profile = {}) =>
+  profile.lowCostIdeas ?? profile.budget === "save";
+
+// How many ideas the low-cost setting hides for these inputs (IDEA-08).
+/** @param {any} options */
+export function lowCostHiddenCount(options) {
+  if (!lowCostOn(options.profile)) return 0;
+  return (
+    ideasFor({ ...options, ignoreLowCost: true }).length -
+    ideasFor(options).length
+  );
+}
+
 /** @param {any} options */
 export function ideasFor(options) {
   const {
-  moment = "regular",
-  date,
-  profile = {},
-  pantry = [],
-  favorites = [],
-  access,
-  inSchool = false,
-  schoolAccess = {},
-  travelMode = false,
+    moment = "regular",
+    date,
+    profile = {},
+    pantry = [],
+    favorites = [],
+    access,
+    inSchool = false,
+    schoolAccess = {},
+    travelMode = false,
+    ignoreLowCost = false,
   } = options;
   const sources = access ||
     profile.foodSources || ["home", "packed", "cafeteria"];
-  const needs = profile.avoid || profile.dietaryNeeds || [];
+  const needs = (profile.avoid || profile.dietaryNeeds || []).filter((need) =>
+    DIET_FILTERS.includes(need),
+  );
   const selectedMoment =
     { now: "regular", before: "pre", after: "recovery", tomorrow: "regular" }[
       moment
@@ -56,11 +111,7 @@ export function ideasFor(options) {
     if (needs.includes("vegan") && !idea.vegan) return false;
     if (needs.includes("vegetarian") && !idea.vegetarian) return false;
     if (needs.includes("dairyFree") && !idea.dairyFree) return false;
-    if (needs.includes("glutenFree") && !idea.glutenFree) return false;
-    if (
-      (profile.lowCostIdeas ?? profile.budget === "save") &&
-      idea.cost !== "save"
-    )
+    if (!ignoreLowCost && lowCostOn(profile) && idea.cost !== "save")
       return false;
     const matches = idea.sources.filter((source) => sources.includes(source));
     if (!matches.length || (travelMode && !idea.portable)) return false;
@@ -98,6 +149,13 @@ export function advanceCompletedMoment(guidance, data, date) {
     profile: data.profile,
     pantry: data.groceryState.pantry,
     favorites: data.favorites,
+    ...ideaAccess({
+      profile: data.profile,
+      schoolSchedule: data.schoolSchedule,
+      inSchool: guidance.inSchool,
+      departed: guidance.departed,
+      event: guidance.event,
+    }),
   });
   return {
     ...guidance,

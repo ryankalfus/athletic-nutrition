@@ -107,22 +107,38 @@ export function normalizeOffFood(item, barcode) {
     },
   };
 }
+export const OFFLINE_MESSAGE =
+  "You're offline. Recent and saved foods still work.";
+export const BARCODE_NOT_FOUND =
+  "We couldn't find that barcode. Add the food yourself.";
+// fetch() rejects with a TypeError when the network is unreachable (SRCH-06).
+export class OfflineError extends Error {
+  constructor(message = OFFLINE_MESSAGE) {
+    super(message);
+    this.name = "OfflineError";
+  }
+}
 async function json(url, signal) {
   let response;
   try {
     response = await fetch(url, { signal });
   } catch (error) {
     if (error.name === "AbortError") throw error;
+    // A TypeError while the browser reports a connection is an outage, not
+    // offline; keep the two messages distinct (SRCH-04, SRCH-06).
+    if (
+      error instanceof TypeError &&
+      !(typeof navigator !== "undefined" && navigator.onLine === true)
+    )
+      throw new OfflineError();
     throw new Error(
-      typeof navigator !== "undefined" && navigator.onLine === false
-        ? "You're offline. Recent and saved foods still work."
-        : "Food lookup isn't working right now. Try again or add manually.",
+      "Food lookup isn't working right now. Try again or add manually.",
     );
   }
   if (!response.ok) {
     let message =
       url.startsWith("/api/barcode/") && response.status === 404
-        ? "We couldn't find that barcode. Add the food yourself."
+        ? BARCODE_NOT_FOUND
         : response.status === 429
           ? "Search is busy. Try again in a minute."
           : "Food lookup isn't working right now. Try again or add manually.";
@@ -164,8 +180,7 @@ export async function lookupBarcode(barcode, signal) {
   if (!/^\d{8,14}$/.test(barcode))
     throw new Error("Enter 8–14 barcode digits.");
   const data = await json(`/api/barcode/${barcode}`, signal);
-  if (!data.product)
-    throw new Error("We couldn't find that barcode. Add the food yourself.");
+  if (!data.product) throw new Error(BARCODE_NOT_FOUND);
   return normalizeOffFood(data.product, barcode);
 }
 export async function foodDetails(id, signal) {

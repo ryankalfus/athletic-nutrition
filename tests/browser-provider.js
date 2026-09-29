@@ -1,45 +1,59 @@
-// Playwright CLI helper for local USDA search, failure states, and barcode fallback.
+// Playwright CLI helper for food search, failure states, and barcode fallback.
 async (page) => {
+  const base = "http://127.0.0.1:5173/";
   const context = await page.context().browser().newContext();
   const p = await context.newPage();
   p.setDefaultTimeout(15000);
   const result = { checks: [], errors: [] };
   p.on("pageerror", (e) => result.errors.push(e.message));
+  const search = async (term) => {
+    await p.getByRole("searchbox").fill(term);
+    await p.getByRole("searchbox").press("Enter");
+  };
   try {
-    await p.goto("http://127.0.0.1:5173/");
-    await p
-      .getByRole("textbox", { name: "First name Optional" })
-      .fill("Provider test");
+    await p.goto(base);
+    await p.getByRole("textbox", { name: "First name" }).fill("Provider test");
     await p
       .getByRole("button", { name: "Save and see today", exact: false })
       .click();
-    await p.getByRole("heading", { name: "Today, Provider test" }).waitFor();
-    await p.goto("http://127.0.0.1:5173/#/food/pantry");
-    await p.getByRole("button", { name: "+ Add food" }).click();
-    await p.getByRole("searchbox").fill("banana");
-    await p.getByRole("button", { name: "Generic" }).click();
-    await p.getByRole("button", { name: "Search foods" }).click();
+    await p.getByRole("heading", { name: "Today", exact: true }).waitFor();
+    await p.goto(`${base}#/food/log`);
+    await p.getByRole("button", { name: "+ Log food" }).click();
+    const dialog = p.getByRole("dialog", { name: "Log food" });
+    if (
+      !(await p
+        .getByRole("searchbox")
+        .evaluate((node) => node === document.activeElement))
+    )
+      throw new Error("Search field is not focused when the dialog opens");
+    await search("banana");
     await p.locator(".food-result-row").first().waitFor();
     const first = await p.locator(".food-result-row").first().innerText();
-    if (!first.includes("Bananas, raw"))
+    if (!/Bananas?, raw/.test(first))
       throw new Error(`Plain banana did not rank first: ${first}`);
-    const sourceText = await p.locator(".food-result-list").innerText();
-    if (
-      !["Foundation", "SR Legacy", "Survey (FNDDS)"].every((name) =>
-        sourceText.includes(name),
-      )
-    )
-      throw new Error("Generic food types not visible together");
-    await p.getByRole("button", { name: "Next results" }).click();
-    await p.getByRole("status").filter({ hasText: "Page 2" }).waitFor();
+    const listText = await p.locator(".food-result-list").last().innerText();
+    // COPY-05: database taxonomy never shows; rows read "Basic food" or "Brand: …".
+    if (/Foundation|SR Legacy|FNDDS|Branded/.test(listText))
+      throw new Error("USDA data-type labels are visible");
+    if (!listText.includes("Basic food"))
+      throw new Error("Generic foods are not labeled Basic food");
+    if (!listText.includes("Allergies: check every label."))
+      throw new Error("Search rows are missing the label line");
+    if (await p.getByRole("button", { name: "Show more results" }).count()) {
+      const before = await p.locator(".food-result-row").count();
+      await p.getByRole("button", { name: "Show more results" }).click();
+      await p.waitForFunction(
+        (n) => document.querySelectorAll(".food-result-row").length > n,
+        before,
+      );
+    }
     result.checks.push(
-      "Generic USDA types, exact raw-food ranking, and 18-item pagination pass.",
+      "Search is focused, plain banana ranks first, rows show Basic food and the label line, more results load.",
     );
-    await p.getByRole("searchbox").fill("abcdefnonfood");
-    if (await p.getByRole("heading", { name: "Bananas, raw" }).count())
-      throw new Error("Stale banana results remained after query change");
-    await p.getByRole("button", { name: "Search foods" }).click();
+    await search("abcdefnonfood");
     await p.getByText("No matching foods.", { exact: false }).waitFor();
+    if (await dialog.getByRole("heading", { name: /Bananas?, raw/ }).count())
+      throw new Error("Stale banana results remained after query change");
     result.checks.push(
       "Changing the query clears old results; no-result state is explicit.",
     );
@@ -50,14 +64,11 @@ async (page) => {
         body: JSON.stringify({ error: "Provider rate limit reached." }),
       }),
     );
-    await p.getByRole("searchbox").fill("banana");
-    await p.getByRole("button", { name: "Search foods" }).click();
+    await search("banana");
     await p
       .getByRole("alert")
       .getByText("Provider rate limit reached.")
       .waitFor();
-    if (await p.locator(".food-result-row").count())
-      throw new Error("Old results remained after provider failure");
     if (
       !(await p.getByRole("alert").innerText()).includes(
         "Saved foods and manual entry",
@@ -68,14 +79,37 @@ async (page) => {
     await p.getByRole("button", { name: "Retry" }).click();
     await p.locator(".food-result-row").first().waitFor();
     result.checks.push(
-      "429 clears stale results and offers a working retry/manual fallback.",
+      "429 shows a working retry and the saved/manual fallback.",
     );
-    await p.getByRole("button", { name: "Barcode" }).click();
+    await p.route("**/api/foods/search?*", (route) => route.abort("failed"));
+    await context.setOffline(true);
+    await search("apple");
+    await p
+      .getByText("You're offline. Recent and saved foods still work.")
+      .first()
+      .waitFor();
+    await context.setOffline(false);
+    await p.unroute("**/api/foods/search?*");
+    result.checks.push("Offline search shows the offline message (SRCH-06).");
+    await p.getByRole("button", { name: "Scan barcode" }).click();
     await p.getByRole("textbox", { name: "Barcode number" }).fill("1234");
     await p.getByRole("button", { name: "Look up product" }).click();
     await p
       .getByRole("alert")
       .getByText(/8–14 digit/)
+      .waitFor();
+    await p.route("**/api/barcode/00000000", (route) =>
+      route.fulfill({
+        status: 404,
+        contentType: "application/json",
+        body: JSON.stringify({ error: "not_found" }),
+      }),
+    );
+    await p.getByRole("textbox", { name: "Barcode number" }).fill("00000000");
+    await p.getByRole("button", { name: "Look up product" }).click();
+    await p
+      .getByRole("alert")
+      .getByText("We couldn't find that barcode. Add the food yourself.")
       .waitFor();
     await p.route("**/api/barcode/12345678", (route) =>
       route.fulfill({
@@ -95,12 +129,13 @@ async (page) => {
     await p
       .getByRole("heading", { name: "Zero test water — Audit brand" })
       .waitFor();
-    if (!(await p.locator(".product-result").innerText()).includes("0 kcal"))
+    const product = await p.locator(".product-result").innerText();
+    if (!product.includes("0 kcal"))
       throw new Error("Zero energy treated as unknown");
-    await p.getByRole("button", { name: "Use this food" }).click();
-    await p.getByRole("button", { name: "Save at home" }).waitFor();
+    if (!product.includes("Allergies: check every label."))
+      throw new Error("Scanned product is missing the label line");
     result.checks.push(
-      "Barcode format validation, normalized Open Food Facts zero, and shared pantry editor pass.",
+      "Barcode validation, 404 not-found copy, normalized zero, and label line pass.",
     );
     return result;
   } catch (e) {
