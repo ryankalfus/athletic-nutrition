@@ -237,7 +237,6 @@ export function SchoolDayEditor({ model }) {
                       onClick={() => toggleFoodAccess(option)}
                       key={option}
                     >
-                      <span>{foodAccess[option] ? "✓" : "+"}</span>
                       {label}
                     </button>
                   ))}

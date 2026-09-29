@@ -1,3 +1,4 @@
+import { ChevronLeft, ChevronRight, MoreHorizontal } from "lucide-react";
 import { formatActivityType, formatDate, formatTime } from "../../format.js";
 import {
   addDays,
@@ -34,7 +35,7 @@ export default function ScheduleWeek({
           aria-label={`Previous week, ${formatDate(getDateKey(addDays(weekStart, -7)))} to ${formatDate(getDateKey(addDays(weekStart, -1)))}`}
           onClick={() => selectDay(addDays(selectedDate, -7))}
         >
-          ‹
+          <ChevronLeft size={20} strokeWidth={1.75} aria-hidden="true" />
         </button>
         <strong>
           {formatDate(getDateKey(weekStart))} –{" "}
@@ -44,7 +45,7 @@ export default function ScheduleWeek({
           aria-label={`Next week, ${formatDate(getDateKey(addDays(weekStart, 7)))} to ${formatDate(getDateKey(addDays(weekStart, 13)))}`}
           onClick={() => selectDay(addDays(selectedDate, 7))}
         >
-          ›
+          <ChevronRight size={20} strokeWidth={1.75} aria-hidden="true" />
         </button>
         <button onClick={goToToday}>This week</button>
       </div>
@@ -127,7 +128,11 @@ export default function ScheduleWeek({
                     aria-haspopup="menu"
                     aria-label={`Actions for ${event.title}`}
                   >
-                    Actions
+                    <MoreHorizontal
+                      size={20}
+                      strokeWidth={1.75}
+                      aria-hidden="true"
+                    />
                   </summary>
                   <div role="menu">
                     <button

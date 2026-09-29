@@ -1,3 +1,4 @@
+import { Minus, MoreHorizontal, Plus } from "lucide-react";
 import { useState, useRef } from "react";
 import { useStore, changeData } from "../../store.js";
 import { useAsyncAction } from "../../hooks/useAsyncAction.js";
@@ -188,14 +189,22 @@ export default function HomePage({ todayKey }) {
                               }
                               onClick={() => step(row, -1)}
                             >
-                              −
+                              <Minus
+                                size={20}
+                                strokeWidth={1.75}
+                                aria-hidden="true"
+                              />
                             </button>
                             <span>{counts[row.id] ?? row.quantity} left</span>
                             <button
                               aria-label={`Increase ${row.name}`}
                               onClick={() => step(row, 1)}
                             >
-                              +
+                              <Plus
+                                size={20}
+                                strokeWidth={1.75}
+                                aria-hidden="true"
+                              />
                             </button>
                             {row.availability === "out" && (
                               <button
@@ -265,96 +274,102 @@ export default function HomePage({ todayKey }) {
                         )}
                         <details className="row-menu">
                           <summary aria-label={`${row.name} options`}>
-                            •••
+                            <MoreHorizontal
+                              size={20}
+                              strokeWidth={1.75}
+                              aria-hidden="true"
+                            />
                           </summary>
-                          <button
-                            disabled={!!pending}
-                            onClick={() =>
-                              write(
-                                "toggle",
-                                (d) => {
-                                  d.groceryState.pantry =
-                                    d.groceryState.pantry.map((i) =>
-                                      i.id === row.id
-                                        ? toggleStockOut(i, todayKey)
-                                        : i,
-                                    );
-                                },
-                                null,
-                              )
-                            }
-                          >
-                            {row.availability === "out"
-                              ? "Back in stock"
-                              : "Mark out"}
-                          </button>
-                          <button
-                            onClick={() => {
-                              setEdit(row);
-                              setDirty(false);
-                            }}
-                          >
-                            Edit details
-                          </button>
-                          {places.flatMap(([, group, locations]) =>
-                            locations
-                              .filter((location) => location !== "kitchen")
-                              .map((location) => (
-                                <button
-                                  key={location}
-                                  disabled={!!pending}
-                                  onClick={() =>
-                                    write(
-                                      "move",
-                                      (d) => {
-                                        d.groceryState.pantry.find(
-                                          (i) => i.id === row.id,
-                                        ).location = location;
-                                      },
-                                      `Moved ${row.name} to ${group.toLowerCase()}.`,
-                                    )
-                                  }
-                                >
-                                  Move to{" "}
-                                  {location === "pantry"
-                                    ? "kitchen"
-                                    : location === "bag"
-                                      ? "my bag"
-                                      : location}
-                                </button>
-                              )),
-                          )}
-                          {stockStatus(row) !== "have" && (
+                          <div className="row-menu-items">
                             <button
                               disabled={!!pending}
                               onClick={() =>
                                 write(
-                                  "groceries",
-                                  (d) => stockToGroceries(d, [row]),
-                                  `Added ${row.name} to groceries.`,
+                                  "toggle",
+                                  (d) => {
+                                    d.groceryState.pantry =
+                                      d.groceryState.pantry.map((i) =>
+                                        i.id === row.id
+                                          ? toggleStockOut(i, todayKey)
+                                          : i,
+                                      );
+                                  },
+                                  null,
                                 )
                               }
                             >
-                              Add to groceries
+                              {row.availability === "out"
+                                ? "Back in stock"
+                                : "Mark out"}
                             </button>
-                          )}
-                          <button
-                            disabled={!!pending}
-                            onClick={() =>
-                              write(
-                                "remove",
-                                (d) => {
-                                  d.groceryState.pantry =
-                                    d.groceryState.pantry.filter(
-                                      (i) => i.id !== row.id,
-                                    );
-                                },
-                                `Removed ${row.name}.`,
-                              )
-                            }
-                          >
-                            Remove
-                          </button>
+                            <button
+                              onClick={() => {
+                                setEdit(row);
+                                setDirty(false);
+                              }}
+                            >
+                              Edit details
+                            </button>
+                            {places.flatMap(([, group, locations]) =>
+                              locations
+                                .filter((location) => location !== "kitchen")
+                                .map((location) => (
+                                  <button
+                                    key={location}
+                                    disabled={!!pending}
+                                    onClick={() =>
+                                      write(
+                                        "move",
+                                        (d) => {
+                                          d.groceryState.pantry.find(
+                                            (i) => i.id === row.id,
+                                          ).location = location;
+                                        },
+                                        `Moved ${row.name} to ${group.toLowerCase()}.`,
+                                      )
+                                    }
+                                  >
+                                    Move to{" "}
+                                    {location === "pantry"
+                                      ? "kitchen"
+                                      : location === "bag"
+                                        ? "my bag"
+                                        : location}
+                                  </button>
+                                )),
+                            )}
+                            {stockStatus(row) !== "have" && (
+                              <button
+                                disabled={!!pending}
+                                onClick={() =>
+                                  write(
+                                    "groceries",
+                                    (d) => stockToGroceries(d, [row]),
+                                    `Added ${row.name} to groceries.`,
+                                  )
+                                }
+                              >
+                                Add to groceries
+                              </button>
+                            )}
+                            <button
+                              disabled={!!pending}
+                              onClick={() =>
+                                write(
+                                  "remove",
+                                  (d) => {
+                                    d.groceryState.pantry =
+                                      d.groceryState.pantry.filter(
+                                        (i) => i.id !== row.id,
+                                      );
+                                  },
+                                  `Removed ${row.name}.`,
+                                )
+                              }
+                            >
+                              Remove
+                            </button>
+                          </div>
                         </details>
                       </li>
                     ))}

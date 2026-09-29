@@ -1,3 +1,4 @@
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { getDateKey } from "../../domain/timing.js";
 import { plural } from "../../format.js";
 
@@ -27,7 +28,7 @@ export default function MonthGrid({
             }
             aria-label="Previous month"
           >
-            ‹
+            <ChevronLeft size={20} strokeWidth={1.75} aria-hidden="true" />
           </button>
           <button
             onClick={() =>
@@ -41,7 +42,7 @@ export default function MonthGrid({
             }
             aria-label="Next month"
           >
-            ›
+            <ChevronRight size={20} strokeWidth={1.75} aria-hidden="true" />
           </button>
         </div>
         <h2>

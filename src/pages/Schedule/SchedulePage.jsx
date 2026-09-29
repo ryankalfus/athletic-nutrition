@@ -1,3 +1,4 @@
+import { CalendarPlus } from "lucide-react";
 import { useState, useRef } from "react";
 import { Shell } from "../../components/AppFrame.jsx";
 import { Dialog } from "../../components/Dialog.jsx";
@@ -638,11 +639,10 @@ export default function ScheduleCalendar({
   }
 
   return (
-    <Shell eyebrow="NOURALLY / SCHEDULE">
+    <Shell>
       <section className="calendar-head">
         <div>
-          <p className="kicker">SCHOOL + TRAINING SCHEDULE</p>
-          <h1>Schedule</h1>
+          <h1 className="page-title">Schedule</h1>
         </div>
         <div className="page-head-tools">
           <button
@@ -663,7 +663,6 @@ export default function ScheduleCalendar({
         <section className="card school-schedule-card">
           <div className="school-schedule-summary">
             <div>
-              <div className="section-label">SCHOOL CALENDAR</div>
               <h2>{schoolSchedule?.name || "Set your school schedule"}</h2>
               {schoolSchedule && (
                 <>
@@ -993,7 +992,11 @@ export default function ScheduleCalendar({
                 ) : (
                   !selectedSchoolCanceled && (
                     <div className="agenda-empty">
-                      <span>＋</span>
+                      <CalendarPlus
+                        size={24}
+                        strokeWidth={1.75}
+                        aria-hidden="true"
+                      />
                       <h3>Nothing scheduled.</h3>
                       <p>
                         Add a workout, practice, or game—or set your school

@@ -59,7 +59,7 @@ export default function YouPage({ subroute, onNavigate }) {
   return (
     <Shell onNavigate={onNavigate}>
       <div className="you-page">
-        <h1>You</h1>
+        <h1 className="page-title">You</h1>
         <section className="you-athlete" aria-label="Athlete">
           <span className="you-avatar" aria-hidden="true">
             {name.charAt(0).toUpperCase()}

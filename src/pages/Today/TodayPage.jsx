@@ -196,7 +196,7 @@ export default function TodayPage({
   return (
     <Shell footer={false} onNavigate={onNavigate}>
       <header className="today-heading">
-        <h1>Today</h1>
+        <h1 className="page-title">Today</h1>
         <p>{formatDate(todayKey)}</p>
         <div className="today-chips">
           {guidance.schoolToday && (

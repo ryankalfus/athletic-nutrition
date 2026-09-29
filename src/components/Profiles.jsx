@@ -57,7 +57,10 @@ export function LocalProfileEntry({ onComplete }) {
   const [busy, setBusy] = useState(false);
   return (
     <main className="shell">
-      <div className="brand">↗ nourally</div>
+      <div className="brand">
+        <img src="/favicon.svg" width="32" height="32" alt="" />
+        <span>nourally</span>
+      </div>
       <h1>
         Your day.
         <br />

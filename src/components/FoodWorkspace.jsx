@@ -73,10 +73,10 @@ export default function FoodHub({ now, todayKey }) {
   ).length;
 
   return (
-    <Shell eyebrow="NOURALLY / FOOD">
+    <Shell>
       <section className="dashboard-head">
         <div>
-          <h1>Food</h1>
+          <h1 className="page-title">Food</h1>
         </div>
       </section>
       <nav className="food-sections" aria-label="Food sections" ref={foodNav}>
@@ -204,9 +204,7 @@ export function FoodLog({ date }) {
                 <LabelCheck />
                 {entry.food?.brand && <p>Brand: {entry.food.brand}</p>}
                 {entry.food?.retrievedAt && (
-                  <p>
-                    Nutrition as of {formatDate(entry.food.retrievedAt)}.
-                  </p>
+                  <p>Nutrition as of {formatDate(entry.food.retrievedAt)}.</p>
                 )}
                 {entry.ingredients?.map((i, index) => (
                   <p key={index}>
@@ -363,13 +361,11 @@ function Consumption({ entry, onDone }) {
       }}
     >
       <p>
-        How much did you use from home? Only foods with a count are listed.
-        You can put it back later.
+        How much did you use from home? Only foods with a count are listed. You
+        can put it back later.
       </p>
       {!items.length && (
-        <p>
-          Nothing at home has a count yet. Set one in At home first.
-        </p>
+        <p>Nothing at home has a count yet. Set one in At home first.</p>
       )}
       {items.map((item) => (
         <label key={item.id}>
@@ -455,8 +451,8 @@ function MealLog({ plan, date, onDone }) {
       }}
     >
       <p>
-        Change the amounts to what you ate. Nothing is taken from At home
-        unless you choose "Use from home" in the log.
+        Change the amounts to what you ate. Nothing is taken from At home unless
+        you choose "Use from home" in the log.
       </p>
       {ingredients.map((i, index) => (
         <div key={i.ingredientId} className="form-grid">

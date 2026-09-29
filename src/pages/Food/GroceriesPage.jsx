@@ -1,3 +1,4 @@
+import { MoreHorizontal } from "lucide-react";
 import { useRef, useState } from "react";
 import { changeData, useStore } from "../../store.js";
 import { useAsyncAction } from "../../hooks/useAsyncAction.js";
@@ -196,35 +197,39 @@ export default function GroceriesPage({ todayKey }) {
             e.currentTarget.open = false;
         }}
       >
-        <summary aria-label={`${item.name} options`}>•••</summary>
-        <button
-          disabled={!!pending}
-          onClick={() => setSheet({ type: "edit", item })}
-        >
-          Edit
-        </button>
-        <button
-          disabled={!!pending}
-          onClick={() => setSheet({ type: "swap", item })}
-        >
-          Swap for another food
-        </button>
-        <button
-          disabled={!!pending}
-          onClick={() =>
-            write(
-              `remove-${item.id}`,
-              (d) => {
-                d.groceryState.items = d.groceryState.items.filter(
-                  (i) => i.id !== item.id,
-                );
-              },
-              `Removed ${item.name}.`,
-            )
-          }
-        >
-          Remove
-        </button>
+        <summary aria-label={`${item.name} options`}>
+          <MoreHorizontal size={20} strokeWidth={1.75} aria-hidden="true" />
+        </summary>
+        <div className="row-menu-items">
+          <button
+            disabled={!!pending}
+            onClick={() => setSheet({ type: "edit", item })}
+          >
+            Edit
+          </button>
+          <button
+            disabled={!!pending}
+            onClick={() => setSheet({ type: "swap", item })}
+          >
+            Swap for another food
+          </button>
+          <button
+            disabled={!!pending}
+            onClick={() =>
+              write(
+                `remove-${item.id}`,
+                (d) => {
+                  d.groceryState.items = d.groceryState.items.filter(
+                    (i) => i.id !== item.id,
+                  );
+                },
+                `Removed ${item.name}.`,
+              )
+            }
+          >
+            Remove
+          </button>
+        </div>
       </details>
     </li>
   );
