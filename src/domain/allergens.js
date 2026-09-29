@@ -30,7 +30,10 @@ export function normalizeAllergies(value) {
 
 // The allergies that actually filter: none until the tags are reviewed, and
 // never "other", which has no tags.
-export function activeAllergies(profile = {}, reviewed = ALLERGY_TAGS_REVIEWED) {
+export function activeAllergies(
+  profile = {},
+  reviewed = ALLERGY_TAGS_REVIEWED,
+) {
   if (!reviewed) return [];
   return normalizeAllergies(profile.allergies).filter((id) =>
     MAJOR_IDS.includes(id),
@@ -95,7 +98,10 @@ const joinNames = (names) =>
     : `${names.slice(0, -1).join(", ")} and ${names.at(-1)}`;
 
 // "Ideas that list peanuts are hidden. Check labels on products."
-export function allergyStatusLine(profile = {}, reviewed = ALLERGY_TAGS_REVIEWED) {
+export function allergyStatusLine(
+  profile = {},
+  reviewed = ALLERGY_TAGS_REVIEWED,
+) {
   if (!reviewed) return ALLERGY_WAITING;
   const active = activeAllergies(profile, reviewed);
   if (!active.length) return "";
@@ -108,7 +114,10 @@ const LEGACY = [
   ["glutenFree", "Gluten-free"],
   ["dairyFree", "Dairy-free"],
 ];
-export function legacyAllergyPrompts(profile = {}, reviewed = ALLERGY_TAGS_REVIEWED) {
+export function legacyAllergyPrompts(
+  profile = {},
+  reviewed = ALLERGY_TAGS_REVIEWED,
+) {
   const needs = profile.dietaryNeeds || [];
   return LEGACY.filter(([id]) => needs.includes(id)).map(([, label]) =>
     reviewed

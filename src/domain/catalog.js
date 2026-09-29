@@ -6,9 +6,11 @@ export const DIET_FILTERS = ["vegan", "vegetarian"];
 export const SPORTS_DRINK_NOTE =
   "Water works for most practices. Sports drinks can help in long or hot sessions.";
 
+// ONB-03: budget is not asked in setup, so new athletes start with low-cost
+// ideas off. Older profiles without the setting keep their stored budget.
 export const DEFAULT_PROFILE = {
   name: "",
-  budget: "save",
+  budget: "standard",
   dietaryNeeds: [],
   foodSources: ["packed", "cafeteria", "home"],
   familyPrep: true,
@@ -890,10 +892,7 @@ export const INGREDIENT_ALLERGENS = {
   "fig-bars": tags(["wheat"], ["soy", "milk", "tree-nuts"]),
   "frozen-berries": tags(),
   "fruit-cups": tags(),
-  granola: tags(
-    [],
-    ["wheat", "tree-nuts", "peanuts", "milk", "soy", "sesame"],
-  ),
+  granola: tags([], ["wheat", "tree-nuts", "peanuts", "milk", "soy", "sesame"]),
   grapes: tags(),
   hummus: tags(["sesame"]),
   jam: tags(),

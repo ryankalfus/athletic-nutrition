@@ -188,6 +188,9 @@ export async function createProfile(name, email = "") {
   const ok = await transaction((doc) => {
     const data = emptyData();
     data.profile.name = name;
+    // A named new athlete skips Welcome and starts setup at step 1 (6.1).
+    data.setupStep = 1;
+    data.lastUsedAt = new Date().toISOString();
     doc.profiles[id] = { id, name, email, data };
   });
   if (ok) {

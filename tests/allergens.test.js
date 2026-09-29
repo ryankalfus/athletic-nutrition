@@ -47,7 +47,9 @@ const allIdeas = (profile, reviewed) =>
   );
 const lists = (id, allergen) => {
   const tags = INGREDIENT_ALLERGENS[id];
-  return tags.allergens.includes(allergen) || tags.mayContain.includes(allergen);
+  return (
+    tags.allergens.includes(allergen) || tags.mayContain.includes(allergen)
+  );
 };
 
 test("P1-09: the review gate ships closed", () => {
@@ -78,7 +80,10 @@ test("P1-09: spot-check draft tags on known ingredients", () => {
     "sesame",
   ]);
   assert.ok(lists("tuna-pouches", "fish"));
-  assert.ok(lists("sunbutter", "peanuts"), "sunflower-seed butter cross-contact");
+  assert.ok(
+    lists("sunbutter", "peanuts"),
+    "sunflower-seed butter cross-contact",
+  );
   assert.ok(lists("oats", "wheat"), "oats cross-contact with wheat");
   assert.deepEqual(INGREDIENT_ALLERGENS.bananas, {
     allergens: [],
@@ -98,7 +103,10 @@ for (const allergen of MAJOR) {
       );
     for (const id of all)
       if (!MEAL_INGREDIENTS[id].some(([, ing]) => lists(ing, allergen)))
-        assert.ok(shown.has(id), `${id} does not list ${allergen} but is hidden`);
+        assert.ok(
+          shown.has(id),
+          `${id} does not list ${allergen} but is hidden`,
+        );
     for (const idea of FOOD_IDEAS)
       assert.equal(
         ideaFitsProfile(idea, { ...everySource, ...profile }, true),
@@ -144,9 +152,10 @@ for (const allergen of MAJOR) {
 test("P1-09: the default (closed gate) weekly groceries ignore allergies", () => {
   const input = { date: "2026-09-28", limit: 50 };
   assert.deepEqual(
-    weeklyGroceryIdeas({ ...input, profile: { allergies: ["wheat"] } }).items.map(
-      (i) => i.name,
-    ),
+    weeklyGroceryIdeas({
+      ...input,
+      profile: { allergies: ["wheat"] },
+    }).items.map((i) => i.name),
     weeklyGroceryIdeas({ ...input, profile: {} }).items.map((i) => i.name),
   );
 });
@@ -167,14 +176,29 @@ test("P1-09: unknown ingredients count as a match", () => {
 });
 
 test("P1-09: status line depends on the gate", () => {
-  assert.equal(allergyStatusLine({ allergies: ["peanuts"] }, false), ALLERGY_WAITING);
+  assert.equal(
+    allergyStatusLine({ allergies: ["peanuts"] }, false),
+    ALLERGY_WAITING,
+  );
   assert.equal(
     allergyStatusLine({ allergies: ["peanuts", "sesame"] }, true),
     "Ideas that list peanuts and sesame are hidden. Check labels on products.",
   );
   assert.equal(allergyStatusLine({ allergies: [] }, true), "");
-  assert.equal(needsSummary({ allergies: ["peanuts"], dietaryNeeds: ["vegetarian"] }, true), "Peanuts · Vegetarian");
-  assert.equal(needsSummary({ allergies: ["peanuts"], dietaryNeeds: ["vegetarian"] }, false), "Vegetarian");
+  assert.equal(
+    needsSummary(
+      { allergies: ["peanuts"], dietaryNeeds: ["vegetarian"] },
+      true,
+    ),
+    "Peanuts · Vegetarian",
+  );
+  assert.equal(
+    needsSummary(
+      { allergies: ["peanuts"], dietaryNeeds: ["vegetarian"] },
+      false,
+    ),
+    "Vegetarian",
+  );
 });
 
 test("P1-09: profile.allergies is stored, validated and migrated", () => {
@@ -183,11 +207,16 @@ test("P1-09: profile.allergies is stored, validated and migrated", () => {
   data.profile.allergies = ["sesame", "bogus", "peanuts", "sesame"];
   assert.deepEqual(validateData(data).profile.allergies, ["peanuts", "sesame"]);
   assert.throws(
-    () => validateData({ ...data, profile: { ...data.profile, allergies: "peanuts" } }),
+    () =>
+      validateData({
+        ...data,
+        profile: { ...data.profile, allergies: "peanuts" },
+      }),
     /preferences/,
   );
   assert.throws(
-    () => validateData({ ...data, profile: { ...data.profile, allergies: [1] } }),
+    () =>
+      validateData({ ...data, profile: { ...data.profile, allergies: [1] } }),
     /allergies/,
   );
   const legacy = emptyData();
