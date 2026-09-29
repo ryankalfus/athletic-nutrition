@@ -7,6 +7,8 @@ import {
 import { uid } from "../domain/storage.js";
 import { GROCERY_CATALOG } from "../domain/catalog.js";
 import { LabelCheck } from "./ui/LabelCheck.jsx";
+import { searchableFavorites } from "../domain/ranking.js";
+import { plural } from "../format.js";
 import { changeData, useStore } from "../store.js";
 const BarcodeScanner = lazy(() => import("./BarcodeScanner.jsx"));
 export function FoodSearch({
@@ -26,6 +28,8 @@ export function FoodSearch({
   const request = useRef(null);
   const serial = useRef(0);
   const { current } = useStore();
+  // Saved meal ideas live on Ideas; search lists saved foods only (IDEA-05).
+  const savedFoods = searchableFavorites(current.data.favorites);
   const recent = current.data.recentFoods.filter(
     (food) =>
       !current.data.favorites.some((favorite) => favorite.id === food.id),
@@ -114,7 +118,7 @@ export function FoodSearch({
             {food.householdServing
               ? ` · ${food.householdServing}`
               : food.servingSize && ["g", "ml"].includes(food.servingSizeUnit)
-                ? ` · ${food.servingSize} ${food.servingSizeUnit || "g"} serving`
+                ? ` · ${food.servingSize} ${food.servingSizeUnit || "g"} ${plural(1, "serving")}`
                 : ""}
           </p>
           <LabelCheck />
@@ -189,12 +193,10 @@ export function FoodSearch({
           <div className="food-result-list">{recent.map(foodRow)}</div>
         </section>
       )}
-      {!query && current.data.favorites.length > 0 && (
+      {!query && savedFoods.length > 0 && (
         <section>
           <h3>Saved</h3>
-          <div className="food-result-list">
-            {current.data.favorites.map(foodRow)}
-          </div>
+          <div className="food-result-list">{savedFoods.map(foodRow)}</div>
         </section>
       )}
       {!query && !results && (
