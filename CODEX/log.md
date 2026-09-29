@@ -526,3 +526,8 @@ Added About Nourally's guidance as the one full safety explanation. 2026.09.29
 Moved the You page out of main.jsx into src/pages/You, keeping the first-run form in main.jsx for setup only. 2026.09.29
 Fixed an 8 px sideways scroll on Today at 320 px by letting the Today grid column shrink. 2026.09.29
 Counted an exact At home count in another unit (for example 3 bunches of bananas) as available for ideas, marked approximate, with a test. 2026.09.29
+Updated the persistence browser check for You › This device: restore preview, Open athlete, and Delete [name]'s data. 2026.09.29
+Updated the You browser check for the settings list: Sport sheet save, Food needs without allergen chips, and the Reminders link. 2026.09.29
+Updated the food workflow browser check to set 3 bunches before Ideas and assert the banana counts At home, and to turn on price estimates in the Access sheet. 2026.09.29
+Made the responsive browser check fail on page-level horizontal scroll at 320 px too and added the You sheet routes. 2026.09.29
+Made the provider browser check name the USDA DEMO_KEY rate limit when real search is throttled. 2026.09.29

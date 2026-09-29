@@ -1,12 +1,12 @@
 // Playwright snippet: no horizontal page scroll on any main route at phone, tablet and desktop widths.
 // Seeds a practice, a grocery list and food at home first so pages are not just empty states.
-// Screenshots at 375 px go to output/playwright/.
+// Fails on page-level horizontal scroll at 320 px and up. Screenshots at 375 px go to output/playwright/.
 async (page) => {
   const base = globalThis.BASE_URL ?? "http://127.0.0.1:5173/";
   const context = await page.context().browser().newContext();
   const p = await context.newPage();
   p.setDefaultTimeout(15000);
-  const result = { checks: [], errors: [], warnings: [], layouts: [] };
+  const result = { checks: [], errors: [], layouts: [] };
   p.on("pageerror", (error) => result.errors.push(error.message));
   const routes = [
     "today",
@@ -17,11 +17,14 @@ async (page) => {
     "food/log",
     "food/log/week",
     "you",
+    "you/sport",
+    "you/needs",
+    "you/access",
     "you/reminders",
+    "you/device",
+    "you/about",
   ];
-  const widths = [375, 768, 1024, 1440];
-  // 320 px is reported, not enforced: the redesign targets 375 px and up.
-  const soft = [320];
+  const widths = [320, 375, 768, 1024, 1440];
   try {
     await p.setViewportSize({ width: 375, height: 812 });
     await p.goto(base);
@@ -47,14 +50,16 @@ async (page) => {
     await p.getByRole("radiogroup", { name: "Bananas stock" }).waitFor();
 
     const spills = [];
-    for (const width of [...soft, ...widths]) {
+    for (const width of widths) {
       await p.setViewportSize({ width, height: 850 });
       for (const route of routes) {
         await p.goto(`${base}#/${route}`);
         await p.locator("main").waitFor();
         await p.waitForTimeout(100);
         const state = await p.evaluate(() => ({
-          viewport: innerWidth,
+          // Page-level scroll only: inner scrollers (Food tabs, Ideas moment
+          // picker) overflow on purpose and do not widen the document.
+          viewport: document.documentElement.clientWidth,
           scrollWidth: document.documentElement.scrollWidth,
           offenders: [...document.querySelectorAll("body *")]
             .filter((el) => {
@@ -64,7 +69,18 @@ async (page) => {
                 rect.width > 0 &&
                 style.visibility !== "hidden" &&
                 rect.right > innerWidth + 1 &&
-                !el.closest("[aria-hidden=true], .sr-only")
+                !el.closest("[aria-hidden=true], .sr-only") &&
+                !(function inScroller(node) {
+                  // Content clipped by an overflow container is not a page spill.
+                  for (
+                    let n = node.parentElement;
+                    n && n !== document.body;
+                    n = n.parentElement
+                  )
+                    if (/auto|scroll|hidden|clip/.test(getComputedStyle(n).overflowX))
+                      return true;
+                  return false;
+                })(el)
               );
             })
             .slice(0, 3)
@@ -75,7 +91,7 @@ async (page) => {
         }));
         result.layouts.push({ width, route, scrollWidth: state.scrollWidth });
         if (state.scrollWidth > state.viewport)
-          (soft.includes(width) ? result.warnings : spills).push(
+          spills.push(
             `${route} @${width}px scrolls to ${state.scrollWidth}px (${state.offenders.join(", ")})`,
           );
         if (width === 375)
@@ -88,7 +104,7 @@ async (page) => {
     if (spills.length)
       throw new Error(`Horizontal scroll:\n  ${spills.join("\n  ")}`);
     result.checks.push(
-      `No horizontal scroll on ${routes.length} routes (Today, Schedule, Food tabs, You, Reminders) at ${widths.join("/")} px.`,
+      `No horizontal scroll on ${routes.length} routes (Today, Schedule, Food tabs, You and its sheets) at ${widths.join("/")} px.`,
     );
     return result;
   } catch (error) {

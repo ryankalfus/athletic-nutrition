@@ -72,6 +72,20 @@ async (page) => {
       "Check off -> Finish shopping -> put-away empties the list; At home shows both as Have, Bananas in my bag.",
     );
 
+    // Give Bananas an exact count in bunches. It must still satisfy an idea that
+    // needs "1 banana" (other-unit counts count as available), and a log can use it.
+    await p.goto(`${base}#/food/home`);
+    await homeRow("Bananas").locator("summary").click();
+    await homeRow("Bananas").getByRole("button", { name: "Edit details" }).click();
+    const details = p.getByRole("dialog");
+    await details
+      .getByRole("combobox", { name: "Amount type" })
+      .selectOption({ label: "Exact quantity" });
+    await details.getByRole("spinbutton", { name: "Amount left" }).fill("3");
+    await details.getByRole("button", { name: "Save details" }).click();
+    await details.waitFor({ state: "hidden" });
+    await homeRow("Bananas").getByText("3 left").waitFor();
+
     // Ideas: ready -> plan -> pack -> log.
     await p.goto(`${base}#/food/ideas`);
     await p
@@ -84,6 +98,12 @@ async (page) => {
     await card.getByText("Ready — you have everything").waitFor();
     if ((await card.getByText("To buy").count()) !== 0)
       throw new Error("Ready idea still lists items to buy");
+    const bananaLine = await card
+      .getByRole("listitem")
+      .filter({ hasText: "banana" })
+      .innerText();
+    if (!bananaLine.includes("At home"))
+      throw new Error(`3 bunches at home do not cover 1 banana: ${bananaLine}`);
     await card.getByRole("button", { name: "Plan Banana + pretzels" }).click();
     const planned = p.getByRole("region", { name: "Planned food" });
     await planned.getByRole("button", { name: "Mark packed" }).click();
@@ -93,7 +113,7 @@ async (page) => {
     await confirmLog.getByRole("button", { name: "Yes, as planned" }).click();
     await confirmLog.waitFor({ state: "hidden" });
     result.checks.push(
-      "Ideas marks Banana + pretzels Ready; Plan this -> Mark packed -> Log it -> Yes, as planned.",
+      "With 3 bunches at home, Ideas marks Banana + pretzels Ready (banana At home); Plan this -> Mark packed -> Log it -> Yes, as planned.",
     );
 
     await p
@@ -120,20 +140,6 @@ async (page) => {
       "The Tomorrow moment works; Add missing to groceries adds only the fig bars, with no $ shown.",
     );
 
-    // Give Bananas an exact count so a log can use it. (Done after Ideas: a count in
-    // bunches does not satisfy an idea that needs "1 banana".)
-    await p.goto(`${base}#/food/home`);
-    await homeRow("Bananas").locator("summary").click();
-    await homeRow("Bananas").getByRole("button", { name: "Edit details" }).click();
-    const details = p.getByRole("dialog");
-    await details
-      .getByRole("combobox", { name: "Amount type" })
-      .selectOption({ label: "Exact quantity" });
-    await details.getByRole("spinbutton", { name: "Amount left" }).fill("3");
-    await details.getByRole("button", { name: "Save details" }).click();
-    await details.waitFor({ state: "hidden" });
-    await homeRow("Bananas").getByText("3 left").waitFor();
-
     // Log: use from home, then put back.
     await p.goto(`${base}#/food/log`);
     const entry = p.locator("article").filter({ hasText: "Banana + pretzels" });
@@ -154,17 +160,19 @@ async (page) => {
     );
 
     // Price estimates on: the estimate line and the price field appear.
-    await p.goto(`${base}#/you`);
-    // The toggle saves asynchronously, so click and wait instead of check().
-    await p.getByRole("checkbox", { name: "Show price estimates" }).click();
-    await p
-      .getByRole("checkbox", { name: "Show price estimates", checked: true })
-      .waitFor();
+    await p.goto(`${base}#/you/access`);
+    const access = p.getByRole("dialog", { name: "Food access & budget" });
+    const prices = access.getByRole("switch", { name: /^Show price estimates/ });
+    if (await prices.isChecked())
+      throw new Error("Price estimates are not off by default");
+    await prices.click();
+    await access.getByRole("button", { name: "Save", exact: true }).click();
+    await access.waitFor({ state: "hidden" });
     await p.goto(`${base}#/food/groceries`);
     await p.getByText(/^About \$\d+\.\d\d for 1 of 1 item$/).waitFor();
     await p.getByText(/ · about \$\d+\.\d\d$/).waitFor();
     result.checks.push(
-      "Turning on price estimates shows the row price and the About $ total.",
+      "Turning on price estimates in the Access sheet shows the row price and the About $ total.",
     );
     return result;
   } catch (e) {

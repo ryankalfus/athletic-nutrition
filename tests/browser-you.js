@@ -1,4 +1,4 @@
-// Playwright snippet: You page — sport field, hidden allergen chips, Reminders sheet route and honesty line.
+// Playwright snippet: You settings list — Sport sheet, Food needs without allergen chips, Reminders sheet and honesty line.
 async (page) => {
   const base = globalThis.BASE_URL ?? "http://127.0.0.1:5173/";
   const context = await page.context().browser().newContext();
@@ -25,30 +25,49 @@ async (page) => {
       );
     await p.keyboard.press("Escape");
     await p.goto(`${base}#/you`);
-    if (
-      (await p.getByRole("combobox", { name: /^Sport/ }).inputValue()) !==
-      "Soccer"
-    )
+    await p.getByRole("link", { name: /^Sport & season — Soccer/ }).click();
+    const sport = p.getByRole("dialog", { name: "Sport & season" });
+    if (!p.url().endsWith("#/you/sport"))
+      throw new Error(`Sport sheet did not route: ${p.url()}`);
+    const sportField = sport.getByRole("combobox", { name: /^Sport/ });
+    if ((await sportField.inputValue()) !== "Soccer")
       throw new Error("Sport was not saved to the profile");
+    await sportField.fill("Swimming");
+    await sport.getByRole("button", { name: "Save", exact: true }).click();
+    await sport.waitFor({ state: "hidden" });
+    await p.getByRole("status").getByText("Saved.").waitFor();
+    if (!p.url().endsWith("#/you"))
+      throw new Error(`Saving a sheet did not return to #/you: ${p.url()}`);
+    await p.getByRole("link", { name: /^Sport & season — Swimming/ }).waitFor();
     result.checks.push(
-      "Sport entered at welcome is saved and names new activities (Soccer practice).",
+      "Sport from welcome names new activities (Soccer practice); the Sport sheet at #/you/sport saves, toasts Saved, and returns to You.",
     );
 
-    const needs = p.getByRole("group", { name: "Dietary needs" });
-    const chips = await needs.getByRole("button").allInnerTexts();
+    await p.getByRole("link", { name: /^Food needs & allergies/ }).click();
+    const needs = p.getByRole("dialog", { name: "Food needs & allergies" });
+    await needs.getByRole("button", { name: "Vegan" }).waitFor();
+    const chips = await needs
+      .getByRole("group", { name: "I don't eat" })
+      .getByRole("button")
+      .allInnerTexts();
     if (chips.join(",") !== "Vegetarian,Vegan")
       throw new Error(`Unexpected dietary chips: ${chips.join(", ")}`);
-    const allButtons = await p.getByRole("button").allInnerTexts();
+    const allButtons = await needs.getByRole("button").allInnerTexts();
     const allergen = allButtons.find((t) =>
       /Gluten-free|Dairy-free|Nut-free/i.test(t),
     );
     if (allergen) throw new Error(`Allergen chip is visible: ${allergen}`);
-    await p.getByText("Allergies: check every label.").first().waitFor();
+    await needs.getByText("Allergies: check every label.").waitFor();
+    await needs
+      .getByText("Allergy filters aren't ready yet.", { exact: false })
+      .waitFor();
+    await needs.getByRole("button", { name: "Cancel" }).click();
+    await needs.waitFor({ state: "hidden" });
     result.checks.push(
-      "Dietary needs shows only Vegetarian and Vegan; no Gluten-free, Dairy-free or Nut-free chip.",
+      "Food needs offers only Vegetarian and Vegan; no Gluten-free, Dairy-free or Nut-free chip; allergy copy and label line show.",
     );
 
-    await p.getByRole("button", { name: "Reminders — Off" }).click();
+    await p.getByRole("link", { name: "Reminders — Off" }).click();
     const sheet = p.getByRole("dialog", { name: "Reminders" });
     await sheet.waitFor();
     if (!p.url().endsWith("#/you/reminders"))
