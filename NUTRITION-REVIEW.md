@@ -46,3 +46,132 @@ These are candidate sources to evaluate, not a source-to-rule validation. The av
 ## Owner decisions
 
 The owner confirmed all previously presented recommended options on 2026.09.29: high-school ages 14–18; hide ideas with matching tagged allergens; local athletes with backups; shareable lists for the MVP; desktop-browser reminders for the MVP; local USDA index with the existing server fallback; four primary destinations and four Food sections; preparation due 30 minutes before school starts or an away activity's Leave by time. Optional future enhancements retain their audit phase and scope.
+
+## Pending qualified review — household amounts (2026.09.29)
+
+**Status: not approved.** The household display strings below were added after the 2026.09.29 approval recorded above, so that approval does not cover them. The audit gives only three example strings: "1 banana", "2 slices of bread", and "1 small bag of pretzels" (IDEA-07, audit §6). Every other string is new. This section prepares the review and approves nothing. Nutrient figures in the notes are rough estimates that depend on the label; the reviewer should check them. They are not claims.
+
+**Where the strings live and how they show:** they are `displayAmounts` in `src/domain/catalog.js` (lines ~496–550) and apply to every `MEAL_INGREDIENTS` row. `ingredientsForMeal` in `src/domain/food.js` passes them to the Ideas card (`src/pages/Food/IdeasPage.jsx`). There the string **replaces the ingredient name**. Below the list, the Ideas page shows "Ideas are examples, not amounts you must eat. Check labels for…".
+- Internal gram/ml amounts (`exampleAmounts`) are used only for pantry checks and are never displayed: pretzels 30 g, sunflower-seed butter 30 g, soy/chocolate milk 250 ml, oats 40 g, cereal 30 g, jam 20 g.
+- `GROCERY_CATALOG` has no size or portion field. Shopping rows default to "package".
+- The fallback "{Name}, to suit your appetite" can't be reached today, because every ingredient ID has a string.
+
+**Moment meanings (from `src/domain/timing.js`):**
+- `quick`: 0–30 min before activity, **and** a session in progress that is under 75 min and not high intensity.
+- `pre`: 31–90 min before.
+- `regular`: 91–180 min before, or no activity nearby.
+- `recovery`: up to 90 min after.
+- `during`: a session in progress that is at least 75 min or high intensity.
+
+**Source keys:**
+- [S1] AND/DC/ACSM position (2016): about 0.25–0.3 g/kg (or 15–25 g) protein in early recovery; about 1.0–1.2 g/kg/h carbohydrate when recovery time is short. ([PubMed 26920240](https://pubmed.ncbi.nlm.nih.gov/26920240/))
+- [S2] AAP clinical report on sports and energy drinks (2011). ([link](https://publications.aap.org/pediatrics/article/127/6/1182/30098/))
+- [S3] Sports Dietitians Australia, "Eating and Drinking Before Sport": pre-sport food should be carbohydrate-rich, low in fat, easy to digest and familiar; lower fibre can prevent stomach discomfort. ([PDF](https://www.sportsdietitians.com.au/wp-content/uploads/2015/04/Eating_Drinking_Before_Sport.pdf))
+- [S4] Better Health Channel (Victoria): carbohydrate during exercise longer than 60 min, about 30–60 g/h. ([link](https://www.betterhealth.vic.gov.au/health/healthyliving/sporting-performance-and-food))
+- [S5] "Optimizing Performance Nutrition for Adolescent Athletes" review (Nutrients, 2025): 0.25–0.30 g/kg protein after exercise, ideally within the first hour. ([PMC12430154](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12430154/))
+- [S6] FDA food allergies; the FASTER Act made sesame the ninth major allergen from 2023.01.01. ([FDA](https://www.fda.gov/food/nutrition-food-labeling-and-critical-foods/food-allergies), [FoodSafety.gov](https://www.foodsafety.gov/blog/food-allergy-safety-treatment-education-and-research-act-2021))
+- [S7] Sunflower-seed products are often made on equipment shared with peanuts or tree nuts; check with the manufacturer. ([Medical News Today](https://www.medicalnewstoday.com/articles/sunflower-seeds-nut-allergy))
+- [S8] Chocolate milk has about 2 mg caffeine per 8 oz. ([U.S. Dairy](https://www.usdairy.com/news-articles/how-much-caffeine-is-in-chocolate-milk))
+- [A] `CLAUDE-REDESIGN-AUDIT.md` IDEA-07 and §7.5.
+- [T] `src/domain/timing.js` state copy.
+
+### Amount table
+
+| # | Idea | Moments | Ingredient | Amount shown | Reviewer note | Reason + source |
+|---|---|---|---|---|---|---|
+| 1 | Banana + pretzels | quick, pre, regular | Bananas | 1 banana | OK | Audit example [A]. Carbohydrate-forward, low fat [S3]. |
+| 2 | Banana + pretzels | quick, pre, regular | Pretzels | 1 small bag of pretzels | Question | Audit example [A]. With the banana, roughly 45–50 g carbohydrate. The quick state says "something small" [T], and quick also covers short sessions in progress. Is this OK 0–30 min before and mid-session? [S3] |
+| 3 | Applesauce pouch + rice cakes | quick, pre | Applesauce pouches | 1 applesauce pouch | OK | Small, low-fat carbohydrate [S3]. |
+| 4 | Applesauce pouch + rice cakes | quick, pre | Rice cakes | 2 rice cakes | OK | Low fat, low fibre [S3]. |
+| 5 | Fig bar + fresh fruit | quick, pre, regular | Fig bars | 2 fig bars | OK | Carbohydrate snack [S3]. Contains wheat (label reminder applies). |
+| 6 | Fig bar + fresh fruit | quick, pre, regular | Fresh fruit | 1 banana | Change suggested | The idea name says "fresh fruit" but the card shows "1 banana". Other ideas map "Fresh fruit" to "1 apple or other fruit". Use one wording. |
+| 7 | Cereal cup + shelf-stable soy milk | quick, pre, regular, recovery | Cereal | 1 cup of cereal | Question | "Cereal cup" in the name suggests a single-serve cup, but "1 cup" reads as a measure. Cereal fibre varies widely, which matters for quick and pre [S3]. |
+| 8 | Cereal cup + shelf-stable soy milk | quick, pre, regular, recovery | Shelf-stable soy milk | 1 cup of soy milk | Question | 1 cup of liquid in the quick state, which includes mid-session. Roughly 7–8 g protein, below the 15–25 g recovery reference when shown for recovery [S1]. Soy is a major allergen [S6]. |
+| 9 | Bagel or toast + jam | pre, regular, recovery | Bagels or bread | 2 slices of bread | Change suggested | The name offers a bagel, but the amount names only bread. Suggest "1 bagel or 2 slices of toast". Low protein for recovery (roughly 6–10 g) [S1]. |
+| 10 | Bagel or toast + jam | pre, regular, recovery | Jam | 1 spoonful of jam | OK | Small carbohydrate add-on. |
+| 11 | Sunflower-butter banana sandwich | pre, regular, recovery | Whole-grain bread | 2 slices of bread | OK | Audit example [A]. Whole-grain fibre in pre is a minor point [S3]. |
+| 12 | Sunflower-butter banana sandwich | pre, regular, recovery | Sunflower-seed butter | 2 tablespoons of sunflower-seed butter | Question | About 16 g fat (label-dependent). The pre state says to avoid heavy foods [T], and SDA advises low-fat pre-sport food [S3], so a smaller amount may suit pre. Possible peanut or tree-nut cross-contact [S7]. Must not read as nut-safe while the nut filter is hidden. |
+| 13 | Sunflower-butter banana sandwich | pre, regular, recovery | Bananas | 1 banana | OK | [S3] |
+| 14 | Oatmeal + fruit | regular, pre, recovery | Oats | 1 bowl of oatmeal | Question | "Bowl" has no defined size (the internal amount is 40 g dry). Oats add fibre 31–90 min before [S3]. Needs a kitchen or microwave. |
+| 15 | Oatmeal + fruit | regular, pre, recovery | Fresh or frozen fruit | 1 cup of fruit | OK | Common household measure. |
+| 16 | Hummus + pita + grapes | regular, recovery | Hummus | 1 small cup of hummus | Question | Hummus usually contains tahini, and sesame is a major allergen [S6]. Ingredient tags are unreviewed (ADD-03). "Small cup" (a container) vs "1 cup" (a measure) is ambiguous. |
+| 17 | Hummus + pita + grapes | regular, recovery | Pita | 1 pita | OK | Contains wheat. |
+| 18 | Hummus + pita + grapes | regular, recovery | Grapes | 1 handful of grapes | OK | Whole grapes are not the choking concern for ages 14–18 that they are for small children. |
+| 19 | Turkey sandwich + fruit | regular, recovery | Whole-grain bread | 2 slices of bread | OK | [A] |
+| 20 | Turkey sandwich + fruit | regular, recovery | Turkey | A few slices of turkey | Question | Not a count, unlike most other strings. With the bread, protein is about 15–20 g depending on slices [S1]. Needs cold storage. |
+| 21 | Turkey sandwich + fruit | regular, recovery | Fresh fruit | 1 apple or other fruit | OK | — |
+| 22 | Tuna pouch + crackers + fruit cup | regular, recovery | Tuna pouches | 1 tuna pouch | OK | Roughly 15–17 g protein, within the reference [S1]. Fish is a major allergen [S6]. |
+| 23 | Tuna pouch + crackers + fruit cup | regular, recovery | Crackers | 1 handful of crackers | OK | Contains wheat. |
+| 24 | Tuna pouch + crackers + fruit cup | regular, recovery | Fruit cups | 1 fruit cup | OK | — |
+| 25 | Yogurt + fruit + cereal | regular, recovery | Yogurt | 1 yogurt cup | Question | Protein ranges from about 5 g to 15+ g by type (regular vs Greek) [S1][S5]. Should the example name a type? |
+| 26 | Yogurt + fruit + cereal | regular, recovery | Fresh fruit | 1 banana | Change suggested | Same fruit wording mismatch as #6. |
+| 27 | Yogurt + fruit + cereal | regular, recovery | Cereal | 1 cup of cereal | Question | Same "cup" ambiguity as #7. A full cup is large as a topping in a three-part snack. |
+| 28 | Soy yogurt + berries + granola | regular, recovery | Soy yogurt | 1 soy yogurt cup | Question | Protein varies widely by brand. Soy allergen [S6]. |
+| 29 | Soy yogurt + berries + granola | regular, recovery | Frozen berries | 1 cup of fruit | OK | — |
+| 30 | Soy yogurt + berries + granola | regular, recovery | Granola | 1 handful of granola | Question | Granola often contains nuts or is made on shared lines [S7]. The idea note calls this "dairy-free" while the Dairy-free filter is hidden as unreviewed. Should the note wording change until ADD-03? |
+| 31 | Bean-and-rice bowl + fruit | regular, recovery | Canned beans | 1 scoop of beans | Question | "Scoop" has no defined size. Protein with rice is roughly 10–12 g if the scoop is about ½ cup of beans [S1]. |
+| 32 | Bean-and-rice bowl + fruit | regular, recovery | Rice | 1 scoop of rice | Question | "Scoop" has no defined size. |
+| 33 | Bean-and-rice bowl + fruit | regular, recovery | Fresh fruit | 1 apple or other fruit | OK | — |
+| 34 | Chicken rice bowl | regular, recovery | Chicken | A few strips of chicken | Question | Vague, not a count. Protein is likely at or above the reference [S1]. |
+| 35 | Chicken rice bowl | regular, recovery | Rice | 1 scoop of rice | Question | "Scoop" has no defined size. |
+| 36 | Chicken rice bowl | regular, recovery | Vegetables | 1 handful of vegetables | OK | The ingredient ID is baby carrots; the display is generic. |
+| 37 | Bean burrito + salsa | regular, recovery | Canned beans | 1 scoop of beans | Question | "Scoop" has no defined size. |
+| 38 | Bean burrito + salsa | regular, recovery | Tortillas | 2 tortillas | Change suggested | The idea is one burrito, and "2 tortillas" reads as two burritos. Suggest "1 large tortilla (or 2 small)". |
+| 39 | Bean burrito + salsa | regular, recovery | Salsa | 1 spoonful of salsa | OK | — |
+| 40 | Pasta salad + chickpeas | regular, recovery | Pasta | 1 bowl of pasta | Question | "Bowl" has no defined size. |
+| 41 | Pasta salad + chickpeas | regular, recovery | Chickpeas | 1 scoop of chickpeas | Question | "Scoop" has no defined size. Total protein roughly 12–15 g [S1]. |
+| 42 | Pasta salad + chickpeas | regular, recovery | Vegetables | 1 handful of vegetables | OK | — |
+| 43 | Eggs + toast + fruit | regular, recovery | Eggs | 2 eggs | OK | About 12 g protein, or about 18–20 g with the toast [S1]. Egg is a major allergen [S6]. |
+| 44 | Eggs + toast + fruit | regular, recovery | Whole-grain bread | 2 slices of bread | OK | [A] |
+| 45 | Eggs + toast + fruit | regular, recovery | Fresh fruit | 1 banana | Change suggested | Same fruit wording mismatch as #6. |
+| 46 | Edamame + rice + fruit | regular, recovery | Edamame | 1 cup of edamame | Question | Shelled vs in-pod roughly halves the edible amount, so name one. Soy allergen [S6]. |
+| 47 | Edamame + rice + fruit | regular, recovery | Rice | 1 scoop of rice | Question | "Scoop" has no defined size. |
+| 48 | Edamame + rice + fruit | regular, recovery | Fresh fruit | 1 apple or other fruit | OK | — |
+| 49 | Chocolate milk + banana | recovery | Chocolate milk | 1 carton of chocolate milk | Question | A carton can be an 8 oz school carton or a 14–16 oz retail one; the internal amount is 250 ml. 8 oz gives about 8 g protein, below the 15–25 g reference [S1]. Trace caffeine, about 2 mg per 8 oz [S8]: negligible, noted for the caffeine check. |
+| 50 | Chocolate milk + banana | recovery | Bananas | 1 banana | OK | Adds recovery carbohydrate [S1]. |
+| 51 | Soy milk + banana | recovery | Soy milk | 1 cup of soy milk | Question | About 7–8 g protein [S1]. The code builds this idea from the chocolate-milk idea and reuses its note ("Fast recovery fuel…"). Confirm the approved note carries over. Soy allergen [S6]. |
+| 52 | Soy milk + banana | recovery | Bananas | 1 banana | OK | — |
+| 53 | Fruit cup + crackers + cheese | regular, recovery | Fruit cups | 1 fruit cup | OK | — |
+| 54 | Fruit cup + crackers + cheese | regular, recovery | Crackers | 1 handful of crackers | OK | — |
+| 55 | Fruit cup + crackers + cheese | regular, recovery | Cheese sticks | 1 cheese stick | Question | About 6–7 g protein, so the whole idea is roughly 8–10 g. Low if presented as recovery [S1]. |
+| 56 | Seed mix + dried fruit | quick, regular, during | Seed mix | 1 small handful of seed mix | Change suggested | High fat and fibre, yet shown in quick (0–30 min before, or mid-session) and during. Guidance favours low-fat, low-fibre carbohydrate close to and during activity [S3][S4]. Suggest regular only, or drop the seed mix for quick/during. Possible nut cross-contact [S7]. The pantry alias "nut free seed mix" matches this ingredient (`food.js`) and must not imply safety. |
+| 57 | Seed mix + dried fruit | quick, regular, during | Dried fruit | 1 small box of dried fruit | Question | A suitable carbohydrate for sessions over 60 min [S4], but higher in fibre than sports foods [S3]. |
+| 58 | Fruit smoothie + toast | pre, regular, recovery | Fresh or frozen fruit | 1 cup of fruit | Change suggested | No liquid or base is listed (milk, yogurt, soy milk, juice), so the amount doesn't describe a smoothie. Recovery protein depends entirely on the missing base [S1]. |
+| 59 | Fruit smoothie + toast | pre, regular, recovery | Whole-grain bread | 2 slices of bread | OK | [A] |
+| 60 | Familiar sports drink + crackers | during, quick | Sports drink | 1 bottle of sports drink | Change suggested | Bottles range from 12 to 32 oz. Quick includes 0–30 min before and short, not-high-intensity sessions in progress, where approved copy says "Water works for most practices" [A §7.5][S2]. That line currently appears only on Groceries (`GroceriesPage.jsx`), not on the Ideas card. Suggest: name a size, limit it to during or long/hot sessions, and show the approved line on the card. |
+| 61 | Familiar sports drink + crackers | during, quick | Crackers | 1 handful of crackers | OK | — |
+| 62 | Juice box + applesauce pouch | quick, during | Juice boxes | 1 juice box | Question | A reasonable carbohydrate example for sessions over 60 min [S4]. Water usually suffices for short sessions [S2]. |
+| 63 | Juice box + applesauce pouch | quick, during | Applesauce pouches | 1 applesauce pouch | OK | [S3] |
+| 64 | Tofu rice bowl | regular, recovery | Tofu | 1 scoop of tofu | Question | "Scoop" has no defined size and is odd for tofu (it comes as a block or cubes). Soy allergen [S6]. The code builds this idea from the chicken bowl. |
+| 65 | Tofu rice bowl | regular, recovery | Rice | 1 scoop of rice | Question | "Scoop" has no defined size. |
+| 66 | Tofu rice bowl | regular, recovery | Vegetables | 1 handful of vegetables | OK | — |
+
+**Counts:** 66 displayed amounts: 31 OK, 27 Question, 8 Change suggested.
+- Prescription/calorie check: no string states calories, a target, or "must", and the Ideas page line frames the strings as examples.
+- Energy drinks: none.
+- Caffeine: trace only, in chocolate milk (#49).
+
+### Top issues
+
+1. **Sports drink amount and moment (#60):** "1 bottle" has no size. It shows in the quick state, which covers short practices where the approved copy says water works [A §7.5][S2]. The approved line is not on the Ideas card.
+2. **Seed mix in quick and during (#56–57):** a high-fat, high-fibre food right before or during activity goes against [S3][S4]. Possible nut cross-contact [S7].
+3. **Amounts that contradict the idea name (#6, #9, #26, #38, #45, #58):**
+   - "Fresh fruit" shows as "1 banana".
+   - The bagel option has no bagel amount.
+   - The single burrito lists "2 tortillas".
+   - The smoothie has no liquid base.
+4. **Recovery examples well below the ~15–25 g protein reference (#8, #9, #49, #51, #55; possibly #25, #28, #31):** the reviewer should decide whether to leave these as they are (examples, not targets) or drop low-protein ideas from the recovery tag [S1][S5].
+5. **Undefined household units:** "scoop", "bowl" and "a few" have no set size (#14, #20, #31–32, #34–35, #37, #40–41, #47, #64–65), and "cup" can mean a container or a measure (#7, #16, #27). Separately, 2 tbsp sunflower-seed butter is shown for pre (#12) [S3].
+6. **Allergen wording (#12, #16, #30):** sesame in hummus [S6]; nut cross-contact for sunflower-seed butter and granola [S7]; a "dairy-free" idea note while the Dairy-free filter is hidden.
+
+### Hidden allergen filters
+
+- **The Gluten-free, Nut-free and Dairy-free filters are hidden, pending per-ingredient tag review (ADD-03, P0-06).** `DIET_FILTERS` in `src/domain/catalog.js` holds only vegan and vegetarian. The hand-coded `glutenFree` / `dairyFree` flags on `FOOD_IDEAS` and `GROCERY_CATALOG` are unreviewed, so the app must not show them or filter on them until that review is done.
+
+### Sign-off (household amounts)
+
+- Reviewer name: ______________________
+- Credential: ______________________
+- Date: ______________________
+- Decision (Approve as written / Approve with changes listed / Not approved): ______________________
+- Changes required: ______________________

@@ -276,6 +276,8 @@ export default function GroceriesPage({ todayKey }) {
           {known
             ? `About ${money(money$.subtotal)} for ${known} of ${items(grocery.items.length)}`
             : "No price estimates yet."}
+          {grocery.budgetAmount != null &&
+            ` · Budget ${money(Number(grocery.budgetAmount))}`}
         </p>
       )}
       <p className="sr-only" aria-live="polite">

@@ -512,3 +512,15 @@ Rewrote the schedule browser check for the week view, repeating-activity scope p
 Rewrote the food workflow browser check for Groceries add-for-week, Finish shopping, put-away to At home as Have, Ideas plan/pack/log, use from home, and price estimates. 2026.09.29
 Added a You browser check for sport, hidden Gluten-free/Dairy-free/Nut-free chips, and the Reminders sheet at #/you/reminders with its honesty line. 2026.09.29
 Rewrote the responsive browser check to fail on horizontal scroll at 375 px and up on every main route; 320 px is reported only (Today spills 8 px there). 2026.09.29
+Added a root AGENTS.md with shared handoff rules, commands and safety rules, and a CLAUDE.md that imports it, so Codex and Claude Code load the same instructions. 2026.09.29
+Added a pending qualified review section to NUTRITION-REVIEW.md covering every household amount, with 31 OK, 27 questions and 8 suggested changes, and a blank sign-off block. 2026.09.29
+Added You settings data (season, Not a fan of, low-cost switch from the budget tier, last backup date) with additive migration, validation and tests. 2026.09.29
+Made Ideas hide ideas that use a Not a fan of ingredient, with a test. 2026.09.29
+Built You › This device: athletes list with Open and Rename, Add athlete, last backup line, styled restore button with a preview before adding, newer-version and not-a-backup errors, Keep data on this device, and a separated delete zone. 2026.09.29
+Marked restored athletes "(from backup)" until renamed instead of adding "(imported)" to the name. 2026.09.29
+Changed the footer to "Saved on this device. Food search uses online food databases." 2026.09.29
+Replaced the tabbed You form with the settings list: athlete header with Switch athlete or Add another athlete, and rows with summaries for Sport & season, Food needs & allergies, Food access & budget, Reminders, This device and About Nourally's guidance. 2026.09.29
+Added Sport & season, Food needs & allergies and Food access & budget sheets that save in place with a Saved toast and ask Discard changes? on cancel; moved Reminders onto the same sheet. 2026.09.29
+Added the grocery budget and school food access to Food access & budget, and showed the budget next to the Groceries price estimate. 2026.09.29
+Added About Nourally's guidance as the one full safety explanation. 2026.09.29
+Moved the You page out of main.jsx into src/pages/You, keeping the first-run form in main.jsx for setup only. 2026.09.29

@@ -193,22 +193,6 @@
 }
 
 /* You › Reminders (IA-12, YOU-05, DATA-06) */
-.you-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-}
-.you-row h2 {
-  margin: 0 0 4px;
-}
-.you-row p {
-  margin: 0;
-}
-.reminders-sheet form {
-  display: grid;
-  gap: 16px;
-}
 .reminders-sheet fieldset:disabled {
   opacity: 0.55;
 }
@@ -219,11 +203,6 @@
 }
 .reminder-honesty {
   color: var(--color-ink-muted);
-}
-.reminders-sheet .dialog-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 12px;
 }
 .field-hint {
   display: block;
