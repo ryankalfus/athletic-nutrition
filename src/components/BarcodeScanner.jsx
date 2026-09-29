@@ -225,7 +225,7 @@ export default function BarcodeScanner({ onAdd, onClose }) {
       {product && (
         <div className="product-result">
           <h3>{product.displayName}</h3>
-          <LabelCheck />
+          <LabelCheck food={product} />
           <p>
             {product.nutrients.calories == null
               ? "Calories unknown"

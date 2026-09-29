@@ -1,6 +1,7 @@
 import { ideasFor, ideaAccess, DIET_FILTERS, lowCostOn } from "./ranking.js";
 import { formatCountdown, formatTime as formatClock } from "../format.js";
 import { ideaUsesDislike } from "./you.js";
+import { activeAllergies, ideaAllergyMatches } from "./allergens.js";
 
 export function getDateKey(date = new Date()) {
   const year = date.getFullYear();
@@ -168,7 +169,7 @@ export function tomorrowPrepTasks(event) {
   return tasks;
 }
 
-export function ideaFitsProfile(idea, profile) {
+export function ideaFitsProfile(idea, profile, allergyTagsReviewed) {
   const needs = (profile.dietaryNeeds || []).filter((need) =>
     DIET_FILTERS.includes(need),
   );
@@ -176,6 +177,11 @@ export function ideaFitsProfile(idea, profile) {
   if (needs.includes("vegetarian") && !idea.vegetarian) return false;
   if (lowCostOn(profile) && idea.cost !== "save") return false;
   if (ideaUsesDislike(idea, profile.dislikes)) return false;
+  if (
+    ideaAllergyMatches(idea, activeAllergies(profile, allergyTagsReviewed))
+      .length
+  )
+    return false;
   return true;
 }
 

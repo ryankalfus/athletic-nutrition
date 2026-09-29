@@ -57,14 +57,19 @@ async (page) => {
       /Gluten-free|Dairy-free|Nut-free/i.test(t),
     );
     if (allergen) throw new Error(`Allergen chip is visible: ${allergen}`);
-    await needs.getByText("Allergies: check every label.").waitFor();
+    // P1-09 gate closed: no allergy chips, only the waiting line.
     await needs
-      .getByText("Allergy filters aren't ready yet.", { exact: false })
+      .getByText("Allergy filtering is waiting for review. Check every label.", {
+        exact: true,
+      })
       .waitFor();
+    for (const chip of ["Peanuts", "Tree nuts", "Milk", "Sesame"])
+      if (await needs.getByRole("button", { name: chip, exact: true }).count())
+        throw new Error(`Allergy chip ${chip} shows while the gate is closed`);
     await needs.getByRole("button", { name: "Cancel" }).click();
     await needs.waitFor({ state: "hidden" });
     result.checks.push(
-      "Food needs offers only Vegetarian and Vegan; no Gluten-free, Dairy-free or Nut-free chip; allergy copy and label line show.",
+      "Food needs offers only Vegetarian and Vegan; no Gluten-free, Dairy-free or Nut-free chip; no allergy chips while ALLERGY_TAGS_REVIEWED is false, and the waiting line shows.",
     );
 
     await p.getByRole("link", { name: "Reminders — Off" }).click();

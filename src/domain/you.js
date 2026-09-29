@@ -1,4 +1,5 @@
-import { MEAL_INGREDIENTS } from "./catalog.js";
+import { ALLERGY_TAGS_REVIEWED, MEAL_INGREDIENTS } from "./catalog.js";
+import { allergyLabel, normalizeAllergies } from "./allergens.js";
 import { normalizeSport } from "./sport.js";
 
 // You › Sport & season (ADD-09): names only, no sport-specific nutrition.
@@ -74,6 +75,9 @@ export function normalizeYouProfile(profile = {}) {
     dislikes: strings(profile.dislikes).filter((id) =>
       DISLIKE_CHOICES.some(([choice]) => choice === id),
     ),
+    // P1-09: chosen allergies. A legacy Nut-free choice never becomes one; the
+    // Food needs sheet shows a prompt instead (legacyAllergyPrompts).
+    allergies: normalizeAllergies(profile.allergies),
     lowCostIdeas,
     // Older readers (plan signatures, earlier backups) still use `budget`.
     budget: lowCostIdeas ? "save" : "standard",
@@ -93,9 +97,11 @@ export function validateYouProfile(profile) {
     typeof profile.season !== "string"
   )
     throw new Error("Invalid profile season.");
-  for (const key of ["dislikes"])
+  for (const key of ["dislikes", "allergies"])
     if (profile[key] !== undefined && !Array.isArray(profile[key]))
       throw new Error("Invalid profile preferences.");
+  if (profile.allergies?.some((id) => typeof id !== "string"))
+    throw new Error("Invalid profile allergies.");
   if (
     profile.lowCostIdeas !== undefined &&
     typeof profile.lowCostIdeas !== "boolean"
@@ -119,14 +125,17 @@ export function sportSummary(profile = {}) {
   return parts.length ? parts.join(" · ") : "Not set";
 }
 
-export function needsSummary(profile = {}) {
+export function needsSummary(profile = {}, reviewed = ALLERGY_TAGS_REVIEWED) {
+  const allergies = reviewed
+    ? normalizeAllergies(profile.allergies).map(allergyLabel)
+    : [];
   const diet = (profile.dietaryNeeds || [])
     .map((id) => label(DIET_CHOICES, id))
     .filter(Boolean);
   const dislikes = (profile.dislikes || []).filter((id) =>
     label(DISLIKE_CHOICES, id),
   );
-  const parts = [...diet];
+  const parts = [...allergies, ...diet];
   if (dislikes.length)
     parts.push(
       dislikes.length === 1

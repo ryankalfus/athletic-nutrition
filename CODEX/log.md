@@ -550,3 +550,9 @@ Set aria-busy on buttons that show Saving… so they draw the spinner. 2026.09.2
 Moved loose dialog buttons into the sticky action footer and wrapped row menu items so each menu opens as one panel. 2026.09.29
 Extended the responsive browser check to fail on text under 12 px (13 px outside the tab bar and badges), negative margins, an uncentered or over-wide column, phone chrome over 112 px, clipped Food tabs and a clipped activity sheet, and to cover the welcome page. 2026.09.29
 Checked DS-05 to DS-12, DS-14, DS-16 to DS-19, RWD-01 to RWD-09, RWD-11 to RWD-13, CMP-03, CMP-07 and CMP-08, and noted DS-13, DS-15, CMP-02, CMP-04 and CMP-17 as partial. 2026.09.29
+Added draft per-ingredient allergen tags (contains and may contain, the nine FDA majors) for every idea ingredient and grocery item in catalog.js, behind a closed ALLERGY_TAGS_REVIEWED gate. 2026.09.29
+Added profile.allergies with validation and additive migration; a legacy Nut-free choice never becomes an allergy and the Food needs sheet shows a prompt instead. 2026.09.29
+Made ideas, Today's idea check and grocery suggestions hide items that list a chosen allergy, active only once the gate opens, with unit tests per allergen for both gate states in tests/allergens.test.js. 2026.09.29
+Showed Open Food Facts allergens and traces on product views (portion editor, barcode result, grocery item sheet) with "this list may be incomplete", above the label-check line. 2026.09.29
+Moved the Food needs fields into a shared FoodNeedsFields component; with the gate closed the Allergies section shows "Allergy filtering is waiting for review. Check every label." and no chips. 2026.09.29
+Added a pending ingredient allergen table, reviewer questions and a blank sign-off block to NUTRITION-REVIEW.md; P1-09 stays unticked until it is signed. 2026.09.29

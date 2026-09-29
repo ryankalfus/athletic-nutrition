@@ -184,7 +184,7 @@ export function GroceryItemForm({
         });
       }}
     >
-      {food && <LabelCheck />}
+      {food && <LabelCheck food={food} />}
       <label>
         Name
         <input
