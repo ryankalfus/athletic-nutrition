@@ -479,3 +479,9 @@ Committed and pushed the P1-05 Food home inventory, Ideas, and reusable redesign
 Fixed TypeScript inference in the ranking and timing helper input options so CI typecheck passes. 2026.09.29
 Restored subtraction of compatible queued grocery quantities from meal ingredient needs. 2026.09.29
 Passed workflow checks locally: typecheck, lint, 39 tests, production build, and diff check. 2026.09.29
+Merged grocery suggestions and missing-ingredient adds into one generator with shopping units, reasons, and unchecked items. 2026.09.29
+Migrated grocery cart status to checked items, defaulted budget to none, and added an off-by-default price estimate setting. 2026.09.29
+Made finishing a trip update matching At home rows in place, create new rows as Have, and scope trip undo to its own rows. 2026.09.29
+Moved Groceries into its own page with check-off rows, a finish bar, put-away sheet, swap, and latest-trip undo. 2026.09.29
+Split the portion editor to log-only, fixed Out restoring to Have, and asked Counts as only for unmatched foods. 2026.09.29
+Replaced leftover data-model copy in the food log and added pending states to its write buttons. 2026.09.29
