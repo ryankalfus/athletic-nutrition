@@ -28,6 +28,8 @@ import {
   money,
 } from "./GrocerySheets.jsx";
 import { EmptyState } from "../../components/ui/EmptyState.jsx";
+import { ShareButton } from "../../components/ui/ShareButton.jsx";
+import { formatGroceryText, groceryShareItems } from "../../domain/share.js";
 
 const GROUPS = [
   ["plans", "For your plans", (i) => i.origin === "meal"],
@@ -240,9 +242,18 @@ export default function GroceriesPage({ todayKey }) {
     <div className="groceries-page">
       <div className="today-section-header">
         <h2>Groceries</h2>
-        <button className="primary" onClick={() => setSheet({ type: "add" })}>
-          Add food
-        </button>
+        <div className="button-row">
+          {groceryShareItems(grocery.items).length > 0 && (
+            <ShareButton
+              title="Groceries"
+              label="Groceries"
+              getText={() => formatGroceryText(grocery.items)}
+            />
+          )}
+          <button className="primary" onClick={() => setSheet({ type: "add" })}>
+            Add food
+          </button>
+        </div>
       </div>
       <div className="week-ideas-prompt">
         <button
