@@ -1,13 +1,16 @@
 // Diet choices backed by catalog data. Allergen flags (gluten, nuts, dairy) stay
-// out until reviewed per-ingredient tags exist (P0-06, ADD-03).
+// out until reviewed per-ingredient tags exist (P0-06, ADD-03); the draft tags
+// and their review gate are at the end of this file.
 export const DIET_FILTERS = ["vegan", "vegetarian"];
 
 export const SPORTS_DRINK_NOTE =
   "Water works for most practices. Sports drinks can help in long or hot sessions.";
 
+// ONB-03: budget is not asked in setup, so new athletes start with low-cost
+// ideas off. Older profiles without the setting keep their stored budget.
 export const DEFAULT_PROFILE = {
   name: "",
-  budget: "save",
+  budget: "standard",
   dietaryNeeds: [],
   foodSources: ["packed", "cafeteria", "home"],
   familyPrep: true,
@@ -843,3 +846,77 @@ export const GROCERY_CATALOG = [
     glutenFree: true,
   },
 ];
+
+// P1-09 safety gate (ADD-03). While false, no screen offers allergy chips as a
+// filter and no idea or grocery suggestion is hidden by allergy: the tags
+// below are drafts waiting for qualified review (NUTRITION-REVIEW.md,
+// "Pending qualified review — ingredient allergen tags"). Flip to true only
+// after that section's sign-off block is filled in.
+export const ALLERGY_TAGS_REVIEWED = false;
+
+// The nine U.S. major food allergens (FDA; sesame added by the FASTER Act).
+export const MAJOR_ALLERGENS = [
+  ["peanuts", "Peanuts"],
+  ["tree-nuts", "Tree nuts"],
+  ["milk", "Milk"],
+  ["eggs", "Eggs"],
+  ["wheat", "Wheat"],
+  ["soy", "Soy"],
+  ["fish", "Fish"],
+  ["shellfish", "Shellfish"],
+  ["sesame", "Sesame"],
+];
+
+// Draft per-ingredient allergen tags (PENDING review). `allergens` is what a
+// typical U.S. product lists in its ingredients or "Contains" line;
+// `mayContain` covers typical cross-contact ("may contain", shared equipment)
+// and brand-to-brand variation. Filtering treats both as a match, so an
+// uncertain tag only hides more ideas, never fewer.
+const tags = (allergens = [], mayContain = []) => ({ allergens, mayContain });
+export const INGREDIENT_ALLERGENS = {
+  applesauce: tags(),
+  apples: tags(),
+  "baby-carrots": tags(),
+  bananas: tags(),
+  beans: tags(),
+  bread: tags(["wheat", "soy"], ["milk", "eggs", "sesame"]),
+  cereal: tags(["wheat"], ["milk", "soy", "tree-nuts", "peanuts"]),
+  "cheese-sticks": tags(["milk"]),
+  chicken: tags(),
+  chickpeas: tags(),
+  "chocolate-milk": tags(["milk"]),
+  crackers: tags(["wheat"], ["milk", "soy", "sesame"]),
+  "dried-fruit": tags([], ["tree-nuts", "peanuts"]),
+  edamame: tags(["soy"]),
+  eggs: tags(["eggs"]),
+  "fig-bars": tags(["wheat"], ["soy", "milk", "tree-nuts"]),
+  "frozen-berries": tags(),
+  "fruit-cups": tags(),
+  granola: tags([], ["wheat", "tree-nuts", "peanuts", "milk", "soy", "sesame"]),
+  grapes: tags(),
+  hummus: tags(["sesame"]),
+  jam: tags(),
+  juice: tags(),
+  oats: tags([], ["wheat"]),
+  pasta: tags(["wheat"], ["eggs"]),
+  pita: tags(["wheat"], ["sesame", "soy", "milk"]),
+  pretzels: tags(["wheat"], ["soy", "sesame"]),
+  rice: tags(),
+  "rice-cakes": tags(),
+  salsa: tags(),
+  "seed-mix": tags([], ["tree-nuts", "peanuts", "sesame"]),
+  "soy-milk": tags(["soy"], ["tree-nuts"]),
+  "soy-yogurt": tags(["soy"], ["tree-nuts"]),
+  "sports-drink": tags(),
+  sunbutter: tags([], ["peanuts", "tree-nuts"]),
+  tofu: tags(["soy"]),
+  tortillas: tags(["wheat"], ["soy", "milk"]),
+  "tuna-pouches": tags(["fish"], ["soy"]),
+  turkey: tags([], ["milk", "soy"]),
+  yogurt: tags(["milk"]),
+};
+
+// Untagged items get no fields, so the allergy filter treats them as unknown.
+for (const item of GROCERY_CATALOG)
+  if (INGREDIENT_ALLERGENS[item.id])
+    Object.assign(item, INGREDIENT_ALLERGENS[item.id]);

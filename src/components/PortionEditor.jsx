@@ -62,7 +62,7 @@ export function PortionEditor({ food, initial = {}, onSave, onCancel }) {
       {food.householdServing && (
         <p className="muted">Label serving: {food.householdServing}</p>
       )}
-      <LabelCheck />
+      <LabelCheck food={food} />
       <div className="form-grid">
         <label>
           Amount eaten

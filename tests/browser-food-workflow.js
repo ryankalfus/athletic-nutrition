@@ -13,8 +13,12 @@ async (page) => {
     p.locator(".stock-row").filter({ has: p.getByText(name, { exact: true }) });
   try {
     await p.goto(base);
+    await p.getByRole("button", { name: "Get started" }).click();
     await p.getByRole("textbox", { name: /First name/ }).fill("Food test");
-    await p.getByRole("button", { name: /Save and see today/ }).click();
+    await p.getByRole("combobox", { name: /^Sport/ }).fill("Soccer");
+    await p.getByRole("button", { name: "Next", exact: true }).click();
+    await p.getByRole("heading", { name: "Your school day" }).waitFor();
+    await p.getByRole("button", { name: "Skip setup" }).click();
     await p.getByRole("heading", { name: "Today", exact: true }).waitFor();
 
     // Groceries: add for the week, check off, finish, put away.

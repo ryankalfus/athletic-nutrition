@@ -35,9 +35,9 @@ Owner Ryan Kalfus confirmed the recommended options previously presented for aud
 - [x] **P1-06**
 - [ ] **P1-07**
 - [ ] **P1-08**
-- [ ] **P1-09**
-- [ ] **P1-10**
-- [ ] **P1-11**
+- [ ] **P1-09** — Built, not ticked: per-ingredient tags, `profile.allergies`, idea and grocery filters, Open Food Facts allergens on product views, and tests for both gate states are in; filtering stays off behind `ALLERGY_TAGS_REVIEWED = false` until the pending table in NUTRITION-REVIEW.md is signed.
+- [ ] **P1-10** — Blocked on P1-09 sign-off: 6.14 passes; 6.13's peanut-allergy criterion needs the review gate open. DATA-08 is done in P1-12.
+- [x] **P1-11** — Allergy chips in step 5 stay hidden behind the P1-09 review gate (ONB-04).
 - [x] **P1-12**
 - [ ] **P1-13**
 
@@ -105,21 +105,21 @@ Each ID is an individual checkbox. Implementation notes and blockers go on the m
 
 ### ENTRY
 
-- [ ] **ENTRY-01**
-- [ ] **ENTRY-02**
-- [ ] **ENTRY-03**
-- [ ] **ENTRY-04**
-- [ ] **ENTRY-05**
+- [x] **ENTRY-01**
+- [x] **ENTRY-02**
+- [x] **ENTRY-03**
+- [x] **ENTRY-04**
+- [x] **ENTRY-05**
 - [x] **ENTRY-06**
 
 ### ONB
 
-- [ ] **ONB-01**
-- [ ] **ONB-02**
-- [ ] **ONB-03**
-- [ ] **ONB-04**
-- [ ] **ONB-05**
-- [ ] **ONB-06**
+- [x] **ONB-01**
+- [x] **ONB-02**
+- [x] **ONB-03**
+- [ ] **ONB-04** — Partial: the safety paragraph is on You › About; step 5 shows "Allergy filtering is waiting for review. Check every label." and switches to the ONB-04 line only when `ALLERGY_TAGS_REVIEWED` is true.
+- [x] **ONB-05**
+- [x] **ONB-06**
 
 ### TODAY
 
@@ -225,8 +225,8 @@ Each ID is an individual checkbox. Implementation notes and blockers go on the m
 ### YOU
 
 - [x] **YOU-01**
-- [ ] **YOU-02** — Partial: "I don't eat" (Vegetarian, Vegan) and "Not a fan of" built; Allergies and Dairy-free/Gluten-free wait on reviewed allergen tags (ADD-03, P1-09).
-- [ ] **YOU-03** — Partial: Nut-free removed; peanut and tree-nut allergies wait on reviewed allergen tags (ADD-03, P1-09).
+- [ ] **YOU-02** — Partial: "I don't eat" (Vegetarian, Vegan) and "Not a fan of" built; the nine allergy chips plus Other are built but hidden behind `ALLERGY_TAGS_REVIEWED` (P1-09 review); Dairy-free/Gluten-free stay hidden (gluten also needs barley and rye tags).
+- [ ] **YOU-03** — Partial: Nut-free removed and never migrated into an allergy (a prompt shows instead); peanut and tree-nut allergy chips are built and gated on the P1-09 review.
 - [x] **YOU-04**
 - [x] **YOU-05**
 - [x] **YOU-06**
@@ -234,13 +234,13 @@ Each ID is an individual checkbox. Implementation notes and blockers go on the m
 ### DATA
 
 - [x] **DATA-01**
-- [ ] **DATA-02**
+- [x] **DATA-02**
 - [x] **DATA-03**
 - [x] **DATA-04**
 - [x] **DATA-05**
 - [x] **DATA-06**
 - [x] **DATA-07**
-- [x] **DATA-08**
+- [x] **DATA-08** — Done in P1-12 (ADD-12 backup nudge on Today).
 - [x] **DATA-09**
 
 ### DLG
@@ -357,7 +357,7 @@ Each ID is an individual checkbox. Implementation notes and blockers go on the m
 
 ### ADD
 
-- [ ] **ADD-01**
+- [x] **ADD-01**
 - [x] **ADD-02**
 - [ ] **ADD-03**
 - [ ] **ADD-04**
@@ -1694,10 +1694,10 @@ Each page uses the tokens and components from section 5 and the copy rules from 
 
 **Acceptance criteria**
 
-- [ ] A new browser shows Welcome. "Get started" opens setup step 1.
-- [ ] Choosing an athlete always opens Today.
-- [ ] Welcome renders inside the shared frame and can show a save error.
-- [ ] No serif italic type renders on the page.
+- [x] A new browser shows Welcome. "Get started" opens setup step 1.
+- [x] Choosing an athlete always opens Today.
+- [x] Welcome renders inside the shared frame and can show a save error.
+- [x] No serif italic type renders on the page.
 
 ### 6.2 First-run setup
 
@@ -1761,10 +1761,10 @@ Each page uses the tokens and components from section 5 and the copy rules from 
 
 **Acceptance criteria**
 
-- [ ] Each step fits a 390 × 844 viewport without scrolling, except step 5.
-- [ ] A reload during step 4 reopens step 4 with steps 1–3 saved.
-- [ ] Completing only steps 1 and 3 gives a Today hero that names the practice.
-- [ ] Single-select and multi-select groups are visually different (segmented vs chips with checkmarks).
+- [x] Each step fits a 390 × 844 viewport without scrolling, except step 5.
+- [x] A reload during step 4 reopens step 4 with steps 1–3 saved.
+- [x] Completing only steps 1 and 3 gives a Today hero that names the practice.
+- [x] Single-select and multi-select groups are visually different (segmented vs chips with checkmarks).
 
 ### 6.3 Today
 
@@ -2500,8 +2500,8 @@ All thresholds (30, 90, 180 minutes, the 90-minute recovery window, 7:00 PM, 9:3
 
 **Acceptance criteria**
 
-- [ ] You has one H1 "You" and no marketing copy.
-- [ ] Saving a sheet keeps the athlete on You.
+- [x] You has one H1 "You" and no marketing copy.
+- [x] Saving a sheet keeps the athlete on You.
 - [ ] Selecting a peanut allergy hides every idea whose ingredients carry the `peanut` tag, and shows the label-check line.
 
 ### 6.14 This device: athletes, backup, restore, delete
@@ -2560,10 +2560,10 @@ All thresholds (30, 90, 180 minutes, the 90-minute recovery window, 7:00 PM, 9:3
 
 **Acceptance criteria**
 
-- [ ] The panel renders inside `<main>`, before the footer (or the footer is removed from app pages).
-- [ ] A default export contains exactly one athlete.
-- [ ] After deletion, no other athlete's data opens without a choice.
-- [ ] `navigator.storage.persist()` is requested only from the explicit button.
+- [x] The panel renders inside `<main>`, before the footer (or the footer is removed from app pages).
+- [x] A default export contains exactly one athlete.
+- [x] After deletion, no other athlete's data opens without a choice.
+- [x] `navigator.storage.persist()` is requested only from the explicit button.
 
 ### 6.15 Shared dialogs and search
 

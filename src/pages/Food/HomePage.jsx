@@ -5,7 +5,7 @@ import { useAsyncAction } from "../../hooks/useAsyncAction.js";
 import { Dialog } from "../../components/Dialog.jsx";
 import { ConfirmDialog } from "../../components/ui/ConfirmDialog.jsx";
 import { FoodSearch } from "../../components/FoodSearch.jsx";
-import { DIET_FILTERS, GROCERY_CATALOG } from "../../domain/catalog.js";
+import { GROCERY_CATALOG } from "../../domain/catalog.js";
 import {
   ingredientId,
   INGREDIENTS,
@@ -15,6 +15,7 @@ import {
   setStockStatus,
   stockToGroceries,
   toggleStockOut,
+  groceryFitsProfile,
 } from "../../domain/food.js";
 import { EmptyState } from "../../components/ui/EmptyState.jsx";
 import { SegmentedControl } from "../../components/ui/SelectionControls.jsx";
@@ -42,9 +43,7 @@ export default function HomePage({ todayKey }) {
   const write = (key, fn, message, action) =>
     run(key, () => changeData(fn, message, action));
   const quick = GROCERY_CATALOG.filter((i) =>
-    (data.profile.avoid || data.profile.dietaryNeeds || [])
-      .filter((n) => DIET_FILTERS.includes(n))
-      .every((n) => i[n]),
+    groceryFitsProfile(i, data.profile),
   ).slice(0, 8);
   const add = async (food, choice = null) => {
     const record = makeFoodRecord({

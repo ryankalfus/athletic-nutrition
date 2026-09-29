@@ -1,6 +1,7 @@
 import { DIET_FILTERS, GROCERY_CATALOG, MEAL_INGREDIENTS } from "./catalog.js";
 import { getDateKey } from "./timing.js";
 import { uid } from "./storage.js";
+import { activeAllergies, groceryAllergyMatches } from "./allergens.js";
 
 const normalized = (name) =>
   String(name || "")
@@ -353,11 +354,24 @@ const eventLabel = (event) =>
     : event.type === "workout"
       ? "workout"
       : "practice";
+// A grocery suggestion fits the diet choices and, once the allergen tags are
+// reviewed, lists none of the athlete's allergies (P1-09).
+export function groceryFitsProfile(item, profile = {}, allergyTagsReviewed) {
+  const needs = (profile.avoid || profile.dietaryNeeds || []).filter((need) =>
+    DIET_FILTERS.includes(need),
+  );
+  return (
+    needs.every((need) => item[need]) &&
+    !groceryAllergyMatches(item, activeAllergies(profile, allergyTagsReviewed))
+      .length
+  );
+}
+
 /**
  * "Add food for this week": 5–8 unchecked staples with a reason each.
  * Sports drinks are never suggested (NUTRITION-REVIEW accepts no new
  * sports-drink recommendation).
- * @param {{profile?: any, events?: any[], pantry?: any[], items?: any[], date?: string, limit?: number}} input
+ * @param {{profile?: any, events?: any[], pantry?: any[], items?: any[], date?: string, limit?: number, allergyTagsReviewed?: boolean}} input
  */
 export function weeklyGroceryIdeas({
   profile = {},
@@ -366,10 +380,8 @@ export function weeklyGroceryIdeas({
   items = [],
   date = getDateKey(),
   limit = 8,
+  allergyTagsReviewed,
 }) {
-  const needs = (profile.avoid || profile.dietaryNeeds || []).filter((need) =>
-    DIET_FILTERS.includes(need),
-  );
   const sorted = [...events].sort((a, b) =>
     `${a.date} ${a.startTime || ""}`.localeCompare(
       `${b.date} ${b.startTime || ""}`,
@@ -393,7 +405,7 @@ export function weeklyGroceryIdeas({
     (item) =>
       item.id !== "sports-drink" &&
       item.goals.some((goal) => goals.includes(goal)) &&
-      needs.every((need) => item[need]),
+      groceryFitsProfile(item, profile, allergyTagsReviewed),
   )
     .map((item) => ({ ...item, reason: reasonFor(item) }))
     .sort(

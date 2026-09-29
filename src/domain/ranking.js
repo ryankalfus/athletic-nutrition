@@ -1,6 +1,7 @@
 import { DIET_FILTERS, FOOD_IDEAS } from "./catalog.js";
 import { ingredientsForMeal } from "./food.js";
 import { ideaUsesDislike } from "./you.js";
+import { activeAllergies, ideaAllergyMatches } from "./allergens.js";
 
 // Diet preferences the catalog flags reliably. Allergen-style flags
 // (nutFree, glutenFree) are hand-coded and not reviewed per ingredient, so no
@@ -97,12 +98,15 @@ export function ideasFor(options) {
     schoolAccess = {},
     travelMode = false,
     ignoreLowCost = false,
+    allergyTagsReviewed,
   } = options;
   const sources = access ||
     profile.foodSources || ["home", "packed", "cafeteria"];
   const needs = (profile.avoid || profile.dietaryNeeds || []).filter((need) =>
     DIET_FILTERS.includes(need),
   );
+  // P1-09: hides ideas that list an allergy, only once the tags are reviewed.
+  const allergies = activeAllergies(profile, allergyTagsReviewed);
   const selectedMoment =
     { now: "regular", before: "pre", after: "recovery", tomorrow: "regular" }[
       moment
@@ -112,6 +116,7 @@ export function ideasFor(options) {
     if (needs.includes("vegan") && !idea.vegan) return false;
     if (needs.includes("vegetarian") && !idea.vegetarian) return false;
     if (ideaUsesDislike(idea, profile.dislikes)) return false;
+    if (ideaAllergyMatches(idea, allergies).length) return false;
     if (!ignoreLowCost && lowCostOn(profile) && idea.cost !== "save")
       return false;
     const matches = idea.sources.filter((source) => sources.includes(source));

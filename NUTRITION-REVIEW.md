@@ -22,7 +22,7 @@ The rule code is in `src/domain/timing.js` (`getFuelingGuidance` and `isSchoolDa
 ## Other required safety review
 
 - **Ideas and amounts (IDEA-07):** Review all built-in idea notes and display portions as examples rather than targets. The audit lists this as required before release.
-- **Allergens (P0-06, ADD-03, P1-09, SRCH-07):** Review ingredient-level tags, product `allergens_tags` and `traces_tags` interpretation, missing-data wording, exclusion behavior, and the label-check line. The app currently captures Open Food Facts tags but does not display or filter on them. No item should be called safe solely from incomplete tags.
+- **Allergens (P0-06, ADD-03, P1-09, SRCH-07):** Review ingredient-level tags, product `allergens_tags` and `traces_tags` interpretation, missing-data wording, exclusion behavior, and the label-check line. Product views now list Open Food Facts tags with "may be incomplete"; nothing filters on allergies until the pending ingredient table below is signed off (`ALLERGY_TAGS_REVIEWED`). No item should be called safe solely from incomplete tags.
 - **Game-day guidance (ACT-04):** Review the GAME chip context and every game-specific food/fluid sentence before it is shown. No game-specific nutrition copy is accepted yet.
 - **Sports drinks:** Review any proposed wording against the American Academy of Pediatrics report below. No new sports-drink recommendation is accepted here.
 
@@ -219,3 +219,97 @@ The approved line "Water works for most practices. Sports drinks can help in lon
 | Today titles | "Soccer practice", "Soccer game" from You › Sport | Names only (audit 13.4: no sport-specific nutrition without review). |
 
 Code: `src/domain/tonight.js`, `src/domain/timing.js` (`sportEventTitle`), `src/pages/Today/TonightCard.jsx`.
+## Pending qualified review — ingredient allergen tags (P1-09, 2026.09.29)
+
+**Status: not approved.** These tags were drafted on 2026.09.29 for P1-09 (ADD-03). The earlier approval above names "ingredient allergen tags and exclusion behavior", but no tags existed when it was given, so it does not cover this table. This section approves nothing.
+
+**Safety gate:** `ALLERGY_TAGS_REVIEWED = false` in `src/domain/catalog.js`. While it is false:
+- You › Food needs & allergies and setup step 5 show no allergy chips. They show "Allergy filtering is waiting for review. Check every label."
+- Ideas, Today and grocery suggestions are **not** filtered by allergy (`activeAllergies` returns nothing).
+- Product views (search portion editor, barcode result, grocery item sheet) list allergens that Open Food Facts reports in `allergens_tags` / `traces_tags`, followed by "From Open Food Facts; this list may be incomplete." and the existing "Allergies: check every label." USDA results carry no allergen fields, so nothing extra shows for them.
+
+Flip the flag to `true` only after the sign-off below is filled in. `tests/allergens.test.js` covers both states.
+
+**How the tags are used once the gate opens** (`src/domain/allergens.js`):
+- The allergy list is the nine FDA major allergens [S6] plus "Other". "Other" never filters. It shows "Nourally can't filter other allergies. Check every label."
+- An idea lists an allergen when **any** of its ingredients has it under Contains **or** May contain. Ideas and grocery suggestions that list a chosen allergy are hidden. An ingredient with no tags counts as a match, so it is hidden too.
+- "May contain" here covers typical cross-contact and brand-to-brand variation. A tag that is too broad only hides more ideas. A missing tag is the dangerous error.
+- A legacy "Nut-free" (or Gluten-free / Dairy-free) choice is **not** turned into an allergy. The Food needs sheet shows a prompt to choose allergies instead.
+- Status copy (new, pending): "Ideas that list peanuts are hidden. Check labels on products." Setup step 5 line: "Nourally hides ideas that list your allergies, but always check labels." (audit ONB-04).
+- Gluten-free and Dairy-free stay hidden even with the gate open. Gluten also comes from barley and rye, which are not FDA major allergens and are not tagged.
+
+### Ingredient table
+
+Columns: Contains = typical U.S. product lists it in ingredients or a "Contains" statement. May contain = typical precautionary label or shared-equipment risk, or varies by brand. Ideas = how many built-in ideas use the ingredient. Grocery = appears as a grocery suggestion.
+
+| # | Ingredient (`id`) | Contains | May contain | Ideas | Grocery |
+|---|---|---|---|---|---|
+| A1 | Fresh fruit / Apples (`apples`) | none | none | 3 | yes |
+| A2 | Applesauce pouches (`applesauce`) | none | none | 2 | yes |
+| A3 | Vegetables / Baby carrots (`baby-carrots`) | none | none | 3 | yes |
+| A4 | Bananas / Fresh fruit (`bananas`) | none | none | 7 | yes |
+| A5 | Canned beans (`beans`) | none | none | 2 | yes |
+| A6 | Bagels or bread / Whole-grain bread (`bread`) | Wheat, Soy | Milk, Eggs, Sesame | 5 | yes |
+| A7 | Cereal (`cereal`) | Wheat | Milk, Soy, Tree nuts, Peanuts | 2 | no |
+| A8 | Cheese sticks (`cheese-sticks`) | Milk | none | 1 | yes |
+| A9 | Chicken (`chicken`) | none | none | 1 | yes |
+| A10 | Chickpeas (`chickpeas`) | none | none | 1 | no |
+| A11 | Chocolate milk (`chocolate-milk`) | Milk | none | 1 | no |
+| A12 | Crackers (`crackers`) | Wheat | Milk, Soy, Sesame | 3 | yes |
+| A13 | Dried fruit (`dried-fruit`) | none | Tree nuts, Peanuts | 1 | no |
+| A14 | Edamame (`edamame`) | Soy | none | 1 | no |
+| A15 | Eggs (`eggs`) | Eggs | none | 1 | yes |
+| A16 | Fig bars (`fig-bars`) | Wheat | Soy, Milk, Tree nuts | 1 | yes |
+| A17 | Fresh or frozen fruit / Frozen berries (`frozen-berries`) | none | none | 3 | yes |
+| A18 | Fruit cups (`fruit-cups`) | none | none | 2 | no |
+| A19 | Granola (`granola`) | none | Wheat, Tree nuts, Peanuts, Milk, Soy, Sesame | 1 | no |
+| A20 | Grapes (`grapes`) | none | none | 1 | no |
+| A21 | Hummus (`hummus`) | Sesame | none | 1 | yes |
+| A22 | Jam (`jam`) | none | none | 1 | no |
+| A23 | Juice boxes (`juice`) | none | none | 1 | no |
+| A24 | Oats (`oats`) | none | Wheat | 1 | yes |
+| A25 | Pasta (`pasta`) | Wheat | Eggs | 1 | no |
+| A26 | Pita (`pita`) | Wheat | Sesame, Soy, Milk | 1 | no |
+| A27 | Pretzels (`pretzels`) | Wheat | Soy, Sesame | 1 | yes |
+| A28 | Rice (`rice`) | none | none | 4 | yes |
+| A29 | Rice cakes (`rice-cakes`) | none | none | 1 | no |
+| A30 | Salsa (`salsa`) | none | none | 1 | no |
+| A31 | Seed mix (`seed-mix`) | none | Tree nuts, Peanuts, Sesame | 1 | no |
+| A32 | Shelf-stable soy milk / Soy milk (`soy-milk`) | Soy | Tree nuts | 3 | yes |
+| A33 | Soy yogurt (`soy-yogurt`) | Soy | Tree nuts | 1 | no |
+| A34 | Sports drink (`sports-drink`) | none | none | 1 | yes |
+| A35 | Sunflower-seed butter (`sunbutter`) | none | Peanuts, Tree nuts | 1 | yes |
+| A36 | Tofu (`tofu`) | Soy | none | 1 | yes |
+| A37 | Tortillas (`tortillas`) | Wheat | Soy, Milk | 1 | yes |
+| A38 | Tuna pouches (`tuna-pouches`) | Fish | Soy | 1 | yes |
+| A39 | Turkey (`turkey`) | none | Milk, Soy | 1 | no |
+| A40 | Yogurt (`yogurt`) | Milk | none | 1 | yes |
+
+Shellfish: no built-in ingredient is tagged, so a shellfish allergy hides nothing. The reviewer should confirm this.
+
+### Questions for the reviewer
+
+1. **Brand-dependent items (A7 cereal, A19 granola, A12 crackers, A16 fig bars, A26 pita, A37 tortillas):** is a broad "may contain" list the right way to handle products that vary this much? The other option is to drop the idea for anyone with any major allergy.
+2. **Oats (A24):** tagged may contain wheat for cross-contact. Confirm.
+3. **Sunflower-seed butter (A35):** tagged may contain peanuts and tree nuts because of shared equipment [S7]. Some brands are made in dedicated facilities. Confirm keeping the tag.
+4. **Turkey (A39) and chicken (A9):** some deli meats and cafeteria chicken contain milk or soy (broth, marinade, soy sauce). Turkey is tagged may contain milk and soy. Chicken is untagged. Decide whether chicken needs soy and wheat.
+5. **Soy milk and soy yogurt (A32–A33):** tagged may contain tree nuts for plants that also make almond products. Confirm.
+6. **Rice cakes (A29), fruit cups (A18), juice (A23), sports drink (A34), salsa (A30), jam (A22):** untagged. Flavored rice cakes can contain milk. Confirm plain versions only.
+7. **Tuna pouches (A38):** tagged Contains fish and may contain soy (vegetable broth). Confirm.
+8. **Filtering rule:** hiding on "may contain" as well as "contains" is stricter than some allergy plans need. Confirm or change.
+9. **Open Food Facts wording:** "Label lists: … May contain: … From Open Food Facts; this list may be incomplete." Confirm that it does not read as a safety claim. Nothing is shown when Open Food Facts lists no allergens.
+
+### Setup copy added with P1-11 (pending the same review)
+
+- Step 6 preview: "Here's your first plan: [Soccer practice] today at 4:00 PM. Plan a snack for about 2:30." It uses the audit's sample copy and the same 90-minute pre-activity point that Today already uses. There is no snack time when that time has passed. With no activity it says "Add a practice or game any time on Schedule. Today will time your snacks around it." (`firstPlanPreview` in `src/domain/setup.js`).
+- Step 5 shows the audit ONB-04 line "Nourally hides ideas that list your allergies, but always check labels." only once the allergen gate is open. Until then it shows the waiting line.
+- New athletes now start with "Keep ideas low-cost" off (ONB-03), so higher-cost ideas show by default.
+
+### Sign-off (ingredient allergen tags)
+
+- Reviewer name: ______________________
+- Credential: ______________________
+- Date: ______________________
+- Decision (Approve as written / Approve with changes listed / Not approved): ______________________
+- Changes required: ______________________
+- After approval: set `ALLERGY_TAGS_REVIEWED = true` in `src/domain/catalog.js`, run `npm run check` and the browser checks, then tick P1-09, YOU-03 and ADD-03 in `REDESIGN-CHECKLIST.md`.

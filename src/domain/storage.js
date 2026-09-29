@@ -5,6 +5,9 @@ export const SCHEMA_VERSION = 3;
 export const uid = () => globalThis.crypto.randomUUID();
 export const emptyData = () => ({
   step: "setup",
+  // 0 = Welcome not passed yet; 1–6 = the setup step to resume (ONB-06).
+  setupStep: 0,
+  lastUsedAt: null,
   profile: normalizeYouProfile(structuredClone(DEFAULT_PROFILE)),
   schedule: [],
   schoolSchedule: null,
@@ -128,6 +131,18 @@ export function validateData(data) {
   )
     throw new Error("Invalid profile sport.");
   validateYouProfile(data.profile);
+  if (
+    data.setupStep !== undefined &&
+    data.setupStep !== null &&
+    !Number.isInteger(data.setupStep)
+  )
+    throw new Error("Invalid setup step.");
+  if (
+    data.lastUsedAt != null &&
+    (typeof data.lastUsedAt !== "string" ||
+      Number.isNaN(Date.parse(data.lastUsedAt)))
+  )
+    throw new Error("Invalid last used date.");
   for (const log of Object.values(data.dailyLogs || {}))
     if (
       log.waterEntries !== undefined &&
@@ -225,6 +240,8 @@ export function validateData(data) {
     ...data,
     mealPlans,
     dayPlans,
+    setupStep: Math.min(Math.max(data.setupStep ?? 0, 0), 6),
+    lastUsedAt: data.lastUsedAt ?? null,
     // The low-cost default must not mask a stored budget tier, so only the
     // stored profile decides it (normalizeYouProfile maps budget → lowCostIdeas).
     profile: normalizeYouProfile({

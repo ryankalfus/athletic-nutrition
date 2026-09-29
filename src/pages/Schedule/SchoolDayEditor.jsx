@@ -4,6 +4,7 @@ import { ConfirmDialog } from "../../components/ui/ConfirmDialog.jsx";
 import { Dialog } from "../../components/Dialog.jsx";
 import { formatDate } from "../../format.js";
 import { ChipGroup } from "../../components/ui/SelectionControls.jsx";
+import { TimeRange, WeekdayPicker } from "./ScheduleFields.jsx";
 export function SchoolDayEditor({ model }) {
   const { pending, run } = useAsyncAction();
   const [discard, setDiscard] = useState(false);
@@ -101,61 +102,19 @@ export function SchoolDayEditor({ model }) {
                 />
               </label>
             </div>
-            <div className="school-date-fields">
-              <label>
-                School starts
-                <input
-                  required
-                  type="time"
-                  value={schoolStartTime}
-                  onChange={(event) => setSchoolStartTime(event.target.value)}
-                />
-              </label>
-              <label>
-                School ends
-                <input
-                  required
-                  type="time"
-                  value={schoolEndTime}
-                  onChange={(event) => setSchoolEndTime(event.target.value)}
-                />
-              </label>
-            </div>
-            <fieldset>
-              <legend>School days</legend>
-              <div className="school-weekdays">
-                {[
-                  ["S", 0],
-                  ["M", 1],
-                  ["T", 2],
-                  ["W", 3],
-                  ["T", 4],
-                  ["F", 5],
-                  ["S", 6],
-                ].map(([label, day]) => (
-                  <button
-                    type="button"
-                    aria-label={
-                      [
-                        "Sunday",
-                        "Monday",
-                        "Tuesday",
-                        "Wednesday",
-                        "Thursday",
-                        "Friday",
-                        "Saturday",
-                      ][day]
-                    }
-                    aria-pressed={schoolWeekdays.includes(day)}
-                    className={schoolWeekdays.includes(day) ? "selected" : ""}
-                    onClick={() => toggleSchoolDay(day)}
-                    key={day}
-                  >
-                    {label}
-                  </button>
-                ))}
-              </div>
-            </fieldset>
+            <TimeRange
+              startLabel="School starts"
+              endLabel="School ends"
+              start={schoolStartTime}
+              end={schoolEndTime}
+              onStart={setSchoolStartTime}
+              onEnd={setSchoolEndTime}
+            />
+            <WeekdayPicker
+              legend="School days"
+              value={schoolWeekdays}
+              onToggle={toggleSchoolDay}
+            />
             <div className="school-food-section">
               <div>
                 <h3>Lunch & snack times</h3>
@@ -164,26 +123,14 @@ export function SchoolDayEditor({ model }) {
                   school day.
                 </p>
               </div>
-              <div className="school-date-fields">
-                <label>
-                  Lunch starts
-                  <input
-                    required
-                    type="time"
-                    value={lunchStartTime}
-                    onChange={(event) => setLunchStartTime(event.target.value)}
-                  />
-                </label>
-                <label>
-                  Lunch ends
-                  <input
-                    required
-                    type="time"
-                    value={lunchEndTime}
-                    onChange={(event) => setLunchEndTime(event.target.value)}
-                  />
-                </label>
-              </div>
+              <TimeRange
+                startLabel="Lunch starts"
+                endLabel="Lunch ends"
+                start={lunchStartTime}
+                end={lunchEndTime}
+                onStart={setLunchStartTime}
+                onEnd={setLunchEndTime}
+              />
               <div className="school-date-fields">
                 <label>
                   Morning snack <span>Optional</span>

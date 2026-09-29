@@ -1701,7 +1701,8 @@ test("P0-06: grocery suggestions ignore unreviewed gluten and nut flags", () => 
 
 test("YOU-01 to YOU-04: You settings migrate additively and validate", () => {
   const fresh = emptyData().profile;
-  assert.equal(fresh.lowCostIdeas, true);
+  // ONB-03: setup no longer asks about budget, so new athletes start off.
+  assert.equal(fresh.lowCostIdeas, false);
   assert.equal(fresh.season, "");
   assert.deepEqual(fresh.dislikes, []);
   assert.equal(fresh.lastBackupAt, null);

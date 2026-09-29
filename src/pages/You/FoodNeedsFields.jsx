@@ -1,0 +1,81 @@
+import { ALLERGY_TAGS_REVIEWED } from "../../domain/catalog.js";
+import {
+  ALLERGY_CHOICES,
+  ALLERGY_WAITING,
+  OTHER_ALLERGY_LINE,
+  allergyStatusLine,
+  legacyAllergyPrompts,
+} from "../../domain/allergens.js";
+import { DIET_CHOICES, DISLIKE_CHOICES } from "../../domain/you.js";
+import { LabelCheck } from "../../components/ui/LabelCheck.jsx";
+import { ChipGroup } from "../../components/ui/SelectionControls.jsx";
+import { toggle } from "./SettingsSheet.jsx";
+
+// Allergies, "I don't eat" and "Not a fan of" (YOU-02, ONB step 5). Shared by
+// You › Food needs & allergies and setup. The allergy chips appear only when
+// the allergen tags are reviewed (ALLERGY_TAGS_REVIEWED, P1-09); until then
+// the section says filtering is waiting for review.
+export function FoodNeedsFields({
+  draft,
+  onChange,
+  reviewed = ALLERGY_TAGS_REVIEWED,
+  allergyHint = "Pick every allergy. Ideas that list these foods are hidden.",
+}) {
+  const allergies = draft.allergies || [];
+  const status = allergyStatusLine(draft, reviewed);
+  return (
+    <>
+      <section
+        className="you-allergies"
+        aria-labelledby={reviewed ? undefined : "you-allergies-title"}
+      >
+        {reviewed ? (
+          <>
+            <ChipGroup
+              legend="Allergies"
+              hint={allergyHint}
+              options={ALLERGY_CHOICES}
+              selected={allergies}
+              onToggle={(value) =>
+                onChange({ ...draft, allergies: toggle(allergies, value) })
+              }
+            />
+            {status && <p role="status">{status}</p>}
+            {allergies.includes("other") && <p>{OTHER_ALLERGY_LINE}</p>}
+            <LabelCheck />
+          </>
+        ) : (
+          <>
+            <h3 id="you-allergies-title">Allergies</h3>
+            <p className="label-check">{ALLERGY_WAITING}</p>
+          </>
+        )}
+      </section>
+      <ChipGroup
+        legend="I don't eat"
+        options={DIET_CHOICES}
+        selected={draft.dietaryNeeds}
+        onToggle={(value) =>
+          onChange({
+            ...draft,
+            dietaryNeeds: toggle(draft.dietaryNeeds, value),
+          })
+        }
+      />
+      {legacyAllergyPrompts(draft, reviewed).map((text) => (
+        <p role="status" key={text}>
+          {text}
+        </p>
+      ))}
+      <ChipGroup
+        legend="Not a fan of"
+        hint="Ideas that use these are hidden. This is not an allergy filter."
+        options={DISLIKE_CHOICES}
+        selected={draft.dislikes}
+        onToggle={(value) =>
+          onChange({ ...draft, dislikes: toggle(draft.dislikes, value) })
+        }
+      />
+    </>
+  );
+}

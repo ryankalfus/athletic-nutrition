@@ -2,16 +2,23 @@ import { ChevronLeft } from "lucide-react";
 import { Shell } from "../../components/AppFrame.jsx";
 
 // You › About Nourally's guidance: the one full safety explanation (7.5 tier 1).
-export function AboutPage({ onNavigate }) {
+// `standalone` is the Welcome "How Nourally works" link: no app navigation,
+// and Back returns to Welcome.
+export function AboutPage({ onNavigate, standalone = false }) {
   return (
-    <Shell onNavigate={onNavigate}>
+    <Shell
+      onNavigate={onNavigate}
+      navigation={!standalone}
+      footer={!standalone}
+    >
       <article className="you-page about-page">
         <button
           type="button"
           className="text-button you-back"
-          onClick={() => onNavigate("you")}
+          onClick={() => onNavigate(standalone ? "welcome" : "you")}
         >
-          <ChevronLeft size={18} aria-hidden="true" /> You
+          <ChevronLeft size={18} aria-hidden="true" />{" "}
+          {standalone ? "Back" : "You"}
         </button>
         <h1>About Nourally&apos;s guidance</h1>
         <p className="about-intro">

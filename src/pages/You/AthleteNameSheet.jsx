@@ -3,7 +3,8 @@ import { createProfile, renameProfile } from "../../store.js";
 import { SettingsSheet } from "./SettingsSheet.jsx";
 
 // DATA-07 rename, and "Add athlete" on You and This device. One field.
-export function AthleteNameSheet({ athlete, onClose }) {
+// `onCreated` runs after a new athlete is created (Welcome opens setup).
+export function AthleteNameSheet({ athlete, onClose, onCreated }) {
   const initial = athlete ? athlete.name : "";
   const [name, setName] = useState(initial);
   return (
@@ -14,9 +15,10 @@ export function AthleteNameSheet({ athlete, onClose }) {
       onClose={onClose}
       onSave={async () => {
         if (!name.trim()) return "Enter a first name.";
-        return athlete
-          ? renameProfile(athlete.id, name)
-          : createProfile(name.trim());
+        if (athlete) return renameProfile(athlete.id, name);
+        const created = await createProfile(name.trim());
+        if (created) onCreated?.();
+        return created;
       }}
     >
       <label>

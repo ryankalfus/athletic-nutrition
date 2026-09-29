@@ -15,10 +15,12 @@ async (page) => {
       .getByRole("listitem");
   try {
     await p.goto(base);
-    await p
-      .getByRole("textbox", { name: /First name/ })
-      .fill("Persistence test");
-    await p.getByRole("button", { name: /Save and see today/ }).click();
+    await p.getByRole("button", { name: "Get started" }).click();
+    await p.getByRole("textbox", { name: /First name/ }).fill("Persistence test");
+    await p.getByRole("combobox", { name: /^Sport/ }).fill("Soccer");
+    await p.getByRole("button", { name: "Next", exact: true }).click();
+    await p.getByRole("heading", { name: "Your school day" }).waitFor();
+    await p.getByRole("button", { name: "Skip setup" }).click();
     await p.getByRole("heading", { name: "Today", exact: true }).waitFor();
     await p.goto(`${base}#/you/device`);
     await p.getByRole("heading", { name: "This device", level: 1 }).waitFor();
@@ -45,14 +47,17 @@ async (page) => {
       .getByRole("region", { name: "Athlete" })
       .getByRole("button", { name: "Switch athlete" })
       .click();
-    await p.getByRole("button", { name: /^Open Imported fixture/ }).waitFor();
-    await p.getByRole("button", { name: "Open Persistence test" }).waitFor();
+    await p.getByRole("heading", { name: "Who's using Nourally?" }).waitFor();
+    await p.getByRole("button", { name: /^Imported fixture/ }).waitFor();
+    await p.getByRole("button", { name: /^Persistence test, Soccer/ }).waitFor();
     result.checks.push(
       "Restore previews the file and adds without replacing; opening the imported athlete sticks; the chooser lists both.",
     );
 
-    await p.getByRole("button", { name: /^Open Imported fixture/ }).click();
+    await p.getByRole("button", { name: /^Imported fixture/ }).click();
     await p.getByRole("heading", { name: "Today", exact: true }).waitFor();
+    if (!p.url().endsWith("#/today"))
+      throw new Error(`Choosing an athlete did not open Today: ${p.url()}`);
     await p.goto(`${base}#/you/device`);
     const deleteData = p.getByRole("button", { name: /^Delete Imported fixture.*'s data$/ });
     await deleteData.click();
@@ -69,13 +74,11 @@ async (page) => {
     await deleteData.click();
     await confirm.getByRole("textbox", { name: /Type DELETE/ }).fill("DELETE");
     await deleteButton.click();
-    // Deleting signs out to the device profile chooser.
-    await p
-      .getByRole("heading", { name: "Choose a device profile" })
-      .waitFor();
-    if (await p.getByRole("button", { name: /^Open Imported fixture/ }).count())
+    // Deleting signs out to the athlete chooser on Welcome.
+    await p.getByRole("heading", { name: "Who's using Nourally?" }).waitFor();
+    if (await p.getByRole("button", { name: /^Imported fixture/ }).count())
       throw new Error("Deleted athlete is still listed");
-    await p.getByRole("button", { name: "Open Persistence test" }).click();
+    await p.getByRole("button", { name: /^Persistence test/ }).click();
     await athlete().getByText("Persistence test").waitFor();
     await p.goto(`${base}#/you/device`);
     await athletes().first().waitFor();

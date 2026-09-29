@@ -16,6 +16,7 @@ const routes = new Set([
   "you/device",
   "you/about",
   "welcome",
+  "setup",
 ]);
 const redirects = {
   calendar: "schedule",
