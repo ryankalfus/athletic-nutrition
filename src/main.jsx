@@ -268,7 +268,8 @@ function ProfileSetup({
     ["vegetarian", "Vegetarian"],
     ["vegan", "Vegan"],
     ["dairyFree", "Dairy-free"],
-    ["glutenFree", "Gluten-free"],
+    // No Gluten-free or Nut-free chip until ADD-03 reviewed allergen tags
+    // exist; the old hand-coded flags do not prove an idea is safe (P0-06).
   ];
   const sources = [
     ["packed", "Packed from home"],
@@ -367,6 +368,13 @@ function ProfileSetup({
             <p role="status">
               Your earlier Nut-free choice no longer filters foods. Review each
               label and discuss allergy needs with a qualified professional.
+            </p>
+          )}
+          {draft.dietaryNeeds.includes("glutenFree") && (
+            <p role="status">
+              Your earlier Gluten-free choice no longer filters foods. Review
+              each label and discuss allergy needs with a qualified
+              professional.
             </p>
           )}
           <fieldset className="choice-field">
