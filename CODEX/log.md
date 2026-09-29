@@ -566,3 +566,5 @@ Replaced the Source & details disclosure with one source line in the portion she
 Built Log › Week: range switcher, one summary sentence, seven newest-first day rows with activity chips, foods logged and water ("No water logged" when missing), a View as table disclosure, and no tiles, charts, streak or percentages. 2026.09.29
 Removed the WeeklyProgress page from main.jsx and the old weekly chart styles; PortionEditor.jsx became pages/Food/PortionSheet.jsx. 2026.09.29
 Added Log unit tests (tests/log.test.js, including 4 activities with 3 plans) and the Log browser check (tests/browser-log.js); updated the food workflow check for the row menu and added dated Log routes to the responsive check. 2026.09.29
+Added the Changed it and Today Now-card checks to the Log browser check. 2026.09.29
+Checked P1-07, P1-08, SRCH-07, LOG-01 to LOG-08, WEEK-01 to WEEK-04, HIST-02, HIST-03, CMP-13 and CMP-16 after unit and browser checks; WEEK-05 stays open for P2-05, and live USDA ranking was verified with fixtures because DEMO_KEY was rate-limited. 2026.09.29

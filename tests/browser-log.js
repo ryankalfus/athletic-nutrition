@@ -228,8 +228,31 @@ async (page) => {
       .getByRole("region", { name: "Planned food" })
       .getByText(/· Eaten$/)
       .waitFor();
+    await p.goto(`${base}#/today`);
+    const now = await p.locator("#now-title").innerText();
+    if (now.startsWith(`${idea} is`))
+      throw new Error(`Today's Now card still shows the eaten plan: ${now}`);
     result.checks.push(
-      `“Did you eat ${idea}?” → Yes, as planned logs it in one tap and the plan reads Eaten.`,
+      `“Did you eat ${idea}?” → Yes, as planned logs it in one tap, the plan reads Eaten, and Today's Now card moves on.`,
+    );
+
+    // "Changed it" opens the plan's ingredients to adjust, then logs it.
+    await p.goto(`${base}#/food/ideas`);
+    const second = p.locator("article.idea-card").nth(1);
+    const idea2 = await second.getByRole("heading").first().innerText();
+    await second.getByRole("button", { name: `Plan ${idea2}` }).click();
+    await p.goto(`${base}#/food/log`);
+    await p
+      .getByRole("list", { name: "Planned food" })
+      .getByRole("button", { name: "Changed it" })
+      .click();
+    const changed = p.getByRole("dialog", { name: `Log ${idea2}` });
+    await changed.getByText("From your plan").waitFor();
+    await changed.getByRole("button", { name: "Log it" }).click();
+    await changed.waitFor({ state: "hidden" });
+    await row(idea2).waitFor();
+    result.checks.push(
+      `“Changed it” opens ${idea2} with editable amounts and logs it.`,
     );
 
     // Week: one sentence, seven rows, no chart, streak or percentage.
@@ -255,7 +278,7 @@ async (page) => {
       throw new Error(
         `Newest day is not first or not "Mon, Sep 21" format: ${first}`,
       );
-    if (!/2 foods logged/.test(first) || !/8 oz/.test(first))
+    if (!/3 foods logged/.test(first) || !/8 oz/.test(first))
       throw new Error(`Today row counts are wrong: ${first}`);
     const weekText = await week.innerText();
     if (
