@@ -78,6 +78,8 @@ async function main() {
   process.chdir(root); // snippets use repo-relative paths (fixtures, screenshots)
   await ensureServer();
   globalThis.BASE_URL = base;
+  // Snippets are eval'd, so they cannot import; hand them axe (tests/browser-a11y.js).
+  globalThis.AxeBuilder = (await import("@axe-core/playwright")).AxeBuilder;
   const browser = await chromium
     .launch({ headless: !process.env.HEADED })
     .catch((error) => {
