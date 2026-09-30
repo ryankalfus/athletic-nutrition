@@ -15,7 +15,7 @@ The app already supports manually entered school schedules, recurring sports, ex
 Current setup starts with food preferences and then Today. It has budget, dietary categories, food access, and family-preparation settings, but no dedicated sport or explicit allergy profile.
 
 - [ ] Rework first-run setup around the intended journey: import or enter schedule → athlete/sport details and food preferences → food available at home → personalized Today. Allow skipping and returning to incomplete steps, including a clear rest-day path. Reuse existing screens and preserve existing profiles.
-- [ ] Add sport selection to the athlete profile and relevant activities. Keep sport distinct from activity type: “practice” is not a sport. Use this context in activity labels and explanations; only change nutrition recommendations by sport where approved guidance supports the distinction.
+- [ ] Add sport selection to the athlete profile and relevant activities. Keep sport distinct from activity type: “practice” is not a sport. Use this context in activity labels and explanations; only change nutrition recommendations by sport where sourced guidance supports the distinction.
 - [ ] Separate explicit allergies from general dietary preferences. Persist selections and apply them consistently to meal candidates, substitutions, and generated groceries. Distinguish unknown product/allergen information from confirmed compatibility; do not label a food allergy-safe merely because its database record lacks a warning. Retain product-label checking guidance.
 - [ ] Make food likes/dislikes or preferred/avoided ingredients usable by the recommendation system. Reuse existing favorites where appropriate, but ensure actual meal selection respects these preferences across Today and Food rather than only saving favorite search results.
 
@@ -40,7 +40,7 @@ The app already has a consistent palette, shared navigation, a dominant next-act
 
 An educational/non-medical disclaimer already exists on Profile, and meal guidance already warns that amounts are examples. Food database attribution is not the same as evidence supporting meal-timing or hydration rules.
 
-- [ ] Replace unsupported temporary recommendation assumptions with a documented, source-backed rule/content set. Associate meal-timing thresholds, recovery advice, hydration cues, and example portions with their supporting references and review status. Incorporate qualified review when available; do not invent approval or treat USDA food composition data as endorsement of a fueling rule.
+- [ ] Replace unsupported temporary recommendation assumptions with a documented, source-backed rule/content set. Associate meal-timing thresholds, recovery advice, hydration cues, and example portions with their supporting references. Do not treat USDA food composition data as endorsement of a fueling rule.
 - [ ] Add accessible source and rationale details alongside recommendations, extending the existing “Why this action?” interaction. Clearly separate the reason this suggestion fits the athlete's schedule from the reference supporting the general guidance.
 - [ ] Surface the existing general-guidance boundary where advice is consumed, not only in Profile. Keep it concise and consistently state that Nourally supports fueling, timing, hydration, and planning—not medical treatment or independently prescribed calorie targets. Preserve the current non-prescriptive approach rather than adding a calorie-goal system.
 

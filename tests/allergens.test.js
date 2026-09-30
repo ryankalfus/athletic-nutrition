@@ -1,4 +1,4 @@
-// P1-09 allergy model: tags, the review gate, idea and grocery filtering,
+// P1-09 allergy model: tags, the gate, idea and grocery filtering,
 // profile storage and Open Food Facts label text. Both gate states are tested.
 import test from "node:test";
 import assert from "node:assert/strict";
@@ -56,7 +56,7 @@ const lists = (id, allergen) => {
   );
 };
 
-test("P1-09: the review gate ships closed", () => {
+test("P1-09: the allergy gate ships closed", () => {
   assert.equal(ALLERGY_TAGS_REVIEWED, false);
 });
 
@@ -96,7 +96,7 @@ test("P1-09: spot-check draft tags on known ingredients", () => {
 });
 
 for (const allergen of MAJOR) {
-  test(`P1-09: ${allergen} allergy hides every idea that lists it once reviewed`, () => {
+  test(`P1-09: ${allergen} allergy hides every idea that lists it once approved`, () => {
     const profile = { allergies: [allergen] };
     const shown = allIdeas(profile, true);
     const all = allIdeas({}, true);
@@ -130,7 +130,7 @@ for (const allergen of MAJOR) {
       assert.equal(groceryFitsProfile(item, profile, false), true);
   });
 
-  test(`P1-09: ${allergen} allergy hides grocery suggestions that list it once reviewed`, () => {
+  test(`P1-09: ${allergen} allergy hides grocery suggestions that list it once approved`, () => {
     const profile = { allergies: [allergen] };
     for (const item of GROCERY_CATALOG)
       assert.equal(

@@ -39,12 +39,12 @@ browser checks. Report what you ran and the result.
 
 ## Safety rules (do not break)
 
-- No UI control may claim to filter an allergen without reviewed
-  per-ingredient data. Gluten-free, Nut-free and Dairy-free filters stay hidden
-  until ADD-03 tags pass qualified review. Keep "Allergies: check every label."
-  on every product view.
-- New nutrition guidance, amounts, or copy needs qualified review. Record it as
-  pending in `NUTRITION-REVIEW.md`; do not mark it approved.
+- Allergy filtering stays off (`ALLERGY_TAGS_REVIEWED` stays false) until the
+  per-ingredient allergen tags are approved. No UI control may claim to filter
+  an allergen without approved per-ingredient data; Gluten-free, Nut-free and
+  Dairy-free filters stay hidden.
+- Never call a food safe.
+- Keep "Allergies: check every label." on every product view.
 - Never show a calorie target or a prescription. Ideas are examples.
 
 ## Git

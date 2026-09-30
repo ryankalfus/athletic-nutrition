@@ -10,7 +10,7 @@ export const SEASONS = [
 ];
 
 // You › Food needs & allergies › "I don't eat" (YOU-02). Dairy-free and
-// Gluten-free stay hidden until reviewed allergen tags exist (P0-06).
+// Gluten-free stay hidden until approved allergen tags exist (P0-06).
 export const DIET_CHOICES = [
   ["vegetarian", "Vegetarian"],
   ["vegan", "Vegan"],

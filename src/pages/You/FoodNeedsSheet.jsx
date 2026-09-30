@@ -5,7 +5,7 @@ import { FoodNeedsFields } from "./FoodNeedsFields.jsx";
 
 // You › Food needs & allergies (YOU-02, YOU-03). No Gluten-free, Nut-free or
 // Dairy-free chip. Allergy chips show only once the allergen tags are
-// reviewed (ALLERGY_TAGS_REVIEWED, P1-09); FoodNeedsFields handles the gate.
+// approved (ALLERGY_TAGS_REVIEWED, P1-09); FoodNeedsFields handles the gate.
 export function FoodNeedsSheet({ profile, onClose }) {
   const initial = {
     allergies: profile.allergies || [],

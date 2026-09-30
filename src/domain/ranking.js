@@ -4,7 +4,7 @@ import { ideaUsesDislike } from "./you.js";
 import { activeAllergies, ideaAllergyMatches } from "./allergens.js";
 
 // Diet preferences the catalog flags reliably. Allergen-style flags
-// (nutFree, glutenFree) are hand-coded and not reviewed per ingredient, so no
+// (nutFree, glutenFree) are hand-coded and not approved per ingredient, so no
 // idea is filtered on them until ADD-03 allergen tags exist (P0-06).
 export { DIET_FILTERS };
 export const UNREVIEWED_ALLERGEN_NEEDS = ["nutFree", "glutenFree"];

@@ -13,8 +13,8 @@ import { toggle } from "./SettingsSheet.jsx";
 
 // Allergies, "I don't eat" and "Not a fan of" (YOU-02, ONB step 5). Shared by
 // You › Food needs & allergies and setup. The allergy chips appear only when
-// the allergen tags are reviewed (ALLERGY_TAGS_REVIEWED, P1-09); until then
-// the section says filtering is waiting for review.
+// the allergen tags are approved (ALLERGY_TAGS_REVIEWED, P1-09); until then
+// the section shows the waiting line.
 export function FoodNeedsFields({
   draft,
   onChange,

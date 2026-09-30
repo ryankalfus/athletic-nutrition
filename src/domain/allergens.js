@@ -28,7 +28,7 @@ export function normalizeAllergies(value) {
   return ALLERGY_IDS.filter((id) => value.includes(id));
 }
 
-// The allergies that actually filter: none until the tags are reviewed, and
+// The allergies that actually filter: none until the tags are approved, and
 // never "other", which has no tags.
 export function activeAllergies(
   profile = {},
@@ -116,7 +116,6 @@ const LEGACY = [
 ];
 // One notice for every legacy choice, shown inside the Allergies section:
 // "Your earlier Nut-free and Dairy-free choices no longer filter foods. …"
-// Pending qualified review (NUTRITION-REVIEW.md, 2026.09.29).
 export function legacyAllergyNotice(
   profile = {},
   reviewed = ALLERGY_TAGS_REVIEWED,

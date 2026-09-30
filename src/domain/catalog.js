@@ -1,6 +1,6 @@
 // Diet choices backed by catalog data. Allergen flags (gluten, nuts, dairy) stay
-// out until reviewed per-ingredient tags exist (P0-06, ADD-03); the draft tags
-// and their review gate are at the end of this file.
+// out until approved per-ingredient tags exist (P0-06, ADD-03); the draft tags
+// and their gate are at the end of this file.
 export const DIET_FILTERS = ["vegan", "vegetarian"];
 
 export const SPORTS_DRINK_NOTE =
@@ -849,9 +849,8 @@ export const GROCERY_CATALOG = [
 
 // P1-09 safety gate (ADD-03). While false, no screen offers allergy chips as a
 // filter and no idea or grocery suggestion is hidden by allergy: the tags
-// below are drafts waiting for qualified review (NUTRITION-REVIEW.md,
-// "Pending qualified review — ingredient allergen tags"). Flip to true only
-// after that section's sign-off block is filled in.
+// below are drafts awaiting approval. Flip to true only once the allergen
+// tags are approved.
 export const ALLERGY_TAGS_REVIEWED = false;
 
 // The nine U.S. major food allergens (FDA; sesame added by the FASTER Act).
@@ -867,7 +866,7 @@ export const MAJOR_ALLERGENS = [
   ["sesame", "Sesame"],
 ];
 
-// Draft per-ingredient allergen tags (PENDING review). `allergens` is what a
+// Draft per-ingredient allergen tags (awaiting approval). `allergens` is what a
 // typical U.S. product lists in its ingredients or "Contains" line;
 // `mayContain` covers typical cross-contact ("may contain", shared equipment)
 // and brand-to-brand variation. Filtering treats both as a match, so an

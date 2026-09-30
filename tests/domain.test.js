@@ -2084,7 +2084,7 @@ test("At home: an exact count in another unit still covers an idea", () => {
   );
 });
 
-test("Review prep: amounts match the idea name and use defined units", () => {
+test("Idea prep: amounts match the idea name and use defined units", () => {
   const shown = (ideaId, ingredient) =>
     MEAL_INGREDIENTS[ideaId].find((row) => row[1] === ingredient)[4];
   assert.equal(shown("fig-bar-fruit", "bananas"), "1 banana or other fruit");

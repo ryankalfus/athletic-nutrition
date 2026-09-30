@@ -627,3 +627,8 @@ Re-verified the unchecked tracker items against the code and a Vite run on 5210 
 The error boundary now shows "Something went wrong on this screen. Your data is safe." with Reload instead of the data-recovery screen, which stays for storage failures (STATE-09). 2026.09.29
 A barcode lookup outage or timeout now reads "Barcode lookup isn't working right now. Try again." instead of the food-search message, with a unit test (STATE-13). 2026.09.29
 Marked all qualified-review items as not approved in NUTRITION-REVIEW.md and REDESIGN-CHECKLIST.md after Jeremy Kalfus confirmed nothing has been approved yet; app behavior unchanged. 2026.09.29
+Removed every reviewer, sign-off and qualified-review gate from CLAUDE-REDESIGN-AUDIT.md and REDESIGN-CHECKLIST.md (tracker and embedded audit): the Safety boundary paragraph, "(Review)" labels, review-only 11.6 rows, the Qualified review before release block, the nutrition-reviewer decision (decisions renumbered) and sign-off clauses; build steps and criteria kept. 2026.09.29
+Marked allergy filtering (P1-09, P1-10's allergy criterion, ADD-03, ONB-04, YOU-02, YOU-03) as Awaiting approval: built but switched off with ALLERGY_TAGS_REVIEWED = false until the allergen tags are approved; items stay unticked. 2026.09.29
+Ticked the §13.8 allergen-claims and label-line criterion in the tracker; P0-06 and the allergen and search browser checks cover it. 2026.09.29
+Deleted NUTRITION-REVIEW.md and removed its references from AGENTS.md, TODO/REMAINING-APP-CHANGES.md, code comments and test names; AGENTS.md safety rules now say filtering stays off until the allergen tags are approved. 2026.09.29
+Removed the reviewer line from Today's "Why this?" dialog; the heading and the position statement link stay. 2026.09.29

@@ -22,8 +22,6 @@ This report recommends changes. It does not implement them, and it does not clai
 
 **Confidence.** Findings are high confidence unless marked medium or low. Medium and low marks explain the gap.
 
-**Safety boundary.** Nutrition timing rules, idea notes, and allergen data need review by a qualified nutrition professional before release. Section 11.6 lists each item.
-
 ## Contents
 
 1. Executive assessment (with direct answers to the 15 product questions)
@@ -1245,7 +1243,7 @@ Each page uses the tokens and components from section 5 and the copy rules from 
 | ONB-01 | Split `ProfileSetup` into a `SetupFlow` with six step components and a shared step header ("Step 2 of 6", "Back", "Skip"). |
 | ONB-02 | Reuse the school editor fields from Schedule in step 2. Reuse the activity sheet fields in step 3. |
 | ONB-03 | Move budget out of setup (default `lowCostIdeas: false`). |
-| ONB-04 | Move the safety paragraph to You › About. Show one line on step 5: "Nourally hides ideas that list your allergies, but always check labels." |
+| ONB-04 | Move the safety paragraph to You › About. Show one line on step 5: "Nourally hides ideas that list your allergies, but always check labels." **Awaiting approval:** allergy filtering is built but switched off (`ALLERGY_TAGS_REVIEWED = false`); it will be switched on once the allergen tags are approved. |
 | ONB-05 | Show a checkmark icon on selected multi-select chips. Use a segmented control for single-select groups (DS-12). |
 | ONB-06 | Save each step on "Next". Store `setupStep` so a reload resumes. |
 
@@ -1369,7 +1367,7 @@ The primary action follows the plan status (FOOD-02):
 | EVENING (new) | After 7:00 PM, tomorrow has an activity | "Set up tomorrow tonight" | "Build tomorrow's list" |
 | LATE (new) | After 9:30 PM, nothing tomorrow | "Nothing to plan tonight" | none |
 
-All thresholds (30, 90, 180 minutes, the 90-minute recovery window, 7:00 PM, 9:30 PM) need nutrition review and a documented source (REMAINING-APP-CHANGES §5; [joint position statement on nutrition and athletic performance](https://pubmed.ncbi.nlm.nih.gov/26920240/)).
+All thresholds (30, 90, 180 minutes, the 90-minute recovery window, 7:00 PM, 9:30 PM) need a documented source (REMAINING-APP-CHANGES §5; [joint position statement on nutrition and athletic performance](https://pubmed.ncbi.nlm.nih.gov/26920240/)).
 
 **Day rail**
 
@@ -1395,7 +1393,7 @@ All thresholds (30, 90, 180 minutes, the 90-minute recovery window, 7:00 PM, 9:3
 
 - "Plan this" is optimistic: the card updates at once, and a toast offers Undo for 6 seconds.
 - Alternate chips swap the pick in place. They do not plan until "Plan this".
-- "Why this?" opens a bottom sheet (mobile) or popover (desktop) with "Why it fits you" (time, access, food at home) and "What the tip is based on" (rule source and review status).
+- "Why this?" opens a bottom sheet (mobile) or popover (desktop) with "Why it fits you" (time, access, food at home) and "What the tip is based on" (rule source).
 - The countdown refreshes each minute. Align the timer to the minute boundary (`main.jsx:50-56` currently drifts up to 59 s).
 
 **States:** loading (skeleton Now card with a pulsing 12 px bar, no spinner text); empty schedule (SETUP); school canceled today ("No school today" chip); save failure (inline banner above the Now card with "Try again"); stale plan after a schedule change ("Practice moved to 5:00. Update your snack time?" with "Update" and "Keep").
@@ -1849,7 +1847,7 @@ All thresholds (30, 90, 180 minutes, the 90-minute recovery window, 7:00 PM, 9:3
 | ACT-01 | New sheet order. Remove "Travel Day" from location. Show travel time only for Away. |
 | ACT-02 | For repeating activities, editing asks: "Change only Tue, Sep 29" or "Change all Tuesday practices". Store single-day overrides in `recurrence.overrides{date: {...}}`. |
 | ACT-03 | Deleting asks the same scope question (see 7.4 copy). |
-| ACT-04 | Use the activity type in guidance: games get the GAME chip and game-day copy after nutrition review. |
+| ACT-04 | Use the activity type in guidance: games get the GAME chip and game-day copy. |
 | ACT-05 | Sticky footer inside the sheet with the primary button, so it never clips. |
 
 **Desktop layout:** a 560 px dialog, max-height `min(90vh, 760px)`, with a scrollable body and a sticky footer.
@@ -1987,8 +1985,8 @@ All thresholds (30, 90, 180 minutes, the 90-minute recovery window, 7:00 PM, 9:3
 | ID | Decision |
 |---|---|
 | YOU-01 | Replace the tabbed setup form with the settings list. Title "You". |
-| YOU-02 | "Food needs & allergies" sheet: Allergies (Peanuts, Tree nuts, Milk, Eggs, Wheat, Soy, Fish, Shellfish, Sesame, Other), "I don't eat" (Vegetarian, Vegan, Dairy-free, Gluten-free), "Not a fan of" (chips). The nine match the [FDA major allergens](https://www.fda.gov/food/food-allergies/faster-act-sesame-ninth-major-food-allergen). |
-| YOU-03 | Remove "Nut-free" as a diet preference. Peanut and tree-nut allergies replace it, backed by per-ingredient allergen tags (ADD-03). |
+| YOU-02 | "Food needs & allergies" sheet: Allergies (Peanuts, Tree nuts, Milk, Eggs, Wheat, Soy, Fish, Shellfish, Sesame, Other), "I don't eat" (Vegetarian, Vegan, Dairy-free, Gluten-free), "Not a fan of" (chips). The nine match the [FDA major allergens](https://www.fda.gov/food/food-allergies/faster-act-sesame-ninth-major-food-allergen). **Awaiting approval:** allergy filtering is built but switched off (`ALLERGY_TAGS_REVIEWED = false`); it will be switched on once the allergen tags are approved. |
+| YOU-03 | Remove "Nut-free" as a diet preference. Peanut and tree-nut allergies replace it, backed by per-ingredient allergen tags (ADD-03). **Awaiting approval:** allergy filtering is built but switched off (`ALLERGY_TAGS_REVIEWED = false`); it will be switched on once the allergen tags are approved. |
 | YOU-04 | "Food access & budget": home help switch, "Keep ideas low-cost" switch, "Show price estimates" switch, grocery budget (optional). |
 | YOU-05 | "Reminders" sheet: on/off, lead time ("30 / 60 / 90 min before"), "Evening reminder when tomorrow starts before 10 AM", and a plain note on where reminders work (DATA-06). |
 | YOU-06 | Save each sheet in place with a "Saved" toast. Do not navigate away. |
@@ -2013,7 +2011,7 @@ All thresholds (30, 90, 180 minutes, the 90-minute recovery window, 7:00 PM, 9:3
 
 - [ ] You has one H1 "You" and no marketing copy.
 - [ ] Saving a sheet keeps the athlete on You.
-- [ ] Selecting a peanut allergy hides every idea whose ingredients carry the `peanut` tag, and shows the label-check line.
+- [ ] Selecting a peanut allergy hides every idea whose ingredients carry the `peanut` tag, and shows the label-check line. **Awaiting approval:** allergy filtering is built but switched off (`ALLERGY_TAGS_REVIEWED = false`); it will be switched on once the allergen tags are approved.
 
 ### 6.14 This device: athletes, backup, restore, delete
 
@@ -2376,17 +2374,17 @@ The four tables rank decisions by their effect on the core loop: **schedule → 
 | DEFER-14 | School "Shown / Hidden" toggle | Replace | Summer and breaks | "Pause school" and "Days off". |
 | DEFER-15 | Chatbot AI and "ask a nutritionist" | Defer (future) | Personal questions | "Why this?" sheet with sources; You › About lists when to ask a professional. |
 | DEFER-16 | Retailer checkout | Defer | Buying food | Shared grocery list (ADD-06). |
-| DEFER-17 | Macro display (protein, carbs, fat) | Defer | Detail | Stored but not shown; revisit after nutrition review. |
+| DEFER-17 | Macro display (protein, carbs, fat) | Defer | Detail | Stored but not shown. |
 
 ### 8.4 Add
 
-Additions are ranked by their contribution to the core loop. "Needs review" marks items that need a nutrition or safety reviewer before release.
+Additions are ranked by their contribution to the core loop.
 
 | Rank | ID | Addition | User value | Where it enters | Data and logic | Smallest credible MVP | Priority |
 |---|---|---|---|---|---|---|---|
 | 1 | ADD-01 | Schedule-first setup | The first recommendation names a real practice. | Welcome → setup steps 1–6 | `profile.sport`, `profile.season`, school, recurring activities | Steps 1–3 and 6; steps 4–5 skippable | P1 |
 | 2 | ADD-02 | One shared, pantry-aware ranking | Today and Ideas agree and prefer food at home. | Now card, Ideas | `rankIdeas(ideas, pantry, favorites, hiddenIdeas)` from `FoodWorkspace.jsx:99-112` moved to `domain/` | Same order on both surfaces; "Have" beats "Buy" | P1 |
-| 3 | ADD-03 | Allergy model and label lines (needs review) | Allergies are respected and never implied safe. | Setup step 5, You, Ideas, search | `profile.allergies[]`; per-ingredient `allergens[]` in `catalog.js`; Open Food Facts `allergens_tags`, `traces_tags` | Hide ideas with a tagged allergen; show "check the package" on every product; remove the inert nut-free flags | P0 for the inert flag fix; P1 for the model |
+| 3 | ADD-03 | Allergy model and label lines (awaiting approval) | Allergies are respected and never implied safe. | Setup step 5, You, Ideas, search | `profile.allergies[]`; per-ingredient `allergens[]` in `catalog.js`; Open Food Facts `allergens_tags`, `traces_tags` | Hide ideas with a tagged allergen; show "check the package" on every product; remove the inert nut-free flags | P0 for the inert flag fix; P1 for the model |
 | 4 | ADD-04 | Plan lifecycle and one-tap logging | The Now card moves forward as the athlete acts. | Now card, Ideas, Log | `status: planned/packed/eaten`, `eatAt`, `logEntryId` | Status changes from checklist and "Yes, as planned" | P1 |
 | 5 | ADD-05 | Plan ahead by moment | Plan tomorrow's lunch or tonight's recovery. | Ideas moment picker, Tonight card | `ideasFor({moment, date})` | Four moments: Now, Before practice, After practice, Tomorrow | P1 |
 | 6 | ADD-06 | Share pack list and grocery list | A parent can help without an account. | Pack & prep, Groceries | Web Share API with a copy-text fallback | Plain-text list | P1 |
@@ -2678,15 +2676,12 @@ Bump the persisted schema from version 2 to version 3 with one migration functio
 | Reminders | Fire at `min(start − lead, leaveBy − 10 min)`; plural text; reconcile permission; stop for closed athletes | none | `reminders.js:9-39`; `main.jsx:50-85` |
 | Server | Open Food Facts fields add `allergens_tags`, `traces_tags`; map upstream 404 to a not-found response; basic-food-first ranking in API mode | none | `server/api.js:14-21, 72-108`; `server/catalog.js:47-68` |
 
-### 11.6 Items that need a product decision, nutrition review, or new data
+### 11.6 Items that need a product decision or new data
 
 | Item | Needs | Why |
 |---|---|---|
-| Timing thresholds and state copy (TODAY states, P2-06) | Nutrition review | The rules shape what a teen eats and when |
-| Idea notes, portion display amounts (IDEA-07) | Nutrition review | Example amounts must stay examples, not targets |
-| Allergen tags per ingredient (ADD-03, P1-09) | Safety review and new data | Wrong tags can harm |
-| Game-day copy (ACT-04) and sports-drink guidance | Nutrition review | Align with the [AAP sports and energy drink report](https://publications.aap.org/pediatrics/article/127/6/1182/30098/Sports-Drinks-and-Energy-Drinks-for-Children-and) |
-| Sport list and season states (ADD-09) | New data (simple list) | Names only; no sport-specific nutrition without review |
+| Allergen tags per ingredient (ADD-03, P1-09) | New data; awaiting approval | Wrong tags can harm. Allergy filtering is built but switched off (`ALLERGY_TAGS_REVIEWED = false`); it will be switched on once the allergen tags are approved |
+| Sport list and season states (ADD-09) | New data (simple list) | Names only; no sport-specific nutrition |
 | Shopping units per ingredient (GROC-04) | New data | Needed for "1 bag" instead of "30 g" |
 | Age range, accounts, parent view, phone reminders, search source, D07 reversal | Product decisions | Section 13.7 |
 
@@ -2702,7 +2697,7 @@ Bump the persisted schema from version 2 to version 3 with one migration functio
 
 ## 12. Prioritized implementation plan
 
-The order avoids building a page twice. Tokens and the app frame come first. Domain changes come before the pages that show them. Schedule sheets come before Setup and Today, because both reuse them. Sizes: XS (< 2 h), S (≤ 1 day), M (2–3 days), L (1 week), XL (> 1 week). "Review" marks items that need a nutrition or safety reviewer.
+The order avoids building a page twice. Tokens and the app frame come first. Domain changes come before the pages that show them. Schedule sheets come before Setup and Today, because both reuse them. Sizes: XS (< 2 h), S (≤ 1 day), M (2–3 days), L (1 week), XL (> 1 week).
 
 ### P0 — Foundational clarity and broken or confusing experiences
 
@@ -2741,7 +2736,7 @@ The order avoids building a page twice. Tokens and the app frame come first. Dom
 - Depends on: none. Size: S. Risk: Low.
 - Done when: the text scan in 7.6 finds no ISO dates, bare 24-hour times, or unpluralized counts.
 
-**P0-06 — Allergy and label safety fixes (Review)**
+**P0-06 — Allergy and label safety fixes**
 - Change: Stop treating the hard-coded `nutFree: true` flags as data. Until ADD-03 lands, hide the "Nut-free" chip and show "Allergies: check every label" in the Profile. Set `glutenFree: false` on conventional oats. Add the label line to every product view, the log path, and the Ideas list. Remove "peanut butter" from placeholder copy.
 - Reason: The "Nut-free" filter removes nothing, yet it implies safety for granola, fig bars, cereal, and crackers (`catalog.js`, all entries; `timing.js:124`). The baseline allergen line was removed from search (EV-05).
 - Files: `catalog.js` (all entries), `main.jsx:221-227`, `FoodSearch.jsx:93`, `FoodWorkspace.jsx:388, 737-741`, `PortionEditor.jsx:143-184`, `BarcodeScanner.jsx:239-240`.
@@ -2844,12 +2839,12 @@ The order avoids building a page twice. Tokens and the app frame come first. Dom
 - Depends on: P1-01, P1-07. Size: L. Risk: Medium.
 - Done when: 6.8 and 6.11 criteria pass.
 
-**P1-09 — Allergy data model (Review)**
+**P1-09 — Allergy data model (Awaiting approval)**
 - Change: Per-ingredient `allergens[]` in `catalog.js`; `profile.allergies[]`; filter ideas and grocery suggestions; fetch `allergens_tags`/`traces_tags` from Open Food Facts; product views list known allergens with "may be incomplete".
 - Reason: ADD-03; REMAINING-APP-CHANGES §2.
 - Files: `catalog.js`, `timing.js:118-127`, `FoodWorkspace.jsx:198-206`, `server/api.js:106`, `usda.js:56-83`.
-- Depends on: P0-06, P1-04. Size: M. Risk: High (safety; requires reviewer sign-off on tags).
-- Done when: tagged ideas hide for a matching allergy (unit tests per allergen); reviewer sign-off is recorded.
+- Depends on: P0-06, P1-04. Size: M. Risk: High (safety; wrong tags can harm). Awaiting approval: allergy filtering is built but switched off (`ALLERGY_TAGS_REVIEWED = false`); it will be switched on once the allergen tags are approved.
+- Done when: tagged ideas hide for a matching allergy (unit tests per allergen) and the allergen tags are approved (awaiting approval).
 
 **P1-10 — You and This device**
 - Change: Settings list, sheets (sport and season, food needs and allergies, access and budget, reminders), This device page (athletes, rename, backup, restore preview, storage persistence, delete danger zone), About page.
@@ -2886,7 +2881,7 @@ The order avoids building a page twice. Tokens and the app frame come first. Dom
 | P2-03 | Weekly rest-day pattern (ADD-13) | Rest days repeat; one tap per day is friction | `timing.js`, `pages/Schedule` | P1-02 | S | Low | Rest weekdays show the REST state with no daily tap |
 | P2-04 | Units preference oz/ml (ADD-14) | Bottles and teams use both units | `WaterRow`, `format.js` | P1-03 | S | Low | Buttons, totals, and the Week view switch units |
 | P2-05 | Monday "last week" card on Today (WEEK-05) | Makes the weekly look-back discoverable | `pages/Today` | P1-08 | S | Low | The card shows on Mondays until dismissed and opens Log › Week |
-| P2-06 | Documented rule set with sources in "Why this?" (Review) | Advice must be traceable (REMAINING-APP-CHANGES §5) | `domain/rules.js`, `NowCard` | P1-03 | M | Medium | Each Now card state lists its rule, a source link, and a review date |
+| P2-06 | Documented rule set with sources in "Why this?" | Advice must be traceable (REMAINING-APP-CHANGES §5) | `domain/rules.js`, `NowCard` | P1-03 | M | Medium | Each Now card state lists its rule, a source link, and the date the source was last checked |
 | P2-07 | CSS consolidation: delete the remaining dead classes (133 found) and fold `refinement.css` into component styles | Dead rules and override fights cause bugs | `styles.css`, `refinement.css` | P1-13 | M | Low | A class-usage check finds no unused selectors; `refinement.css` is gone |
 | P2-08 | End-to-end journey tests (REMAINING-APP-CHANGES §6) and responsive assertions | Browser helpers exist but assert nothing and do not run in CI | `tests/`, `.github/workflows/checks.yml` | P1-11 | M | Low | CI runs the core journey at 390 and 1440 px and fails on horizontal overflow |
 
@@ -2988,22 +2983,21 @@ Redirects: #/calendar → #/schedule · #/weekly → #/food/log/week · #/histor
 | Risk | Effect | Mitigation |
 |---|---|---|
 | Schema v3 migration (plans, groceries, pantry, profile) | Data loss or broken plans for existing athletes | Keep the migration additive; keep `legacyBackup`; export a backup automatically before the first v3 write; unit-test every mapping in 11.5 |
-| Allergy features without reviewed data | A teen trusts an idea that contains an allergen | Ship P0-06 first; ship ADD-03 only with reviewed tags; never show "safe" |
+| Allergy features without approved data | A teen trusts an idea that contains an allergen | Ship P0-06 first; ship ADD-03 only once the allergen tags are approved (awaiting approval; allergy filtering is built but switched off with `ALLERGY_TAGS_REVIEWED = false`); never show "safe" |
 | Navigation change for current users | Short-term confusion | Redirect every old route; keep labels "Today", "Schedule", "Food"; one-time "What moved" toast on first open |
 | Search quality differs between the local USDA index and the API fallback | Poor results in one mode | A fixed query test set ("banana", "peanut butter", "cheerios", "rice") run against both modes in CI |
 | Scope growth (import, parent view, reminders on phones) | P1 slips | Keep these in P2 and P3; the MVP definition in 13.8 does not depend on them |
-| Timing rules without sources | Advice that is wrong for some sessions | P2-06 rule set with sources and review dates; keep wording general ("a snack", "a meal"), never amounts |
+| Timing rules without sources | Advice that is wrong for some sessions | P2-06 rule set with sources and last-checked dates; keep wording general ("a snack", "a meal"), never amounts |
 
 **Questions that need owner input**
 
 1. **Age range.** High school (14–18) only, or also middle school? The one-pager says both; the research report recommends 14–18 and flags under-13 rules (EV-07). This decides copy tone and whether any parental consent step is needed.
-2. **Nutrition review.** Who reviews the timing thresholds, recovery window, idea notes, allergen tags, and game-day copy (P1-09, P2-06)? No safety-relevant change ships without that sign-off.
-3. **Allergy scope.** Hide ideas that list an allergen (recommended), or only label them?
-4. **Accounts.** Stay local-only with backups (recommended for the MVP), or plan real accounts and sync (P3-03)?
-5. **Parents.** Is a shareable list enough for the MVP (recommended), or is a parent view in scope?
-6. **Reminders on phones.** Invest in the installable app and service worker (P3-01), or keep reminders desktop-only and say so?
-7. **Food search source.** Ship the local USDA index (about 2 million records) with the app server, or rely on the USDA API with a server key? This affects ranking quality and hosting cost.
-8. **Reversing checklist D07.** Confirm the move from six main and five Food destinations to four and four (EV-08).
+2. **Allergy scope.** Hide ideas that list an allergen (recommended), or only label them?
+3. **Accounts.** Stay local-only with backups (recommended for the MVP), or plan real accounts and sync (P3-03)?
+4. **Parents.** Is a shareable list enough for the MVP (recommended), or is a parent view in scope?
+5. **Reminders on phones.** Invest in the installable app and service worker (P3-01), or keep reminders desktop-only and say so?
+6. **Food search source.** Ship the local USDA index (about 2 million records) with the app server, or rely on the USDA API with a server key? This affects ranking quality and hosting cost.
+7. **Reversing checklist D07.** Confirm the move from six main and five Food destinations to four and four (EV-08).
 
 ### 13.8 What "MVP redesign complete" means
 
@@ -3013,7 +3007,7 @@ The MVP redesign is complete when all of the following are true:
 - [ ] A new athlete completes setup in under 2 minutes and sees a Today action that names a real session and a time.
 - [ ] The journey "set up → plan a snack → add a missing item to groceries → finish shopping → pack → log" works end to end at 390 px and 1440 px, with an automated test in CI.
 - [ ] No rendered text contains database labels, ISO dates, bare 24-hour times, calorie rows, streaks, or implicit targets.
-- [ ] No allergen claim appears without per-ingredient data; every product view shows the label line; the reviewer has signed off.
+- [ ] No allergen claim appears without per-ingredient data; every product view shows the label line.
 - [ ] Every write gives feedback; every reversible write offers Undo; no native `confirm()` remains.
 - [ ] The accessibility criteria in section 9 pass, including an automated axe scan and a keyboard-only run of the core journey.
 

@@ -340,10 +340,6 @@ export default function TodayPage({
           <p>{guidance.explanation}</p>
           <p>Your timing, food access, and food at home shape this pick.</p>
           <h3>What the tip is based on</h3>
-          <p>
-            Reviewed by Emily Cornelius, RDN, September 29, 2026 (owner-reported
-            approval).
-          </p>
           <a href="https://pubmed.ncbi.nlm.nih.gov/26920240/">
             Nutrition and athletic performance position statement
           </a>

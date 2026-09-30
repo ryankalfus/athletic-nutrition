@@ -366,7 +366,7 @@ const eventLabel = (event) =>
       ? "workout"
       : "practice";
 // A grocery suggestion fits the diet choices and, once the allergen tags are
-// reviewed, lists none of the athlete's allergies (P1-09).
+// approved, lists none of the athlete's allergies (P1-09).
 export function groceryFitsProfile(item, profile = {}, allergyTagsReviewed) {
   const needs = (profile.avoid || profile.dietaryNeeds || []).filter((need) =>
     DIET_FILTERS.includes(need),
@@ -380,8 +380,7 @@ export function groceryFitsProfile(item, profile = {}, allergyTagsReviewed) {
 
 /**
  * "Add food for this week": 5–8 unchecked staples with a reason each.
- * Sports drinks are never suggested (NUTRITION-REVIEW accepts no new
- * sports-drink recommendation).
+ * Sports drinks are never suggested (no new sports-drink recommendation).
  * @param {{profile?: any, events?: any[], pantry?: any[], items?: any[], date?: string, limit?: number, allergyTagsReviewed?: boolean}} input
  */
 export function weeklyGroceryIdeas({

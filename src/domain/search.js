@@ -182,8 +182,7 @@ export function hasBasicMatch(foods, query) {
 }
 
 // Common household portions for basic foods, from USDA SR Legacy food
-// measures. Shown as a hint and used as the starting amount (pending review,
-// see NUTRITION-REVIEW.md).
+// measures. Shown as a hint and used as the starting amount.
 export const BASIC_PORTIONS = {
   apple: ["1 medium", 182],
   banana: ["1 medium", 118],
