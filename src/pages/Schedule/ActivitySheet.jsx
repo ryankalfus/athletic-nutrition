@@ -50,9 +50,11 @@ export function ActivitySheet({ model }) {
   return (
     <Dialog
       title={
-        editingId ? `Edit ${formatDate(selectedKey)} ${type}` : `Add ${type}`
+        editingId
+          ? `Edit ${new Intl.DateTimeFormat("en-US", { weekday: "long" }).format(new Date(`${selectedKey}T12:00:00`))} ${type}`
+          : `Add ${type}`
       }
-      initialFocusRef={initialFocus}
+      initialFocusRef={editingScope === "date" ? undefined : initialFocus}
       className="activity-sheet"
       onClose={closeActivitySheet}
       dirty={activityDirty}
@@ -67,7 +69,14 @@ export function ActivitySheet({ model }) {
       >
         <div className="schedule-form-scroll">
           <FieldErrors error={formError}>
-            <fieldset>
+            {/* One date of a repeating activity: say so first; its type
+                belongs to the series, so it is not asked again. */}
+            {editingScope === "date" && (
+              <p className="info-callout">
+                Changing {formatDate(selectedKey)} only.
+              </p>
+            )}
+            <fieldset hidden={editingScope === "date"}>
               <legend>Type</legend>
               <SegmentedControl
                 mode="pressed"
@@ -91,9 +100,7 @@ export function ActivitySheet({ model }) {
                 placeholder={activityPlaceholder}
               />
             </label>
-            {editingScope === "date" ? (
-              <p>Changing {formatDate(selectedKey)} only.</p>
-            ) : (
+            {editingScope === "date" ? null : (
               <fieldset>
                 <legend>Date or days</legend>
                 <SegmentedControl

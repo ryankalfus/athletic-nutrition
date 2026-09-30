@@ -1,16 +1,14 @@
-import { CalendarPlus } from "lucide-react";
+import { Plus } from "lucide-react";
 import { useState, useRef } from "react";
 import { Shell } from "../../components/AppFrame.jsx";
-import { Dialog } from "../../components/Dialog.jsx";
+import { Dialog, DialogCancel } from "../../components/Dialog.jsx";
 import { ConfirmDialog } from "../../components/ui/ConfirmDialog.jsx";
 import { useStore } from "../../store.js";
 import { uid } from "../../domain/storage.js";
 import {
-  formatActivityType,
   formatDate,
-  formatDuration,
-  formatLocation,
   formatTime,
+  formatWeekdays,
   plural,
 } from "../../format.js";
 import {
@@ -27,8 +25,8 @@ import { ActivitySheet } from "./ActivitySheet.jsx";
 import { activityTitle } from "../../domain/sport.js";
 import { schoolDayProblem } from "../../domain/setup.js";
 import ScheduleWeek from "./ScheduleWeek.jsx";
+import ScheduleRow from "./ScheduleRow.jsx";
 import MonthGrid from "./MonthGrid.jsx";
-import { EmptyState } from "../../components/ui/EmptyState.jsx";
 import { SegmentedControl } from "../../components/ui/SelectionControls.jsx";
 export default function ScheduleCalendar({
   events,
@@ -56,7 +54,12 @@ export default function ScheduleCalendar({
       ? "month"
       : "week",
   );
-  const [showSchoolForm, setShowSchoolForm] = useState(false);
+  // #/schedule?school=edit (Today's "Add school day") opens the editor.
+  const [showSchoolForm, setShowSchoolForm] = useState(
+    () =>
+      new URLSearchParams(window.location.hash.split("?")[1]).get("school") ===
+      "edit",
+  );
   const [editingId, setEditingId] = useState(null);
   const [editingScope, setEditingScope] = useState("all");
   const [scopePrompt, setScopePrompt] = useState(null);
@@ -122,8 +125,9 @@ export default function ScheduleCalendar({
   const [excludedRanges, setExcludedRanges] = useState(
     schoolSchedule?.excludedRanges || [],
   );
-  const [daysOffStart, setDaysOffStart] = useState(selectedKey);
-  const [daysOffEnd, setDaysOffEnd] = useState(selectedKey);
+  // Days off start empty: no range is suggested until one is picked.
+  const [daysOffStart, setDaysOffStart] = useState("");
+  const [daysOffEnd, setDaysOffEnd] = useState("");
   const [pauseSchool, setPauseSchool] = useState(
     Boolean(schoolSchedule?.pausedUntil || schoolSchedule?.enabled === false),
   );
@@ -644,144 +648,142 @@ export default function ScheduleCalendar({
     }));
   }
 
+  const addOn = (date) => {
+    selectDay(date);
+    resetForm(getDateKey(date));
+    setShowForm(true);
+  };
+  const addActivity = () => {
+    resetForm();
+    setShowForm(true);
+  };
+  const onEditRow = (event, key) => {
+    if (event.type === "school") openSchoolForm();
+    else editEvent(event, key);
+  };
+  const skippedHere = events.filter((e) =>
+    e.recurrence?.excludedDates?.includes(selectedKey),
+  );
+
   return (
-    <Shell>
+    <Shell action={{ label: "+ Add", onClick: addActivity }}>
       <header className="calendar-head">
-        <div>
-          <h1 className="page-title">Schedule</h1>
-        </div>
+        <h1 className="page-title">Schedule</h1>
         <div className="page-head-tools">
-          <button
-            className="primary"
-            onClick={() => {
-              resetForm();
-              setShowForm(true);
-            }}
-          >
+          <button className="primary" onClick={addActivity}>
             + Add
-          </button>
-          <button className="school-button" onClick={openSchoolForm}>
-            School day
           </button>
         </div>
       </header>
-      {(schoolSchedule || showSchoolForm) && (
-        <section className="card school-schedule-card">
-          <div className="school-schedule-summary">
-            <div>
-              <h2>{schoolSchedule?.name || "Set your school schedule"}</h2>
-              {schoolSchedule && (
-                <>
-                  <p>
-                    {formatDate(schoolSchedule.startDate, { year: true })} –{" "}
-                    {formatDate(schoolSchedule.endDate, { year: true })} ·{" "}
+      {/* School row (6.9): one line and one way in, "Edit". */}
+      <section className="card school-schedule-card">
+        <div className="school-schedule-summary">
+          <div>
+            <h2>{schoolSchedule?.name || "School day"}</h2>
+            {schoolSchedule ? (
+              <>
+                <p>
+                  <span className="nowrap">
+                    {formatWeekdays(schoolSchedule.weekdays)}
+                  </span>
+                  {" · "}
+                  <span className="nowrap">
                     {formatTime(schoolSchedule.startTime)}–
                     {formatTime(schoolSchedule.endTime)}
-                  </p>
+                  </span>
                   {schoolSchedule.lunchStartTime && (
-                    <p className="school-food-summary">
-                      Lunch {formatTime(schoolSchedule.lunchStartTime)}–
-                      {formatTime(schoolSchedule.lunchEndTime)} ·{" "}
-                      {schoolSchedule.commuteMinutes ?? 20} min commute
-                    </p>
+                    <>
+                      {" · "}
+                      <span className="nowrap">
+                        Lunch {formatTime(schoolSchedule.lunchStartTime)}
+                      </span>
+                    </>
                   )}
-                  {schoolSchedule.pausedFrom &&
-                    schoolSchedule.pausedUntil &&
-                    todayKey >= schoolSchedule.pausedFrom &&
-                    todayKey <= schoolSchedule.pausedUntil && (
-                      <p>
-                        Paused {formatDate(schoolSchedule.pausedFrom)} –{" "}
-                        {formatDate(schoolSchedule.pausedUntil)}
-                      </p>
-                    )}
-                  {schoolSchedule.excludedRanges?.length > 0 && (
+                </p>
+                {schoolSchedule.pausedFrom &&
+                  schoolSchedule.pausedUntil &&
+                  todayKey >= schoolSchedule.pausedFrom &&
+                  todayKey <= schoolSchedule.pausedUntil && (
                     <p>
-                      No school:{" "}
-                      {schoolSchedule.excludedRanges
-                        .map((range) =>
-                          range.startDate === range.endDate
-                            ? formatDate(range.startDate)
-                            : `${formatDate(range.startDate)} – ${formatDate(range.endDate)}`,
-                        )
-                        .join(", ")}
+                      Paused {formatDate(schoolSchedule.pausedFrom)} –{" "}
+                      {formatDate(schoolSchedule.pausedUntil)}
                     </p>
                   )}
-                </>
-              )}
-            </div>
-            <div className="school-summary-actions">
-              <button
-                className="text-button"
-                onClick={() =>
-                  showSchoolForm ? setShowSchoolForm(false) : openSchoolForm()
-                }
-              >
-                {showSchoolForm ? "Close" : schoolSchedule ? "Edit" : "Set up"}
-              </button>
-            </div>
+                {schoolSchedule.excludedRanges?.length > 0 && (
+                  <p>
+                    No school:{" "}
+                    {schoolSchedule.excludedRanges
+                      .map((range) =>
+                        range.startDate === range.endDate
+                          ? formatDate(range.startDate)
+                          : `${formatDate(range.startDate)} – ${formatDate(range.endDate)}`,
+                      )
+                      .join(", ")}
+                  </p>
+                )}
+              </>
+            ) : (
+              <p>Add your school hours so food fits around class.</p>
+            )}
           </div>
-          {showSchoolForm && (
-            <SchoolDayEditor
-              model={{
-                setShowSchoolForm,
-                saveSchoolSchedule,
-                schoolName,
-                setSchoolName,
-                schoolStartDate,
-                setSchoolStartDate,
-                schoolEndDate,
-                setSchoolEndDate,
-                schoolStartTime,
-                setSchoolStartTime,
-                schoolEndTime,
-                setSchoolEndTime,
-                schoolWeekdays,
-                toggleSchoolDay,
-                lunchStartTime,
-                setLunchStartTime,
-                lunchEndTime,
-                setLunchEndTime,
-                morningSnackTime,
-                setMorningSnackTime,
-                afternoonSnackTime,
-                setAfternoonSnackTime,
-                commuteMinutes,
-                setCommuteMinutes,
-                foodAccess,
-                toggleFoodAccess,
-                daysOffStart,
-                setDaysOffStart,
-                daysOffEnd,
-                setDaysOffEnd,
-                addDaysOff,
-                excludedRanges,
-                setExcludedRanges,
-                pauseSchool,
-                setPauseSchool,
-                pausedFrom,
-                setPausedFrom,
-                pausedUntil,
-                setPausedUntil,
-                schoolError,
-              }}
-            />
-          )}
-        </section>
-      )}
-      <div className="agenda-date-strip">
-        {calendarMode === "month" && (
-          <label>
-            Selected date
-            <input
-              type="date"
-              value={selectedKey}
-              onChange={(e) => {
-                if (e.target.value)
-                  selectDay(new Date(`${e.target.value}T12:00:00`));
-              }}
-            />
-          </label>
+          <button
+            className="text-button"
+            aria-label={
+              schoolSchedule ? "Edit school day" : "Set up school day"
+            }
+            onClick={openSchoolForm}
+          >
+            {schoolSchedule ? "Edit" : "Set up"}
+          </button>
+        </div>
+        {showSchoolForm && (
+          <SchoolDayEditor
+            model={{
+              setShowSchoolForm,
+              saveSchoolSchedule,
+              schoolName,
+              setSchoolName,
+              schoolStartDate,
+              setSchoolStartDate,
+              schoolEndDate,
+              setSchoolEndDate,
+              schoolStartTime,
+              setSchoolStartTime,
+              schoolEndTime,
+              setSchoolEndTime,
+              schoolWeekdays,
+              toggleSchoolDay,
+              lunchStartTime,
+              setLunchStartTime,
+              lunchEndTime,
+              setLunchEndTime,
+              morningSnackTime,
+              setMorningSnackTime,
+              afternoonSnackTime,
+              setAfternoonSnackTime,
+              commuteMinutes,
+              setCommuteMinutes,
+              foodAccess,
+              toggleFoodAccess,
+              daysOffStart,
+              setDaysOffStart,
+              daysOffEnd,
+              setDaysOffEnd,
+              addDaysOff,
+              excludedRanges,
+              setExcludedRanges,
+              pauseSchool,
+              setPauseSchool,
+              pausedFrom,
+              setPausedFrom,
+              pausedUntil,
+              setPausedUntil,
+              schoolError,
+            }}
+          />
         )}
+      </section>
+      <div className="agenda-date-strip">
         <SegmentedControl
           label="Schedule view"
           options={[
@@ -806,8 +808,7 @@ export default function ScheduleCalendar({
             selectDay,
             goToToday,
             getEventsForDay,
-            isConfiguredSchoolDay,
-            setShowForm,
+            addOn,
             openSchoolForm,
             editEvent,
             cancelSchoolDay,
@@ -816,10 +817,8 @@ export default function ScheduleCalendar({
           }}
         />
       )}
-      <section
-        className={`calendar-layout ${calendarMode === "week" ? "week-mode" : ""}`}
-      >
-        {calendarMode === "month" && (
+      {calendarMode === "month" && (
+        <section className="calendar-layout">
           <MonthGrid
             {...{
               monthCursor,
@@ -832,171 +831,82 @@ export default function ScheduleCalendar({
               goToToday,
             }}
           />
-        )}
-        {calendarMode === "month" && (
-          <aside className="card day-agenda">
-            <div className="agenda-head">
-              <div>
-                <span>
-                  {new Intl.DateTimeFormat("en-US", { weekday: "long" }).format(
-                    selectedDate,
-                  )}
-                </span>
-                <strong>
-                  {new Intl.DateTimeFormat("en-US", {
-                    month: "long",
-                    day: "numeric",
-                  }).format(selectedDate)}
-                </strong>
-              </div>
+          {/* The selected day: the same heading and rows as Week view. */}
+          <aside className="card day-agenda" aria-labelledby="day-agenda-title">
+            <div className="schedule-week-day-head">
+              <h2 id="day-agenda-title">
+                {formatDate(selectedKey)}
+                {selectedKey === todayKey && (
+                  <>
+                    {" "}
+                    <span className="badge badge-today">Today</span>
+                  </>
+                )}
+              </h2>
               <button
-                className="primary small"
-                onClick={() => {
-                  setShowSchoolForm(false);
-                  if (showForm) closeActivitySheet();
-                  else {
-                    resetForm();
-                    setShowForm(true);
-                  }
-                }}
+                type="button"
+                className="icon-button schedule-day-add"
+                aria-label={`Add activity on ${formatDate(selectedKey)}`}
+                onClick={() => addOn(selectedDate)}
               >
-                {showForm ? "Cancel" : "+ Add"}
+                <Plus size={20} strokeWidth={1.75} aria-hidden="true" />
               </button>
             </div>
-            {events
-              .filter((e) => e.recurrence?.excludedDates?.includes(selectedKey))
-              .map((e) => (
-                <div className="school-canceled" key={e.id}>
-                  <span>
-                    {e.title} · Skipped on {formatDate(selectedKey)}
-                  </span>
-                  <button
-                    onClick={() =>
-                      setEvents((list) =>
-                        list.map((item) =>
-                          item.id === e.id
-                            ? {
-                                ...item,
-                                recurrence: {
-                                  ...item.recurrence,
-                                  excludedDates:
-                                    item.recurrence.excludedDates.filter(
-                                      (date) => date !== selectedKey,
-                                    ),
-                                },
-                              }
-                            : item,
-                        ),
-                      )
-                    }
-                  >
-                    Restore this day
+            {skippedHere.map((e) => (
+              <div className="school-canceled" key={e.id}>
+                <span>{e.title} · Skipped this day</span>
+                <button
+                  onClick={() =>
+                    setEvents((list) =>
+                      list.map((item) =>
+                        item.id === e.id
+                          ? {
+                              ...item,
+                              recurrence: {
+                                ...item.recurrence,
+                                excludedDates:
+                                  item.recurrence.excludedDates.filter(
+                                    (date) => date !== selectedKey,
+                                  ),
+                              },
+                            }
+                          : item,
+                      ),
+                    )
+                  }
+                >
+                  Restore this day
+                </button>
+              </div>
+            ))}
+            {selectedSchoolCanceled && (
+              <div className="school-canceled">
+                <span>No school this day.</span>
+                {selectedSingleDayOff && (
+                  <button onClick={() => restoreSchoolDay(selectedKey)}>
+                    Restore
                   </button>
-                </div>
-              ))}
-            {!showForm && (
-              <>
-                {selectedSchoolCanceled && (
-                  <div className="school-canceled">
-                    <span>No school this day.</span>
-                    {selectedSingleDayOff && (
-                      <button onClick={() => restoreSchoolDay(selectedKey)}>
-                        Restore
-                      </button>
-                    )}
-                  </div>
                 )}
-                {selectedEvents.length ? (
-                  <div className="agenda-events">
-                    {selectedEvents.map((event) => (
-                      <article
-                        className={`agenda-event ${event.type}`}
-                        key={event.occurrenceId || event.id}
-                      >
-                        <div className="event-time">
-                          <strong>{formatTime(event.startTime)}</strong>
-                          <span>{formatTime(event.endTime)}</span>
-                        </div>
-                        <div className="event-details">
-                          <span>{formatActivityType(event.type)}</span>
-                          <h3>{event.title}</h3>
-                          <p>
-                            {formatDuration(event.startTime, event.endTime)}
-                            {!event.recurring && event.location
-                              ? ` · ${event.location === "home" ? "Home" : formatLocation(event.location)}${event.travelMinutes ? ` · ${event.travelMinutes} min travel` : ""}`
-                              : ""}
-                          </p>
-                        </div>
-                        <div className="event-actions">
-                          {event.recurring ? (
-                            <>
-                              <button onClick={openSchoolForm}>
-                                Edit schedule
-                              </button>
-                              <button
-                                className="danger"
-                                onClick={() => cancelSchoolDay(selectedKey)}
-                                aria-label={`Cancel school on ${formatDate(selectedKey)}`}
-                              >
-                                Cancel this day
-                              </button>
-                            </>
-                          ) : event.recurringSeries ? (
-                            <>
-                              <button
-                                onClick={() => editEvent(event)}
-                                aria-label={`Edit ${event.title}`}
-                              >
-                                Edit
-                              </button>
-                              <button
-                                onClick={() => skipRecurringOccurrence(event)}
-                                aria-label={`Skip ${event.title} on ${formatDate(selectedKey)}`}
-                              >
-                                Skip this day
-                              </button>
-                              <button
-                                className="danger"
-                                onClick={() => deleteEvent(event.id)}
-                                aria-label={`Delete ${event.title}`}
-                              >
-                                Delete…
-                              </button>
-                            </>
-                          ) : (
-                            <>
-                              <button
-                                onClick={() => editEvent(event)}
-                                aria-label={`Edit ${event.title}`}
-                              >
-                                Edit
-                              </button>
-                              <button
-                                className="danger"
-                                onClick={() => deleteEvent(event.id)}
-                                aria-label={`Delete ${event.title}`}
-                              >
-                                Delete
-                              </button>
-                            </>
-                          )}
-                        </div>
-                      </article>
-                    ))}
-                  </div>
-                ) : (
-                  !selectedSchoolCanceled && (
-                    <EmptyState icon={CalendarPlus} title="Nothing scheduled.">
-                      Add a workout, practice, or game—or set your school
-                      schedule.
-                    </EmptyState>
-                  )
-                )}
-              </>
+              </div>
+            )}
+            {selectedEvents.map((event) => (
+              <ScheduleRow
+                key={event.occurrenceId || event.id}
+                event={event}
+                dateKey={selectedKey}
+                schoolSchedule={schoolSchedule}
+                onEdit={onEditRow}
+                onSkipSchool={cancelSchoolDay}
+                onSkip={skipRecurringOccurrence}
+                onDelete={deleteEvent}
+              />
+            ))}
+            {!selectedEvents.length && !selectedSchoolCanceled && (
+              <p className="schedule-day-empty">Nothing scheduled</p>
             )}
           </aside>
-        )}
-      </section>
+        </section>
+      )}
       {showForm && (
         <ActivitySheet
           model={{
@@ -1048,8 +958,12 @@ export default function ScheduleCalendar({
             {scopePrompt.kind === "edit" ? "change" : "delete"}.
           </p>
           <div className="scope-options">
+            {/* Deleting reads as destructive: "only" outlined in the error
+                colour, "all" filled; both 48 px, with Cancel (ACT-03). */}
             <button
-              className="primary"
+              className={
+                scopePrompt.kind === "edit" ? "primary" : "danger-outline"
+              }
               onClick={async () => {
                 const { event, dateKey, kind } = scopePrompt;
                 if (kind === "edit") {
@@ -1071,6 +985,9 @@ export default function ScheduleCalendar({
               {formatDate(scopePrompt.dateKey)}
             </button>
             <button
+              className={
+                scopePrompt.kind === "edit" ? undefined : "danger-button"
+              }
               onClick={async () => {
                 const { event, dateKey, kind } = scopePrompt;
                 if (kind === "edit") {
@@ -1092,6 +1009,7 @@ export default function ScheduleCalendar({
               )}{" "}
               {plural(2, scopePrompt.event.type)}
             </button>
+            <DialogCancel />
           </div>
         </Dialog>
       )}

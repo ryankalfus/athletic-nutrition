@@ -18,9 +18,8 @@ async (page) => {
     d.setDate(d.getDate() + days);
     return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
   };
-  // Today's column in the week view is the only day heading ending in "· Today".
-  const today = () =>
-    p.getByRole("region", { name: /· Today$/ });
+  // Today's day in the week view is the only heading with the Today badge.
+  const today = () => p.getByRole("region", { name: / Today$/ });
   const rows = (title) =>
     p.locator("article.schedule-week-row").filter({ hasText: title });
   const actions = async (title) => {
@@ -48,20 +47,33 @@ async (page) => {
         .getAttribute("aria-checked"))
     )
       throw new Error("Week view is not the default");
-    await p.getByRole("heading", { name: /· Today$/, level: 2 }).waitFor();
-    result.checks.push("Schedule opens in Week view with today marked.");
+    // An empty week is one empty state (TS-20), not seven empty cards.
+    await p
+      .getByRole("heading", { name: "Nothing scheduled this week" })
+      .waitFor();
+    if (await p.locator(".schedule-week-day, .schedule-empty-days").count())
+      throw new Error("An empty week still lists its days");
+    result.checks.push(
+      "Schedule opens in Week view; an empty week shows one empty state.",
+    );
 
     await p.getByRole("button", { name: "+ Add", exact: true }).first().click();
     const sheet = p.getByRole("dialog", { name: "Add practice" });
     await sheet.getByRole("textbox", { name: "Name" }).fill("Practice test");
     await sheet.getByLabel("Ends").fill("15:00");
-    await sheet.getByRole("button", { name: "Add practice", exact: true }).click();
+    await sheet
+      .getByRole("button", { name: "Add practice", exact: true })
+      .click();
     await sheet
       .getByText("Overnight events are not supported", { exact: false })
       .waitFor();
-    if ((await sheet.getByLabel("Ends").getAttribute("aria-invalid")) !== "true")
+    if (
+      (await sheet.getByLabel("Ends").getAttribute("aria-invalid")) !== "true"
+    )
       throw new Error("The Ends field is not marked invalid (A11Y-09)");
-    result.checks.push("An end time before the start is rejected with the overnight message.");
+    result.checks.push(
+      "An end time before the start is rejected with the overnight message.",
+    );
 
     await sheet.getByLabel("Ends").fill("17:30");
     await sheet.getByRole("button", { name: "Away", exact: true }).click();
@@ -74,9 +86,12 @@ async (page) => {
         .getAttribute("aria-pressed")) !== "true"
     )
       throw new Error("Repeat does not default to today's weekday");
-    await sheet.getByRole("button", { name: "Add practice", exact: true }).click();
+    await sheet
+      .getByRole("button", { name: "Add practice", exact: true })
+      .click();
     await sheet.waitFor({ state: "hidden" });
     await rows("Practice test").first().waitFor();
+    await p.getByRole("heading", { name: / Today$/, level: 2 }).waitFor();
     if (!(await today().innerText()).includes("Away · Leave by 3:35 PM"))
       throw new Error("Away practice with travel time is not on today");
     result.checks.push(
@@ -103,7 +118,7 @@ async (page) => {
     await today().getByText("Practice test").waitFor({ state: "hidden" });
     await p.getByRole("radio", { name: "Month" }).click();
     await p.getByRole("button", { name: "Restore this day" }).click();
-    await p.locator(".agenda-event").filter({ hasText: "Practice test" }).waitFor();
+    await rows("Practice test").first().waitFor();
     await p.getByRole("radio", { name: "Week" }).click();
     await today().getByText("Practice test").waitFor();
     result.checks.push(
@@ -129,7 +144,7 @@ async (page) => {
       "Deleting a repeating practice asks for scope, can be closed, and 'all' removes the series.",
     );
 
-    await p.getByRole("button", { name: "School day", exact: true }).click();
+    await p.getByRole("button", { name: /^(Edit|Set up) school day$/ }).click();
     const school = p.getByRole("dialog", { name: "School day" });
     await school.getByLabel("School year starts").fill(inYear(-30));
     await school.getByLabel("School year ends").fill(inYear(120));
@@ -140,11 +155,11 @@ async (page) => {
     await today().getByText("School", { exact: true }).waitFor();
     await actions("School");
     await today().getByRole("menuitem", { name: "Skip this day" }).click();
+    // A skipped school day with nothing else reads "Day off" in its row.
     await p
-      .locator(`.schedule-week-day`)
-      .filter({ hasText: "· Today" })
-      .getByText("No school")
-      .first()
+      .locator(".schedule-empty-days li")
+      .filter({ hasText: "Today" })
+      .getByText("Day off", { exact: true })
       .waitFor();
     await p.getByRole("radio", { name: "Month" }).click();
     await p.getByText("No school this day.").waitFor();

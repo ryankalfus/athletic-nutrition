@@ -7,10 +7,18 @@
 
 .school-schedule-summary {
   display: flex;
-  flex-wrap: wrap;
   align-items: flex-start;
   justify-content: space-between;
   gap: var(--space-3) var(--space-4);
+}
+
+.school-schedule-summary > div {
+  min-width: 0;
+}
+
+.school-schedule-summary > .text-button {
+  flex: 0 0 auto;
+  justify-content: flex-end;
 }
 
 .school-schedule-summary h2 {
@@ -24,12 +32,6 @@
   line-height: var(--leading-small);
 }
 
-.school-summary-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-3);
-}
-
 /* View control row */
 .agenda-date-strip {
   display: flex;
@@ -39,9 +41,8 @@
   margin-bottom: var(--space-4);
 }
 
-.agenda-date-strip label {
-  flex: 1 1 200px;
-  max-width: 260px;
+.agenda-date-strip .segmented {
+  flex: 0 1 280px;
 }
 
 /* Week agenda */
@@ -66,6 +67,7 @@
   background: var(--color-paper);
 }
 
+/* "Sep 28 – Oct 4" on one line between the arrows, "Today" at the end. */
 .schedule-week-switcher strong {
   flex: 1;
   min-width: 0;
@@ -74,6 +76,11 @@
   line-height: var(--leading-numeral-m);
   font-variant-numeric: tabular-nums;
   text-align: center;
+  white-space: nowrap;
+}
+
+.schedule-today {
+  justify-content: flex-end;
 }
 
 .schedule-week-switcher button[aria-label] {
@@ -89,16 +96,32 @@
   box-shadow: var(--shadow-1);
 }
 
+/* Day heading and its 44px add button always share one row. */
 .schedule-week-day-head {
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
   gap: var(--space-3);
 }
 
-.schedule-week-day-head h2 {
+.schedule-week-day-head h2,
+.schedule-empty-days h2 {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1) var(--space-2);
+  min-width: 0;
   margin: 0;
+}
+
+.schedule-day-add {
+  flex: 0 0 auto;
+  color: var(--color-primary);
+}
+
+.badge-today {
+  background: var(--color-selected-bg);
+  color: var(--color-primary-pressed);
 }
 
 .schedule-day-off,
@@ -134,6 +157,28 @@
   grid-column: 1 / -1;
 }
 
+/* School is one muted line in each weekday (SCH-03). */
+.schedule-school-row .schedule-week-row-main {
+  display: block;
+  color: var(--color-ink-muted);
+  font-size: var(--text-small);
+  line-height: var(--leading-small);
+  font-weight: 400;
+}
+
+.schedule-school-row .schedule-week-time {
+  display: inline-flex;
+  font-family: var(--font-ui);
+  font-size: var(--text-small);
+  line-height: var(--leading-small);
+  font-weight: 400;
+}
+
+.schedule-school-row .schedule-week-row-main strong {
+  color: var(--color-ink);
+  font-weight: 600;
+}
+
 .schedule-week-time::before,
 .agenda-event .event-time strong::before,
 .calendar-event-dot {
@@ -145,22 +190,26 @@
   content: "";
 }
 
-:is(.schedule-week-row, .agenda-event).school :is(.schedule-week-time, .event-time strong)::before,
+:is(.schedule-week-row, .agenda-event).school
+  :is(.schedule-week-time, .event-time strong)::before,
 .calendar-event-dot.school {
   background: var(--color-school);
 }
 
-:is(.schedule-week-row, .agenda-event).game :is(.schedule-week-time, .event-time strong)::before,
+:is(.schedule-week-row, .agenda-event).game
+  :is(.schedule-week-time, .event-time strong)::before,
 .calendar-event-dot.game {
   background: var(--color-game);
 }
 
-:is(.schedule-week-row, .agenda-event).workout :is(.schedule-week-time, .event-time strong)::before,
+:is(.schedule-week-row, .agenda-event).workout
+  :is(.schedule-week-time, .event-time strong)::before,
 .calendar-event-dot.workout {
   background: var(--color-workout);
 }
 
-:is(.schedule-week-row, .agenda-event).other :is(.schedule-week-time, .event-time strong)::before,
+:is(.schedule-week-row, .agenda-event).other
+  :is(.schedule-week-time, .event-time strong)::before,
 .calendar-event-dot.other {
   background: var(--color-other);
 }
@@ -191,27 +240,38 @@
   font-weight: 400;
 }
 
-.schedule-empty-day > summary {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--space-1) var(--space-3);
-  padding: 0;
-}
-
-.schedule-empty-day > summary h2 {
+/* Empty days: compact 48px rows with no card chrome; a run of empty days
+ * shares one list (6.9 "collapsible when empty"). */
+.schedule-empty-days {
   margin: 0;
+  padding: 0;
+  list-style: none;
+  border-top: var(--border);
+  border-bottom: var(--border);
 }
 
-.schedule-empty-day > summary span {
+.schedule-empty-days li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto var(--target);
+  align-items: center;
+  gap: var(--space-3);
+  min-height: var(--control-height);
+  padding-left: var(--space-1);
+}
+
+.schedule-empty-days li + li {
+  border-top: var(--border);
+}
+
+.schedule-empty-days h2 {
+  font-size: var(--text-label);
+  line-height: var(--leading-label);
+}
+
+.schedule-empty-days li > span {
   color: var(--color-ink-muted);
   font-size: var(--text-small);
   line-height: var(--leading-small);
-  font-weight: 400;
-}
-
-.schedule-empty-day[open] > summary {
-  margin-bottom: var(--rhythm-row);
 }
 
 /* Month grid */
@@ -263,7 +323,7 @@
   margin-bottom: var(--space-2);
 }
 
-.weekday-row span {
+.weekday-row > span {
   color: var(--color-ink-muted);
   font-size: var(--text-caption);
   line-height: var(--leading-caption);
@@ -271,6 +331,12 @@
   text-align: center;
 }
 
+.weekday-short {
+  display: none;
+}
+
+/* Month cells (SCH-07): no fill or border; the selected day is tinted and
+ * today has one ring on its number. */
 .calendar-day {
   display: grid;
   align-content: start;
@@ -281,13 +347,12 @@
   padding: var(--space-1);
   border: 1px solid transparent;
   border-radius: var(--radius-md);
-  background: var(--color-surface-muted);
+  background: transparent;
   color: var(--color-ink);
   font-weight: 400;
 }
 
 .calendar-day.outside {
-  background: transparent;
   color: var(--color-ink-subtle);
 }
 
@@ -310,21 +375,23 @@
 }
 
 .calendar-day.today .day-number {
-  background: var(--color-ink);
-  color: var(--color-on-dark);
+  box-shadow: inset 0 0 0 2px var(--color-primary);
+  color: var(--color-primary-pressed);
 }
 
 .day-events {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+  align-items: center;
   justify-content: center;
   gap: var(--space-1);
+  min-height: var(--leading-caption);
 }
 
 .more-events {
   color: var(--color-ink-muted);
   font-size: var(--text-caption);
-  line-height: 8px;
+  line-height: var(--leading-caption);
 }
 
 /* Day agenda beside the month grid */
@@ -422,8 +489,8 @@
   line-height: var(--leading-small);
 }
 
-.day-agenda .empty-state {
-  margin-top: var(--space-4);
+.day-agenda .schedule-day-empty {
+  margin-top: var(--rhythm-row);
 }
 
 /* Activity and school-day sheets (DS-15) */
@@ -431,9 +498,43 @@
 .school-form-scroll,
 .school-form,
 .school-days-off,
-.scope-options {
+.scope-options,
+.schedule-form fieldset:not([hidden]) {
   display: grid;
   gap: var(--space-4);
+}
+
+/* A legend is not a grid item; keep its own 8px under it. */
+.schedule-form fieldset > legend {
+  margin-bottom: var(--space-2);
+}
+
+/* Scope choices are equal 48px buttons. */
+.scope-options > button {
+  min-height: var(--control-height);
+}
+
+.scope-options > .danger-outline {
+  border-color: var(--color-error);
+  color: var(--color-error);
+}
+
+@media (hover: hover) {
+  .scope-options > .danger-outline:hover:not(:disabled) {
+    background: var(--color-error-tint);
+  }
+}
+
+/* A note about the sheet's scope, at the top of the form. */
+.info-callout {
+  margin: 0;
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  background: var(--color-info-tint);
+  color: var(--color-info);
+  font-size: var(--text-small);
+  line-height: var(--leading-small);
+  font-weight: 600;
 }
 
 .schedule-form-scroll > *,
@@ -448,13 +549,31 @@
   gap: var(--space-3);
 }
 
-.repeat-settings,
-.school-food-section {
+.repeat-settings {
   display: grid;
   gap: var(--space-4);
   padding: var(--space-4);
   border-radius: var(--radius-md);
   background: var(--color-surface-muted);
+}
+
+/* School day sheet: four sections with one look, a heading over a divider
+ * (School hours, Lunch & snack times, Food at school, Days off). */
+.school-food-section {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.school-form-scroll h3 {
+  margin: var(--space-2) 0 0;
+  padding-top: var(--space-4);
+  border-top: var(--border);
+}
+
+.school-form-scroll > h3:first-of-type {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: 0;
 }
 
 .school-food-section h3,
@@ -471,22 +590,32 @@
 }
 
 /* Weekday circles: a selected day is a 2px primary ring and fill. */
+/* Weekday circles: up to 44px, 8px apart from the start of the row, and
+ * always round (no chip min-height stretching them into ovals). */
 .school-weekdays {
   flex-wrap: nowrap;
-  justify-content: space-between;
-  gap: var(--space-1);
+  justify-content: flex-start;
+  gap: var(--space-2);
 }
 
 .school-weekdays > button {
   flex: 1 1 0;
   max-width: var(--target);
   min-width: 0;
+  min-height: 0;
+  height: auto;
   aspect-ratio: 1;
   padding: 0;
 }
 
-.school-weekdays > button:is([aria-pressed="true"], [aria-checked="true"]) {
+/* A selected day is filled, not only tinted, so it reads at a glance
+ * (.selected outranks the shared chip rule). */
+.school-weekdays
+  > button.selected:is([aria-pressed="true"], [aria-checked="true"]) {
   padding: 0;
+  border-color: var(--color-primary);
+  background: var(--color-primary);
+  color: var(--color-on-dark);
 }
 
 .school-weekdays > button::before {
@@ -525,6 +654,16 @@
   .time-fields,
   .school-date-fields {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 480px) {
+  .weekday-short {
+    display: inline;
+  }
+
+  .weekday-narrow {
+    display: none;
   }
 }
 
@@ -576,4 +715,17 @@
     grid-template-columns: minmax(0, 1fr) var(--width-aside);
     column-gap: var(--space-8);
   }
+}
+
+/* This week at a glance: counts in Barlow numerals, no bullets. */
+.glance-counts {
+  display: grid;
+  gap: var(--space-1);
+  margin: 0 0 var(--space-4);
+  padding: 0;
+  list-style: none;
+}
+
+.glance-counts .numeral {
+  font-size: var(--text-numeral-m);
 }

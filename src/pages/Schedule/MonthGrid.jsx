@@ -89,13 +89,18 @@ export default function MonthGrid({
             year: "numeric",
           }).format(monthCursor)}
         </h2>
-        <button className="today-button" onClick={goToToday}>
-          Go to today
+        <button className="text-button schedule-today" onClick={goToToday}>
+          Today
         </button>
       </div>
-      <div className="weekday-row">
-        {["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"].map((day) => (
-          <span key={day}>{day}</span>
+      {/* Sentence case (5.4); one letter below 480px. Decorative: each day
+          button names its full date. */}
+      <div className="weekday-row" aria-hidden="true">
+        {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
+          <span key={day}>
+            <span className="weekday-short">{day}</span>
+            <span className="weekday-narrow">{day.charAt(0)}</span>
+          </span>
         ))}
       </div>
       <div
@@ -141,16 +146,19 @@ export default function MonthGrid({
             >
               <span className="day-number">{date.getDate()}</span>
               <span className="day-events">
-                {dayEvents.slice(0, 3).map((event) => (
-                  <span
-                    className={`calendar-event-dot ${event.type}`}
-                    key={event.occurrenceId || event.id}
-                    aria-hidden="true"
-                  />
-                ))}
-                {dayEvents.length > 0 && (
+                {dayEvents
+                  .slice(0, dayEvents.length > 3 ? 2 : 3)
+                  .map((event) => (
+                    <span
+                      className={`calendar-event-dot ${event.type}`}
+                      key={event.occurrenceId || event.id}
+                      aria-hidden="true"
+                    />
+                  ))}
+                {/* Up to three marks (SCH-07): past three, two dots and "+n". */}
+                {dayEvents.length > 3 && (
                   <span className="more-events" aria-hidden="true">
-                    {dayEvents.length}
+                    +{dayEvents.length - 2}
                   </span>
                 )}
               </span>

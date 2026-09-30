@@ -637,7 +637,8 @@
   background: var(--color-workout);
 }
 
-:is(.log-activity, .activity-chip):is(.other, .travel) > span:last-child::before,
+:is(.log-activity, .activity-chip):is(.other, .travel)
+  > span:last-child::before,
 .activity-chip:is(.other, .travel)::before {
   background: var(--color-other);
 }
