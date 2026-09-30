@@ -52,13 +52,61 @@
   list-style: none;
 }
 
+/* A result: text, star and Add on one row at every width (SRCH-01). */
+.food-result-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: start;
+}
+
+.food-results > .label-check {
+  margin-bottom: var(--space-2);
+}
+
 /* Old results stay visible, dimmed, until new ones arrive (6.15). */
 .food-results.stale {
   opacity: 0.5;
 }
 
-:is(.food-result-row, .product-result) .allergen-line {
+.product-result .allergen-line {
   color: var(--color-ink);
+}
+
+.food-result-row .allergen-line {
+  margin: var(--space-1) 0 0;
+  color: var(--color-ink-muted);
+}
+
+/* The search error: icon beside the message, Retry under it. */
+.search-error {
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr);
+  align-items: start;
+}
+
+.search-error > button {
+  grid-column: 2;
+  justify-self: start;
+  margin-left: 0;
+}
+
+.search-offline {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0;
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  background: var(--color-info-tint);
+  color: var(--color-info);
+}
+
+/* "Can't find it?" stays reachable at the bottom of the sheet. */
+.search-footer {
+  position: sticky;
+  bottom: 0;
+  padding: var(--space-2) 0;
+  background: var(--color-surface);
 }
 
 .food-source {
@@ -81,6 +129,21 @@
 .scanner-card {
   display: grid;
   gap: var(--space-4);
+}
+
+/* Only a live camera or a captured photo gets the frame (6.15). */
+.camera-frame:not(.active, .has-capture) {
+  display: none;
+}
+
+.scanner-card form {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.scanner-card form > button,
+.scanner-card > button {
+  justify-self: start;
 }
 
 .camera-frame {
@@ -161,9 +224,11 @@
 }
 
 @media (min-width: 768px) {
+  /* Grows with its content from a 480px floor, up to 800px. */
   .app-dialog.food-search-dialog {
     width: min(640px, calc(100vw - 2 * var(--gutter)));
     height: auto;
+    min-height: min(480px, 92dvh);
     max-height: min(92dvh, 800px);
     margin: auto;
     border-radius: var(--radius-xl);

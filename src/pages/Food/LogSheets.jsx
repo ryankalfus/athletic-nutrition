@@ -93,7 +93,8 @@ export function UseFromHomeSheet({ entry, only, onDone, onDirty }) {
           />
         </label>
       ))}
-      <div className="button-row">
+      <div className="sheet-footer">
+        <DialogCancel />
         <button
           aria-busy={pending === "consume" || undefined}
           className="primary"
@@ -101,7 +102,6 @@ export function UseFromHomeSheet({ entry, only, onDone, onDirty }) {
         >
           {pending === "consume" ? "Saving…" : "Save"}
         </button>
-        <DialogCancel />
       </div>
     </form>
   );
@@ -225,7 +225,8 @@ export function ChangedPlanSheet({ plan, date, todayKey, onDone, onDirty }) {
         <p className="food-source">From your plan</p>
         <FormError />
       </FieldErrors>
-      <div className="button-row">
+      <div className="sheet-footer">
+        <DialogCancel />
         <button
           aria-busy={pending === "meal-log" || undefined}
           className="primary"
@@ -233,7 +234,6 @@ export function ChangedPlanSheet({ plan, date, todayKey, onDone, onDirty }) {
         >
           {pending === "meal-log" ? "Saving…" : "Log it"}
         </button>
-        <DialogCancel />
       </div>
     </form>
   );

@@ -293,7 +293,7 @@ async (page) => {
       await go("food/ideas");
       await scan("Food Ideas", width);
       await go("food/home");
-      await p.getByRole("button", { name: "+ Bananas" }).click();
+      await p.getByRole("button", { name: "Add Bananas", exact: true }).click();
       await p.getByRole("radiogroup", { name: "Bananas stock" }).waitFor();
       await scan("At home", width);
       await attempt(`At home menu @${width}`, async () => {
@@ -303,7 +303,7 @@ async (page) => {
         await p.keyboard.press("Escape");
       });
       await go("food/groceries");
-      await p.getByRole("button", { name: "Add food for this week" }).click();
+      await p.getByRole("button", { name: "Suggest for this week" }).click();
       const week = p.getByRole("dialog", { name: "Add food for this week" });
       await week.waitFor();
       await scan("Add food for this week sheet", width);
@@ -326,7 +326,7 @@ async (page) => {
       await scan("Search dialog with results", width);
       await search.getByRole("searchbox").fill("");
       await search
-        .getByRole("button", { name: "Bananas", exact: true })
+        .getByRole("button", { name: "Add Bananas", exact: true })
         .click();
       await search.getByText("Nutrition details (optional)").waitFor();
       await scan("Portion sheet", width);

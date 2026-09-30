@@ -178,6 +178,28 @@ legend {
   resize: vertical;
 }
 
+/* Number fields never show spinner arrows (one look for every amount). */
+input[type="number"] {
+  appearance: textfield;
+}
+
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  margin: 0;
+  appearance: none;
+}
+
+/* The search field's clear button in ink, not browser blue. */
+input[type="search"]::-webkit-search-cancel-button {
+  width: 20px;
+  height: 20px;
+  background: var(--color-ink-muted);
+  appearance: none;
+  cursor: pointer;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round'%3E%3Cpath d='M18 6 6 18M6 6l12 12'/%3E%3C/svg%3E")
+    center / 20px no-repeat;
+}
+
 /* A field with its error and hint below it (DS-13): box, error, hint. */
 .field {
   display: grid;
@@ -299,13 +321,37 @@ fieldset:disabled :is(legend, label) {
   cursor: not-allowed;
 }
 
+/* Disclosures: a 20px chevron that turns when open, not the browser's
+ * 8px triangle. */
 summary {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
   min-height: var(--target);
   padding: var(--space-3) 0;
   color: var(--color-ink);
   font-size: var(--text-label);
   line-height: var(--leading-label);
   font-weight: 600;
+  list-style: none;
+}
+
+summary::-webkit-details-marker {
+  display: none;
+}
+
+summary::before {
+  flex: 0 0 auto;
+  width: 20px;
+  height: 20px;
+  background: currentcolor;
+  content: "";
+  mask: var(--icon-chevron-right) center / 20px no-repeat;
+  transition: transform var(--motion-fast) var(--ease-out);
+}
+
+details[open] > summary::before {
+  transform: rotate(90deg);
 }
 
 table {

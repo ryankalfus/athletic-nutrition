@@ -48,7 +48,11 @@ export function PutAwaySheet({ items, pantry, pending, onCancel, onConfirm }) {
             <li key={item.id}>
               <div>
                 <strong>{item.name}</strong>
-                <small>{match ? `Updates ${match.name} · Have` : "Have"}</small>
+                <small>
+                  {match
+                    ? `Already at home: ${match.name} will be marked Have`
+                    : "New at home"}
+                </small>
               </div>
               <label>
                 <span className="sr-only">Place for {item.name}</span>
@@ -158,7 +162,11 @@ export function GroceryItemForm({
     unit: food ? defaultUnit : item.unit || "package",
     ingredientId: food ? resolved || "" : (ingredientId(item) ?? ""),
     notes: item?.notes || "",
-    price: item?.price ?? "",
+    // Prices read as money: 0.3 shows as 0.30.
+    price:
+      item?.price == null || item.price === ""
+        ? ""
+        : Number(item.price).toFixed(2),
   }));
   const [error, setError] = useState(null);
   const set = (key, value) => {
@@ -235,7 +243,7 @@ export function GroceryItemForm({
             >
               {units.map((unit) => (
                 <option key={unit} value={unit}>
-                  {unit}
+                  {unit.charAt(0).toUpperCase() + unit.slice(1)}
                 </option>
               ))}
             </select>

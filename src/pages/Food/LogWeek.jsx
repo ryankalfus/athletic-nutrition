@@ -106,7 +106,12 @@ export default function LogWeek({ endKey, todayKey, onNavigate }) {
             <tbody>
               {summary.days.map((day) => (
                 <tr key={day.dateKey}>
-                  <th scope="row">{formatDate(day.dateKey)}</th>
+                  <th scope="row" className="nowrap">
+                    {new Intl.DateTimeFormat("en-US", {
+                      weekday: "short",
+                      day: "numeric",
+                    }).format(new Date(`${day.dateKey}T12:00:00`))}
+                  </th>
                   <td>
                     {day.activities.length
                       ? day.activities

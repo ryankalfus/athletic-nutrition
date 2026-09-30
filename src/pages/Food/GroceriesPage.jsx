@@ -183,15 +183,23 @@ export default function GroceriesPage({ todayKey }) {
           }
         />
       </label>
+      {/* Two lines for every row: the name, then amount · price · reason. */}
       <div className="grocery-main">
         <strong>{item.name}</strong>
-        <small>
-          {shoppingAmount(item)}
-          {showPrices && item.price != null && item.price !== ""
-            ? ` · about ${money(Number(item.price) * Number(item.quantity ?? 1))}`
-            : ""}
-        </small>
-        {item.reason && <span className="reason-chip">{item.reason}</span>}
+        <span className="grocery-meta">
+          <span className="nowrap">{shoppingAmount(item)}</span>
+          {showPrices && item.price != null && item.price !== "" && (
+            <span className="nowrap">
+              {" · "}about{" "}
+              {money(Number(item.price) * Number(item.quantity ?? 1))}
+            </span>
+          )}
+          {item.reason && (
+            <span className="reason-chip" title={item.reason}>
+              {item.reason}
+            </span>
+          )}
+        </span>
         {ingredientId(item) === "sports-drink" && (
           <small className="muted">{SPORTS_DRINK_NOTE}</small>
         )}
@@ -211,6 +219,8 @@ export default function GroceriesPage({ todayKey }) {
           },
           {
             label: "Remove",
+            danger: true,
+            separated: true,
             disabled: !!pending,
             onSelect: () =>
               write(
@@ -231,94 +241,111 @@ export default function GroceriesPage({ todayKey }) {
   const known = grocery.items.length - money$.unknown;
   return (
     <div className="groceries-page">
-      <div className="today-section-header">
-        <h2>Groceries</h2>
-        <div className="button-row">
-          {groceryShareItems(grocery.items).length > 0 && (
-            <ShareButton
-              title="Groceries"
-              label="Groceries"
-              getText={() => formatGroceryText(grocery.items)}
-            />
-          )}
-          <button className="primary" onClick={() => setSheet({ type: "add" })}>
-            Add food
-          </button>
-        </div>
-      </div>
-      <div className="week-ideas-prompt">
-        <button
-          onClick={() =>
-            setSheet({ type: "week", ideas: week.items, summary: week.summary })
-          }
-        >
-          Add food for this week
+      {/* The tab names the page (FOOD-06); actions sit in a toolbar. */}
+      <div className="food-toolbar">
+        <h2 className="sr-only">Groceries</h2>
+        {groceryShareItems(grocery.items).length > 0 && (
+          <ShareButton
+            title="Groceries"
+            label="Groceries"
+            iconOnly
+            getText={() => formatGroceryText(grocery.items)}
+          />
+        )}
+        <button className="primary" onClick={() => setSheet({ type: "add" })}>
+          Add food
         </button>
-        <p className="muted">{week.summary}</p>
       </div>
-      {!grocery.items.length && (
-        <EmptyState
-          title="Your list is empty"
-          actions={
-            <button onClick={() => setSheet({ type: "add" })}>Add food</button>
-          }
-        >
-          Add missing items from an idea, or add food yourself.
-        </EmptyState>
-      )}
-      {GROUPS.map(([id, label, test]) => {
-        const list = grocery.items
-          .filter(test)
-          .sort(
-            (a, b) => Number(Boolean(a.checked)) - Number(Boolean(b.checked)),
-          );
-        return (
-          list.length > 0 && (
-            <section key={id} aria-labelledby={`grocery-${id}`}>
-              <h3 id={`grocery-${id}`}>{label}</h3>
-              <ul className="grocery-list">{list.map(row)}</ul>
-            </section>
-          )
-        );
-      })}
-      {showPrices && grocery.items.length > 0 && (
-        <p className="grocery-estimate">
-          {known
-            ? `About ${money(money$.subtotal)} for ${known} of ${items(grocery.items.length)}`
-            : "No price estimates yet."}
-          {grocery.budgetAmount != null &&
-            ` · Budget ${money(Number(grocery.budgetAmount))}`}
-        </p>
-      )}
-      <p className="sr-only" aria-live="polite">
-        {checked.length ? `${items(checked.length)} checked` : ""}
-      </p>
-      {checked.length > 0 && (
-        <section className="finish-bar" aria-labelledby="finish-bar-title">
-          <h2 id="finish-bar-title" className="sr-only">
-            Shopping
-          </h2>
-          {checked.length === grocery.items.length && (
-            <p>Everything's checked. Finish shopping?</p>
-          )}
-          <button
-            className="primary"
-            disabled={!!pending}
-            onClick={() => setSheet({ type: "putaway" })}
-          >
-            Finish shopping ({checked.length})
-          </button>
-        </section>
-      )}
-      <div className="grocery-footer">
-        {trips.length > 0 && (
+      <div className="groceries-layout">
+        <div className="week-ideas-prompt">
           <button
             className="text-button"
-            onClick={() => setSheet({ type: "trips" })}
+            onClick={() =>
+              setSheet({
+                type: "week",
+                ideas: week.items,
+                summary: week.summary,
+              })
+            }
           >
-            Past trips
+            Suggest for this week
           </button>
-        )}
+          <p className="muted">{week.summary}</p>
+        </div>
+        <div className="groceries-list">
+          {!grocery.items.length && (
+            <EmptyState title="Your list is empty">
+              Add missing items from an idea, or add food yourself.
+            </EmptyState>
+          )}
+          {GROUPS.map(([id, label, test]) => {
+            const list = grocery.items
+              .filter(test)
+              .sort(
+                (a, b) =>
+                  Number(Boolean(a.checked)) - Number(Boolean(b.checked)),
+              );
+            return (
+              list.length > 0 && (
+                <section key={id} aria-labelledby={`grocery-${id}`}>
+                  <h3 id={`grocery-${id}`} className="food-group-title">
+                    {label}
+                  </h3>
+                  <ul className="grocery-list">{list.map(row)}</ul>
+                </section>
+              )
+            );
+          })}
+          {trips.length > 0 && (
+            <div className="grocery-footer">
+              <button
+                className="text-button"
+                onClick={() => setSheet({ type: "trips" })}
+              >
+                Past trips
+              </button>
+            </div>
+          )}
+        </div>
+        <div className="groceries-summary">
+          {showPrices && grocery.items.length > 0 && (
+            <p className="grocery-estimate">
+              {known
+                ? `About ${money(money$.subtotal)} for ${known} of ${items(grocery.items.length)}`
+                : "No price estimates yet."}
+              {grocery.budgetAmount != null && (
+                <>
+                  {" · "}
+                  <span className="nowrap">
+                    Budget {money(Number(grocery.budgetAmount))}
+                  </span>
+                </>
+              )}
+            </p>
+          )}
+          <p className="sr-only" aria-live="polite">
+            {checked.length ? `${items(checked.length)} checked` : ""}
+          </p>
+          {/* Phones and tablets: fixed above the tab bar, so it leaves no
+              hole in the page; from 1200px it sits in the right column. */}
+          {checked.length > 0 && (
+            <section className="finish-bar" aria-labelledby="finish-bar-title">
+              <h2 id="finish-bar-title" className="sr-only">
+                Shopping
+              </h2>
+              {checked.length === grocery.items.length && (
+                <p>Everything's checked. Finish shopping?</p>
+              )}
+              <button
+                className="primary"
+                disabled={!!pending}
+                onClick={() => setSheet({ type: "putaway" })}
+              >
+                Finish shopping ({checked.length})
+              </button>
+            </section>
+          )}
+        </div>
       </div>
 
       {sheet?.type === "putaway" && (

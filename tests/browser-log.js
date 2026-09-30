@@ -55,7 +55,7 @@ async (page) => {
       .click();
     await sheet.waitFor({ state: "hidden" });
     await p.goto(`${base}#/food/home`);
-    await p.getByRole("button", { name: "+ Bananas" }).click();
+    await p.getByRole("button", { name: "Add Bananas", exact: true }).click();
     const bananas = p
       .locator(".stock-row")
       .filter({ has: p.getByText("Bananas", { exact: true }) });
@@ -108,7 +108,9 @@ async (page) => {
         .evaluate((node) => node === document.activeElement))
     )
       throw new Error("Search field is not focused when Log food opens");
-    await search.getByRole("button", { name: "Bananas", exact: true }).click();
+    await search
+      .getByRole("button", { name: "Add Bananas", exact: true })
+      .click();
     await search.getByText("Usual portion: 1 medium, 118 g").waitFor();
     await search.getByText("Added by you").waitFor();
     await search.getByText("Nutrition details (optional)").waitFor();
@@ -142,7 +144,9 @@ async (page) => {
 
     // LOG-04: editing keeps the time.
     const shownTime = await row("Bananas").locator(".log-time").innerText();
-    await row("Bananas").getByRole("button", { name: "Bananas options" }).click();
+    await row("Bananas")
+      .getByRole("button", { name: "Bananas options" })
+      .click();
     await row("Bananas").getByRole("menuitem", { name: "Edit" }).click();
     const edit = p.getByRole("dialog", { name: "Edit food" });
     await edit.getByRole("spinbutton", { name: "Amount eaten" }).fill("150");
@@ -186,7 +190,7 @@ async (page) => {
     await p.getByText(`Nothing logged on ${label(keys.yesterday)}.`).waitFor();
     await p.getByRole("button", { name: "Log food", exact: true }).click();
     const past = p.getByRole("dialog", { name: "Log food" });
-    await past.getByRole("button", { name: "Apples", exact: true }).click();
+    await past.getByRole("button", { name: "Add Apples", exact: true }).click();
     await past.getByRole("button", { name: "Save", exact: true }).click();
     await past.getByText("Choose about when you ate it.").waitFor();
     await past.getByRole("radio", { name: "Morning" }).click();
@@ -324,7 +328,9 @@ async (page) => {
 
     // Remove with Undo.
     await p.goto(`${base}#/food/log`);
-    await row("Bananas").getByRole("button", { name: "Bananas options" }).click();
+    await row("Bananas")
+      .getByRole("button", { name: "Bananas options" })
+      .click();
     await row("Bananas").getByRole("menuitem", { name: "Remove" }).click();
     await p.getByRole("status").getByText("Removed Bananas.").waitFor();
     await p.getByRole("status").getByRole("button", { name: "Undo" }).click();

@@ -200,7 +200,7 @@ async (page) => {
     await q.getByRole("heading", { name: "Your list is empty" }).waitFor();
     if (await q.getByRole("button", { name: /^Share list/ }).count())
       throw new Error("Share list shows for an empty grocery list");
-    await q.getByRole("button", { name: "Add food for this week" }).click();
+    await q.getByRole("button", { name: "Suggest for this week" }).click();
     const week = q.getByRole("dialog", { name: "Add food for this week" });
     await week.getByRole("checkbox", { name: /^Bananas · / }).check();
     await week.getByRole("checkbox", { name: /^Pretzels · / }).check();

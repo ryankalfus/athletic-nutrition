@@ -83,7 +83,13 @@
 
 /* Tertiary (text) */
 .text-button {
+  display: inline-flex;
+  align-items: center;
   justify-content: flex-start;
+  font-size: var(--text-label);
+  line-height: var(--leading-label);
+  font-weight: 600;
+  text-decoration: none;
   min-width: var(--target);
   min-height: var(--target);
   padding: var(--space-2) 0;
@@ -143,6 +149,13 @@
   color: var(--color-ink);
 }
 
+/* A disabled icon button dims its icon (Log's next day on today). */
+.icon-button:disabled,
+.icon-button[aria-disabled="true"] {
+  background: transparent;
+  color: var(--color-ink-subtle);
+}
+
 /* Loading: spinner + verb label (5.10). */
 :where(button)[aria-busy="true"]::before {
   width: 16px;
@@ -166,6 +179,14 @@
   flex-wrap: wrap;
   align-items: center;
   gap: var(--space-3);
+}
+
+/* A secondary button beside a primary matches its 48px height. */
+:is(.button-row, .today-section-header, .dialog-actions, .confirm-actions):has(
+    > .primary
+  )
+  > button:not(.primary, .text-button, .icon-button) {
+  min-height: var(--control-height);
 }
 
 /* ---------- Chips (DS-12, CMP-03): multi-select and filters ---------- */
@@ -461,9 +482,9 @@
   position: absolute;
   top: calc(100% + var(--space-1));
   right: 0;
-  z-index: var(--z-sticky);
+  z-index: var(--z-menu);
   display: grid;
-  min-width: 180px;
+  min-width: min(220px, calc(100vw - 2 * var(--gutter)));
   padding: var(--space-2);
   border: var(--border);
   border-radius: var(--radius-md);
@@ -489,6 +510,18 @@
   color: var(--color-error);
 }
 
+/* Opens upward when it would cross the tab bar or the screen bottom. */
+.row-menu-items.opens-up {
+  top: auto;
+  bottom: calc(100% + var(--space-1));
+}
+
+.row-menu-items > .separated {
+  margin-top: var(--space-1);
+  border-top: var(--border);
+  border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+}
+
 /* ---------- Badges (DS-12) ---------- */
 
 .badge,
@@ -506,6 +539,17 @@
   font-weight: 500;
 }
 
+/* Status tints for badges: ready (success) and needs something (warning). */
+.badge-success {
+  background: var(--color-success-tint);
+  color: var(--color-success);
+}
+
+.badge-warning {
+  background: var(--color-warning-tint);
+  color: var(--color-warning);
+}
+
 /* Badge (5.4): Barlow 12/16 600, uppercase +0.04em, the only uppercase style.
  * It never breaks inside itself. */
 .badge {
@@ -516,6 +560,16 @@
   letter-spacing: 0.04em;
   text-transform: uppercase;
   white-space: nowrap;
+}
+
+/* A status dot beside a label (At home: something is low or out). */
+.tab-dot {
+  display: inline-block;
+  flex: 0 0 auto;
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-full);
+  background: var(--color-warning);
 }
 
 .tab-badge {

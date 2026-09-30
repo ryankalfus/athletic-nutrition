@@ -1,4 +1,4 @@
-import { Minus, Plus } from "lucide-react";
+import { BatteryLow, CircleCheck, CircleOff, Minus, Plus } from "lucide-react";
 import { useState, useRef } from "react";
 import { useStore, changeData } from "../../store.js";
 import { useAsyncAction } from "../../hooks/useAsyncAction.js";
@@ -19,6 +19,28 @@ import {
 } from "../../domain/food.js";
 import { EmptyState } from "../../components/ui/EmptyState.jsx";
 import { SegmentedControl } from "../../components/ui/SelectionControls.jsx";
+import { QuickAddList } from "../../components/ui/QuickAddList.jsx";
+
+// Have · Low · Out with an icon; below 360px only the icon shows and the
+// word stays for screen readers (6.5 mobile layout).
+const STOCK_OPTIONS = [
+  ["have", "Have", CircleCheck],
+  ["low", "Low", BatteryLow],
+  ["out", "Out", CircleOff],
+].map(([value, label, Icon]) => [
+  value,
+  <>
+    <Icon size={18} strokeWidth={1.75} aria-hidden="true" />
+    <span className="stock-label">{label}</span>
+  </>,
+]);
+const PLACE_NAMES = {
+  pantry: "kitchen",
+  kitchen: "kitchen",
+  fridge: "fridge",
+  freezer: "freezer",
+  bag: "my bag",
+};
 
 const places = [
   ["kitchen", "Kitchen & pantry", ["pantry", "kitchen"]],
@@ -43,7 +65,13 @@ export default function HomePage({ todayKey }) {
     run(key, () => changeData(fn, message, action));
   const quick = GROCERY_CATALOG.filter((i) =>
     groceryFitsProfile(i, data.profile),
-  ).slice(0, 8);
+  ).slice(0, 6);
+  const addLow = () =>
+    write(
+      "all-low",
+      (d) => stockToGroceries(d, low),
+      "Added low or out foods to groceries.",
+    );
   const add = async (food, choice = null) => {
     const record = makeFoodRecord({
       name: food.name,
@@ -122,32 +150,36 @@ export default function HomePage({ todayKey }) {
   };
   return (
     <div className="home-page">
-      <div className="today-section-header">
-        <h2>At home</h2>
+      {/* The tab already names the page (FOOD-06): the H2 is for screen
+          readers and the action sits in a right-aligned toolbar. */}
+      <div className="food-toolbar">
+        <h2 className="sr-only">At home</h2>
         <button className="primary" onClick={() => setSearch(true)}>
           Add food
         </button>
       </div>
-      <div className="stock-filters" role="group" aria-label="Stock filter">
-        {[
-          ["all", "All"],
-          ["low", "Low or out"],
-          ["bag", "In my bag"],
-        ].map(([key, label]) => (
-          <button
-            key={key}
-            aria-pressed={filter === key}
-            onClick={() => setFilter(key)}
-          >
-            {label}
+      {rows.length > 0 && (
+        <SegmentedControl
+          label="Stock filter"
+          options={[
+            ["all", "All"],
+            ["low", "Low or out"],
+            ["bag", "In my bag"],
+          ]}
+          value={filter}
+          onChange={setFilter}
+        />
+      )}
+      {low.length > 0 && (
+        <div className="low-bar">
+          <p>{low.length} low or out</p>
+          <button disabled={!!pending} onClick={addLow}>
+            Add to groceries
           </button>
-        ))}
-      </div>
+        </div>
+      )}
       {!rows.length && (
-        <EmptyState
-          title="What’s in your kitchen?"
-          actions={<button onClick={() => setSearch(true)}>Add food</button>}
-        >
+        <EmptyState title="What’s in your kitchen?">
           Add a few staples. Ideas that use them move to the top.
         </EmptyState>
       )}
@@ -164,7 +196,9 @@ export default function HomePage({ todayKey }) {
             return (
               list.length > 0 && (
                 <section key={id} aria-labelledby={`place-${id}`}>
-                  <h2 id={`place-${id}`}>{label}</h2>
+                  <h2 id={`place-${id}`} className="food-group-title">
+                    {label}
+                  </h2>
                   <ul className="stock-list">
                     {list.map((row) => (
                       <li className="stock-row" key={row.id}>
@@ -177,16 +211,30 @@ export default function HomePage({ todayKey }) {
                             </small>
                           )}
                         </div>
-                        {!row.availability ||
-                        row.availability === "exact" ||
-                        (row.availability === "out" &&
-                          row.previousAvailability === "exact") ? (
+                        {row.availability === "out" &&
+                        row.previousAvailability === "exact" ? (
+                          // Out after an exact count: "Out" and one restock
+                          // step; "Back in stock" lives in the row menu.
+                          <div className="stock-amount">
+                            <span>Out</span>
+                            <button
+                              aria-label={`Increase ${row.name}`}
+                              onClick={() => step(row, 1)}
+                            >
+                              <Plus
+                                size={20}
+                                strokeWidth={1.75}
+                                aria-hidden="true"
+                              />
+                            </button>
+                          </div>
+                        ) : !row.availability ||
+                          row.availability === "exact" ? (
                           <div className="stock-amount">
                             <button
                               aria-label={`Decrease ${row.name}`}
                               disabled={
-                                Number(counts[row.id] ?? row.quantity) <= 0 ||
-                                row.availability === "out"
+                                Number(counts[row.id] ?? row.quantity) <= 0
                               }
                               onClick={() => step(row, -1)}
                             >
@@ -207,40 +255,11 @@ export default function HomePage({ todayKey }) {
                                 aria-hidden="true"
                               />
                             </button>
-                            {row.availability === "out" && (
-                              <button
-                                disabled={!!pending}
-                                onClick={() =>
-                                  write(
-                                    "status",
-                                    (d) => {
-                                      d.groceryState.pantry =
-                                        d.groceryState.pantry.map((i) =>
-                                          i.id === row.id
-                                            ? setStockStatus(
-                                                i,
-                                                "have",
-                                                todayKey,
-                                              )
-                                            : i,
-                                        );
-                                    },
-                                    null,
-                                  )
-                                }
-                              >
-                                Have
-                              </button>
-                            )}
                           </div>
                         ) : (
                           <SegmentedControl
                             label={`${row.name} stock`}
-                            options={[
-                              ["have", "Have"],
-                              ["low", "Low"],
-                              ["out", "Out"],
-                            ]}
+                            options={STOCK_OPTIONS}
                             value={stockStatus(row)}
                             disabled={!!pending}
                             onChange={(status) =>
@@ -289,18 +308,18 @@ export default function HomePage({ todayKey }) {
                                 setDirty(false);
                               },
                             },
+                            // Every place except the one the food is in.
                             ...places.flatMap(([, group, locations]) =>
                               locations
-                                .filter((location) => location !== "kitchen")
+                                .filter(
+                                  (location) =>
+                                    location !== "kitchen" &&
+                                    PLACE_NAMES[location] !==
+                                      PLACE_NAMES[row.location || "pantry"],
+                                )
                                 .map((location) => ({
                                   key: location,
-                                  label: `Move to ${
-                                    location === "pantry"
-                                      ? "kitchen"
-                                      : location === "bag"
-                                        ? "my bag"
-                                        : location
-                                  }`,
+                                  label: `Move to ${PLACE_NAMES[location]}`,
                                   disabled: !!pending,
                                   onSelect: () =>
                                     write(
@@ -326,6 +345,8 @@ export default function HomePage({ todayKey }) {
                             },
                             {
                               label: "Remove",
+                              danger: true,
+                              separated: true,
                               disabled: !!pending,
                               onSelect: () =>
                                 write(
@@ -349,40 +370,29 @@ export default function HomePage({ todayKey }) {
             );
           })}
         </div>
+        {/* From 1200px a sticky summary; below, the compact bar above. */}
         {low.length > 0 && (
           <aside className="low-summary">
-            <h2>Low or out</h2>
+            <h2 className="food-group-title">Low or out</h2>
             <p>{low.map((i) => i.name).join(", ")}</p>
-            <button
-              disabled={!!pending}
-              onClick={() =>
-                write(
-                  "all-low",
-                  (d) => stockToGroceries(d, low),
-                  "Added low or out foods to groceries.",
-                )
-              }
-            >
+            <button disabled={!!pending} onClick={addLow}>
               Add all to groceries
             </button>
           </aside>
         )}
       </div>
-      <section className="quick-add">
-        <h2>Quick add</h2>
-        <div>
-          {quick.map((food) => (
-            <button
-              key={food.id}
-              disabled={!!pending}
-              onClick={() =>
-                add({ ...food, source: "Quick basic", catalogId: food.id })
-              }
-            >
-              + {food.name}
-            </button>
-          ))}
-        </div>
+      <section className="quick-add" aria-labelledby="quick-add-title">
+        <h2 id="quick-add-title" className="food-group-title">
+          Quick add
+        </h2>
+        <QuickAddList
+          label="Quick add"
+          items={quick}
+          disabled={!!pending}
+          onAdd={(food) =>
+            add({ ...food, source: "Quick basic", catalogId: food.id })
+          }
+        />
       </section>
       {search && (
         <Dialog

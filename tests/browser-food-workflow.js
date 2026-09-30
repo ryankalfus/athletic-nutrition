@@ -24,9 +24,11 @@ async (page) => {
     // Groceries: add for the week, check off, finish, put away.
     await p.goto(`${base}#/food/groceries`);
     await p.getByRole("heading", { name: "Your list is empty" }).waitFor();
-    await p.getByRole("button", { name: "Add food for this week" }).click();
+    await p.getByRole("button", { name: "Suggest for this week" }).click();
     const week = p.getByRole("dialog", { name: "Add food for this week" });
-    if (!(await week.getByRole("button", { name: "Add selected" }).isDisabled()))
+    if (
+      !(await week.getByRole("button", { name: "Add selected" }).isDisabled())
+    )
       throw new Error("Weekly suggestions start pre-selected");
     await week.getByRole("checkbox", { name: /^Bananas · / }).check();
     await week.getByRole("checkbox", { name: /^Pretzels · / }).check();
@@ -52,7 +54,10 @@ async (page) => {
       .selectOption({ label: "Bag" });
     await putAway.getByRole("button", { name: "Add to At home" }).click();
     await putAway.waitFor({ state: "hidden" });
-    await p.getByRole("status").getByText("2 items added to At home.").waitFor();
+    await p
+      .getByRole("status")
+      .getByText("2 items added to At home.")
+      .waitFor();
     await p.getByRole("heading", { name: "Your list is empty" }).waitFor();
     await p.getByRole("button", { name: "Past trips" }).waitFor();
 
@@ -79,8 +84,12 @@ async (page) => {
     // Give Bananas an exact count in bunches. It must still satisfy an idea that
     // needs "1 banana" (other-unit counts count as available), and a log can use it.
     await p.goto(`${base}#/food/home`);
-    await homeRow("Bananas").getByRole("button", { name: "Bananas options" }).click();
-    await homeRow("Bananas").getByRole("menuitem", { name: "Edit details" }).click();
+    await homeRow("Bananas")
+      .getByRole("button", { name: "Bananas options" })
+      .click();
+    await homeRow("Bananas")
+      .getByRole("menuitem", { name: "Edit details" })
+      .click();
     const details = p.getByRole("dialog");
     await details
       .getByRole("combobox", { name: "Amount type" })
@@ -93,8 +102,8 @@ async (page) => {
     // Ideas: ready -> plan -> pack -> log.
     await p.goto(`${base}#/food/ideas`);
     await p
-      .getByRole("group", { name: "Food moment" })
-      .getByRole("button", { name: "Now", pressed: true })
+      .getByRole("radiogroup", { name: "Food moment" })
+      .getByRole("radio", { name: "Now", checked: true })
       .waitFor();
     const card = p
       .locator("article.idea-card")
@@ -121,17 +130,22 @@ async (page) => {
     );
 
     await p
-      .getByRole("group", { name: "Food moment" })
-      .getByRole("button", { name: "Tomorrow" })
+      .getByRole("radiogroup", { name: "Food moment" })
+      .getByRole("radio", { name: "Tomorrow" })
       .click();
     await p.waitForURL(/moment=tomorrow/);
     const fig = p
       .locator("article.idea-card")
-      .filter({ has: p.getByRole("heading", { name: "Fig bar + fresh fruit" }) });
+      .filter({
+        has: p.getByRole("heading", { name: "Fig bar + fresh fruit" }),
+      });
     await fig.getByText("Buy 1 item").waitFor();
     await fig.getByText("Preparation & storage").click();
     await fig.getByRole("button", { name: "Add missing to groceries" }).click();
-    await p.getByRole("status").getByText("Added 1 item to groceries.").waitFor();
+    await p
+      .getByRole("status")
+      .getByText("Added 1 item to groceries.")
+      .waitFor();
     await p.goto(`${base}#/food/groceries`);
     await p
       .getByRole("region", { name: "For your plans" })
@@ -139,7 +153,9 @@ async (page) => {
       .waitFor();
     // Fig bars carry a built-in price estimate; it must stay hidden while the setting is off.
     if ((await main().innerText()).includes("$"))
-      throw new Error("Groceries shows $ for a priced item with price estimates off");
+      throw new Error(
+        "Groceries shows $ for a priced item with price estimates off",
+      );
     result.checks.push(
       "The Tomorrow moment works; Add missing to groceries adds only the fig bars, with no $ shown.",
     );
@@ -161,7 +177,10 @@ async (page) => {
     await entry.getByText("Used from At home").waitFor();
     await entry.getByRole("button", { name: /options$/ }).click();
     await entry.getByRole("menuitem", { name: "Put back at home" }).click();
-    await p.getByRole("status").getByText("Put the food back at home.").waitFor();
+    await p
+      .getByRole("status")
+      .getByText("Put the food back at home.")
+      .waitFor();
     await p.goto(`${base}#/food/home`);
     await homeRow("Bananas").getByText("3 left").waitFor();
     result.checks.push(
@@ -171,7 +190,9 @@ async (page) => {
     // Price estimates on: the estimate line and the price field appear.
     await p.goto(`${base}#/you/access`);
     const access = p.getByRole("dialog", { name: "Food access & budget" });
-    const prices = access.getByRole("switch", { name: /^Show price estimates/ });
+    const prices = access.getByRole("switch", {
+      name: /^Show price estimates/,
+    });
     if (await prices.isChecked())
       throw new Error("Price estimates are not off by default");
     await prices.click();

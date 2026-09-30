@@ -41,7 +41,7 @@ async (page) => {
       const first = await p.locator(".food-result-row").first().innerText();
       if (!/Bananas?, raw/.test(first))
         throw new Error(`Plain banana did not rank first: ${first}`);
-      const listText = await p.locator(".food-result-list").last().innerText();
+      const listText = await p.locator(".food-results").last().innerText();
       // COPY-05: database taxonomy never shows; rows read "Basic food" or "Brand: …".
       if (/Foundation|SR Legacy|FNDDS|Branded/.test(listText))
         throw new Error("USDA data-type labels are visible");
@@ -61,7 +61,7 @@ async (page) => {
         "Search is focused, plain banana ranks first, rows show Basic food and the label line, more results load.",
       );
       await search("abcdefnonfood");
-      await p.getByText("No matching foods.", { exact: false }).waitFor();
+      await p.getByText("No matching foods", { exact: false }).waitFor();
       if (await dialog.getByRole("heading", { name: /Bananas?, raw/ }).count())
         throw new Error("Stale banana results remained after query change");
       result.checks.push(
@@ -80,12 +80,10 @@ async (page) => {
       .getByRole("alert")
       .getByText("Provider rate limit reached.")
       .waitFor();
-    if (
-      !(await p.getByRole("alert").innerText()).includes(
-        "Saved foods and manual entry",
-      )
-    )
-      throw new Error("Failure fallback hidden");
+    // The reassurance sits under the red box, outside the alert.
+    await dialog
+      .getByText("Saved foods and manual entry remain available.")
+      .waitFor();
     await p.unroute("**/api/foods/search?*");
     await p.route("**/api/foods/search?*", (route) =>
       route.fulfill({

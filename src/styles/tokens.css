@@ -3,6 +3,7 @@
  * The only file with literal colors, sizes and durations. Everything else uses these.
  *
  * Breakpoints (mobile first, min-width only; custom media is not supported yet):
+ *   360px  At home rows show stock words, not only icons (6.5)
  *   480px  forms may use two columns
  *   768px  tablet: top bar with four destinations, 24px gutters
  *   1024px desktop: 232px left rail, 32px gutters
@@ -113,6 +114,7 @@
   --tab-bar: 64px;
   --control-height: 48px;
   --target: 44px;
+  --stock-control: 144px; /* At home control column; 168px from 360px */
 
   /* Shape (5.6) */
   --radius-sm: 6px;
@@ -133,11 +135,14 @@
 
   --icon-search: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2352656b' stroke-width='1.75' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='m21 21-4.3-4.3'/%3E%3C/svg%3E");
 
+  --icon-chevron-right: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.75' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m9 18 6-6-6-6'/%3E%3C/svg%3E");
+
   --icon-alert: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Cpath d='M12 8v4M12 16h.01'/%3E%3C/svg%3E");
 
   /* Layers */
   --z-rail: 10;
   --z-sticky: 20;
+  --z-menu: 30; /* row menus: above sticky bars, below toasts and dialogs */
   --z-toast: 40;
   --z-dialog: 50;
 
@@ -146,6 +151,12 @@
   --motion-standard: 200ms;
   --motion-check: 250ms;
   --ease-out: cubic-bezier(0.2, 0, 0, 1);
+}
+
+@media (min-width: 360px) {
+  :root {
+    --stock-control: 168px;
+  }
 }
 
 @media (min-width: 768px) {

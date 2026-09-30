@@ -39,6 +39,17 @@ import { ChangedPlanSheet, foodFor, UseFromHomeSheet } from "./LogSheets.jsx";
 
 const shortDate = (key) => formatDate(key).replace(",", "");
 
+// "Today, Sep 29" for phones under 360px, where the long label wraps.
+function shortDayLabel(date, todayKey) {
+  const day = new Intl.DateTimeFormat("en-US", {
+    month: "short",
+    day: "numeric",
+  }).format(new Date(`${date}T12:00:00`));
+  if (date === todayKey) return `Today, ${day}`;
+  if (date === shiftDate(todayKey, -1)) return `Yesterday, ${day}`;
+  return formatDate(date);
+}
+
 export function dayLabel(date, todayKey) {
   if (date === todayKey) return `Today · ${formatDate(date)}`;
   if (date === shiftDate(todayKey, -1))
@@ -206,7 +217,12 @@ export default function LogDay({ date, todayKey, now, onNavigate }) {
           >
             <ChevronLeft size={20} strokeWidth={1.75} aria-hidden="true" />
           </button>
-          <h2 id="log-day-title">{dayLabel(date, todayKey)}</h2>
+          <h2 id="log-day-title">
+            <span className="label-long">{dayLabel(date, todayKey)}</span>
+            <span className="label-short" aria-hidden="true">
+              {shortDayLabel(date, todayKey)}
+            </span>
+          </h2>
           <button
             type="button"
             className="icon-button"
@@ -287,9 +303,9 @@ export default function LogDay({ date, todayKey, now, onNavigate }) {
         )}
 
         {!log.entries.length && (
-          <EmptyState>
+          <EmptyState title="Nothing logged">
             {isToday
-              ? "Nothing logged yet. Log a meal or snack when you want to."
+              ? "Log a meal or snack when you want to."
               : `Nothing logged on ${formatDate(date)}.`}
           </EmptyState>
         )}
@@ -308,10 +324,18 @@ export default function LogDay({ date, todayKey, now, onNavigate }) {
                     {formatTime(item.event.startTime)}
                   </span>
                   <span>
-                    {item.event.title || formatActivityType(item.event.type)}
-                    {item.event.endTime
-                      ? ` · until ${formatTime(item.event.endTime)}`
-                      : ""}
+                    {/* One text run beside the dot, so it wraps as a line. */}
+                    <span>
+                      {item.event.title || formatActivityType(item.event.type)}
+                      {item.event.endTime && (
+                        <>
+                          {" · "}
+                          <span className="nowrap">
+                            until {formatTime(item.event.endTime)}
+                          </span>
+                        </>
+                      )}
+                    </span>
                   </span>
                 </li>
               ) : (
@@ -374,7 +398,8 @@ export default function LogDay({ date, todayKey, now, onNavigate }) {
             )}
           </ol>
         )}
-        <LabelCheck />
+        {/* The label reminder goes with logged food, not an empty day. */}
+        {log.entries.length > 0 && <LabelCheck />}
       </section>
 
       <aside className="log-side" aria-label="This day at a glance">

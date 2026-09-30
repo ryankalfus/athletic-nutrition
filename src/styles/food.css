@@ -1,27 +1,38 @@
 /* Food frame (6.4), Ideas (6.7), At home (6.5), Groceries (6.6), Log and Week (6.8). */
 
-/* Section control: sticky under the top bar; four segments that fit at 320px (RWD-05). */
-.food-sections {
+/* Section control (RWD-05): a full-width paper strip sticks under the top bar
+ * (56 + 8 + 48 = 112px of phone chrome, RWD-04), so rows never scroll past
+ * beside it; the track inside keeps four equal segments that fit at 320px. */
+.food-sections-bar {
   position: sticky;
   top: var(--top-bar);
   z-index: var(--z-sticky);
+  margin-bottom: var(--space-2);
+  padding-block: var(--space-2);
+  background: var(--color-paper);
+}
+
+.food-sections-bar.is-stuck {
+  box-shadow: 0 1px 0 var(--color-line);
+}
+
+.food-sections {
   display: flex;
   gap: var(--space-1);
-  margin-bottom: var(--space-4);
   padding: var(--space-1);
   overflow-x: auto;
   border-radius: var(--radius-md);
   background: var(--color-surface-muted);
-  box-shadow: 0 0 0 var(--space-2) var(--color-paper);
   scrollbar-width: none;
 }
 
 .food-sections :is(a, button) {
   display: inline-flex;
-  flex: 1 0 auto;
+  flex: 1 1 auto;
   align-items: center;
   justify-content: center;
   gap: var(--space-1);
+  min-width: var(--target);
   min-height: 40px;
   padding: 0 var(--space-1);
   border: 1px solid transparent;
@@ -60,6 +71,44 @@
   color: var(--color-ink);
 }
 
+/* A tab's actions, right-aligned; the tab bar already names the page. */
+.food-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-3);
+}
+
+/* One group heading style on every Food tab (At home places, Groceries
+ * groups, Quick add, Low or out). */
+.food-group-title {
+  margin: 0 0 var(--space-2);
+  font-size: var(--text-h3);
+  line-height: var(--leading-h3);
+  font-weight: 600;
+}
+
+/* Quick add and Quick basics: one row of secondary buttons with a Plus
+ * icon that scrolls sideways instead of wrapping (4px keeps focus rings). */
+.quick-add-list {
+  display: flex;
+  gap: var(--space-2);
+  margin: 0;
+  padding: var(--space-1);
+  overflow-x: auto;
+  list-style: none;
+  scrollbar-width: thin;
+}
+
+.quick-add-list li {
+  flex: 0 0 auto;
+}
+
+.quick-add-list button {
+  white-space: nowrap;
+}
+
 /* Ideas */
 .ideas-page,
 .home-page,
@@ -86,6 +135,26 @@
   justify-self: center;
 }
 
+/* The moment control scrolls sideways on phones with natural-width
+ * segments; the chosen one is scrolled into view. */
+.moment-scroller {
+  padding: var(--space-1) 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.moment-scroller .segmented {
+  width: max-content;
+  min-width: 100%;
+}
+
+.moment-scroller .segmented > button {
+  flex: 1 0 auto;
+  padding-inline: var(--space-3);
+  white-space: nowrap;
+}
+
+/* Planned cards share the ideas grid, so a plan is as wide as an idea. */
 .ideas-grid,
 .planned-meals {
   display: grid;
@@ -93,8 +162,20 @@
   gap: var(--rhythm-card);
 }
 
+.planned-meals > h3 {
+  grid-column: 1 / -1;
+  margin: 0;
+}
+
 .planned-meals {
   margin-bottom: var(--space-4);
+}
+
+.meal-plan-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-2);
 }
 
 .idea-card,
@@ -121,9 +202,15 @@
 }
 
 .idea-readiness {
-  color: var(--color-ink-muted);
-  font-size: var(--text-caption);
-  line-height: var(--leading-caption);
+  align-self: flex-start;
+}
+
+/* "To buy" stands out from "At home": warning colour and a basket. */
+.idea-card li .to-buy {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  color: var(--color-warning);
   font-weight: 600;
 }
 
@@ -158,9 +245,15 @@
   gap: var(--space-2);
 }
 
+/* Text actions start on the card's content edge. */
+.idea-secondary {
+  gap: var(--space-5);
+}
+
 .idea-secondary button {
-  padding: var(--space-2) var(--space-3);
-  border-color: transparent;
+  justify-content: flex-start;
+  padding: var(--space-2) 0;
+  border: 0;
   background: transparent;
   color: var(--color-ink-muted);
 }
@@ -201,7 +294,7 @@
 }
 
 .home-layout section h2 {
-  margin: 0;
+  margin: 0 0 var(--space-2);
 }
 
 .stock-list {
@@ -210,31 +303,43 @@
   list-style: none;
 }
 
+/* At home row (HOME-01): name, a fixed-width control column and the menu,
+ * on one line at every width (the control shrinks to icons below 360px). */
 .stock-row {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) var(--stock-control) var(--target);
   align-items: center;
-  gap: var(--space-2) var(--space-3);
+  gap: var(--space-2);
   min-height: 56px;
   padding: var(--space-2) 0;
   border-bottom: var(--border);
 }
 
 .stock-row > div:first-child {
-  flex: 1 1 96px;
   min-width: 0;
 }
 
+/* Long names stop at two lines (the full name is in the Edit sheet). */
 .stock-row strong {
-  display: block;
+  display: -webkit-box;
+  overflow: hidden;
   font-size: var(--text-body);
   line-height: var(--leading-body);
   font-weight: 600;
+  overflow-wrap: anywhere;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
 }
 
 .stock-row small {
   display: block;
+  overflow: hidden;
   color: var(--color-ink-muted);
+  font-size: var(--text-small);
+  line-height: var(--leading-small);
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .stock-row .stock-warning {
@@ -242,18 +347,16 @@
   font-weight: 600;
 }
 
-.stock-row .row-menu {
-  margin-left: auto;
-}
-
 .stock-amount {
   display: flex;
   align-items: center;
-  gap: var(--space-2);
+  justify-content: flex-end;
+  gap: var(--space-1);
 }
 
 .stock-amount > span {
-  min-width: 56px;
+  flex: 1 1 auto;
+  min-width: 0;
   font-family: var(--font-numeral);
   font-size: var(--text-numeral-m);
   font-weight: 600;
@@ -266,16 +369,63 @@
   padding: 0;
 }
 
-.stock-row .segmented {
-  flex-wrap: nowrap;
+.stock-row .segmented > button {
+  gap: var(--space-1);
 }
 
-.stock-row .segmented > button {
-  min-width: var(--control-height);
-  padding-inline: var(--space-2);
+/* Below 360px the stock words stay for screen readers only (6.5). */
+.stock-label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.stock-row .segmented svg {
+  width: 18px;
+  height: 18px;
+}
+
+@media (min-width: 360px) {
+  .stock-label {
+    position: static;
+    width: auto;
+    height: auto;
+    overflow: visible;
+    clip-path: none;
+  }
+
+  .stock-row .segmented svg {
+    display: none;
+  }
+}
+
+/* Below 1200px a compact "N low or out · Add to groceries" bar replaces the
+ * summary card, so names are not listed twice. */
+.low-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2) var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  background: var(--color-warning-tint);
+}
+
+.low-bar p {
+  margin: 0;
+  color: var(--color-warning);
+  font-weight: 600;
 }
 
 .low-summary {
+  display: none;
+}
+
+.home-layout > .low-summary {
   align-self: start;
   padding: var(--card-padding);
   border: var(--border);
@@ -290,10 +440,6 @@
 
 .quick-add {
   margin-top: var(--space-4);
-}
-
-.quick-add h2 {
-  margin-bottom: var(--space-2);
 }
 
 .home-details {
@@ -311,9 +457,20 @@
   min-width: 0;
 }
 
-/* Groceries */
-.groceries-page {
-  max-width: 640px;
+/* Groceries: the list, then (from 1200px) a right column with the week
+ * prompt, the estimate and Finish shopping (6.6). */
+.groceries-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-4);
+}
+
+.groceries-list,
+.groceries-summary {
+  display: grid;
+  align-content: start;
+  gap: var(--space-4);
+  min-width: 0;
 }
 
 .week-ideas-prompt {
@@ -336,13 +493,11 @@
   list-style: none;
 }
 
-.groceries-page section h2 {
-  margin-bottom: var(--space-1);
-}
-
+/* One anatomy for every row: check, two lines, menu, all aligned on the
+ * name line (padding centres the 24px name on the 44px controls). */
 .grocery-row {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: var(--space-2);
   min-height: 56px;
   padding: var(--space-1) 0;
@@ -365,12 +520,29 @@
 }
 
 .grocery-main {
-  display: flex;
+  display: grid;
   flex: 1;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: var(--space-1) var(--space-2);
+  gap: 0;
   min-width: 0;
+  padding-top: calc((var(--target) - var(--leading-body)) / 2);
+}
+
+.grocery-meta {
+  display: flex;
+  align-items: center;
+  gap: 0 var(--space-2);
+  min-width: 0;
+  color: var(--color-ink-muted);
+  font-size: var(--text-small);
+  line-height: var(--leading-small);
+}
+
+.grocery-meta > .reason-chip {
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .grocery-main strong {
@@ -386,7 +558,8 @@
 }
 
 .grocery-main .muted {
-  flex-basis: 100%;
+  font-size: var(--text-small);
+  line-height: var(--leading-small);
 }
 
 .grocery-row.checked strong {
@@ -398,23 +571,34 @@
   border-bottom: var(--border);
 }
 
+/* Finish shopping: fixed above the tab bar on phones (and at the bottom on
+ * tablets), a full-width 52px primary with no card, so it leaves no hole. */
 .finish-bar {
-  position: sticky;
+  position: fixed;
+  right: var(--gutter);
   bottom: calc(var(--tab-bar) + var(--space-2) + env(safe-area-inset-bottom));
+  left: var(--gutter);
   z-index: var(--z-sticky);
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-2) var(--space-4);
-  padding: var(--space-3) var(--space-4);
-  border-radius: var(--radius-lg);
-  background: var(--color-surface);
-  box-shadow: var(--shadow-2);
+  display: grid;
+  gap: var(--space-2);
 }
 
 .finish-bar p {
   margin: 0;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-1);
+}
+
+.finish-bar .primary {
+  width: 100%;
+  min-height: 52px;
+  box-shadow: var(--shadow-3);
+}
+
+.groceries-page:has(.finish-bar) {
+  padding-bottom: calc(52px + var(--space-8));
 }
 
 .grocery-footer {
@@ -433,6 +617,15 @@
 .grocery-sheet {
   display: grid;
   gap: var(--space-4);
+}
+
+.put-away-list li > div {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.put-away-list li {
+  flex-wrap: nowrap;
 }
 
 .put-away-list li,
@@ -467,9 +660,31 @@
   gap: var(--space-4);
 }
 
-.log-page > .segmented {
+/* Day · Week reads as tabs, not a second copy of the section control. */
+.log-view-tabs .segmented {
   justify-self: start;
   width: min(100%, 240px);
+  padding: 0;
+  border-bottom: var(--border);
+  border-radius: 0;
+  background: transparent;
+}
+
+.log-view-tabs .segmented > button,
+.log-view-tabs
+  .segmented
+  > button:is([aria-pressed="true"], [aria-checked="true"]) {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.log-view-tabs
+  .segmented
+  > button:is([aria-pressed="true"], [aria-checked="true"]) {
+  box-shadow: inset 0 -3px 0 var(--color-primary);
+  color: var(--color-primary-pressed);
 }
 
 .log-layout {
@@ -499,7 +714,7 @@
  * Sticks under the Food section control on phones (6.8). */
 .day-switcher {
   position: sticky;
-  top: calc(var(--top-bar) + var(--space-12) + var(--space-2));
+  top: calc(var(--top-bar) + var(--space-16));
   z-index: var(--z-sticky);
   display: grid;
   grid-template-columns: var(--target) minmax(0, 1fr) var(--target) auto;
@@ -518,6 +733,32 @@
   font-size: var(--text-h3);
   line-height: var(--leading-h3);
   text-align: center;
+  text-wrap: balance;
+}
+
+/* "Today, Sep 29" under 360px; the long label stays for screen readers. */
+.day-switcher .label-long {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+@media (min-width: 360px) {
+  .day-switcher .label-long {
+    position: static;
+    width: auto;
+    height: auto;
+    overflow: visible;
+    clip-path: none;
+    white-space: normal;
+  }
+
+  .day-switcher .label-short {
+    display: none;
+  }
 }
 
 .day-picker {
@@ -561,6 +802,11 @@
 .log-prompt p {
   margin: 0;
   font-weight: 600;
+}
+
+/* Two equal 48px answers that share the row, or stack full width. */
+.log-prompt .button-row > button {
+  flex: 1 1 auto;
 }
 
 .log-timeline {
@@ -733,6 +979,7 @@
   margin: 0;
   font-size: var(--text-h3);
   line-height: var(--leading-h3);
+  text-wrap: pretty;
 }
 
 .week-days {
@@ -783,6 +1030,10 @@
   text-align: left;
 }
 
+.week-table td:last-child {
+  white-space: nowrap;
+}
+
 .log-week > p:last-child {
   margin: 0;
   font-size: var(--text-small);
@@ -814,38 +1065,73 @@
 
 @media (min-width: 768px) {
   .food-sections {
-    align-self: start;
     width: fit-content;
     max-width: 100%;
   }
 
   .food-sections :is(a, button) {
+    flex: 1 0 auto;
     padding: 0 var(--space-4);
   }
-}
 
-@media (min-width: 1024px) {
-  .food-sections {
-    top: 0;
-  }
-
-  .day-switcher {
-    top: calc(var(--space-12) + var(--space-2));
-  }
-
-  .ideas-grid {
+  /* Ideas: two columns from the 768px viewport. */
+  .ideas-grid,
+  .planned-meals {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .finish-bar {
-    bottom: var(--space-4);
+    bottom: calc(var(--space-4) + env(safe-area-inset-bottom));
+    left: auto;
+    width: min(360px, calc(100vw - 2 * var(--gutter)));
+  }
+}
+
+@media (min-width: 1024px) {
+  .food-sections-bar {
+    top: 0;
+  }
+
+  .day-switcher {
+    top: var(--space-16);
   }
 }
 
 @media (min-width: 1200px) {
   .home-layout,
-  .log-layout {
+  .log-layout,
+  .groceries-layout {
     grid-template-columns: minmax(0, 1fr) var(--width-aside);
+  }
+
+  .groceries-layout > .week-ideas-prompt {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  .groceries-layout > .groceries-list {
+    grid-column: 1;
+    grid-row: 1 / span 2;
+  }
+
+  .groceries-layout > .groceries-summary {
+    position: sticky;
+    top: var(--sticky-offset);
+    grid-column: 2;
+  }
+
+  /* In the right column the finish action sits in the flow. */
+  .finish-bar {
+    position: static;
+    width: auto;
+  }
+
+  .groceries-page:has(.finish-bar) {
+    padding-bottom: 0;
+  }
+
+  .low-bar {
+    display: none;
   }
 
   .log-side {
@@ -853,14 +1139,16 @@
     top: var(--sticky-offset);
   }
 
-  .low-summary {
+  .home-layout > .low-summary {
     position: sticky;
     top: var(--sticky-offset);
+    display: block;
   }
 }
 
 @media (min-width: 1280px) {
-  .ideas-grid {
+  .ideas-grid,
+  .planned-meals {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }

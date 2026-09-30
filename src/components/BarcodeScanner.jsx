@@ -9,6 +9,9 @@ export default function BarcodeScanner({ onAdd, onClose }) {
   const [cameraActive, setCameraActive] = useState(false);
   const [capturedImage, setCapturedImage] = useState("");
   const [error, setError] = useState("");
+  // Camera problems show under the camera buttons, lookup problems under
+  // the barcode field (6.15).
+  const [cameraError, setCameraError] = useState("");
   const videoRef = useRef(null);
   const streamRef = useRef(null);
   const detectorRef = useRef(null);
@@ -105,10 +108,9 @@ export default function BarcodeScanner({ onAdd, onClose }) {
 
   async function startCamera() {
     setError("");
+    setCameraError("");
     if (!navigator.mediaDevices?.getUserMedia) {
-      setError(
-        "Camera access is unavailable here. Enter the barcode manually instead.",
-      );
+      setCameraError("Camera is off. Type the barcode number instead.");
       return;
     }
 
@@ -133,9 +135,7 @@ export default function BarcodeScanner({ onAdd, onClose }) {
       scanTimerRef.current = window.setTimeout(scanCameraFrame, 100);
     } catch {
       stopCamera();
-      setError(
-        "Camera access was not available. Allow camera permission or enter the barcode manually.",
-      );
+      setCameraError("Camera is off. Type the barcode number instead.");
     }
   }
 
@@ -176,7 +176,10 @@ export default function BarcodeScanner({ onAdd, onClose }) {
   return (
     <section className="scanner-card">
       <h3>Scan or enter a barcode</h3>
-      <div className={`camera-frame${cameraActive ? " active" : ""}`}>
+      {/* The frame shows only with a live camera or a captured photo. */}
+      <div
+        className={`camera-frame${cameraActive ? " active" : ""}${capturedImage ? " has-capture" : ""}`}
+      >
         <video ref={videoRef} muted playsInline />
         {cameraActive && (
           <div className="scan-guide" aria-hidden="true">
@@ -199,6 +202,11 @@ export default function BarcodeScanner({ onAdd, onClose }) {
           Take photo
         </button>
       </div>
+      {cameraError && (
+        <p className="inline-error" role="alert">
+          <span>{cameraError}</span>
+        </p>
+      )}
       <form
         onSubmit={(e) => {
           e.preventDefault();
@@ -223,7 +231,7 @@ export default function BarcodeScanner({ onAdd, onClose }) {
       </form>
       {error && (
         <p className="inline-error" role="alert">
-          {error}
+          <span>{error}</span>
         </p>
       )}
       {loading && <p role="status">Looking up product…</p>}

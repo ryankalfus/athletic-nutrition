@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Heart } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { Heart, ShoppingBasket } from "lucide-react";
 import { useStore, changeData } from "../../store.js";
 import { useRoute } from "../../routing.js";
 import { useAsyncAction } from "../../hooks/useAsyncAction.js";
@@ -24,6 +24,15 @@ import {
 import { Dialog } from "../../components/Dialog.jsx";
 import { LabelCheck } from "../../components/ui/LabelCheck.jsx";
 import { EmptyState } from "../../components/ui/EmptyState.jsx";
+import { Menu } from "../../components/ui/Menu.jsx";
+import { SegmentedControl } from "../../components/ui/SelectionControls.jsx";
+
+const MOMENTS = [
+  ["now", "Now"],
+  ["before", "Before practice"],
+  ["after", "After practice"],
+  ["tomorrow", "Tomorrow"],
+];
 
 export default function IdeasPage({ now, todayKey }) {
   const { current } = useStore();
@@ -47,7 +56,23 @@ export default function IdeasPage({ now, todayKey }) {
     data,
   });
   const hiddenByLowCost = lowCostHiddenCount(inputs);
-  const plans = data.mealPlans.filter((p) => p.date === date);
+  // Before and After show only their own plans (recovery is After).
+  const plans = data.mealPlans.filter(
+    (p) =>
+      p.date === date &&
+      (moment === "before"
+        ? p.moment !== "recovery"
+        : moment === "after"
+          ? p.moment === "recovery"
+          : true),
+  );
+  const moments = useRef(null);
+  // The chosen moment is scrolled into view in the phone scroller.
+  useEffect(() => {
+    moments.current
+      ?.querySelector('[aria-checked="true"]')
+      ?.scrollIntoView({ block: "nearest", inline: "nearest" });
+  }, [moment]);
   const write = (key, fn, message) => run(key, () => changeData(fn, message));
   const addMissing = (idea) => {
     const count = missingGroceries(
@@ -72,30 +97,25 @@ export default function IdeasPage({ now, todayKey }) {
     <div className="ideas-page">
       {/* Outline for screen readers: Food (h1) › Ideas (h2) › cards (h3). */}
       <h2 className="sr-only">Ideas</h2>
-      <div className="moment-picker" role="group" aria-label="Food moment">
-        {[
-          ["now", "Now"],
-          ["before", "Before practice"],
-          ["after", "After practice"],
-          ["tomorrow", "Tomorrow"],
-        ].map(([id, label]) => (
-          <button
-            key={id}
-            aria-pressed={moment === id}
-            onClick={() => {
-              setLimit(6);
-              setReplace(null);
-              navigate(`food/ideas?moment=${id}`);
-            }}
-          >
-            {label}
-          </button>
-        ))}
+      {/* One choice of four: a segmented control (DS-12) that scrolls
+          sideways on phones. */}
+      <div className="moment-scroller" ref={moments}>
+        <SegmentedControl
+          label="Food moment"
+          options={MOMENTS}
+          value={moment}
+          onChange={(id) => {
+            setLimit(6);
+            setReplace(null);
+            navigate(`food/ideas?moment=${id}`);
+          }}
+        />
       </div>
+      {/* One context format for every moment: activity, then the day. */}
       <p>
         {moment === "now"
           ? guidance.label
-          : `${formatDate(date)}${event ? ` · ${event.title} ${formatTime(event.startTime)}` : " · No activity scheduled"}`}
+          : `${event ? `${event.title} at ${formatTime(event.startTime)}` : "No activity scheduled"} · ${formatDate(date)}`}
       </p>
       {guidance.travelMode && (
         <p>Away activity — showing foods that travel well.</p>
@@ -119,6 +139,8 @@ export default function IdeasPage({ now, todayKey }) {
           </button>
         </p>
       )}
+      {/* Allergies: once for the page, not on every card. */}
+      {(plans.length > 0 || ideas.length > 0) && <LabelCheck />}
       {plans.length > 0 && (
         <section className="planned-meals" aria-label="Planned food">
           <h3>Planned {date === todayKey ? "today" : "tomorrow"}</h3>
@@ -189,21 +211,35 @@ export default function IdeasPage({ now, todayKey }) {
           const saved = data.favorites.some((f) => f.id === idea.id);
           return (
             <article className="idea-card" key={idea.id}>
-              <p className="idea-readiness">
-                {missing.length
-                  ? `Buy ${missing.length} ${missing.length === 1 ? "item" : "items"}`
-                  : "Ready — you have everything"}
-              </p>
               <h3>{idea.name}</h3>
               <p>{idea.note}</p>
               <ul>
                 {ingredients.map((i) => (
                   <li key={i.ingredientId}>
                     <span>{i.displayAmount}</span>
-                    <small>{i.sufficient ? "At home" : "To buy"}</small>
+                    {i.sufficient ? (
+                      <small>At home</small>
+                    ) : (
+                      <small className="to-buy">
+                        <ShoppingBasket
+                          size={16}
+                          strokeWidth={1.75}
+                          aria-hidden="true"
+                        />
+                        To buy
+                      </small>
+                    )}
                   </li>
                 ))}
               </ul>
+              {/* Readiness as a badge under what it summarizes (IDEA-03). */}
+              <p
+                className={`badge idea-readiness ${missing.length ? "badge-warning" : "badge-success"}`}
+              >
+                {missing.length
+                  ? `Buy ${missing.length} ${missing.length === 1 ? "item" : "items"}`
+                  : "Ready — you have everything"}
+              </p>
               {ingredients.some((i) => i.ingredientId === "sports-drink") && (
                 <p className="muted">{SPORTS_DRINK_NOTE}</p>
               )}
@@ -272,7 +308,6 @@ export default function IdeasPage({ now, todayKey }) {
                   Not for me
                 </button>
               </div>
-              <LabelCheck />
               <details>
                 <summary>Preparation &amp; storage</summary>
                 <p>
@@ -297,8 +332,7 @@ export default function IdeasPage({ now, todayKey }) {
       )}
       {ideas.length > 0 && (
         <p className="muted idea-guidance">
-          Ideas are examples, not amounts you must eat. Check labels for
-          allergens.
+          Ideas are examples, not amounts you must eat.
         </p>
       )}
       {confirm && (
@@ -358,14 +392,37 @@ export function MealPlanCard({
   const changed = profileSignature(data.profile) !== plan.profileSignature;
   return (
     <article className="meal-plan-card">
-      <h3>{plan.template.name}</h3>
+      <div className="meal-plan-head">
+        <h3>{plan.template.name}</h3>
+        {/* Change and Remove in a row menu; Remove reads as destructive. */}
+        <Menu
+          label={`${plan.template.name} plan options`}
+          items={[
+            plan.status !== "eaten" && {
+              label: "Change idea",
+              onSelect: () => setReplace(plan.id),
+            },
+            {
+              label: "Remove plan",
+              danger: true,
+              separated: plan.status !== "eaten",
+              disabled: !!pending,
+              onSelect: () =>
+                write(
+                  "undo-plan",
+                  (d) => undoPlan(d, plan.id),
+                  "Removed plan.",
+                ),
+            },
+          ]}
+        />
+      </div>
       <p>
         {plan.eatAt
           ? `Eat around ${formatTime(plan.eatAt)}`
           : "Eat when it fits your day"}{" "}
         · {formatPlanStatus(plan.status)}
       </p>
-      <LabelCheck />
       {changed && (
         <p>
           Your food needs changed. Check this plan.{" "}
@@ -387,49 +444,34 @@ export function MealPlanCard({
           </button>
         </p>
       )}
-      {plan.status !== "eaten" && (
-        <button
-          className="primary"
-          disabled={
-            !!pending || (plan.status === "packed" && early && !missing.length)
-          }
-          onClick={(event) =>
-            event.detail > 1
-              ? undefined
-              : missing.length
-                ? addMissing(plan.template)
-                : plan.status === "packed"
-                  ? setConfirm(plan)
-                  : write(
-                      "packed",
-                      (d) => markPlanPacked(d, plan.id),
-                      "Marked packed.",
-                    )
-          }
-        >
-          {missing.length
-            ? `Add ${missing.length} ${missing.length === 1 ? "item" : "items"} to groceries`
-            : plan.status === "packed"
-              ? early
-                ? `Eat around ${formatTime(plan.eatAt)}`
-                : "Log it"
-              : "Mark packed"}
-        </button>
-      )}
-      <details>
-        <summary>Plan options</summary>
-        {plan.status !== "eaten" && (
-          <button onClick={() => setReplace(plan.id)}>Change idea</button>
+      {/* Packed and not yet time: the line above says when; no disabled
+          button stands in for a status. */}
+      {plan.status !== "eaten" &&
+        !(plan.status === "packed" && early && !missing.length) && (
+          <button
+            className="primary"
+            disabled={!!pending}
+            onClick={(event) =>
+              event.detail > 1
+                ? undefined
+                : missing.length
+                  ? addMissing(plan.template)
+                  : plan.status === "packed"
+                    ? setConfirm(plan)
+                    : write(
+                        "packed",
+                        (d) => markPlanPacked(d, plan.id),
+                        "Marked packed.",
+                      )
+            }
+          >
+            {missing.length
+              ? `Add ${missing.length} ${missing.length === 1 ? "item" : "items"} to groceries`
+              : plan.status === "packed"
+                ? "Log it"
+                : "Mark packed"}
+          </button>
         )}
-        <button
-          disabled={!!pending}
-          onClick={() =>
-            write("undo-plan", (d) => undoPlan(d, plan.id), "Removed plan.")
-          }
-        >
-          Remove plan
-        </button>
-      </details>
     </article>
   );
 }

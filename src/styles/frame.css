@@ -173,8 +173,9 @@
 }
 
 .shell[data-layout="grid"] {
-  /* Food: top bar 56 + 8 + section control 48 = 112px of chrome (RWD-04). */
-  padding-top: var(--space-2);
+  /* Food: top bar 56 + 8 + section control 48 = 112px of chrome (RWD-04);
+   * the 8px is the sticky strip's own padding. */
+  padding-top: 0;
 }
 
 /* Frame footer: a contentinfo landmark after </main> (A11Y-03), on the same

@@ -148,10 +148,13 @@ async (page) => {
         )
       )
         throw new Error(`${query}: database labels, kcal or counts shown`);
+      // The label line shows once above the results, not on every row.
+      if (text.split("Allergies: check every label.").length !== 2)
+        throw new Error(`${query}: the label line is not shown exactly once`);
       for (const row of await rows(dialog).all()) {
         const rowText = await row.innerText();
-        if (!rowText.includes("Allergies: check every label."))
-          throw new Error(`${query}: a row is missing the label line`);
+        if (rowText.includes("Allergies: check every label."))
+          throw new Error(`${query}: a row repeats the label line`);
         if (
           rowText.includes("Brand: ") &&
           !rowText.includes("Allergens: check the package.")

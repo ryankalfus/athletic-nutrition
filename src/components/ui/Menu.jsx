@@ -1,15 +1,20 @@
-import { useEffect, useId, useRef, useState } from "react";
+import { useEffect, useId, useLayoutEffect, useRef, useState } from "react";
 import { MoreHorizontal } from "lucide-react";
 
 // Row menu (CMP-17, A11Y-05): a 44 px "…" button[aria-haspopup=menu] that
 // opens a role="menu" list. Enter, Space or ArrowDown opens on the first item,
 // ArrowUp on the last; ArrowDown/ArrowUp wrap, Home/End jump; Escape closes
 // and returns focus to the button; Tab or a click outside closes it.
-// items: [{ label, onSelect, disabled?, danger?, key? }]; falsy items are
-// skipped so callers can write `cond && { … }`.
+// items: [{ label, onSelect, disabled?, danger?, separated?, key? }]; falsy
+// items are skipped so callers can write `cond && { … }`. `separated` draws a
+// divider above the item (before Remove). The panel opens upward when it
+// would cross the bottom of the screen or the phone tab bar, and closes when
+// the page scrolls, so it never floats over the sticky bars.
 export function Menu({ label, items, className = "" }) {
   const [open, setOpen] = useState(false);
   const [start, setStart] = useState("first");
+  const [up, setUp] = useState(false);
+  const panel = useRef(null);
   const root = useRef(null);
   const trigger = useRef(null);
   const menuId = useId();
@@ -19,19 +24,39 @@ export function Menu({ label, items, className = "" }) {
       []),
   ];
 
+  useLayoutEffect(() => {
+    if (!open || !panel.current || !trigger.current) return;
+    const box = panel.current.getBoundingClientRect();
+    const tabBar = document.querySelector(".frame-nav");
+    const floor =
+      tabBar && getComputedStyle(tabBar).position === "fixed"
+        ? tabBar.getBoundingClientRect().top
+        : window.innerHeight;
+    const above = trigger.current.getBoundingClientRect().top;
+    setUp(box.bottom > floor && above - box.height > 0);
+  }, [open]);
+
   useEffect(() => {
     if (!open) return undefined;
     const choices = enabled();
-    (start === "last" ? choices.at(-1) : choices[0])?.focus();
+    (start === "last" ? choices.at(-1) : choices[0])?.focus({
+      preventScroll: true,
+    });
     const outside = (event) => {
       if (!root.current?.contains(event.target)) setOpen(false);
     };
+    const scrolled = () => setOpen(false);
     document.addEventListener("pointerdown", outside);
-    return () => document.removeEventListener("pointerdown", outside);
+    window.addEventListener("scroll", scrolled, { passive: true });
+    return () => {
+      document.removeEventListener("pointerdown", outside);
+      window.removeEventListener("scroll", scrolled);
+    };
   }, [open]);
 
   const show = (from) => {
     setStart(from);
+    setUp(false);
     setOpen(true);
   };
   const close = (refocus) => {
@@ -83,10 +108,11 @@ export function Menu({ label, items, className = "" }) {
       </button>
       {open && (
         <div
+          ref={panel}
           id={menuId}
           role="menu"
           aria-label={label}
-          className="row-menu-items"
+          className={`row-menu-items${up ? " opens-up" : ""}`}
           onKeyDown={onMenuKey}
         >
           {list.map((item) => (
@@ -95,7 +121,11 @@ export function Menu({ label, items, className = "" }) {
               type="button"
               role="menuitem"
               tabIndex={-1}
-              className={item.danger ? "danger" : undefined}
+              className={
+                [item.danger && "danger", item.separated && "separated"]
+                  .filter(Boolean)
+                  .join(" ") || undefined
+              }
               disabled={item.disabled}
               onClick={() => {
                 close(true);

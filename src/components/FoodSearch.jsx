@@ -15,22 +15,27 @@ import {
 } from "../domain/search.js";
 import { changeData, useStore } from "../store.js";
 import { Skeleton } from "./ui/Skeleton.jsx";
+import { EmptyState } from "./ui/EmptyState.jsx";
+import { QuickAddList } from "./ui/QuickAddList.jsx";
+import { allergenLine } from "../domain/search.js";
 import { IconButton } from "./ui/Button.jsx";
-import { ScanBarcode, Star } from "lucide-react";
+import { SearchX, ScanBarcode, Star, WifiOff } from "lucide-react";
 const BarcodeScanner = lazy(() => import("./BarcodeScanner.jsx"));
 
 // One search result (SRCH-01, SRCH-02, SRCH-07): name, one sub-line with the
-// brand or "Basic food" and a portion hint, the allergen line for products,
-// and one Add button.
+// brand or "Basic food" and a portion hint, the product's allergen line as
+// one muted line, and one Add button. The "check every label" banner shows
+// once above the list.
 function FoodResult({ food, saved, onFavorite, onChoose }) {
   const name = sentenceCaseFoodName(food.name);
   const hint = portionHint(food);
+  const allergens = allergenLine(food);
   return (
     <li className="food-result-row">
       <div>
         <h3>{name}</h3>
         <p>{resultSubline(food)}</p>
-        <LabelCheck food={food} />
+        {allergens && <p className="allergen-line">{allergens}</p>}
       </div>
       <button
         className="icon-button"
@@ -207,7 +212,7 @@ export function FoodSearch({
                 setQuery(e.target.value);
                 onQuery?.(e.target.value);
               }}
-              placeholder="Search foods or brands"
+              placeholder="Food or brand"
             />
           </label>
           <IconButton
@@ -224,7 +229,8 @@ export function FoodSearch({
           )}
       </form>
       {/* Always rendered so screen readers hear the change (A11Y-07). */}
-      <p role="status" className={offline ? "" : "sr-only"}>
+      <p role="status" className={offline ? "search-offline" : "sr-only"}>
+        {offline && <WifiOff size={20} strokeWidth={1.75} aria-hidden="true" />}
         {offline ? "You're offline. Recent and saved foods still work." : ""}
       </p>
       {!term && recent.length > 0 && (
@@ -240,50 +246,51 @@ export function FoodSearch({
         </section>
       )}
       {!term && !results && (
-        <div className="quick-basics">
-          <h3>Quick basics</h3>
-          <div className="button-row">
-            {GROCERY_CATALOG.slice(0, 8).map((item) => (
-              <button
-                key={item.id}
-                onClick={() =>
-                  onChoose({
-                    id: `basic-${item.id}`,
-                    name: item.name,
-                    ingredientId: item.id,
-                    source: "Manual",
-                    nutrientBasis: "g",
-                    nutrients: { calories: null },
-                  })
-                }
-              >
-                {item.name}
-              </button>
-            ))}
-          </div>
-        </div>
+        <section className="quick-basics" aria-labelledby="quick-basics">
+          <h3 id="quick-basics">Quick basics</h3>
+          <QuickAddList
+            label="Quick basics"
+            items={GROCERY_CATALOG.slice(0, 6)}
+            onAdd={(item) =>
+              onChoose({
+                id: `basic-${item.id}`,
+                name: item.name,
+                ingredientId: item.id,
+                source: "Manual",
+                nutrientBasis: "g",
+                nutrients: { calories: null },
+              })
+            }
+          />
+        </section>
       )}
       {loading && !results && <Skeleton label="Finding foods" />}
+      {/* Icon beside the message, Retry under it; the reassurance sits
+          outside the red box. */}
       {error && (
-        <div className="inline-error" role="alert">
-          <p>{error}</p>
-          <button onClick={() => search(page > 1 ? page : 1)}>Retry</button>
-          <p>Saved foods and manual entry remain available.</p>
-        </div>
+        <>
+          <div className="inline-error search-error" role="alert">
+            <span>{error}</span>
+            <button onClick={() => search(page > 1 ? page : 1)}>Retry</button>
+          </div>
+          <p className="muted">
+            Saved foods and manual entry remain available.
+          </p>
+        </>
       )}
-      <p
-        role="status"
-        className={current$ && !results.foods.length ? "" : "sr-only"}
-      >
-        {current$ && !results.foods.length
-          ? "No matching foods. Try a simpler name or add it yourself."
-          : ""}
-      </p>
+      <div role="status">
+        {current$ && !results.foods.length && (
+          <EmptyState icon={SearchX} title="No matching foods">
+            Try a simpler name or add it yourself.
+          </EmptyState>
+        )}
+      </div>
       {results && results.foods.length > 0 && (
         <div
           className={`food-results${current$ ? "" : " stale"}`}
           aria-busy={loading}
         >
+          <LabelCheck />
           {list(results.foods)}
         </div>
       )}
@@ -294,20 +301,22 @@ export function FoodSearch({
           </button>
         </div>
       )}
-      <button
-        className="text-button"
-        onClick={() =>
-          onChoose({
-            id: `manual-${uid()}`,
-            name: term || "Food",
-            source: "Manual",
-            nutrients: { calories: null },
-            nutrientBasis: "g",
-          })
-        }
-      >
-        Can’t find it? Add it yourself
-      </button>
+      <div className="search-footer">
+        <button
+          className="text-button"
+          onClick={() =>
+            onChoose({
+              id: `manual-${uid()}`,
+              name: term || "Food",
+              source: "Manual",
+              nutrients: { calories: null },
+              nutrientBasis: "g",
+            })
+          }
+        >
+          Can’t find it? Add it yourself
+        </button>
+      </div>
     </section>
   );
 }

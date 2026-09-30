@@ -330,6 +330,105 @@ async (page) => {
     );
     await context.close();
 
+    // ---------- 320: Food rows, section bar, row menus ----------
+    await open(320);
+    await setup();
+    await p.goto(`${base}#/food/groceries`);
+    await p.getByRole("button", { name: "Suggest for this week" }).click();
+    const week = p.getByRole("dialog", { name: "Add food for this week" });
+    for (const box of await week.getByRole("checkbox").all()) await box.check();
+    await week.getByRole("button", { name: "Add selected" }).click();
+    await week.waitFor({ state: "hidden" });
+    const groceryRows = await p.locator(".grocery-row").evaluateAll((rows) =>
+      rows.map((row) => {
+        const check = row
+          .querySelector(".grocery-check")
+          .getBoundingClientRect();
+        const menu = row
+          .querySelector(".row-menu-trigger")
+          .getBoundingClientRect();
+        const chip = row.querySelector(".reason-chip");
+        return {
+          aligned: Math.abs(check.top - menu.top) <= 1,
+          chipLines: chip
+            ? Math.round(chip.getBoundingClientRect().height / 18)
+            : 1,
+        };
+      }),
+    );
+    if (groceryRows.some((r) => !r.aligned))
+      fail("Grocery check and menu are not on the name line");
+    if (groceryRows.some((r) => r.chipLines > 1))
+      fail("A grocery reason chip wraps onto two lines");
+    const trackFits = await p.evaluate(() => {
+      const track = document.querySelector(".food-sections");
+      const bar = document.querySelector(".food-sections-bar");
+      const main = document.querySelector("main.shell");
+      const links = [...track.querySelectorAll("a")].map(
+        (a) => a.getBoundingClientRect().width,
+      );
+      const inner =
+        main.getBoundingClientRect().width -
+        parseFloat(getComputedStyle(main).paddingLeft) * 2;
+      return {
+        overflow: track.scrollWidth > track.clientWidth + 1,
+        narrow: links.filter((w) => w < 44).length,
+        strip: Math.abs(bar.getBoundingClientRect().width - inner) <= 1,
+      };
+    });
+    if (trackFits.overflow || trackFits.narrow)
+      fail(`Food section bar at 320: ${JSON.stringify(trackFits)}`);
+    if (!trackFits.strip) fail("The sticky Food bar is not a full-width strip");
+    await p.goto(`${base}#/food/home`);
+    for (const name of ["Bananas", "Apples", "Frozen berries"])
+      await p.getByRole("button", { name: `Add ${name}`, exact: true }).click();
+    await p.locator(".stock-row").nth(2).waitFor();
+    const stock = await p.locator(".stock-row").evaluateAll((rows) =>
+      rows.map((row) => {
+        const box = row.getBoundingClientRect();
+        const menu = row
+          .querySelector(".row-menu-trigger")
+          .getBoundingClientRect();
+        return {
+          h: Math.round(box.height),
+          menuTop: Math.round(menu.top - box.top),
+        };
+      }),
+    );
+    if (stock.some((r) => r.h > 80 || r.menuTop > 24))
+      fail(`At home rows wrap at 320: ${JSON.stringify(stock)}`);
+    if (!(await p.getByRole("radiogroup", { name: "Stock filter" }).count()))
+      fail("The At home filter is not a segmented control");
+    // A row menu near the bottom opens upward, clear of the tab bar.
+    await p.evaluate(() => window.scrollTo(0, 0));
+    const last = p.locator(".stock-row").last();
+    await last.evaluate((row) => {
+      const y = row.getBoundingClientRect().top + window.scrollY;
+      window.scrollTo(0, Math.max(0, y - window.innerHeight + 64 + 72));
+    });
+    await last.locator(".row-menu-trigger").click();
+    const menu = await box(p.locator(".row-menu-items"));
+    if (menu.bottom > 844 - 64 + 1)
+      fail(`A row menu runs under the tab bar (${Math.round(menu.bottom)}px)`);
+    await p.keyboard.press("Escape");
+    await p.goto(`${base}#/food/log`);
+    const arrows = await p.evaluate(() => {
+      const [prev, next] = document.querySelectorAll(
+        ".day-switcher .icon-button",
+      );
+      return [
+        getComputedStyle(prev).color,
+        getComputedStyle(next).color,
+        next.disabled,
+      ];
+    });
+    if (arrows[2] && arrows[0] === arrows[1])
+      fail("The disabled Next day arrow looks enabled");
+    result.checks.push(
+      "320 Food: grocery checks and menus sit on the name line with one-line reason chips; the section bar is a full-width strip whose four links fit at 44 px or more; At home rows stay on one line with a segmented filter; a low row menu opens above the tab bar; a disabled day arrow is dimmed.",
+    );
+    await context.close();
+
     // ---------- 768: tablet tabs centered on the bar ----------
     await open(768, 1024);
     await setup();

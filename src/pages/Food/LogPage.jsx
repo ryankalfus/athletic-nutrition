@@ -10,25 +10,27 @@ export default function LogPage({ todayKey, now }) {
   const { view, date } = parseLogRoute(subroute, todayKey);
   return (
     <div className="log-page">
-      <SegmentedControl
-        label="Log view"
-        options={[
-          ["day", "Day"],
-          ["week", "Week"],
-        ]}
-        value={view}
-        onChange={(next) =>
-          navigate(
-            next === "week"
-              ? date === todayKey
-                ? "food/log/week"
-                : `food/log/week/${date}`
-              : date === todayKey
-                ? "food/log"
-                : `food/log/${date}`,
-          )
-        }
-      />
+      <div className="log-view-tabs">
+        <SegmentedControl
+          label="Log view"
+          options={[
+            ["day", "Day"],
+            ["week", "Week"],
+          ]}
+          value={view}
+          onChange={(next) =>
+            navigate(
+              next === "week"
+                ? date === todayKey
+                  ? "food/log/week"
+                  : `food/log/week/${date}`
+                : date === todayKey
+                  ? "food/log"
+                  : `food/log/${date}`,
+            )
+          }
+        />
+      </div>
       {view === "week" ? (
         <LogWeek endKey={date} todayKey={todayKey} onNavigate={navigate} />
       ) : (

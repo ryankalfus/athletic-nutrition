@@ -36,7 +36,10 @@ export function WhenField({ when, isToday }) {
   const invalid = useFieldInvalid("when");
   return (
     <fieldset className="when-field" {...invalid}>
-      <legend>{isToday ? "Time" : "About when?"}</legend>
+      {/* Today asks one thing, so its label is the only name. */}
+      <legend className={isToday ? "sr-only" : undefined}>
+        {isToday ? "Time" : "About when?"}
+      </legend>
       {!isToday && (
         <SegmentedControl
           label="About when"
@@ -191,7 +194,8 @@ export function PortionSheet({ food, entry, isToday, onSave, onDirty }) {
         </details>
         <FormError />
       </FieldErrors>
-      <div className="button-row">
+      <div className="sheet-footer">
+        <DialogCancel disabled={busy} />
         <button
           aria-busy={busy || undefined}
           className="primary"
@@ -199,7 +203,6 @@ export function PortionSheet({ food, entry, isToday, onSave, onDirty }) {
         >
           {busy ? "Saving…" : "Save"}
         </button>
-        <DialogCancel disabled={busy} />
       </div>
     </form>
   );
