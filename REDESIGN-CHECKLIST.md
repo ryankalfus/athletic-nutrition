@@ -6,7 +6,7 @@ Source of truth: [CLAUDE-REDESIGN-AUDIT.md](CLAUDE-REDESIGN-AUDIT.md). Read [CLA
 
 ## Confirmations recorded 2026.09.29
 
-Owner Ryan Kalfus confirmed the recommended options previously presented for audit §13.7 and the preparation offsets. Qualified review approval was reported by the owner from **Emily Cornelius, RDN, dated 2026.09.29**, covering the audit's timing rules, recovery window, notes and example portions, allergen handling, game-day copy, and sports-drink guidance. See `NUTRITION-REVIEW.md`. Review approval clears the approval gate; each implementation and acceptance check remains required. Historical pending-review notes below describe the state before this confirmation.
+Owner Ryan Kalfus confirmed the recommended options previously presented for audit §13.7 and the preparation offsets. **Qualified review: not approved.** An earlier note recorded an owner-reported approval from Emily Cornelius, RDN; on 2026.09.29 Jeremy Kalfus confirmed nothing has been approved yet, so every item that needs qualified review is pending. See `NUTRITION-REVIEW.md`.
 
 ## Phase tracker
 
@@ -14,7 +14,7 @@ Owner Ryan Kalfus confirmed the recommended options previously presented for aud
 
 - Phases done: P0 12/12 · P1 10/13 · P2 0/8 · P3 0/5.
 - Recommendations done: 279 of 304. Groups with open items: ADD 10/16, CMP 16/17, COPY 37/38, DLG 3/4, KEEP 14/15, MOVE 12/13, ONB 5/6, SCH 9/10, STATE 8/17, WEEK 4/5, YOU 4/6. All other groups are complete (A11Y, ACT, DATA, DEFER, DS, ENTRY, FOOD, GROC, HIST, HOME, IA, IDEA, LOG, RWD, SRCH, TODAY).
-- Blocked on the RDN sign-off of the ingredient allergen table (NUTRITION-REVIEW.md; `ALLERGY_TAGS_REVIEWED = false`): P1-09, P1-10, ADD-03, ONB-04, YOU-02, YOU-03.
+- Nothing that needs qualified review is approved yet (see NUTRITION-REVIEW.md). Blocked on the RDN sign-off of the ingredient allergen table (`ALLERGY_TAGS_REVIEWED = false`): P1-09, P1-10, ADD-03, ONB-04, YOU-02, YOU-03.
 - Blocked on manual accessibility testing (VoiceOver and NVDA smoke test, keyboard-only core journey): P1-13.
 - Deferred to P2/P3: ADD-08 and SCH-10 (P2-01); ADD-13, MOVE-12 and STATE-10 (P2-03); ADD-14 (P2-04); WEEK-05 (P2-05); ADD-16 (P3-01); ADD-15 (P3-02).
 - Open work: DLG-03, COPY-38, KEEP-15, STATE-03, STATE-04, STATE-05, STATE-07, STATE-08, STATE-11, STATE-15, STATE-16, CMP-10.
@@ -368,7 +368,7 @@ Each ID is an individual checkbox. Implementation notes and blockers go on the m
 
 - [x] **ADD-01**
 - [x] **ADD-02**
-- [ ] **ADD-03** — Blocked — qualified review: per-ingredient tags are built but unused while `ALLERGY_TAGS_REVIEWED = false`; the ingredient allergen table in NUTRITION-REVIEW.md is unsigned (the 2026.09.29 RDN approval predates it).
+- [ ] **ADD-03** — Blocked — qualified review: per-ingredient tags are built but unused while `ALLERGY_TAGS_REVIEWED = false`; the ingredient allergen table in NUTRITION-REVIEW.md is unsigned.
 - [x] **ADD-04**
 - [x] **ADD-05**
 - [x] **ADD-06**
@@ -463,7 +463,7 @@ Each ID is an individual checkbox. Implementation notes and blockers go on the m
 These decisions are intentionally open. Dependent work may be prepared but cannot be accepted or released until the decision or review is recorded.
 
 - [x] **Decision 1: Age range.** High school 14–18 only, or also middle school; affects copy and consent. Owner confirmed this previously presented recommendation (2026.09.29).
-- [x] **Decision 2: Qualified nutrition reviewer.** Owner supplied Emily Cornelius, RDN; the owner reported approval dated 2026.09.29. Recorded as owner-reported in NUTRITION-REVIEW.md; not independently verified.
+- [ ] **Decision 2: Qualified nutrition reviewer.** Proposed reviewer: Emily Cornelius, RDN. Not approved yet; review requests prepared 2026.09.29.
 - [x] **Decision 3: Allergy scope.** Hide ideas listing an allergen, or only label them. Owner confirmed this previously presented recommendation (2026.09.29).
 - [x] **Decision 4: Accounts.** Local backups or real accounts and sync (P3-03). Owner confirmed this previously presented recommendation (2026.09.29).
 - [x] **Decision 5: Parent support.** Shareable lists or a parent view. Owner confirmed this previously presented recommendation (2026.09.29).
@@ -474,11 +474,11 @@ These decisions are intentionally open. Dependent work may be prepared but canno
 
 ### Qualified review before release
 
-- [x] Timing thresholds and state copy, including 30/90/180-minute boundaries, recovery, evening, game and travel variants, have qualified review and documented sources.
-- [x] Idea notes, example portions, and display amounts have qualified review.
-- [x] Per-ingredient allergen tags and any filtering claim have qualified safety review; no item is described as allergy-safe.
-- [x] Game-day and sports-drink guidance have qualified review.
-- [x] Reviewer identity, date, scope, and the owner-reported approval are recorded in NUTRITION-REVIEW.md. This is the approval record supplied in chat, not independent verification.
+- [ ] Timing thresholds and state copy, including 30/90/180-minute boundaries, recovery, evening, game and travel variants, have qualified review and documented sources.
+- [ ] Idea notes, example portions, and display amounts have qualified review.
+- [ ] Per-ingredient allergen tags and any filtering claim have qualified safety review; no item is described as allergy-safe.
+- [ ] Game-day and sports-drink guidance have qualified review.
+- [ ] Reviewer identity, date, scope and a signed approval are recorded in NUTRITION-REVIEW.md, with the evidence file saved in the repo.
 
 ## MVP redesign complete (§13.8)
 

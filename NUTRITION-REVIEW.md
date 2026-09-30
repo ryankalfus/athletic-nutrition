@@ -1,6 +1,6 @@
 # Nourally nutrition and allergen review record
 
-Prepared 2026.09.29. **Approval reported by the owner:** Emily Cornelius, RDN, approved the audit's timing rules, recovery window, idea notes and example portions, allergen handling, game-day copy, and sports-drink guidance on September 29, 2026. The owner supplied the reviewer name, credential, date, and “Everything confirmed and approved” in this task. This record preserves that supplied approval; it is not an independent credential verification. Implementation must follow the approved audit and still pass its acceptance criteria.
+Prepared 2026.09.29. **Status: not approved.** No qualified reviewer has approved any item in this file yet. An earlier version of this record said the owner reported an approval from Emily Cornelius, RDN, on 2026.09.29. On 2026.09.29 Jeremy Kalfus confirmed that nothing has been approved yet, so that record is withdrawn. Every rule, amount, tag and line of copy below is pending review. The app keeps its current behavior until the review is done; allergy filtering stays off (`ALLERGY_TAGS_REVIEWED = false`).
 
 ## Timing rules currently in the local draft
 
@@ -36,12 +36,10 @@ These are candidate sources to evaluate, not a source-to-rule validation. The av
 
 ## Sign-off record
 
-- Reviewer: **Emily Cornelius, RDN** (provided by the owner).
-- Approval date: **2026.09.29**.
-- Scope: audit timing thresholds and state copy, recovery window, idea notes and example portions, ingredient allergen tags and exclusion behavior, product label reminders, game-day copy, and sports-drink guidance.
-- Approval: **“Everything confirmed and approved.”** Reported by Ryan Kalfus in this task on 2026.09.29.
-- Implementation acceptance: remains item-specific in `REDESIGN-CHECKLIST.md`; approval does not mark unimplemented features complete.
-- Next review date: not provided. Further changes outside the approved audit require review.
+- Status: **not approved**. No sign-off has been received.
+- Proposed reviewer: Emily Cornelius, RDN. The review request and a decision tracker were prepared on 2026.09.29 (shared docs: *Nourally — Nutrition and Allergen Review Requests* and *Nourally — RDN Review Tracker*).
+- Scope: the items the audit marks for qualified review — timing thresholds and state copy, idea notes and display amounts, ingredient allergen tags and filtering claims, game-day copy, sports-drink guidance, and the P2-06 rule set.
+- When a signed copy or email arrives: record the reviewer, credential, date and decision here, save the evidence file in the repo, and link it.
 
 ## Owner decisions
 
@@ -153,7 +151,7 @@ The owner confirmed all previously presented recommended options on 2026.09.29: 
 
 ### Top issues
 
-1. **Sports drink amount and moment (#60):** "1 bottle" has no size. It shows in the quick state, which covers short practices where the approved copy says water works [A §7.5][S2]. The approved line is not on the Ideas card.
+1. **Sports drink amount and moment (#60):** "1 bottle" has no size. It shows in the quick state, which covers short practices where the app's copy says water works [A §7.5][S2]. The approved line is not on the Ideas card.
 2. **Seed mix in quick and during (#56–57):** a high-fat, high-fibre food right before or during activity goes against [S3][S4]. Possible nut cross-contact [S7].
 3. **Amounts that contradict the idea name (#6, #9, #26, #38, #45, #58):**
    - "Fresh fruit" shows as "1 banana".
@@ -194,7 +192,7 @@ These edits fix wording that contradicted the idea name or used undefined units.
 | #64 | 1 scoop of tofu | ½ cup of tofu cubes |
 | #30 idea note | "A dairy-free recovery option…" | "A plant-based recovery option…" |
 
-The approved line "Water works for most practices. Sports drinks can help in long or hot sessions." now also shows on any Ideas card that includes a sports drink.
+The line "Water works for most practices. Sports drinks can help in long or hot sessions." now also shows on any Ideas card that includes a sports drink.
 
 **Still for the reviewer to decide:** sports drink moments (#60), seed mix in quick and during (#56–57), low-protein recovery examples (#8, #9, #49, #51, #55), sunflower-seed butter amount for pre (#12), and the allergen wording for hummus, sunflower-seed butter and granola.
 
@@ -212,7 +210,7 @@ The approved line "Water works for most practices. Sports drinks can help in lon
 
 | Where | Text | Note |
 |---|---|---|
-| Tonight task (school tomorrow, cafeteria access off) | "Pack lunch for school" | Logistics only; follows the approved BEFORE_SCHOOL title "Pack lunch and your after-school snack". |
+| Tonight task (school tomorrow, cafeteria access off) | "Pack lunch for school" | Logistics only; follows the BEFORE_SCHOOL title "Pack lunch and your after-school snack". |
 | Tonight tasks | Existing `tomorrowPrepTasks` labels ("Choose and set out breakfast", "Pack a familiar pre-activity snack", "Fill a water bottle", "Put uniform, shoes, and gear by the door", "Check the route and allow N minutes for travel", "Pack one extra shelf-stable snack") | Unchanged wording, but now built for any activity day after 7:00 PM, not only early starts. Due 30 min before school or the earliest Leave by (owner decision); breakfast only before a start before 10:00 AM. |
 | Tonight card | "Build the list to set out food, water, and gear tonight." · "Choose tomorrow's snack" | Links to Ideas › Tomorrow; no new guidance. |
 | Now card, Day rail, Tonight | "Game day" / "Game" chip | Label only. No game-specific food or fluid copy is shown (ACT-04 stays as reviewed). |
