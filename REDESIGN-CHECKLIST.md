@@ -10,6 +10,15 @@ Owner Ryan Kalfus confirmed the recommended options previously presented for aud
 
 ## Phase tracker
 
+**Status 2026.09.29** (re-verified against the code and the running app after the UI-fix pass, 92e0b6d..8887e70):
+
+- Phases done: P0 12/12 · P1 10/13 · P2 0/8 · P3 0/5.
+- Recommendations done: 279 of 304. Groups with open items: ADD 10/16, CMP 16/17, COPY 37/38, DLG 3/4, KEEP 14/15, MOVE 12/13, ONB 5/6, SCH 9/10, STATE 8/17, WEEK 4/5, YOU 4/6. All other groups are complete (A11Y, ACT, DATA, DEFER, DS, ENTRY, FOOD, GROC, HIST, HOME, IA, IDEA, LOG, RWD, SRCH, TODAY).
+- Blocked on the RDN sign-off of the ingredient allergen table (NUTRITION-REVIEW.md; `ALLERGY_TAGS_REVIEWED = false`): P1-09, P1-10, ADD-03, ONB-04, YOU-02, YOU-03.
+- Blocked on manual accessibility testing (VoiceOver and NVDA smoke test, keyboard-only core journey): P1-13.
+- Deferred to P2/P3: ADD-08 and SCH-10 (P2-01); ADD-13, MOVE-12 and STATE-10 (P2-03); ADD-14 (P2-04); WEEK-05 (P2-05); ADD-16 (P3-01); ADD-15 (P3-02).
+- Open work: DLG-03, COPY-38, KEEP-15, STATE-03, STATE-04, STATE-05, STATE-07, STATE-08, STATE-11, STATE-15, STATE-16, CMP-10.
+
 ### P0
 
 - [x] **P0-01**
@@ -35,11 +44,11 @@ Owner Ryan Kalfus confirmed the recommended options previously presented for aud
 - [x] **P1-06**
 - [x] **P1-07**
 - [x] **P1-08**
-- [ ] **P1-09** — Built, not ticked: per-ingredient tags, `profile.allergies`, idea and grocery filters, Open Food Facts allergens on product views, and tests for both gate states are in; filtering stays off behind `ALLERGY_TAGS_REVIEWED = false` until the pending table in NUTRITION-REVIEW.md is signed.
-- [ ] **P1-10** — Blocked on P1-09 sign-off: 6.14 passes; 6.13's peanut-allergy criterion needs the review gate open. DATA-08 is done in P1-12.
+- [ ] **P1-09** — Blocked — qualified review. Built: per-ingredient tags, `profile.allergies`, idea and grocery filters, Open Food Facts allergens on product views, and tests for both gate states are in; filtering stays off behind `ALLERGY_TAGS_REVIEWED = false` until the pending table in NUTRITION-REVIEW.md is signed.
+- [ ] **P1-10** — Blocked — qualified review (P1-09 sign-off): 6.14 passes; 6.13's peanut-allergy criterion needs the review gate open. DATA-08 is done in P1-12.
 - [x] **P1-11** — Allergy chips in step 5 stay hidden behind the P1-09 review gate (ONB-04).
 - [x] **P1-12**
-- [ ] **P1-13** — Automated 9.6 criteria pass (`tests/browser-a11y.js`: axe with zero serious or critical issues on 70 scans at 390 and 1280 px, 44 px targets, 3:1 boundaries and focus ring, keyboard, forced colors, reduced motion; `tests/browser-responsive.js` at all seven widths). Still open: the manual VoiceOver and NVDA smoke test and a keyboard-only run of the whole core journey (setup → plan → groceries → pack → log).
+- [ ] **P1-13** — Blocked — manual accessibility testing. Automated 9.6 criteria pass (`tests/browser-a11y.js`: axe with zero serious or critical issues on 70 scans at 390 and 1280 px, 44 px targets, 3:1 boundaries and focus ring, keyboard, forced colors, reduced motion; `tests/browser-responsive.js` at all seven widths). Still open: the manual VoiceOver and NVDA smoke test and a keyboard-only run of the whole core journey (setup → plan → groceries → pack → log).
 
 ### P2
 
@@ -68,18 +77,18 @@ Each ID is an individual checkbox. Implementation notes and blockers go on the m
 
 - [x] **IA-01**
 - [x] **IA-02**
-- [ ] **IA-03**
-- [ ] **IA-04**
+- [x] **IA-03**
+- [x] **IA-04**
 - [x] **IA-05**
 - [x] **IA-06**
-- [ ] **IA-07**
-- [ ] **IA-08**
-- [ ] **IA-09**
-- [ ] **IA-10**
-- [ ] **IA-11**
+- [x] **IA-07**
+- [x] **IA-08**
+- [x] **IA-09**
+- [x] **IA-10**
+- [x] **IA-11**
 - [x] **IA-12**
-- [ ] **IA-13**
-- [ ] **IA-14**
+- [x] **IA-13**
+- [x] **IA-14**
 
 ### DS
 
@@ -117,7 +126,7 @@ Each ID is an individual checkbox. Implementation notes and blockers go on the m
 - [x] **ONB-01**
 - [x] **ONB-02**
 - [x] **ONB-03**
-- [ ] **ONB-04** — Partial: the safety paragraph is on You › About; step 5 shows "Allergy filtering is waiting for review. Check every label." and switches to the ONB-04 line only when `ALLERGY_TAGS_REVIEWED` is true.
+- [ ] **ONB-04** — Blocked — qualified review (P1-09 ingredient table). Partial: the safety paragraph is on You › About; step 5 shows "Allergy filtering is waiting for review. Check every label." and switches to the ONB-04 line only when `ALLERGY_TAGS_REVIEWED` is true.
 - [x] **ONB-05**
 - [x] **ONB-06**
 
@@ -198,7 +207,7 @@ Each ID is an individual checkbox. Implementation notes and blockers go on the m
 - [x] **SCH-07**
 - [x] **SCH-08**
 - [x] **SCH-09**
-- [ ] **SCH-10**
+- [ ] **SCH-10** — Deferred: P2-01 (ADD-08).
 
 ### ACT
 
@@ -214,7 +223,7 @@ Each ID is an individual checkbox. Implementation notes and blockers go on the m
 - [x] **WEEK-02**
 - [x] **WEEK-03**
 - [x] **WEEK-04**
-- [ ] **WEEK-05** — Open: optional P2 Monday "Last week" card on Today (P2-05); Today files are outside the P1-08 change.
+- [ ] **WEEK-05** — Deferred: P2-05 (no Monday "Last week" card on Today).
 
 ### HIST
 
@@ -225,8 +234,8 @@ Each ID is an individual checkbox. Implementation notes and blockers go on the m
 ### YOU
 
 - [x] **YOU-01**
-- [ ] **YOU-02** — Partial: "I don't eat" (Vegetarian, Vegan) and "Not a fan of" built; the nine allergy chips plus Other are built but hidden behind `ALLERGY_TAGS_REVIEWED` (P1-09 review); Dairy-free/Gluten-free stay hidden (gluten also needs barley and rye tags).
-- [ ] **YOU-03** — Partial: Nut-free removed and never migrated into an allergy (a prompt shows instead); peanut and tree-nut allergy chips are built and gated on the P1-09 review.
+- [ ] **YOU-02** — Blocked — qualified review (P1-09 ingredient table). Partial: "I don't eat" (Vegetarian, Vegan) and "Not a fan of" built; the nine allergy chips plus Other are built but hidden behind `ALLERGY_TAGS_REVIEWED` (P1-09 review); Dairy-free/Gluten-free stay hidden (gluten also needs barley and rye tags).
+- [ ] **YOU-03** — Blocked — qualified review (P1-09 ingredient table). Partial: Nut-free removed and never migrated into an allergy (a prompt shows instead); peanut and tree-nut allergy chips are built and gated on the P1-09 review.
 - [x] **YOU-04**
 - [x] **YOU-05**
 - [x] **YOU-06**
@@ -247,8 +256,8 @@ Each ID is an individual checkbox. Implementation notes and blockers go on the m
 
 - [x] **DLG-01**
 - [x] **DLG-02**
-- [ ] **DLG-03**
-- [ ] **DLG-04**
+- [ ] **DLG-03** — Open: `Dialog` shows the save error under the sheet header, not above the footer, so on a long sheet it can sit out of view of Save.
+- [x] **DLG-04**
 
 ### SRCH
 
@@ -299,80 +308,80 @@ Each ID is an individual checkbox. Implementation notes and blockers go on the m
 - [x] **COPY-35**
 - [x] **COPY-36**
 - [x] **COPY-37**
-- [ ] **COPY-38**
+- [ ] **COPY-38** — Open: browser checks still name athletes "Schedule test", "Log test", "You test" and "Imported fixture" in their captures; use realistic seed names.
 
 ### KEEP
 
-- [ ] **KEEP-01**
-- [ ] **KEEP-02**
-- [ ] **KEEP-03**
-- [ ] **KEEP-04**
-- [ ] **KEEP-05**
-- [ ] **KEEP-06**
-- [ ] **KEEP-07**
-- [ ] **KEEP-08**
-- [ ] **KEEP-09**
-- [ ] **KEEP-10**
-- [ ] **KEEP-11**
-- [ ] **KEEP-12**
-- [ ] **KEEP-13**
-- [ ] **KEEP-14**
-- [ ] **KEEP-15**
+- [x] **KEEP-01**
+- [x] **KEEP-02**
+- [x] **KEEP-03**
+- [x] **KEEP-04**
+- [x] **KEEP-05**
+- [x] **KEEP-06**
+- [x] **KEEP-07**
+- [x] **KEEP-08**
+- [x] **KEEP-09**
+- [x] **KEEP-10**
+- [x] **KEEP-11**
+- [x] **KEEP-12**
+- [x] **KEEP-13**
+- [x] **KEEP-14** — Crash screen split from data recovery in STATE-09.
+- [ ] **KEEP-15** — Open: the `operations` ledger and toast Undo work, but entries older than 30 days are never pruned.
 
 ### MOVE
 
-- [ ] **MOVE-01**
-- [ ] **MOVE-02**
-- [ ] **MOVE-03**
-- [ ] **MOVE-04**
-- [ ] **MOVE-05**
-- [ ] **MOVE-06**
-- [ ] **MOVE-07**
-- [ ] **MOVE-08**
-- [ ] **MOVE-09**
-- [ ] **MOVE-10**
-- [ ] **MOVE-11**
-- [ ] **MOVE-12**
-- [ ] **MOVE-13**
+- [x] **MOVE-01**
+- [x] **MOVE-02**
+- [x] **MOVE-03**
+- [x] **MOVE-04**
+- [x] **MOVE-05**
+- [x] **MOVE-06**
+- [x] **MOVE-07**
+- [x] **MOVE-08**
+- [x] **MOVE-09**
+- [x] **MOVE-10**
+- [x] **MOVE-11**
+- [ ] **MOVE-12** — Deferred: P2-03 (the Now card REST state and Undo are built; the weekly rest-day pattern in Schedule is not).
+- [x] **MOVE-13**
 
 ### DEFER
 
-- [ ] **DEFER-01**
-- [ ] **DEFER-02**
-- [ ] **DEFER-03**
-- [ ] **DEFER-04**
-- [ ] **DEFER-05**
-- [ ] **DEFER-06**
-- [ ] **DEFER-07**
-- [ ] **DEFER-08**
-- [ ] **DEFER-09**
-- [ ] **DEFER-10**
-- [ ] **DEFER-11**
-- [ ] **DEFER-12**
-- [ ] **DEFER-13**
-- [ ] **DEFER-14**
-- [ ] **DEFER-15**
-- [ ] **DEFER-16**
-- [ ] **DEFER-17**
+- [x] **DEFER-01**
+- [x] **DEFER-02**
+- [x] **DEFER-03**
+- [x] **DEFER-04**
+- [x] **DEFER-05**
+- [x] **DEFER-06**
+- [x] **DEFER-07**
+- [x] **DEFER-08**
+- [x] **DEFER-09**
+- [x] **DEFER-10**
+- [x] **DEFER-11**
+- [x] **DEFER-12**
+- [x] **DEFER-13**
+- [x] **DEFER-14**
+- [x] **DEFER-15**
+- [x] **DEFER-16**
+- [x] **DEFER-17**
 
 ### ADD
 
 - [x] **ADD-01**
 - [x] **ADD-02**
-- [ ] **ADD-03**
-- [ ] **ADD-04**
-- [ ] **ADD-05**
+- [ ] **ADD-03** — Blocked — qualified review: per-ingredient tags are built but unused while `ALLERGY_TAGS_REVIEWED = false`; the ingredient allergen table in NUTRITION-REVIEW.md is unsigned (the 2026.09.29 RDN approval predates it).
+- [x] **ADD-04**
+- [x] **ADD-05**
 - [x] **ADD-06**
 - [x] **ADD-07**
-- [ ] **ADD-08**
+- [ ] **ADD-08** — Deferred: P2-01.
 - [x] **ADD-09**
-- [ ] **ADD-10**
+- [x] **ADD-10**
 - [x] **ADD-11**
 - [x] **ADD-12**
-- [ ] **ADD-13**
-- [ ] **ADD-14**
-- [ ] **ADD-15**
-- [ ] **ADD-16**
+- [ ] **ADD-13** — Deferred: P2-03 (`restWeekdays` is read by timing and Log, but there is no weekday picker).
+- [ ] **ADD-14** — Deferred: P2-04.
+- [ ] **ADD-15** — Deferred: P3-02.
+- [ ] **ADD-16** — Deferred: P3-01.
 
 ### RWD
 
@@ -413,25 +422,25 @@ Each ID is an individual checkbox. Implementation notes and blockers go on the m
 
 - [x] **STATE-01**
 - [x] **STATE-02**
-- [ ] **STATE-03**
-- [ ] **STATE-04**
-- [ ] **STATE-05**
+- [ ] **STATE-03** — Open: no app-frame offline banner; only search shows "You're offline. Recent and saved foods still work."
+- [ ] **STATE-04** — Open: Today's Now card flags a moved session ("Update your snack time?", Update/Keep), but Ideas plan cards do not, and the prompt does not name the new snack time ("Move your snack to about 3:30?", Move/Keep).
+- [ ] **STATE-05** — Open: when permission is lost, reminders switch off at once with "Reminders are off because this browser does not allow notifications." instead of asking "Turn them on again?" first.
 - [x] **STATE-06**
-- [ ] **STATE-07**
-- [ ] **STATE-08**
-- [ ] **STATE-09**
-- [ ] **STATE-10**
-- [ ] **STATE-11**
-- [ ] **STATE-12**
-- [ ] **STATE-13**
+- [ ] **STATE-07** — Open: `Skeleton` has no 300 ms minimum and uses role=status, not aria-busy on the region; Today, Ideas and Log have only the app-level load skeleton.
+- [ ] **STATE-08** — Open: the restore preview is built (DATA-04), but the result toast reads "Added from backup." with Undo, not "Added 1 athlete: Maya (from backup). Switch now?"
+- [x] **STATE-09** — ErrorBoundary shows "Something went wrong on this screen" / "Your data is safe." / Reload; storage failures keep Recovery via StoreGate.
+- [ ] **STATE-10** — Deferred: P2-03 ("Undo rest day" on the Now card is built; weekly rest days in Schedule are not).
+- [ ] **STATE-11** — Open: Pack & prep is hidden when there are no tasks; the "Nothing to pack yet. Plan a snack to get a list." + "See ideas" empty state is not built.
+- [x] **STATE-12**
+- [x] **STATE-13** — 404: "We couldn't find that barcode. Add the food yourself."; 5xx/timeout: "Barcode lookup isn't working right now. Try again." (unit test).
 - [x] **STATE-14**
-- [ ] **STATE-15**
-- [ ] **STATE-16**
-- [ ] **STATE-17**
+- [ ] **STATE-15** — Open: removed items fail with "removed on another screen", but an item edited in another tab shows no "This item changed on another screen. Showing the latest version."
+- [ ] **STATE-16** — Open: no "Add your school day to plan lunch and after-school snacks." prompt on Today when activities exist without a school day.
+- [x] **STATE-17**
 
 ### CMP
 
-- [ ] **CMP-01**
+- [x] **CMP-01** — One `Shell` renders one `AppNavigation` that CSS lays out as rail, top bar or tab bar; no page calls `AppNavigation` itself.
 - [x] **CMP-02** — `Button` and `IconButton` in `components/ui/Button.jsx`, used by `Dialog`, `ConfirmDialog`, `SettingsSheet`, `Toast`, `InlineError`, `FoodSearch` and `Checklist`; other buttons keep the same `components.css` classes.
 - [x] **CMP-03**
 - [x] **CMP-04**
@@ -439,13 +448,13 @@ Each ID is an individual checkbox. Implementation notes and blockers go on the m
 - [x] **CMP-06**
 - [x] **CMP-07**
 - [x] **CMP-08**
-- [ ] **CMP-09**
-- [ ] **CMP-10**
+- [x] **CMP-09** — `MealPlanCard` in `pages/Food/IdeasPage.jsx`; Today shows its plan through `NowCard` (CMP-11).
+- [ ] **CMP-10** — Open: the idea card is inline markup in `IdeasPage.jsx`; no shared `IdeaCard` / `AvailabilityChips` (Today renders its own availability list).
 - [x] **CMP-11**
 - [x] **CMP-12**
 - [x] **CMP-13**
-- [ ] **CMP-14**
-- [ ] **CMP-15**
+- [x] **CMP-14**
+- [x] **CMP-15**
 - [x] **CMP-16**
 - [x] **CMP-17**
 

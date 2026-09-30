@@ -148,19 +148,18 @@ async function json(url, signal) {
     );
   }
   if (!response.ok) {
+    const barcode = url.startsWith("/api/barcode/");
     let message =
-      url.startsWith("/api/barcode/") && response.status === 404
+      barcode && response.status === 404
         ? BARCODE_NOT_FOUND
         : response.status === 429
           ? "Search is busy. Try again in a minute."
-          : "Food lookup isn't working right now. Try again or add manually.";
+          : barcode // STATE-13: an outage is not "not found".
+            ? "Barcode lookup isn't working right now. Try again."
+            : "Food lookup isn't working right now. Try again or add manually.";
     try {
       const details = await response.json();
-      if (
-        details?.error &&
-        !(url.startsWith("/api/barcode/") && response.status === 404)
-      )
-        message = details.error;
+      if (details?.error && !barcode) message = details.error;
     } catch {
       // An upstream outage may return an HTML or empty response.
     }

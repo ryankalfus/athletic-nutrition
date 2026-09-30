@@ -236,9 +236,15 @@ class ErrorBoundary extends Component {
   static getDerivedStateFromError(error) {
     return { error };
   }
+  // STATE-09: a code crash is not a data problem; storage failures still
+  // open Recovery through StoreGate.
   render() {
     return this.state.error ? (
-      <Recovery message={this.state.error.message} />
+      <main className="shell recovery">
+        <h1>Something went wrong on this screen</h1>
+        <p>Your data is safe.</p>
+        <button onClick={() => window.location.reload()}>Reload</button>
+      </main>
     ) : (
       this.props.children
     );

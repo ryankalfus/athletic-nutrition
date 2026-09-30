@@ -1414,6 +1414,15 @@ test("P0-09: barcode 404, outage and offline stay distinct", async () => {
     await assert.rejects(lookupBarcode("00000000"), {
       message: "We couldn't find that barcode. Add the food yourself.",
     });
+    // STATE-13: a barcode outage or timeout is not "not found".
+    globalThis.fetch = async () => ({
+      ok: false,
+      status: 503,
+      json: async () => ({ error: "Provider timed out." }),
+    });
+    await assert.rejects(lookupBarcode("00000000"), {
+      message: "Barcode lookup isn't working right now. Try again.",
+    });
     // An outage returning HTML is checked with response.ok before JSON.
     globalThis.fetch = async () => ({ ok: false, status: 502, json: htmlBody });
     await assert.rejects(searchFoodDataCentral("banana"), {
