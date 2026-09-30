@@ -70,6 +70,8 @@ export default function IdeasPage({ now, todayKey }) {
   };
   return (
     <div className="ideas-page">
+      {/* Outline for screen readers: Food (h1) › Ideas (h2) › cards (h3). */}
+      <h2 className="sr-only">Ideas</h2>
       <div className="moment-picker" role="group" aria-label="Food moment">
         {[
           ["now", "Now"],

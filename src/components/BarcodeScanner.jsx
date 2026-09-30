@@ -221,7 +221,11 @@ export default function BarcodeScanner({ onAdd, onClose }) {
         </label>
         <button disabled={loading}>Look up product</button>
       </form>
-      {error && <p role="alert">{error}</p>}
+      {error && (
+        <p className="inline-error" role="alert">
+          {error}
+        </p>
+      )}
       {loading && <p role="status">Looking up product…</p>}
       {product && (
         <div className="product-result">

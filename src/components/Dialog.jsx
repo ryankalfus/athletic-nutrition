@@ -19,6 +19,18 @@ const TABBABLE =
 // the dialog is dirty. Use it for Cancel buttons inside a sheet.
 export const useDialogClose = () => useContext(DialogClose);
 
+// For a form inside a Dialog: reports whether `snapshot` (any string of the
+// form's values) changed since the first render, so the parent can pass
+// `dirty` to its Dialog (DS-15).
+export function useReportDirty(snapshot, onDirty) {
+  const initial = useRef(snapshot);
+  const dirty = snapshot !== initial.current;
+  useEffect(() => {
+    onDirty?.(dirty);
+  }, [dirty]);
+  return dirty;
+}
+
 export function DialogCancel({ children = "Cancel", ...props }) {
   const close = useDialogClose();
   return (

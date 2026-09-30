@@ -538,6 +538,7 @@
 /* Field error (DS-13): icon and message under the field it describes. */
 .field-error {
   display: flex;
+  grid-column: 1 / -1;
   align-items: flex-start;
   gap: var(--space-2);
   margin: var(--space-1) 0 0;

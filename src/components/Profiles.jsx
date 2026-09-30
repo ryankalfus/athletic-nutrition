@@ -7,7 +7,11 @@ export function Recovery({ message }) {
   return (
     <main className="shell recovery">
       <h1>Your data needs attention</h1>
-      <p role="alert">{message}</p>
+      {message && (
+        <p className="inline-error" role="alert">
+          {message}
+        </p>
+      )}
       <p>
         Nothing has been cleared. Download a copy before making changes. If this
         is a newer backup, reopen it with the app version that created it.

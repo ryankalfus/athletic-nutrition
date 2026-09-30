@@ -271,6 +271,20 @@ async (page) => {
         .click();
       await search.getByText("Nutrition details (optional)").waitFor();
       await scan("Portion sheet", width);
+      // DS-15: a changed portion asks before Escape discards it.
+      await search.getByRole("spinbutton", { name: "Amount eaten" }).fill("2");
+      await p.keyboard.press("Escape");
+      const ask = p.getByRole("dialog", { name: "Discard changes?" });
+      await ask.waitFor();
+      await scan("Discard changes? over the portion sheet", width);
+      await ask.getByRole("button", { name: "Keep editing" }).click();
+      await ask.waitFor({ state: "hidden" });
+      if (
+        (await search
+          .getByRole("spinbutton", { name: "Amount eaten" })
+          .inputValue()) !== "2"
+      )
+        throw new Error("Keep editing lost the portion change");
       await search.getByRole("button", { name: "Save", exact: true }).click();
       await search.waitFor({ state: "hidden" });
       await scan("Log Day with an entry and toast", width);

@@ -265,7 +265,7 @@ export function FoodSearch({
       )}
       {loading && !results && <Skeleton label="Finding foods" />}
       {error && (
-        <div role="alert">
+        <div className="inline-error" role="alert">
           <p>{error}</p>
           <button onClick={() => search(page > 1 ? page : 1)}>Retry</button>
           <p>Saved foods and manual entry remain available.</p>

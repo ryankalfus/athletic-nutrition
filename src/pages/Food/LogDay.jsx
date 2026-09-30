@@ -450,12 +450,14 @@ export default function LogDay({ date, todayKey, now, onNavigate }) {
               entry={dialog.entry}
               only={dialog.only}
               onDone={() => setDialog(null)}
+              onDirty={(dirty) => setDirtyDialog(dirty ? dialog : null)}
             />
           ) : dialog.type === "changed" ? (
             <ChangedPlanSheet
               plan={dialog.plan}
               date={dialog.date}
               todayKey={todayKey}
+              onDirty={(dirty) => setDirtyDialog(dirty ? dialog : null)}
               onDone={(entry) => {
                 setDialog(null);
                 if (dialog.date !== date) go(dialog.date);

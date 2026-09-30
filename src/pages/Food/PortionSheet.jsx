@@ -1,9 +1,9 @@
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { portionCalories, validPortion } from "../../domain/food.js";
 import { portionHint, sourceLine } from "../../domain/search.js";
 import { APPROX_TIMES, clockTime, entryClock } from "../../domain/log.js";
 import { LabelCheck } from "../../components/ui/LabelCheck.jsx";
-import { DialogCancel } from "../../components/Dialog.jsx";
+import { DialogCancel, useReportDirty } from "../../components/Dialog.jsx";
 import {
   FieldError,
   FieldErrors,
@@ -89,12 +89,10 @@ export function PortionSheet({ food, entry, isToday, onSave, onDirty }) {
   const [error, setError] = useState(null);
   const [busy, setBusy] = useState(false);
   const calories = portionCalories(food, amount, unit);
-  const snapshot = JSON.stringify([name, amount, unit, override, when.value]);
-  const initial = useRef(snapshot);
-  const dirty = snapshot !== initial.current;
-  useEffect(() => {
-    onDirty?.(dirty);
-  }, [dirty]);
+  useReportDirty(
+    JSON.stringify([name, amount, unit, override, when.value]),
+    onDirty,
+  );
   async function save(e) {
     e.preventDefault();
     if (busy) return;

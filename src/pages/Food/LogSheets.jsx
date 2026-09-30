@@ -12,7 +12,13 @@ import { uid } from "../../domain/storage.js";
 import { changeData, useStore } from "../../store.js";
 import { useAsyncAction } from "../../hooks/useAsyncAction.js";
 import { plural } from "../../format.js";
-import { InlineError } from "../../components/ui/InlineError.jsx";
+import { DialogCancel, useReportDirty } from "../../components/Dialog.jsx";
+import {
+  FieldError,
+  FieldErrors,
+  FormError,
+  Input,
+} from "../../components/ui/FieldError.jsx";
 import { LabelCheck } from "../../components/ui/LabelCheck.jsx";
 import { useWhen, WhenField } from "./PortionSheet.jsx";
 
@@ -28,7 +34,7 @@ export const foodFor = (item) =>
 
 // "Used from At home…": take exact counts from At home for one entry. `only`
 // limits the list to the rows the entry matched (LOG-05).
-export function UseFromHomeSheet({ entry, only, onDone }) {
+export function UseFromHomeSheet({ entry, only, onDone, onDirty }) {
   const { current } = useStore();
   const { pending, run } = useAsyncAction();
   const [amounts, setAmounts] = useState(() =>
@@ -38,6 +44,7 @@ export function UseFromHomeSheet({ entry, only, onDone }) {
         .map((row) => [row.id, String(row.amount)]),
     ),
   );
+  useReportDirty(JSON.stringify(amounts), onDirty);
   const items = current.data.groceryState.pantry.filter(
     (p) =>
       Number(p.quantity) > 0 &&
@@ -94,16 +101,14 @@ export function UseFromHomeSheet({ entry, only, onDone }) {
         >
           {pending === "consume" ? "Saving…" : "Save"}
         </button>
-        <button type="button" onClick={onDone}>
-          Cancel
-        </button>
+        <DialogCancel />
       </div>
     </form>
   );
 }
 
 // "Changed it": log a plan with the amounts actually eaten (LOG-03).
-export function ChangedPlanSheet({ plan, date, todayKey, onDone }) {
+export function ChangedPlanSheet({ plan, date, todayKey, onDone, onDirty }) {
   const { current } = useStore();
   const { pending, run } = useAsyncAction();
   const isToday = date === todayKey;
@@ -129,7 +134,8 @@ export function ChangedPlanSheet({ plan, date, todayKey, onDone }) {
           },
     })),
   );
-  const [error, setError] = useState("");
+  const [error, setError] = useState(null);
+  useReportDirty(JSON.stringify([ingredients, when.value]), onDirty);
   const update = (index, field, value) =>
     setIngredients((list) =>
       list.map((v, n) => (n === index ? { ...v, [field]: value } : v)),
@@ -138,10 +144,20 @@ export function ChangedPlanSheet({ plan, date, todayKey, onDone }) {
     <form
       onSubmit={async (e) => {
         e.preventDefault();
-        if (ingredients.some((i) => !validPortion(i.amount, i.unit)))
-          return setError("Check each amount and unit.");
+        const bad = ingredients.findIndex(
+          (i) => !validPortion(i.amount, i.unit),
+        );
+        if (bad >= 0)
+          return setError({
+            message: "Check each amount and unit.",
+            field: `amount-${bad}`,
+          });
         if (!isToday && !when.exact && !when.approx)
-          return setError("Choose about when you ate it.");
+          return setError({
+            message: "Choose about when you ate it.",
+            field: "when",
+          });
+        setError(null);
         const actual = ingredients.map((i) => ({
           name: i.name,
           ingredientId: i.ingredientId,
@@ -175,36 +191,40 @@ export function ChangedPlanSheet({ plan, date, todayKey, onDone }) {
       }}
     >
       <p>Change the amounts to what you ate.</p>
-      {ingredients.map((i, index) => (
-        <div key={i.ingredientId || index} className="form-grid">
-          <label>
-            {i.name}
-            <input
-              type="number"
-              min="0.01"
-              max={["g", "ml"].includes(i.unit) ? 2000 : 100}
-              step="any"
-              value={i.amount}
-              onChange={(e) => update(index, "amount", e.target.value)}
-            />
-          </label>
-          <label>
-            Unit
-            <select
-              value={i.unit}
-              onChange={(e) => update(index, "unit", e.target.value)}
-            >
-              {["g", "ml", "portion", "piece", "package"].map((u) => (
-                <option key={u}>{u}</option>
-              ))}
-            </select>
-          </label>
-        </div>
-      ))}
-      <WhenField when={when} isToday={isToday} />
-      <LabelCheck />
-      <p className="food-source">From your plan</p>
-      <InlineError message={error} />
+      <FieldErrors error={error}>
+        {ingredients.map((i, index) => (
+          <div key={i.ingredientId || index} className="form-grid">
+            <label>
+              {i.name}
+              <Input
+                field={`amount-${index}`}
+                type="number"
+                min="0.01"
+                max={["g", "ml"].includes(i.unit) ? 2000 : 100}
+                step="any"
+                value={i.amount}
+                onChange={(e) => update(index, "amount", e.target.value)}
+              />
+            </label>
+            <label>
+              Unit
+              <select
+                value={i.unit}
+                onChange={(e) => update(index, "unit", e.target.value)}
+              >
+                {["g", "ml", "portion", "piece", "package"].map((u) => (
+                  <option key={u}>{u}</option>
+                ))}
+              </select>
+            </label>
+            <FieldError field={`amount-${index}`} />
+          </div>
+        ))}
+        <WhenField when={when} isToday={isToday} />
+        <LabelCheck />
+        <p className="food-source">From your plan</p>
+        <FormError />
+      </FieldErrors>
       <div className="button-row">
         <button
           aria-busy={pending === "meal-log" || undefined}
@@ -213,9 +233,7 @@ export function ChangedPlanSheet({ plan, date, todayKey, onDone }) {
         >
           {pending === "meal-log" ? "Saving…" : "Log it"}
         </button>
-        <button type="button" onClick={() => onDone(null)}>
-          Cancel
-        </button>
+        <DialogCancel />
       </div>
     </form>
   );
