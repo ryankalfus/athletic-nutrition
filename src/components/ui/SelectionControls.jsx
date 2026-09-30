@@ -73,7 +73,6 @@ export function ChipGroup({
   return (
     <fieldset className="choice-field" {...invalid}>
       <legend>{legend}</legend>
-      {hint && <p className="muted field-hint">{hint}</p>}
       <div className="chip-group">
         {options.map(([value, label]) => (
           <button
@@ -87,6 +86,8 @@ export function ChipGroup({
         ))}
       </div>
       <FieldError field={field} />
+      {/* Hints sit under the control, like input hints (DS-13). */}
+      {hint && <p className="muted field-hint">{hint}</p>}
     </fieldset>
   );
 }

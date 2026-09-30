@@ -6,13 +6,15 @@ import { pageTitle } from "../routing.js";
 // page name is read out by the persistent live region in index.html. While a
 // dialog is open (a You sheet route), focus stays in the dialog.
 export function RouteAnnouncer({ page }) {
-  const first = useRef(true);
+  // The first page rendered, and whether the route has changed since. A
+  // re-run effect on the first page (React's development double run) is not
+  // a route change, so the H1 keeps no focus on a fresh load.
+  const initial = useRef(page);
+  const changed = useRef(false);
   useEffect(() => {
     document.title = pageTitle(page);
-    if (first.current) {
-      first.current = false;
-      return undefined;
-    }
+    if (!changed.current && page === initial.current) return undefined;
+    changed.current = true;
     const before = document.activeElement;
     const timer = window.setTimeout(() => {
       const heading = document.querySelector("main h1");

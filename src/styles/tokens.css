@@ -105,6 +105,8 @@
   --rhythm-card: var(--space-4);
   --rhythm-row: var(--space-3);
   --card-padding: var(--space-5);
+  --now-card-padding: var(--space-5); /* DS-14: 20px phones, 28px desktop */
+  --now-card-min: 240px; /* 6.3 desktop layout */
   --top-bar: 56px;
   --dialog-header: 64px;
   --sticky-offset: 72px; /* below a sticky section control */
@@ -157,6 +159,7 @@
   :root {
     --gutter: var(--space-8);
     --card-padding: var(--space-6);
+    --now-card-padding: calc(var(--space-6) + var(--space-1));
     --text-display: 44px;
     --leading-display: 48px;
     --text-h1: 32px;

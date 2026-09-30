@@ -1,6 +1,14 @@
-import { Apple, CalendarDays, CircleUserRound, Sunrise } from "lucide-react";
+import {
+  Apple,
+  CalendarDays,
+  ChevronLeft,
+  CircleUserRound,
+  Sunrise,
+} from "lucide-react";
 import { useStore, exportBackup, retryLastWrite } from "../store.js";
 import { navigate, useRoute } from "../routing.js";
+import { athleteName as nameOf } from "../domain/you.js";
+import { Avatar } from "./ui/Avatar.jsx";
 
 const destinations = [
   { id: "today", label: "Today", path: "today", Icon: Sunrise },
@@ -29,20 +37,29 @@ export function AppNavigation({ active, onNavigate }) {
   );
 }
 
+// `title` and `back` replace the phone top bar's page name with a sub-page's
+// own ("This device" with a chevron back to You), so the page does not repeat
+// its name and back link below the bar (6.14). `action` is a page's main
+// button in the phone top bar (Schedule's "+ Add", 6.9); wider screens show
+// the page's own copy in its header.
 export function Shell({
   children,
   navigation = true,
   footer = true,
   onNavigate,
+  title: pageTitle,
+  back,
+  action,
 }) {
   const state = useStore();
   const [view] = useRoute();
   const current = destinations.find(({ id }) => id === view);
   const title =
-    current?.label || (view === "notFound" ? "Page not found" : "Food");
+    pageTitle ||
+    current?.label ||
+    (view === "notFound" ? "Page not found" : "Food");
   const go = onNavigate || navigate;
-  const athleteName =
-    state.current?.data?.profile?.name || state.current?.name || "Athlete";
+  const athleteName = nameOf(state.current);
   // Column width per route (DS-08): Today and Schedule gain a right column at
   // 1200px, Food uses the 960px grid column, everything else reads at 720px.
   const layout = !navigation
@@ -71,21 +88,39 @@ export function Shell({
       </a>
       {navigation && (
         <header className="frame-header">
+          {back && (
+            <button
+              type="button"
+              className="icon-button frame-back"
+              aria-label={back.label}
+              onClick={back.onClick}
+            >
+              <ChevronLeft size={24} strokeWidth={1.75} aria-hidden="true" />
+            </button>
+          )}
           <div className="frame-brand" aria-label="Nourally">
             <img src="/favicon.svg" width="32" height="32" alt="" />
             <span>nourally</span>
           </div>
           <AppNavigation active={view} onNavigate={go} />
+          {action && (
+            <button
+              type="button"
+              className="primary frame-action"
+              onClick={action.onClick}
+            >
+              {action.label}
+            </button>
+          )}
           <button
             className="frame-athlete"
             type="button"
             onClick={() => go("you")}
             aria-label="Switch athlete"
           >
-            <span className="frame-avatar" aria-hidden="true">
-              {athleteName.charAt(0).toUpperCase()}
-            </span>
+            <Avatar name={athleteName} size="sm" className="frame-avatar" />
             <span className="frame-athlete-name">{athleteName}</span>
+            <span className="frame-athlete-switch">Switch</span>
           </button>
           <div className="frame-mobile-title" aria-hidden="true">
             {title}
@@ -101,7 +136,7 @@ export function Shell({
         )}
         {!navigation && (
           <div className="brand">
-            <img src="/favicon.svg" width="32" height="32" alt="" />
+            <img src="/favicon.svg" width="40" height="40" alt="" />
             <span>nourally</span>
           </div>
         )}

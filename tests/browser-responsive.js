@@ -85,7 +85,9 @@ async (page) => {
         spill.push(name(el).slice(0, 50));
     }
 
-    // Page column: centered right of the rail, capped per route, 16/24/32 px gutters.
+    // Page column: capped per route, 16/24/32 px gutters. Centered below
+    // 1024 px; from 1024 px it starts at the rail's gutter on every route, so
+    // page titles share one left edge (6.3 desktop layout).
     const viewport = document.documentElement.clientWidth;
     let column = "";
     const main = document.querySelector("main.shell");
@@ -108,10 +110,12 @@ async (page) => {
       if (!max) column = "main has no data-layout";
       else if (width > max + 1)
         column = `${Math.round(width)}px wide (max ${max})`;
-      else if (Math.abs(before - after) > 1)
+      else if (rail && Math.abs(before - gutter) > 1)
+        column = `starts ${Math.round(before)} px right of the rail (want ${gutter})`;
+      else if (!rail && Math.abs(before - after) > 1)
         column = `not centered (${Math.round(before)} vs ${Math.round(after)} px)`;
-      else if (before < gutter - 1)
-        column = `gutter ${Math.round(before)} px (want ${gutter})`;
+      else if (before < gutter - 1 || after < gutter - 1)
+        column = `gutter ${Math.round(Math.min(before, after))} px (want ${gutter})`;
       else if (width < max - 1 && before > gutter + 1)
         column = `gutter ${Math.round(before)} px (want ${gutter})`;
     }

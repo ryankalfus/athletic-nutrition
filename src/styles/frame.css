@@ -35,6 +35,11 @@
   margin-bottom: var(--space-8);
 }
 
+/* Phone sub-pages (This device, About): a back chevron before the title. */
+.frame-back {
+  order: -2;
+}
+
 .frame-mobile-title {
   order: -1;
   overflow: hidden;
@@ -82,10 +87,18 @@
   height: 24px;
 }
 
+/* The ring sits inside the item so the screen edge never cuts it. */
+.frame-nav .frame-nav-item:focus-visible {
+  border-radius: var(--radius-md);
+  outline-offset: calc(var(--space-1) * -1);
+}
+
 .frame-nav .frame-nav-item[aria-current="page"] {
   color: var(--color-primary);
 }
 
+/* Lime marks the active item (DS-17); a 1px primary edge gives it 3:1
+ * against the white bar, which lime alone does not (WCAG 1.4.11). */
 .frame-nav .frame-nav-item[aria-current="page"]::before {
   position: absolute;
   top: var(--space-1);
@@ -93,6 +106,7 @@
   height: 6px;
   border-radius: var(--radius-full);
   background: var(--color-lime);
+  box-shadow: 0 0 0 1px var(--color-primary);
   content: "";
 }
 
@@ -110,20 +124,30 @@
   color: var(--color-ink);
 }
 
-.frame-avatar {
-  display: grid;
-  flex: 0 0 auto;
-  place-items: center;
-  width: 32px;
-  height: 32px;
-  border-radius: var(--radius-full);
-  background: var(--color-selected-bg);
-  color: var(--color-primary);
-  font-weight: 700;
+.frame-athlete-name,
+.frame-athlete-switch {
+  display: none;
 }
 
-.frame-athlete-name {
+/* A page's main action in the phone top bar, before the avatar. */
+.frame-action {
+  min-height: var(--target);
+  margin-left: auto;
+  padding-block: var(--space-2);
+}
+
+.frame-action + .frame-athlete {
+  margin-left: var(--space-2);
+}
+
+/* On phones the action lives in the top bar, so the page header's copy and
+ * the header row itself are gone (the H1 stays for screen readers). */
+.app-frame.has-navigation .calendar-head .page-head-tools {
   display: none;
+}
+
+.app-frame.has-navigation .calendar-head {
+  margin: 0;
 }
 
 /* Page column: centered, gutters 16/24/32, width by route (DS-08). */
@@ -143,7 +167,9 @@
 }
 
 .app-frame.has-navigation .shell {
-  padding-bottom: calc(var(--tab-bar) + var(--space-8) + env(safe-area-inset-bottom));
+  padding-bottom: calc(
+    var(--tab-bar) + var(--space-8) + env(safe-area-inset-bottom)
+  );
 }
 
 .shell[data-layout="grid"] {
@@ -176,7 +202,9 @@
 }
 
 .app-frame.has-navigation .frame-footer {
-  padding-bottom: calc(var(--tab-bar) + var(--space-8) + env(safe-area-inset-bottom));
+  padding-bottom: calc(
+    var(--tab-bar) + var(--space-8) + env(safe-area-inset-bottom)
+  );
 }
 
 /* Skip link (A11Y-01): off screen until focused. */
@@ -213,7 +241,7 @@
   margin-bottom: var(--space-6);
 }
 
-.app-frame.has-navigation .page-title {
+.app-frame.has-navigation :is(.page-title, main h1) {
   position: absolute;
   width: 1px;
   height: 1px;
@@ -225,6 +253,12 @@
 
 .app-frame.has-navigation .dashboard-head {
   margin: 0;
+}
+
+/* Phones show the page name and a back chevron in the top bar, so a sub-page's
+ * own back link is for wider screens only. */
+.app-frame.has-navigation .you-back {
+  display: none;
 }
 
 .page-head-tools {
@@ -239,8 +273,36 @@
     display: flex;
   }
 
-  .frame-mobile-title {
+  .frame-mobile-title,
+  .frame-back,
+  .frame-action {
     display: none;
+  }
+
+  .app-frame.has-navigation .calendar-head .page-head-tools {
+    display: flex;
+  }
+
+  .app-frame.has-navigation .calendar-head {
+    margin-bottom: var(--space-6);
+  }
+
+  .app-frame.has-navigation .you-back {
+    display: inline-flex;
+  }
+
+  /* Tablet top bar: brand, tabs centered on the bar, athlete. */
+  .frame-header {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+  }
+
+  .frame-brand {
+    justify-self: start;
+  }
+
+  .frame-athlete {
+    justify-self: end;
   }
 
   /* Tablet top bar with four destinations. */
@@ -293,10 +355,15 @@
     padding-bottom: var(--space-12);
   }
 
-  .app-frame.has-navigation .page-title {
+  /* Every page title sits in the same 48px row, so switching tabs never
+   * moves it (a page with header buttons would otherwise center it lower). */
+  .app-frame.has-navigation :is(.page-title, main h1) {
     position: static;
+    display: flex;
+    align-items: center;
     width: auto;
     height: auto;
+    min-height: var(--control-height);
     overflow: visible;
     clip: auto;
     clip-path: none;
@@ -318,10 +385,12 @@
     padding-left: var(--width-rail);
   }
 
-  /* Desktop rail (DS-17): 48px items, 20px icon, 15px label, 4px lime bar. */
+  /* Desktop rail (DS-17): 48px items, 20px icon, 15px label, 4px lime bar.
+   * Brand, item icons and the avatar share one 32px left edge. */
   .frame-header {
     position: fixed;
     inset: 0 auto 0 0;
+    display: flex;
     flex-direction: column;
     align-items: stretch;
     width: var(--width-rail);
@@ -337,6 +406,10 @@
     align-items: stretch;
     height: auto;
     margin-top: var(--space-8);
+  }
+
+  .frame-brand {
+    padding-inline: var(--space-4);
   }
 
   .frame-nav .frame-nav-item {
@@ -355,27 +428,45 @@
     gap: var(--space-2);
     width: 100%;
     margin: auto 0 0;
-    padding: 0 var(--space-2);
+    padding: 0 var(--space-4);
     border-radius: var(--radius-md);
     font-weight: 500;
   }
 
   .frame-athlete-name {
     display: inline;
+    flex: 1 1 auto;
+    min-width: 0;
     overflow: hidden;
+    text-align: left;
     text-overflow: ellipsis;
     white-space: nowrap;
+  }
+
+  /* The rail's "Switch" reads as a text button (4.4). */
+  .frame-athlete-switch {
+    display: inline;
+    color: var(--color-primary);
+    font-weight: 600;
   }
 
   .shell,
   .app-frame.has-navigation .shell {
     padding-top: var(--space-8);
   }
+
+  /* The page column starts at the rail's gutter on every route (6.3 desktop
+   * layout), so titles share one left edge whatever the column width. */
+  .app-frame.has-navigation :is(.shell, .frame-footer) {
+    margin-inline: 0 auto;
+  }
 }
 
 @media (min-width: 1200px) {
   /* Today and Schedule add a 320px right column. */
   :root:has(.shell[data-layout="wide"]) {
-    --layout-max: calc(var(--width-reading) + var(--space-8) + var(--width-aside));
+    --layout-max: calc(
+      var(--width-reading) + var(--space-8) + var(--width-aside)
+    );
   }
 }

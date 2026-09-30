@@ -74,6 +74,13 @@ em {
   font-style: normal;
 }
 
+/* The browser's "bolder" turns strong inside 600-weight labels into 900;
+ * the type scale stops at 700 (5.4). */
+strong,
+b {
+  font-weight: 700;
+}
+
 a {
   color: var(--color-primary);
 }
@@ -120,7 +127,12 @@ fieldset {
   border: 0;
 }
 
+/* A legend keeps an "Optional" tag 8px after its text, like a label. */
 legend {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0 var(--space-2);
   margin-bottom: var(--space-2);
   padding: 0;
   font-size: var(--text-label);
@@ -129,10 +141,10 @@ legend {
 }
 
 :where(
-    input:not([type="checkbox"], [type="radio"], [type="file"], [type="range"]),
-    select,
-    textarea
-  ) {
+  input:not([type="checkbox"], [type="radio"], [type="file"], [type="range"]),
+  select,
+  textarea
+) {
   width: 100%;
   min-width: 0;
   min-height: var(--control-height);
@@ -147,6 +159,15 @@ legend {
   transition: border-color var(--motion-fast) var(--ease-out);
 }
 
+:where(
+  input:not([type="checkbox"], [type="radio"], [type="file"], [type="range"]),
+  select
+) {
+  /* 48px like every control (DS-13); date and time inputs otherwise grow to 52. */
+  height: var(--control-height);
+  padding-block: 0;
+}
+
 :where(input, textarea)::placeholder {
   color: var(--color-ink-subtle);
   opacity: 1;
@@ -157,10 +178,33 @@ legend {
   resize: vertical;
 }
 
+/* A field with its error and hint below it (DS-13): box, error, hint. */
+.field {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.field > .field-error {
+  margin: 0;
+}
+
+/* A text box with suggestions (datalist) shows the select chevron, not the
+ * browser's own black triangle. */
+.suggest-input {
+  padding-right: var(--space-10);
+  background: var(--color-surface) var(--icon-chevron) right var(--space-3)
+    center / 20px no-repeat;
+}
+
+.suggest-input::-webkit-calendar-picker-indicator {
+  opacity: 0;
+}
+
 :where(select) {
   appearance: none;
   padding-right: var(--space-10);
-  background: var(--color-surface) var(--icon-chevron) right var(--space-3) center / 20px no-repeat;
+  background: var(--color-surface) var(--icon-chevron) right var(--space-3)
+    center / 20px no-repeat;
 }
 
 :where(input, select, textarea):focus {
@@ -233,9 +277,26 @@ input[type="checkbox"][role="switch"]:checked::after {
   transform: translateX(18px);
 }
 
-:where(input[type="checkbox"]):disabled {
+/* Disabled checkboxes and switches read as off-limits even when checked. */
+input[type="checkbox"]:disabled,
+input[type="checkbox"]:not([role="switch"]):checked:disabled {
   border-color: var(--color-line);
   background-color: var(--color-surface-muted);
+  cursor: not-allowed;
+}
+
+input[type="checkbox"]:not([role="switch"]):checked:disabled {
+  background: var(--color-line-strong) var(--icon-check) center / 16px no-repeat;
+}
+
+input[type="checkbox"][role="switch"]:disabled::after {
+  background: var(--color-line);
+}
+
+:is(label, .check-row):has(> input:disabled),
+fieldset:disabled :is(legend, label) {
+  color: var(--color-ink-subtle);
+  cursor: not-allowed;
 }
 
 summary {
@@ -275,6 +336,12 @@ td {
 
 :where(input, select, textarea):focus-visible {
   outline-offset: 1px;
+}
+
+/* A page heading takes focus after a route change so screen readers start
+ * there; it is not a control, so it draws no ring. */
+h1[tabindex="-1"]:focus {
+  outline: none;
 }
 
 :where(.now-card, .app-toast) :where(button, a, summary):focus-visible {
@@ -332,12 +399,12 @@ td {
  * pressed and current states get a system-color outline as well. */
 @media (forced-colors: active) {
   :where(
-      [aria-pressed="true"],
-      [aria-checked="true"],
-      [aria-current="page"],
-      [aria-current="date"],
-      .calendar-day.selected
-    ):not(:focus-visible) {
+    [aria-pressed="true"],
+    [aria-checked="true"],
+    [aria-current="page"],
+    [aria-current="date"],
+    .calendar-day.selected
+  ):not(:focus-visible) {
     outline: 2px solid Highlight;
     outline-offset: -2px;
   }

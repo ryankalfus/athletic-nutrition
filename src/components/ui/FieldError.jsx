@@ -77,5 +77,10 @@ export function FormError() {
 // An <input> that `field` names; use it inside a <label>, with <FieldError>
 // after the label.
 export function Input({ field, ...props }) {
-  return <input {...props} {...useFieldInvalid(field)} />;
+  const invalid = useFieldInvalid(field);
+  const describedBy =
+    [invalid["aria-describedby"], props["aria-describedby"]]
+      .filter(Boolean)
+      .join(" ") || undefined;
+  return <input {...props} {...invalid} aria-describedby={describedBy} />;
 }

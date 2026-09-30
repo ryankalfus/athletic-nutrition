@@ -6,6 +6,7 @@ import {
   useRef,
   useState,
 } from "react";
+import { createPortal } from "react-dom";
 import { X } from "lucide-react";
 import { retryLastWrite, useStore } from "../store.js";
 import { InlineError } from "./ui/InlineError.jsx";
@@ -149,8 +150,11 @@ export function Dialog({
   );
 }
 
+// Portaled to <body> so the confirm is not a child of the sheet: the sheet's
+// body margins (.app-dialog > *) never reach it, and it opens as its own
+// bottom sheet (phones) or centered dialog.
 function DiscardDialog({ message, onKeep, onDiscard }) {
-  return (
+  return createPortal(
     <Dialog title="Discard changes?" onClose={onKeep}>
       <p>{message}</p>
       <div className="confirm-actions">
@@ -159,6 +163,7 @@ function DiscardDialog({ message, onKeep, onDiscard }) {
           Discard
         </Button>
       </div>
-    </Dialog>
+    </Dialog>,
+    document.body,
   );
 }
