@@ -21,6 +21,16 @@ export function formatTime(value) {
   }).format(new Date(2000, 0, 1, hours, minutes));
 }
 
+// Compact clock for day chips (6.3 "School 8–3", "Practice 4:00"): no AM/PM,
+// and with `hourOnly`, no ":00" on the hour. "4:00", "11:30", "8".
+export function formatShortTime(value, { hourOnly = false } = {}) {
+  if (!isClock(value)) return value || "";
+  const [hours, minutes] = value.split(":").map(Number);
+  const hour = hours % 12 || 12;
+  if (hourOnly && minutes === 0) return String(hour);
+  return `${hour}:${String(minutes).padStart(2, "0")}`;
+}
+
 export function formatDuration(start, end) {
   let minutes = start;
   if (end !== undefined) {
@@ -119,6 +129,18 @@ export const formatActivityType = (value) =>
   })[value] || value;
 export const formatIntensity = (value) =>
   ({ low: "Light", medium: "Moderate", high: "Hard" })[value] || value;
+
+// School weekdays (6.9 "School · Mon–Fri"): a run of 3+ days reads as a
+// range, anything else as a list. weekdays are 0 (Sun) to 6 (Sat).
+const WEEKDAY_SHORT = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+export function formatWeekdays(weekdays = []) {
+  const days = [...new Set(weekdays)].sort((a, b) => a - b);
+  if (!days.length) return "";
+  const run = days.every((day, i) => i === 0 || day === days[i - 1] + 1);
+  return run && days.length >= 3
+    ? `${WEEKDAY_SHORT[days[0]]}–${WEEKDAY_SHORT[days.at(-1)]}`
+    : days.map((day) => WEEKDAY_SHORT[day]).join(", ");
+}
 
 // "Sep 22 – 28", or "Sep 29 – Oct 5" across months (Log › Week).
 export function formatDateRange(startKey, endKey) {

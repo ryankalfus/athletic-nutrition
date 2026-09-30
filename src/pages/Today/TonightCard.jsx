@@ -1,7 +1,8 @@
 import Checklist from "./Checklist.jsx";
 import { ShareButton } from "../../components/ui/ShareButton.jsx";
 import { formatChecklistText } from "../../domain/share.js";
-import { formatDate } from "../../format.js";
+import { formatDate, formatTime } from "../../format.js";
+import { tomorrowEventDetail } from "../../domain/tonight.js";
 
 // TODAY-07 / ADD-11: Tonight — set up any activity day the evening before.
 export default function TonightCard({
@@ -10,8 +11,9 @@ export default function TonightCard({
   write,
   buildTomorrow,
   onNavigate,
+  showBuild = true,
 }) {
-  const { tasks, lines, gameDay, done, built, tomorrowKey } = plan;
+  const { tasks, lines, events, gameDay, done, built, tomorrowKey } = plan;
   return (
     <section className="tonight-card" aria-labelledby="tonight-title">
       <div className="today-section-header">
@@ -32,13 +34,18 @@ export default function TonightCard({
         )}
       </div>
       <div className="tonight-events">
-        <p className="tonight-when">
-          Tomorrow · {formatDate(tomorrowKey)}
-          {gameDay && <span className="badge badge-game">Game day</span>}
-        </p>
-        <ul>
-          {lines.map((line) => (
-            <li key={line}>{line}</li>
+        {gameDay && <span className="badge badge-game">Game day</span>}
+        <p className="tonight-when">Tomorrow · {formatDate(tomorrowKey)}</p>
+        {/* Each activity reads like a Day rail row: time, dot, title, sub-line. */}
+        <ul className="rail-list">
+          {events.map((event) => (
+            <li key={event.occurrenceId || event.id} data-type={event.type}>
+              <time>{formatTime(event.startTime)}</time>
+              <span className="rail-body">
+                <strong>{event.title}</strong>
+                <span className="rail-sub">{tomorrowEventDetail(event)}</span>
+              </span>
+            </li>
           ))}
         </ul>
       </div>
@@ -55,14 +62,14 @@ export default function TonightCard({
           />
         </>
       ) : (
-        <p className="muted">
+        <p className="tonight-helper">
           Build the list to set out food, water, and gear tonight.
         </p>
       )}
       <div className="button-row">
-        {!built && (
+        {/* Secondary: the Now card's lime button is the page's one primary. */}
+        {!built && showBuild && (
           <button
-            className={tasks.length ? undefined : "primary"}
             aria-busy={pending === "tomorrow" || undefined}
             disabled={!!pending}
             onClick={buildTomorrow}

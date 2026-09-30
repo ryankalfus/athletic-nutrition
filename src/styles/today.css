@@ -25,6 +25,13 @@
   font-size: var(--text-caption);
   line-height: var(--leading-caption);
   font-weight: 500;
+  white-space: nowrap;
+}
+
+.today-chips .chip-muted {
+  border-style: dashed;
+  background: transparent;
+  color: var(--color-ink-muted);
 }
 
 .today-layout {
@@ -57,8 +64,9 @@
 /* Now card: pitch surface, 24px radius, 20/28px padding (DS-14). */
 .today-layout > .now-card {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--space-4);
-  padding: var(--space-5);
+  padding: var(--now-card-padding);
   border: 0;
   border-radius: var(--radius-xl);
   background: linear-gradient(
@@ -108,12 +116,62 @@
 
 .today-pick {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--space-3);
+  min-width: 0;
 }
 
 .today-pick > strong {
   font-size: var(--text-h3);
   line-height: var(--leading-h3);
+  font-weight: 600;
+}
+
+/* The game chip sits on its own line above the countdown. */
+.now-card .now-badge,
+.tonight-events > .badge-game {
+  justify-self: start;
+  width: max-content;
+}
+
+/* Alternates: two 36px chips in one row; long names end in an ellipsis. */
+.now-card .today-alternates {
+  flex-wrap: nowrap;
+}
+
+.now-card .today-alternates > button {
+  position: relative;
+  flex: 0 1 auto;
+  min-width: 0;
+  min-height: 36px;
+  margin-block: var(--space-1);
+  padding: var(--space-1) var(--space-4);
+  border-radius: var(--radius-full);
+}
+
+.now-card .today-alternates > button::after {
+  position: absolute;
+  inset: calc(var(--space-1) * -1) 0;
+  content: "";
+}
+
+.today-alternates > button > span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Text actions share one row: More ideas, Why this?, Undo rest day. */
+.today-text-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 var(--space-5);
+}
+
+.now-card .today-secondary {
+  width: 100%;
+  min-height: var(--control-height);
 }
 
 /* Secondary buttons on the pitch surface. */
@@ -159,6 +217,7 @@
 
 .today-text {
   justify-self: start;
+  min-width: var(--target);
   min-height: var(--target);
   padding: var(--space-2) 0;
   border: 0;
@@ -206,26 +265,31 @@
   background: var(--color-on-dark-fill);
 }
 
-/* Day rail: 56px time column with condensed numerals (RWD-08). */
-.day-rail ol {
+/* Day rail (TODAY-02, RWD-08): a time column as wide as its longest time
+ * (subgrid keeps every row on it), then a 12px activity-colour dot on a 2px
+ * line, the title and one sub-line. Rows are plain, not boxed buttons. */
+.day-rail ol,
+.rail-list {
   display: grid;
-  gap: var(--space-2);
+  grid-template-columns: max-content minmax(0, 1fr);
+  column-gap: var(--space-3);
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
-.day-rail li {
+.day-rail li,
+.rail-list li {
+  --rail-dot: var(--color-other);
   display: grid;
-  grid-template-columns: 56px minmax(0, 1fr);
-  align-items: center;
-  gap: var(--space-3);
-  min-height: var(--target);
-  padding-left: var(--space-3);
-  border-left: 2px solid var(--color-line);
+  grid-column: 1 / -1;
+  grid-template-columns: subgrid;
+  align-items: start;
 }
 
-.day-rail time {
+.day-rail time,
+.rail-list time {
+  padding-top: var(--space-2);
   font-family: var(--font-numeral);
   font-size: var(--text-numeral-m);
   line-height: var(--leading-numeral-m);
@@ -234,37 +298,121 @@
   white-space: nowrap;
 }
 
-.day-rail li button {
+.rail-body {
+  position: relative;
   display: grid;
-  justify-content: stretch;
   justify-items: start;
   gap: 0;
-  width: 100%;
-  padding: var(--space-2) var(--space-3);
-  border: var(--border);
+  min-height: var(--target);
+  padding: var(--space-2) var(--space-2) var(--space-2) var(--space-6);
   font-weight: 400;
   text-align: left;
 }
 
-.day-rail li span {
+/* The 2px line runs the full row so rows join; the dot marks the item. */
+.rail-body::before {
+  position: absolute;
+  inset: 0 auto 0 var(--space-1);
+  width: 2px;
+  background: var(--color-line);
+  content: "";
+}
+
+.rail-body::after {
+  position: absolute;
+  top: var(--space-3);
+  left: 0;
+  width: 12px;
+  height: 12px;
+  border: 2px solid var(--color-surface);
+  border-radius: var(--radius-full);
+  background: var(--rail-dot);
+  content: "";
+}
+
+li:first-child > .rail-body::before {
+  top: var(--space-4);
+}
+
+li:last-child > .rail-body::before {
+  bottom: auto;
+  height: var(--space-4);
+}
+
+button.rail-body {
+  justify-content: stretch;
+  width: 100%;
+  min-width: 0;
+  border: 0;
+  border-radius: var(--radius-md);
+  background: transparent;
+}
+
+@media (hover: hover) {
+  button.rail-body:hover:not(:disabled) {
+    background: var(--color-hover);
+  }
+}
+
+.rail-body strong {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1) var(--space-2);
+  font-weight: 600;
+}
+
+.rail-sub {
   color: var(--color-ink-muted);
   font-size: var(--text-caption);
   line-height: var(--leading-caption);
 }
 
-.day-rail li strong {
-  font-weight: 600;
+.nowrap {
+  white-space: nowrap;
 }
 
-.day-rail .rail-now {
-  padding: var(--space-2) var(--space-3);
-  border-left-color: var(--color-lime);
+/* Activity colours (DS-01) on the dot. */
+:is(.day-rail, .rail-list) li[data-kind="school"] {
+  --rail-dot: var(--color-school);
+}
+
+:is(.day-rail, .rail-list) li[data-type="practice"] {
+  --rail-dot: var(--color-practice);
+}
+
+:is(.day-rail, .rail-list) li[data-type="game"] {
+  --rail-dot: var(--color-game);
+}
+
+:is(.day-rail, .rail-list) li[data-type="workout"] {
+  --rail-dot: var(--color-workout);
+}
+
+:is(.day-rail, .rail-list) li[data-kind="travel"] {
+  --rail-dot: var(--color-travel);
+}
+
+:is(.day-rail, .rail-list)
+  li:is([data-kind="food"], [data-kind="window"], [data-kind="recovery"]) {
+  --rail-dot: var(--color-food-moment);
+}
+
+/* The Now marker: a lime row between the others (6.3). */
+.day-rail .rail-now > .rail-body {
+  display: flex;
+  align-items: center;
   border-radius: var(--radius-md);
   background: var(--color-lime);
   color: var(--color-ink);
 }
 
-.rail-past {
+.day-rail .rail-now > .rail-body::after {
+  background: var(--color-ink);
+}
+
+.rail-past,
+.rail-past > .rail-body {
   color: var(--color-ink-muted);
 }
 
@@ -283,21 +431,25 @@
   list-style: none;
 }
 
+/* The whole label is the check's 44px target, so the box column is only as
+ * wide as the box; the remove button draws 24px and keeps a 44px touch area.
+ * That leaves the task text room at 320px. */
 .prep-row {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) var(--target);
+  grid-template-columns: minmax(0, 1fr) var(--space-6);
   align-items: center;
-  gap: var(--space-2);
+  gap: var(--space-3);
 }
 
 .prep-row label {
   display: grid;
-  grid-template-columns: var(--target) minmax(0, 1fr);
+  grid-template-columns: auto minmax(0, 1fr);
   align-items: center;
-  gap: var(--space-2);
+  gap: var(--space-3);
   min-height: var(--target);
   padding: var(--space-1) 0;
   font-weight: 400;
+  text-wrap: pretty;
 }
 
 /* Keep the box and its text on one row (base.css stacks label children). */
@@ -320,7 +472,16 @@
 }
 
 .prep-row .icon-button {
+  position: relative;
+  width: var(--space-6);
+  min-width: var(--space-6);
   color: var(--color-ink-muted);
+}
+
+.prep-row .icon-button::after {
+  position: absolute;
+  inset: 0 calc((var(--target) - var(--space-6)) / -2);
+  content: "";
 }
 
 /* Game chip (ADD-09): the game color on a tint, never color alone. */
@@ -332,36 +493,37 @@
   font-weight: 600;
 }
 
-.today-countdown .badge-game,
-.day-rail li strong .badge-game,
-.tonight-when .badge-game {
-  margin-left: var(--space-2);
+.badge-game {
   border: 1px solid currentcolor;
-  color: var(--color-game);
-  vertical-align: middle;
 }
 
-.now-card .today-countdown .badge-game {
+.now-card .badge-game {
   background: var(--color-surface);
 }
 
-/* Water */
+/* Water: a section heading with a Barlow total, then four equal buttons. */
 .today-layout > .water-row {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
+  display: grid;
   gap: var(--space-3);
 }
 
+.water-row h2 {
+  margin: 0;
+}
+
+.water-row h2 .numeral {
+  font-size: var(--text-h2);
+}
+
 .water-row div {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: var(--space-2);
 }
 
 .water-row button {
-  min-width: var(--target);
+  min-width: 0;
+  padding-inline: 0;
 }
 
 .tonight-card {
@@ -381,35 +543,40 @@
   font-weight: 600;
 }
 
-.tonight-events ul {
+.tonight-events {
   display: grid;
-  gap: var(--space-1);
-  margin: var(--space-1) 0 0;
-  padding: 0;
-  list-style: none;
-  color: var(--color-ink-muted);
+  gap: var(--space-2);
 }
 
-/* Reminder prompt below the day */
+.tonight-events .rail-list {
+  margin-top: var(--space-1);
+}
+
+/* The instruction is smaller than the event rows above it. */
+.tonight-helper {
+  color: var(--color-ink-muted);
+  font-size: var(--text-small);
+  line-height: var(--leading-small);
+}
+
+/* One contextual prompt, in the main column with its actions together. */
 .today-prompt {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
+  display: grid;
   gap: var(--space-3);
-  margin-top: var(--rhythm-section);
   border-color: var(--color-info-tint);
   background: var(--color-info-tint);
   box-shadow: none;
 }
 
 .today-prompt p {
-  flex-basis: 100%;
+  max-width: none;
   margin: 0;
 }
 
 @media (min-width: 1024px) {
   .today-layout > .now-card {
-    padding: var(--space-8);
+    min-height: var(--now-card-min);
+    align-content: start;
   }
 }
 
@@ -422,7 +589,8 @@
   .now-card,
   .pack-prep,
   .water-row,
-  .tonight-card {
+  .tonight-card,
+  .today-prompt {
     grid-column: 1;
   }
 
@@ -430,7 +598,7 @@
     position: sticky;
     top: var(--space-8);
     grid-column: 2;
-    grid-row: 1 / span 4;
+    grid-row: 1 / span 5;
   }
 }
 

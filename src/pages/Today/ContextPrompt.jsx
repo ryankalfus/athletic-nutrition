@@ -8,34 +8,36 @@ function BackupPrompt({ nudge, pending, run, write }) {
   return (
     <aside className="today-prompt" aria-label="Backup">
       <p>{nudge.message}</p>
-      <button
-        className="primary"
-        aria-busy={pending === "backup" || undefined}
-        disabled={!!pending}
-        onClick={() =>
-          run("backup", async () => {
-            const ok = await exportBackup({ stamp: true });
-            if (ok) showToast("Backup saved. Keep the file somewhere safe.");
-            return ok;
-          })
-        }
-      >
-        {pending === "backup" ? "Saving…" : "Save backup"}
-      </button>
-      <button
-        disabled={!!pending}
-        onClick={() =>
-          write(
-            "snooze-backup",
-            (d) => {
-              d.profile.backupNudgeSnoozedAt = new Date().toISOString();
-            },
-            "Backup reminder hidden for 30 days.",
-          )
-        }
-      >
-        Not now
-      </button>
+      <div className="button-row">
+        <button
+          className="primary"
+          aria-busy={pending === "backup" || undefined}
+          disabled={!!pending}
+          onClick={() =>
+            run("backup", async () => {
+              const ok = await exportBackup({ stamp: true });
+              if (ok) showToast("Backup saved. Keep the file somewhere safe.");
+              return ok;
+            })
+          }
+        >
+          {pending === "backup" ? "Saving…" : "Save backup"}
+        </button>
+        <button
+          disabled={!!pending}
+          onClick={() =>
+            write(
+              "snooze-backup",
+              (d) => {
+                d.profile.backupNudgeSnoozedAt = new Date().toISOString();
+              },
+              "Backup reminder hidden for 30 days.",
+            )
+          }
+        >
+          Not now
+        </button>
+      </div>
     </aside>
   );
 }
@@ -93,45 +95,47 @@ export default function ContextPrompt({
       <p>
         Get a heads-up 60 min before {activityWord(guidance.nextEvent.type)}?
       </p>
-      <button
-        disabled={!!pending}
-        onClick={() =>
-          run("reminders", async () => {
-            if (notificationPermission() === "unsupported")
+      <div className="button-row">
+        <button
+          disabled={!!pending}
+          onClick={() =>
+            run("reminders", async () => {
+              if (notificationPermission() === "unsupported")
+                return changeData(
+                  dismiss,
+                  "This browser cannot show reminders.",
+                  openReminders,
+                );
+              const permission = await window.Notification.requestPermission();
+              if (permission === "granted")
+                return changeData(
+                  (d) => {
+                    d.reminderSettings = {
+                      ...d.reminderSettings,
+                      enabled: true,
+                      leadMinutes: 60,
+                    };
+                  },
+                  "Reminders on · 60 min before.",
+                  openReminders,
+                );
               return changeData(
                 dismiss,
-                "This browser cannot show reminders.",
+                "Notifications are blocked. You can try again in You › Reminders.",
                 openReminders,
               );
-            const permission = await window.Notification.requestPermission();
-            if (permission === "granted")
-              return changeData(
-                (d) => {
-                  d.reminderSettings = {
-                    ...d.reminderSettings,
-                    enabled: true,
-                    leadMinutes: 60,
-                  };
-                },
-                "Reminders on · 60 min before.",
-                openReminders,
-              );
-            return changeData(
-              dismiss,
-              "Notifications are blocked. You can try again in You › Reminders.",
-              openReminders,
-            );
-          })
-        }
-      >
-        Turn on
-      </button>
-      <button
-        disabled={!!pending}
-        onClick={() => write("dismiss", dismiss, "Reminder prompt hidden.")}
-      >
-        Not now
-      </button>
+            })
+          }
+        >
+          Turn on
+        </button>
+        <button
+          disabled={!!pending}
+          onClick={() => write("dismiss", dismiss, "Reminder prompt hidden.")}
+        >
+          Not now
+        </button>
+      </div>
     </aside>
   );
 }

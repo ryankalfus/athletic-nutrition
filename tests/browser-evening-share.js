@@ -69,11 +69,15 @@ async (page) => {
     const now = p.getByRole("region", { name: "Set up tomorrow tonight" });
     await now.waitFor();
     const tonight = p.getByRole("region", { name: "Tonight", exact: true });
-    await tonight
-      .getByText("Soccer game · 4:00–5:30 PM · Away · Leave by 3:15 PM", {
-        exact: true,
-      })
-      .waitFor();
+    // Tomorrow's activity reads like a Day rail row: time, title, sub-line.
+    const row = tonight
+      .getByRole("listitem")
+      .filter({ hasText: "Soccer game" });
+    await row.getByText("Away · Leave by 3:15 PM", { exact: true }).waitFor();
+    if (!(await row.innerText()).includes("4:00 PM"))
+      throw new Error(
+        `Tonight row has no start time: ${await row.innerText()}`,
+      );
     await tonight.getByText("Game day", { exact: true }).waitFor();
     result.checks.push(
       "At 8:00 PM a 4:00 PM game tomorrow shows the Evening Now card and Tonight with 'Soccer game', Leave by, and a Game day chip.",

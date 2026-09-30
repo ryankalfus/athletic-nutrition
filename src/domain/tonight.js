@@ -43,6 +43,17 @@ export function timeRange(start, end) {
 }
 
 // "Soccer game · 8:00–9:30 AM · Away · Leave by 7:30 AM"
+// The Tonight row's sub-line: "Away · Leave by 8:15 AM" or "Home".
+export function tomorrowEventDetail(event) {
+  const leave = leaveByMinutes(event);
+  return [
+    event.location === "away" ? "Away" : "Home",
+    leave != null && `Leave by ${time(minutesClock(leave))}`,
+  ]
+    .filter(Boolean)
+    .join(" · ");
+}
+
 export function tomorrowEventLine(event) {
   const leave = leaveByMinutes(event);
   return [

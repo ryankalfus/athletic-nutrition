@@ -8,6 +8,7 @@ import {
   getFuelingGuidance,
   eventsForDate,
   isSchoolDay,
+  schoolOffReason,
   skipOccurrence,
   tomorrowPrepTasks,
 } from "../src/domain/timing.js";
@@ -104,7 +105,10 @@ import {
   formatDate,
   formatDuration,
   formatPlanStatus,
+  formatDateRange,
+  formatShortTime,
   formatTime,
+  formatWeekdays,
   plural,
 } from "../src/format.js";
 import { activityTitle, normalizeSport } from "../src/domain/sport.js";
@@ -1605,11 +1609,19 @@ test("TODAY-02: Day rail rows use readable sub-lines and open plans", () => {
   );
   assert.equal(rows[0].detail, "8:00 AM–3:00 PM · Lunch 11:30 AM");
   assert.equal(rows[0].past, true);
-  assert.equal(rows[1].title, "Now · 2:08 PM");
+  // The time column shows 2:08 PM; the marker itself reads "Now".
+  assert.equal(rows[1].title, "Now");
+  assert.equal(rows[1].time, "14:08");
   const foodRow = rows.find((r) => r.kind === "food");
   assert.equal(foodRow.planId, "plan-1");
   assert.equal(foodRow.route, undefined, "food rows open plan details");
-  assert.equal(`${foodRow.title} · ${foodRow.detail}`, foodMomentLine(plan));
+  // The status is its own badge, not the end of the sub-line.
+  assert.equal(foodRow.detail, "about 2:30 PM · Banana + pretzels");
+  assert.equal(foodRow.status, "Packed");
+  assert.equal(
+    [foodRow.title, foodRow.detail, foodRow.status.toLowerCase()].join(" · "),
+    foodMomentLine(plan),
+  );
   assert.equal(rows.find((r) => r.kind === "travel").title, "Leave by 3:15 PM");
   assert.equal(
     rows.find((r) => r.kind === "recovery").detail,
@@ -1632,6 +1644,119 @@ test("TODAY-02: Day rail rows use readable sub-lines and open plans", () => {
     availabilityLabel({ name: "Pretzels", sufficient: false }),
     "Pretzels to buy",
   );
+});
+
+test("TODAY-02: rail names moments and merges a recovery plan into its Recovery row", () => {
+  const practice = {
+    id: "p",
+    type: "practice",
+    title: "Soccer practice",
+    date: day,
+    startTime: "16:00",
+    endTime: "17:30",
+  };
+  const plan = (id, patch) => ({
+    id,
+    date: day,
+    moment: "regular",
+    status: "planned",
+    template: { name: id },
+    ...patch,
+  });
+  const context = { events: [practice], schoolSchedule: school };
+  assert.equal(
+    foodMomentLine(
+      plan("a", { eventId: "p", moment: "pre", eatAt: "14:30" }),
+      context,
+    ),
+    "Pre-practice snack · about 2:30 PM · a · planned",
+  );
+  assert.equal(
+    foodMomentLine(plan("b", { eatAt: "11:30", status: "eaten" }), context),
+    "Lunch · about 11:30 AM · b · eaten",
+  );
+  const rows = buildRailRows({
+    events: [practice],
+    schoolSchedule: school,
+    schoolToday: true,
+    mealPlans: [
+      plan("Milk + banana", {
+        eventId: "p",
+        moment: "recovery",
+        eatAt: "17:45",
+      }),
+    ],
+    todayKey: day,
+    now: new Date(`${day}T10:00:00`),
+  });
+  assert.equal(rows.filter((r) => /Recovery/.test(r.title)).length, 1);
+  const recovery = rows.find((r) => r.kind === "recovery");
+  assert.equal(recovery.detail, "5:30 PM–7:00 PM · Milk + banana");
+  assert.equal(recovery.status, "Planned");
+  assert.ok(recovery.planId, "the merged Recovery row opens the plan");
+  assert.equal(rows.find((r) => r.kind === "activity").type, "practice");
+});
+
+test("6.3 day chips and Now labels: short times, no period, weekday labels", () => {
+  assert.equal(formatShortTime("16:00"), "4:00");
+  assert.equal(formatShortTime("08:00", { hourOnly: true }), "8");
+  assert.equal(formatShortTime("11:30", { hourOnly: true }), "11:30");
+  const practice = {
+    id: "p",
+    type: "practice",
+    title: "Soccer practice",
+    date: day,
+    startTime: "16:00",
+    endTime: "17:30",
+  };
+  const after = guidance("17:45", [practice]);
+  assert.equal(after.label, "After soccer practice");
+  assert.doesNotMatch(after.title, /\.$/);
+  const late = guidance("22:00", [], {
+    todayKey: "2026-09-19",
+    now: new Date("2026-09-19T22:00:00"),
+  });
+  assert.equal(late.state, "late");
+  assert.equal(late.label, "Sat night");
+  assert.equal(late.title, "Nothing to plan tonight");
+  const setup = guidance("10:00", [], { schoolSchedule: null });
+  assert.equal(setup.title, "Let's time your food to your day");
+  const noSport = guidance("10:00", [{ ...practice, date: "2026-09-15" }]);
+  assert.equal(noSport.state, "no_sport");
+  assert.equal(noSport.label, "Monday");
+});
+
+test("6.9: school weekdays and the week switcher read short", () => {
+  assert.equal(formatWeekdays([1, 2, 3, 4, 5]), "Mon–Fri");
+  assert.equal(formatWeekdays([5, 1, 3]), "Mon, Wed, Fri");
+  assert.equal(formatWeekdays([2, 3]), "Tue, Wed");
+  assert.equal(formatWeekdays([]), "");
+  assert.equal(formatDateRange("2026-09-28", "2026-10-04"), "Sep 28 – Oct 4");
+  assert.equal(plural(1, "game"), "game");
+  assert.equal(plural(2, "away trip"), "away trips");
+});
+
+test("6.3/6.9: school off reasons for Today's chip and the week view", () => {
+  const paused = {
+    ...school,
+    pausedFrom: "2026-09-21",
+    pausedUntil: "2026-09-25",
+  };
+  const off = {
+    ...school,
+    excludedDates: [day],
+    excludedRanges: [{ startDate: "2026-09-16", endDate: "2026-09-17" }],
+  };
+  assert.equal(schoolOffReason(day, school), null);
+  assert.equal(schoolOffReason(day, off), "off");
+  assert.equal(schoolOffReason("2026-09-17", off), "off");
+  assert.equal(schoolOffReason("2026-09-22", paused), "paused");
+  assert.equal(
+    schoolOffReason("2026-09-13", off),
+    null,
+    "Sunday is never a school day",
+  );
+  assert.equal(schoolOffReason(day, null), null);
 });
 
 test("TODAY-01/04: countdown labels are sentence case, never legacy codes", () => {

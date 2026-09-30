@@ -25,6 +25,43 @@ export function timeToMinutes(value) {
 
 export { formatClock };
 
+const lowerFirst = (text) =>
+  text ? `${text.charAt(0).toLowerCase()}${text.slice(1)}` : text;
+const weekdayName = (dateKey, weekday) =>
+  new Intl.DateTimeFormat("en-US", { weekday }).format(
+    new Date(`${dateKey}T12:00:00`),
+  );
+const weekdayShort = (dateKey) => weekdayName(dateKey, "short");
+const weekdayLong = (dateKey) => weekdayName(dateKey, "long");
+
+// Why a configured school weekday has no school: "paused" (Pause school) or
+// "off" (a day off or a days-off range). null on a school day, and on days
+// that are never school days (weekends, outside the school year, no school).
+export function schoolOffReason(dateKey, schoolSchedule) {
+  if (
+    !schoolSchedule?.enabled ||
+    dateKey < schoolSchedule.startDate ||
+    dateKey > schoolSchedule.endDate ||
+    !schoolSchedule.weekdays?.includes(new Date(`${dateKey}T12:00:00`).getDay())
+  )
+    return null;
+  if (
+    schoolSchedule.pausedFrom &&
+    schoolSchedule.pausedUntil &&
+    dateKey >= schoolSchedule.pausedFrom &&
+    dateKey <= schoolSchedule.pausedUntil
+  )
+    return "paused";
+  if (
+    schoolSchedule.excludedDates?.includes(dateKey) ||
+    schoolSchedule.excludedRanges?.some(
+      (range) => dateKey >= range.startDate && dateKey <= range.endDate,
+    )
+  )
+    return "off";
+  return null;
+}
+
 export function isSchoolDay(dateKey, schoolSchedule) {
   if (
     !schoolSchedule?.enabled ||
@@ -281,7 +318,7 @@ export function getFuelingGuidance({
   let moment = "regular";
   let state = "regular";
   let label = "Today";
-  let title = "Keep a regular eating rhythm today.";
+  let title = "Keep a regular eating rhythm today";
   let explanation =
     "No training is coming up soon. Choose a familiar meal or snack and use the next meal or snack instead of waiting until you are drained.";
   let timing = nextSchoolWindow
@@ -300,15 +337,15 @@ export function getFuelingGuidance({
         ? "during"
         : "quick";
     label = `${active.title} in progress`;
-    title = "Hydrate now; keep mid-session fuel familiar.";
+    title = "Hydrate now; keep mid-session fuel familiar";
     explanation =
       "For a longer or harder session, a familiar easy-to-carry carb may help. Avoid trying a brand-new food during competition or practice.";
     timing = `${formatClock(active.startTime)}–${formatClock(active.endTime)}`;
   } else if (recent) {
     focusEvent = recent;
     moment = "recovery";
-    label = `After ${recent.title}`;
-    title = "Refuel with carbs, protein, and fluids.";
+    label = `After ${lowerFirst(recent.title)}`;
+    title = "Refuel with carbs, protein, and fluids";
     explanation =
       "Choose a familiar option you can actually get now. A regular meal works; a snack can bridge the gap if dinner is later.";
     timing = `Ended ${currentMinutes - recent.end} min ago`;
@@ -320,26 +357,26 @@ export function getFuelingGuidance({
     if (minutesUntil <= 30) {
       moment = "quick";
       label = `${next.title} ${formatCountdown(minutesUntil)}`;
-      title = "Choose something small and easy right now.";
+      title = "Choose something small and easy right now";
       explanation =
         "There is not much digestion time. A familiar carb-forward snack and a few sips of water are the practical move.";
     } else if (minutesUntil <= 90) {
       moment = "pre";
       label = `${next.title} ${formatCountdown(minutesUntil)}`;
-      title = "Have a practical pre-activity snack now.";
+      title = "Have a practical pre-activity snack now";
       explanation =
         "Choose familiar carbs that fit where you are. Keep heavy, greasy, or brand-new foods for another time.";
     } else if (minutesUntil <= 180) {
       moment = "regular";
       label = `${next.title} ${formatCountdown(minutesUntil)}`;
-      title = "Use this meal window before the rush.";
+      title = "Use this meal window before the rush";
       explanation =
         "A balanced meal or substantial snack now can make the school-to-sport transition easier later.";
     } else {
       label = `${next.title} at ${formatClock(next.startTime)}`;
       title = schoolToday
-        ? "Plan the handoff from school to sport."
-        : "Choose what you'll eat before the activity.";
+        ? "Plan the handoff from school to sport"
+        : "Choose what you'll eat before the activity";
       explanation =
         "Your activity is later today. Choose food you can get and pack it before the day gets busy.";
     }
@@ -370,14 +407,15 @@ export function getFuelingGuidance({
     !isSchoolDay(tomorrowKey, schoolSchedule);
   if (quietLate) {
     state = "late";
-    label = "Tonight";
-    title = "Nothing to plan tonight.";
+    // "Sat night", not "Tonight": the Tonight card owns that name.
+    label = `${weekdayShort(todayKey)} night`;
+    title = "Nothing to plan tonight";
     explanation = "There is no school or activity on tomorrow's schedule.";
     timing = "";
   } else if (noSchedule) {
     state = "setup";
     label = "No schedule yet";
-    title = "Let's time your food to your day.";
+    title = "Let's time your food to your day";
     explanation = "Add school and sports to see what is coming up.";
     timing = "";
   } else if (!training.length) {
@@ -422,7 +460,8 @@ export function getFuelingGuidance({
     if (state === "during") title = "Sip water. Keep food familiar.";
     if (state === "no_sport") {
       title = "No practice today";
-      label = "Today";
+      // The weekday, not "Today" (the page title already says it).
+      label = weekdayLong(todayKey);
     }
     if (
       schoolToday &&

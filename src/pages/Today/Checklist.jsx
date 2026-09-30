@@ -7,14 +7,16 @@ import { IconButton } from "../../components/ui/Button.jsx";
 // Due times read "By 7:15 AM"; a missed one on today's list reads "Was due".
 export default function Checklist({ tasks, dateKey, pending, write, now }) {
   const current = now ? now.getHours() * 60 + now.getMinutes() : null;
+  const isLate = (t) =>
+    current != null && !t.done && t.dueAt && timeToMinutes(t.dueAt) < current;
   return (
     <ul className="checklist">
-      {tasks.map((t) => {
-        const late =
-          current != null &&
-          !t.done &&
-          t.dueAt &&
-          timeToMinutes(t.dueAt) < current;
+      {tasks.map((t, index) => {
+        const late = isLate(t);
+        // "Was due 7:30 AM" once for a run of missed tasks with that time.
+        const before = tasks[index - 1];
+        const repeat =
+          late && before && isLate(before) && before.dueAt === t.dueAt;
         return (
           <li key={t.id} className="prep-row">
             <label>
@@ -37,7 +39,7 @@ export default function Checklist({ tasks, dateKey, pending, write, now }) {
               />
               <span>
                 {t.label}
-                {t.dueAt && (
+                {t.dueAt && !repeat && (
                   <small className={late ? "prep-late" : undefined}>
                     {late ? "Was due" : "By"} {formatClock(t.dueAt)}
                   </small>

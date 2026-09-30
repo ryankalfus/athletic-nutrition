@@ -13,6 +13,7 @@ import {
   getFuelingGuidance,
   eventsForDate,
   formatClock,
+  schoolOffReason,
   timeToMinutes,
   withSportTitles,
 } from "../../domain/timing.js";
@@ -26,7 +27,13 @@ import {
 } from "../../domain/plans.js";
 import { addHydration } from "../../domain/hydration.js";
 import { uid } from "../../domain/storage.js";
-import { formatDate, formatPlanStatus, formatTime } from "../../format.js";
+import {
+  formatActivityType,
+  formatDate,
+  formatPlanStatus,
+  formatShortTime,
+  formatTime,
+} from "../../format.js";
 import {
   availabilityLabel,
   buildRailRows,
@@ -148,6 +155,13 @@ export default function TodayPage({
       return;
     }
     if (!plan) return createPlan();
+    // Packed food is in the bag: the next step is eating it, not shopping.
+    if (plan.status === "packed")
+      return write(
+        "log",
+        (d) => logPlanAsEaten(d, plan.id, now),
+        "Logged what you ate.",
+      );
     if (missing.length)
       return write(
         "groceries",
@@ -157,12 +171,6 @@ export default function TodayPage({
           );
         },
         "Added missing items to groceries.",
-      );
-    if (plan.status === "packed")
-      return write(
-        "log",
-        (d) => logPlanAsEaten(d, plan.id, now),
-        "Logged what you ate.",
       );
     return write("pack", (d) => markPlanPacked(d, plan.id), "Marked packed.");
   };
@@ -187,12 +195,12 @@ export default function TodayPage({
               ? "Open packing list"
               : !plan
                 ? "Plan this"
-                : missing.length
-                  ? `Add ${missing.length} ${missing.length === 1 ? "item" : "items"} to groceries`
-                  : plan.status === "packed"
-                    ? early
-                      ? `Eat around ${formatClock(plan.eatAt)}`
-                      : "Log it"
+                : plan.status === "packed"
+                  ? early
+                    ? `Eat around ${formatClock(plan.eatAt)}`
+                    : "Log it"
+                  : missing.length
+                    ? `Add ${missing.length} ${missing.length === 1 ? "item" : "items"} to groceries`
                     : "Mark packed";
   const rows = buildRailRows({
     events,
@@ -208,6 +216,12 @@ export default function TodayPage({
     : [];
   const stale =
     plan && guidance.event && plan.eventStartTime !== guidance.event.startTime;
+  // Day chips (6.3): "School 8–3", "Practice 4:00", or "No school today".
+  const schoolOff = schoolOffReason(todayKey, data.schoolSchedule);
+  const chipLabel = (e) =>
+    `${e.type === "other" ? e.title : formatActivityType(e.type)} ${formatShortTime(e.startTime)}`;
+  // The rail needs more than the Now marker to be worth a card.
+  const showRail = rows.some((row) => !row.now);
   return (
     <Shell footer={false} onNavigate={onNavigate}>
       <header className="today-heading">
@@ -216,13 +230,18 @@ export default function TodayPage({
         <div className="today-chips">
           {guidance.schoolToday && (
             <span>
-              School {formatClock(data.schoolSchedule.startTime)}–
-              {formatClock(data.schoolSchedule.endTime)}
+              School{" "}
+              {formatShortTime(data.schoolSchedule.startTime, {
+                hourOnly: true,
+              })}
+              –
+              {formatShortTime(data.schoolSchedule.endTime, { hourOnly: true })}
             </span>
           )}
+          {schoolOff && <span className="chip-muted">No school today</span>}
           {events.map((e) => (
             <span key={e.id} className={e.type === "game" ? "chip-game" : ""}>
-              {e.title} {formatClock(e.startTime)}
+              {chipLabel(e)}
             </span>
           ))}
         </div>
@@ -247,7 +266,9 @@ export default function TodayPage({
             todayKey,
           }}
         />
-        <DayRail {...{ rows, onNavigate }} onOpenPlan={setOpenPlanId} />
+        {showRail && (
+          <DayRail {...{ rows, onNavigate }} onOpenPlan={setOpenPlanId} />
+        )}
         {tasks.length > 0 && (
           <PackPrep
             {...{
@@ -266,28 +287,35 @@ export default function TodayPage({
         {tonight.show && (
           <TonightCard
             plan={tonight}
+            // In the evening the Now card's Go button builds the list.
+            showBuild={guidance.state !== "evening"}
             {...{ pending, write, buildTomorrow, onNavigate }}
           />
         )}
+        <ContextPrompt
+          {...{
+            data,
+            guidance,
+            notificationError,
+            pending,
+            run,
+            write,
+            onNavigate,
+            now,
+          }}
+        />
       </div>
-      <ContextPrompt
-        {...{
-          data,
-          guidance,
-          notificationError,
-          pending,
-          run,
-          write,
-          onNavigate,
-          now,
-        }}
-      />
       {openPlan && (
         <Dialog
           title={openPlan.template.name}
           onClose={() => setOpenPlanId(null)}
         >
-          <p>{foodMomentLine(openPlan)}</p>
+          <p>
+            {foodMomentLine(openPlan, {
+              events,
+              schoolSchedule: data.schoolSchedule,
+            })}
+          </p>
           <p>
             Status: {formatPlanStatus(openPlan.status)}
             {openPlan.eatAt ? ` · Eat about ${formatTime(openPlan.eatAt)}` : ""}
