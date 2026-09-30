@@ -151,7 +151,7 @@ The owner confirmed all previously presented recommended options on 2026.09.29: 
 
 ### Top issues
 
-1. **Sports drink amount and moment (#60):** "1 bottle" has no size. It shows in the quick state, which covers short practices where the app's copy says water works [A §7.5][S2]. The approved line is not on the Ideas card.
+1. **Sports drink amount and moment (#60):** "1 bottle" has no size. It shows in the quick state, which covers short practices where the app's copy says water works [A §7.5][S2]. That line is not on the Ideas card.
 2. **Seed mix in quick and during (#56–57):** a high-fat, high-fibre food right before or during activity goes against [S3][S4]. Possible nut cross-contact [S7].
 3. **Amounts that contradict the idea name (#6, #9, #26, #38, #45, #58):**
    - "Fresh fruit" shows as "1 banana".
