@@ -869,10 +869,13 @@
   content: none;
 }
 
+/* Equal halves on phones: the same basis and padding for every button. */
 :is(.dialog-actions, .confirm-actions, .sheet-footer, .schedule-form-footer)
   > button {
   flex: 1 1 0;
+  min-width: 0;
   min-height: var(--control-height);
+  padding-inline: var(--space-4);
 }
 
 /* From 768px: a centered 560px dialog (640px for search). */

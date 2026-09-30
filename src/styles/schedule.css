@@ -598,7 +598,7 @@
   gap: var(--space-2);
 }
 
-.school-weekdays > button {
+div.school-weekdays > button {
   flex: 1 1 0;
   max-width: var(--target);
   min-width: 0;
