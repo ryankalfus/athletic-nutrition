@@ -1,9 +1,9 @@
-import { MoreHorizontal } from "lucide-react";
 import { useRef, useState } from "react";
 import { changeData, useStore } from "../../store.js";
 import { useAsyncAction } from "../../hooks/useAsyncAction.js";
 import { Dialog } from "../../components/Dialog.jsx";
 import { ConfirmDialog } from "../../components/ui/ConfirmDialog.jsx";
+import { Menu } from "../../components/ui/Menu.jsx";
 import { FoodSearch } from "../../components/FoodSearch.jsx";
 import { addDays, eventsForDate, getDateKey } from "../../domain/timing.js";
 import {
@@ -76,6 +76,9 @@ export default function GroceriesPage({ todayKey }) {
   const closeSheet = () => {
     if (!pending) setSheet(null);
   };
+  // The item form marks its sheet dirty; a new sheet starts clean (DS-15).
+  const [dirtySheet, setDirtySheet] = useState(null);
+  const formDirty = sheet !== null && dirtySheet === sheet;
   const updateItem = (id, fn) => (d) => {
     const target = d.groceryState.items.find((i) => i.id === id);
     if (!target)
@@ -193,32 +196,23 @@ export default function GroceriesPage({ todayKey }) {
           <small className="muted">{SPORTS_DRINK_NOTE}</small>
         )}
       </div>
-      <details
-        className="row-menu"
-        onClick={(e) => {
-          if (e.target instanceof Element && e.target.closest("button"))
-            e.currentTarget.open = false;
-        }}
-      >
-        <summary aria-label={`${item.name} options`}>
-          <MoreHorizontal size={20} strokeWidth={1.75} aria-hidden="true" />
-        </summary>
-        <div className="row-menu-items">
-          <button
-            disabled={!!pending}
-            onClick={() => setSheet({ type: "edit", item })}
-          >
-            Edit
-          </button>
-          <button
-            disabled={!!pending}
-            onClick={() => setSheet({ type: "swap", item })}
-          >
-            Swap for another food
-          </button>
-          <button
-            disabled={!!pending}
-            onClick={() =>
+      <Menu
+        label={`${item.name} options`}
+        items={[
+          {
+            label: "Edit",
+            disabled: !!pending,
+            onSelect: () => setSheet({ type: "edit", item }),
+          },
+          {
+            label: "Swap for another food",
+            disabled: !!pending,
+            onSelect: () => setSheet({ type: "swap", item }),
+          },
+          {
+            label: "Remove",
+            disabled: !!pending,
+            onSelect: () =>
               write(
                 `remove-${item.id}`,
                 (d) => {
@@ -227,13 +221,10 @@ export default function GroceriesPage({ todayKey }) {
                   );
                 },
                 `Removed ${item.name}.`,
-              )
-            }
-          >
-            Remove
-          </button>
-        </div>
-      </details>
+              ),
+          },
+        ]}
+      />
     </li>
   );
 
@@ -397,6 +388,7 @@ export default function GroceriesPage({ todayKey }) {
           initialFocusRef={searchInput}
           className={sheet.food || sheet.merge ? "" : "food-search-dialog"}
           onClose={closeSheet}
+          dirty={formDirty}
         >
           {sheet.merge ? (
             <div className="merge-prompt">
@@ -430,7 +422,7 @@ export default function GroceriesPage({ todayKey }) {
               item={sheet.type === "swap" ? sheet.item : null}
               showPrices={showPrices}
               pending={pending === "save-item"}
-              onCancel={closeSheet}
+              onDirty={() => setDirtySheet(sheet)}
               onSave={(fields) =>
                 sheet.type === "swap"
                   ? saveEdit(sheet.item, sheet.food, fields)
@@ -447,12 +439,16 @@ export default function GroceriesPage({ todayKey }) {
         </Dialog>
       )}
       {sheet?.type === "edit" && (
-        <Dialog title={`Edit ${sheet.item.name}`} onClose={closeSheet}>
+        <Dialog
+          title={`Edit ${sheet.item.name}`}
+          onClose={closeSheet}
+          dirty={formDirty}
+        >
           <GroceryItemForm
             item={sheet.item}
             showPrices={showPrices}
             pending={pending === "save-item"}
-            onCancel={closeSheet}
+            onDirty={() => setDirtySheet(sheet)}
             onSave={(fields) => saveEdit(sheet.item, null, fields)}
           />
         </Dialog>

@@ -48,13 +48,13 @@ async (page) => {
       .getByRole("button", { name: "Switch athlete" })
       .click();
     await p.getByRole("heading", { name: "Who's using Nourally?" }).waitFor();
-    await p.getByRole("button", { name: /^Imported fixture/ }).waitFor();
+    await p.getByRole("button", { name: /^Imported fixture(?!.* options$)/ }).waitFor();
     await p.getByRole("button", { name: /^Persistence test, Soccer/ }).waitFor();
     result.checks.push(
       "Restore previews the file and adds without replacing; opening the imported athlete sticks; the chooser lists both.",
     );
 
-    await p.getByRole("button", { name: /^Imported fixture/ }).click();
+    await p.getByRole("button", { name: /^Imported fixture(?!.* options$)/ }).click();
     await p.getByRole("heading", { name: "Today", exact: true }).waitFor();
     if (!p.url().endsWith("#/today"))
       throw new Error(`Choosing an athlete did not open Today: ${p.url()}`);
@@ -76,9 +76,9 @@ async (page) => {
     await deleteButton.click();
     // Deleting signs out to the athlete chooser on Welcome.
     await p.getByRole("heading", { name: "Who's using Nourally?" }).waitFor();
-    if (await p.getByRole("button", { name: /^Imported fixture/ }).count())
+    if (await p.getByRole("button", { name: /^Imported fixture(?!.* options$)/ }).count())
       throw new Error("Deleted athlete is still listed");
-    await p.getByRole("button", { name: /^Persistence test/ }).click();
+    await p.getByRole("button", { name: /^Persistence test, / }).click();
     await athlete().getByText("Persistence test").waitFor();
     await p.goto(`${base}#/you/device`);
     await athletes().first().waitFor();

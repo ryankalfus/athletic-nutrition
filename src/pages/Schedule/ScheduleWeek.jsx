@@ -1,4 +1,5 @@
-import { ChevronLeft, ChevronRight, MoreHorizontal } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import { Menu } from "../../components/ui/Menu.jsx";
 import { formatActivityType, formatDate, formatTime } from "../../format.js";
 import {
   addDays,
@@ -123,53 +124,33 @@ export default function ScheduleWeek({
                         : formatActivityType(event.type)}
                   </small>
                 </button>
-                <details className="schedule-row-menu">
-                  <summary
-                    aria-haspopup="menu"
-                    aria-label={`Actions for ${event.title}`}
-                  >
-                    <MoreHorizontal
-                      size={20}
-                      strokeWidth={1.75}
-                      aria-hidden="true"
-                    />
-                  </summary>
-                  <div role="menu">
-                    <button
-                      role="menuitem"
-                      onClick={() => {
+                <Menu
+                  className="schedule-row-menu"
+                  label={`Actions for ${event.title}`}
+                  items={[
+                    {
+                      label: "Edit",
+                      onSelect: () => {
                         selectDay(date);
                         if (event.type === "school") openSchoolForm();
                         else editEvent(event, key);
-                      }}
-                    >
-                      Edit
-                    </button>
-                    {event.type === "school" ? (
-                      <button
-                        role="menuitem"
-                        onClick={() => cancelSchoolDay(key)}
-                      >
-                        Skip this day
-                      </button>
-                    ) : event.recurringSeries ? (
-                      <button
-                        role="menuitem"
-                        onClick={() => skipRecurringOccurrence(event, key)}
-                      >
-                        Skip this day
-                      </button>
-                    ) : null}
-                    {event.type !== "school" && (
-                      <button
-                        role="menuitem"
-                        onClick={() => deleteEvent(event.id, key)}
-                      >
-                        Delete…
-                      </button>
-                    )}
-                  </div>
-                </details>
+                      },
+                    },
+                    event.type === "school"
+                      ? {
+                          label: "Skip this day",
+                          onSelect: () => cancelSchoolDay(key),
+                        }
+                      : event.recurringSeries && {
+                          label: "Skip this day",
+                          onSelect: () => skipRecurringOccurrence(event, key),
+                        },
+                    event.type !== "school" && {
+                      label: "Delete…",
+                      onSelect: () => deleteEvent(event.id, key),
+                    },
+                  ]}
+                />
               </article>
             ))}
           </section>

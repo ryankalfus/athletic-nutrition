@@ -1,10 +1,6 @@
 import { useEffect, useRef, useState } from "react";
-import {
-  CalendarDays,
-  ChevronLeft,
-  ChevronRight,
-  MoreHorizontal,
-} from "lucide-react";
+import { CalendarDays, ChevronLeft, ChevronRight } from "lucide-react";
+import { Menu } from "../../components/ui/Menu.jsx";
 import {
   consumeStock,
   makeLog,
@@ -76,6 +72,8 @@ export default function LogDay({ date, todayKey, now, onNavigate }) {
   const { pending, run } = useAsyncAction();
   const searchInput = useRef(null);
   const [dialog, setDialog] = useState(null);
+  // The open sheet with unsaved changes, if any (DS-15).
+  const [dirtyDialog, setDirtyDialog] = useState(null);
   const [homeAsk, setHomeAsk] = useState(null);
   const [query, setQuery] = useState(
     () => sessionStorage.getItem(`food-query-${current.id}`) || "",
@@ -326,76 +324,51 @@ export default function LogDay({ date, todayKey, now, onNavigate }) {
                     )}
                     {consumed(item.entry) && <p>Used from At home</p>}
                   </div>
-                  <details
-                    className="row-menu"
-                    onClick={(e) => {
-                      if (
-                        e.target instanceof Element &&
-                        e.target.closest("button")
-                      )
-                        e.currentTarget.open = false;
-                    }}
-                  >
-                    <summary aria-label={`${item.entry.name} options`}>
-                      <MoreHorizontal
-                        size={20}
-                        strokeWidth={1.75}
-                        aria-hidden="true"
-                      />
-                    </summary>
-                    <div className="row-menu-items">
-                      <button
-                        disabled={!!pending}
-                        onClick={() =>
+                  <Menu
+                    label={`${item.entry.name} options`}
+                    items={[
+                      {
+                        label: "Edit",
+                        disabled: !!pending,
+                        onSelect: () =>
                           setDialog({
                             type: "portion",
                             food: foodFor(item.entry),
                             entry: item.entry,
-                          })
-                        }
-                      >
-                        Edit
-                      </button>
-                      {consumed(item.entry) ? (
-                        <button
-                          disabled={!!pending}
-                          onClick={() =>
-                            run(`restock-${item.id}`, () =>
-                              changeData(
-                                (d) => undoConsumption(d, item.entry.id),
-                                "Put the food back at home.",
+                          }),
+                      },
+                      consumed(item.entry)
+                        ? {
+                            label: "Put back at home",
+                            disabled: !!pending,
+                            onSelect: () =>
+                              run(`restock-${item.id}`, () =>
+                                changeData(
+                                  (d) => undoConsumption(d, item.entry.id),
+                                  "Put the food back at home.",
+                                ),
                               ),
-                            )
                           }
-                        >
-                          Put back at home
-                        </button>
-                      ) : (
-                        <button
-                          disabled={!!pending}
-                          onClick={() =>
-                            setDialog({ type: "use", entry: item.entry })
-                          }
-                        >
-                          Used from At home…
-                        </button>
-                      )}
-                      <button
-                        className="danger"
-                        disabled={!!pending}
-                        onClick={() =>
+                        : {
+                            label: "Used from At home…",
+                            disabled: !!pending,
+                            onSelect: () =>
+                              setDialog({ type: "use", entry: item.entry }),
+                          },
+                      {
+                        label: "Remove",
+                        danger: true,
+                        disabled: !!pending,
+                        onSelect: () =>
                           run(`remove-${item.id}`, () =>
                             changeData(
                               (d) => removeLogEntry(d, date, item.entry.id),
                               `Removed ${item.entry.name}.`,
                             ),
-                          )
-                        }
-                      >
-                        Remove
-                      </button>
-                    </div>
-                  </details>
+                          ),
+                      },
+                    ]}
+                  />
                 </li>
               ),
             )}
@@ -470,6 +443,7 @@ export default function LogDay({ date, todayKey, now, onNavigate }) {
                   : "Log food"
           }
           onClose={() => setDialog(null)}
+          dirty={dirtyDialog === dialog}
         >
           {dialog.type === "use" ? (
             <UseFromHomeSheet
@@ -494,7 +468,7 @@ export default function LogDay({ date, todayKey, now, onNavigate }) {
               entry={dialog.entry}
               isToday={isToday}
               onSave={save}
-              onCancel={() => setDialog(null)}
+              onDirty={(dirty) => setDirtyDialog(dirty ? dialog : null)}
             />
           ) : (
             <FoodSearch

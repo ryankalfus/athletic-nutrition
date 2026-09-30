@@ -25,12 +25,11 @@ async (page) => {
     p.locator("article.schedule-week-row").filter({ hasText: title });
   const actions = async (title) => {
     const menu = today()
-      .locator("details.schedule-row-menu")
-      .filter({ has: p.getByLabel(`Actions for ${title}`, { exact: true }) })
+      .getByRole("button", { name: `Actions for ${title}`, exact: true })
       .first();
-    // The menu can stay open after a previous action; only open it if closed.
-    if ((await menu.getAttribute("open")) === null)
-      await menu.locator("summary").click();
+    // Only open the menu if it is closed.
+    if ((await menu.getAttribute("aria-expanded")) !== "true")
+      await menu.click();
   };
   try {
     await p.goto(base);
@@ -58,9 +57,10 @@ async (page) => {
     await sheet.getByLabel("Ends").fill("15:00");
     await sheet.getByRole("button", { name: "Add practice", exact: true }).click();
     await sheet
-      .getByRole("alert")
       .getByText("Overnight events are not supported", { exact: false })
       .waitFor();
+    if ((await sheet.getByLabel("Ends").getAttribute("aria-invalid")) !== "true")
+      throw new Error("The Ends field is not marked invalid (A11Y-09)");
     result.checks.push("An end time before the start is rejected with the overnight message.");
 
     await sheet.getByLabel("Ends").fill("17:30");

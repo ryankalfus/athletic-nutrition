@@ -322,11 +322,21 @@ export default function TodayPage({
         </Dialog>
       )}
       {custom && (
-        <Dialog title="Add water" onClose={() => setCustom(false)}>
+        <Dialog
+          title="Add water"
+          onClose={() => {
+            setCustom(false);
+            setAmount("");
+          }}
+          dirty={amount !== ""}
+        >
           <form
             onSubmit={async (e) => {
               e.preventDefault();
-              if (await water(Number(amount))) setCustom(false);
+              if (await water(Number(amount))) {
+                setCustom(false);
+                setAmount("");
+              }
             }}
           >
             <label>

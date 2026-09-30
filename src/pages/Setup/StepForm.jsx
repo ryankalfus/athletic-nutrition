@@ -1,8 +1,10 @@
 import { useState } from "react";
-import { InlineError } from "../../components/ui/InlineError.jsx";
+import { FieldErrors, FormError } from "../../components/ui/FieldError.jsx";
 import { useAsyncAction } from "../../hooks/useAsyncAction.js";
 
 // One step's form: title, fields, inline error and the pinned action bar.
+// onNext returns true, a message about the form, or { message, field } for
+// an error shown under that field (A11Y-09).
 export function StepForm({
   title,
   helper,
@@ -11,7 +13,7 @@ export function StepForm({
   nextLabel = "Next",
   onSkipAll,
 }) {
-  const [error, setError] = useState("");
+  const [error, setError] = useState(null);
   const { pending, run } = useAsyncAction();
   return (
     <form
@@ -19,18 +21,20 @@ export function StepForm({
       noValidate
       onSubmit={(event) => {
         event.preventDefault();
-        setError("");
+        setError(null);
         run("next", async () => {
           const result = await onNext();
-          if (typeof result === "string") setError(result);
+          if (result && result !== true) setError(result);
           return result === true;
         });
       }}
     >
       {title}
       {helper && <p className="setup-helper">{helper}</p>}
-      <div className="setup-fields">{children}</div>
-      <InlineError message={error} />
+      <FieldErrors error={error}>
+        <div className="setup-fields">{children}</div>
+        <FormError />
+      </FieldErrors>
       <div className="setup-actions">
         {onSkipAll && (
           <button

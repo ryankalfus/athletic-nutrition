@@ -1,9 +1,9 @@
-import { Minus, MoreHorizontal, Plus } from "lucide-react";
+import { Minus, Plus } from "lucide-react";
 import { useState, useRef } from "react";
 import { useStore, changeData } from "../../store.js";
 import { useAsyncAction } from "../../hooks/useAsyncAction.js";
-import { Dialog } from "../../components/Dialog.jsx";
-import { ConfirmDialog } from "../../components/ui/ConfirmDialog.jsx";
+import { Dialog, DialogCancel } from "../../components/Dialog.jsx";
+import { Menu } from "../../components/ui/Menu.jsx";
 import { FoodSearch } from "../../components/FoodSearch.jsx";
 import { GROCERY_CATALOG } from "../../domain/catalog.js";
 import {
@@ -35,7 +35,6 @@ export default function HomePage({ todayKey }) {
   const [edit, setEdit] = useState(null);
   const [merge, setMerge] = useState(null);
   const [dirty, setDirty] = useState(false);
-  const [discard, setDiscard] = useState(false);
   const [counts, setCounts] = useState({});
   const [countsAs, setCountsAs] = useState(null);
   const timers = useRef({});
@@ -118,8 +117,8 @@ export default function HomePage({ todayKey }) {
   };
   const close = () => {
     if (pending) return;
-    if (dirty) setDiscard(true);
-    else setEdit(null);
+    setEdit(null);
+    setDirty(false);
   };
   return (
     <div className="home-page">
@@ -260,18 +259,16 @@ export default function HomePage({ todayKey }) {
                             }
                           />
                         )}
-                        <details className="row-menu">
-                          <summary aria-label={`${row.name} options`}>
-                            <MoreHorizontal
-                              size={20}
-                              strokeWidth={1.75}
-                              aria-hidden="true"
-                            />
-                          </summary>
-                          <div className="row-menu-items">
-                            <button
-                              disabled={!!pending}
-                              onClick={() =>
+                        <Menu
+                          label={`${row.name} options`}
+                          items={[
+                            {
+                              label:
+                                row.availability === "out"
+                                  ? "Back in stock"
+                                  : "Mark out",
+                              disabled: !!pending,
+                              onSelect: () =>
                                 write(
                                   "toggle",
                                   (d) => {
@@ -283,66 +280,54 @@ export default function HomePage({ todayKey }) {
                                       );
                                   },
                                   null,
-                                )
-                              }
-                            >
-                              {row.availability === "out"
-                                ? "Back in stock"
-                                : "Mark out"}
-                            </button>
-                            <button
-                              onClick={() => {
+                                ),
+                            },
+                            {
+                              label: "Edit details",
+                              onSelect: () => {
                                 setEdit(row);
                                 setDirty(false);
-                              }}
-                            >
-                              Edit details
-                            </button>
-                            {places.flatMap(([, group, locations]) =>
+                              },
+                            },
+                            ...places.flatMap(([, group, locations]) =>
                               locations
                                 .filter((location) => location !== "kitchen")
-                                .map((location) => (
-                                  <button
-                                    key={location}
-                                    disabled={!!pending}
-                                    onClick={() =>
-                                      write(
-                                        "move",
-                                        (d) => {
-                                          d.groceryState.pantry.find(
-                                            (i) => i.id === row.id,
-                                          ).location = location;
-                                        },
-                                        `Moved ${row.name} to ${group.toLowerCase()}.`,
-                                      )
-                                    }
-                                  >
-                                    Move to{" "}
-                                    {location === "pantry"
+                                .map((location) => ({
+                                  key: location,
+                                  label: `Move to ${
+                                    location === "pantry"
                                       ? "kitchen"
                                       : location === "bag"
                                         ? "my bag"
-                                        : location}
-                                  </button>
-                                )),
-                            )}
-                            {stockStatus(row) !== "have" && (
-                              <button
-                                disabled={!!pending}
-                                onClick={() =>
-                                  write(
-                                    "groceries",
-                                    (d) => stockToGroceries(d, [row]),
-                                    `Added ${row.name} to groceries.`,
-                                  )
-                                }
-                              >
-                                Add to groceries
-                              </button>
-                            )}
-                            <button
-                              disabled={!!pending}
-                              onClick={() =>
+                                        : location
+                                  }`,
+                                  disabled: !!pending,
+                                  onSelect: () =>
+                                    write(
+                                      "move",
+                                      (d) => {
+                                        d.groceryState.pantry.find(
+                                          (i) => i.id === row.id,
+                                        ).location = location;
+                                      },
+                                      `Moved ${row.name} to ${group.toLowerCase()}.`,
+                                    ),
+                                })),
+                            ),
+                            stockStatus(row) !== "have" && {
+                              label: "Add to groceries",
+                              disabled: !!pending,
+                              onSelect: () =>
+                                write(
+                                  "groceries",
+                                  (d) => stockToGroceries(d, [row]),
+                                  `Added ${row.name} to groceries.`,
+                                ),
+                            },
+                            {
+                              label: "Remove",
+                              disabled: !!pending,
+                              onSelect: () =>
                                 write(
                                   "remove",
                                   (d) => {
@@ -352,13 +337,10 @@ export default function HomePage({ todayKey }) {
                                       );
                                   },
                                   `Removed ${row.name}.`,
-                                )
-                              }
-                            >
-                              Remove
-                            </button>
-                          </div>
-                        </details>
+                                ),
+                            },
+                          ]}
+                        />
                       </li>
                     ))}
                   </ul>
@@ -439,12 +421,16 @@ export default function HomePage({ todayKey }) {
         </Dialog>
       )}
       {edit && (
-        <Dialog title={`Edit ${edit.name}`} onClose={close}>
+        <Dialog
+          title={`Edit ${edit.name}`}
+          onClose={close}
+          dirty={dirty}
+          discardMessage="Your unsaved food details will be lost."
+        >
           <HomeDetails
             initial={edit}
             pending={pending}
             onDirty={() => setDirty(true)}
-            onCancel={close}
             onSave={(fields) =>
               write(
                 "edit",
@@ -467,81 +453,68 @@ export default function HomePage({ todayKey }) {
         </Dialog>
       )}
       {countsAs && (
-        <Dialog title="Counts as?" onClose={() => setCountsAs(null)}>
-          <CountsAsForm
-            row={countsAs}
-            pending={!!pending}
-            onSkip={() => setCountsAs(null)}
-            onSave={(id) =>
-              write(
-                "counts-as",
-                (d) => {
-                  const target = d.groceryState.pantry.find(
-                    (i) => i.id === countsAs.id,
-                  );
-                  if (target) target.ingredientId = id;
-                },
-                null,
-              ).then((ok) => ok && setCountsAs(null))
-            }
-          />
-        </Dialog>
-      )}
-      {discard && (
-        <ConfirmDialog
-          title="Discard changes?"
-          body="Your unsaved food details will be lost."
-          confirmLabel="Discard changes"
-          onCancel={() => setDiscard(false)}
-          onConfirm={() => {
-            setDiscard(false);
-            setEdit(null);
-            setDirty(false);
-          }}
+        <CountsAsSheet
+          row={countsAs}
+          pending={!!pending}
+          onClose={() => setCountsAs(null)}
+          onSave={(id) =>
+            write(
+              "counts-as",
+              (d) => {
+                const target = d.groceryState.pantry.find(
+                  (i) => i.id === countsAs.id,
+                );
+                if (target) target.ingredientId = id;
+              },
+              null,
+            ).then((ok) => ok && setCountsAs(null))
+          }
         />
       )}
     </div>
   );
 }
-function CountsAsForm({ row, pending, onSkip, onSave }) {
+function CountsAsSheet({ row, pending, onClose, onSave }) {
   const [id, setId] = useState("");
   return (
-    <form
-      className="home-details"
-      onSubmit={(e) => {
-        e.preventDefault();
-        if (id) onSave(id);
-        else onSkip();
-      }}
-    >
-      <label>
-        What does {row.name} count as?
-        <select value={id} onChange={(e) => setId(e.target.value)}>
-          <option value="">Nothing specific</option>
-          {INGREDIENTS.map((i) => (
-            <option key={i.id} value={i.id}>
-              {i.name}
-            </option>
-          ))}
-        </select>
-        <small>Ideas that need this food will use it.</small>
-      </label>
-      <div className="sheet-footer">
-        <button type="button" onClick={onSkip} disabled={pending}>
-          Skip
-        </button>
-        <button
-          aria-busy={pending || undefined}
-          className="primary"
-          disabled={pending}
-        >
-          {pending ? "Saving…" : "Save"}
-        </button>
-      </div>
-    </form>
+    <Dialog title="Counts as?" onClose={onClose} dirty={id !== ""}>
+      <form
+        className="home-details"
+        onSubmit={(e) => {
+          e.preventDefault();
+          if (id) onSave(id);
+          else onClose();
+        }}
+      >
+        <label>
+          What does {row.name} count as?
+          <select value={id} onChange={(e) => setId(e.target.value)}>
+            <option value="">Nothing specific</option>
+            {INGREDIENTS.map((i) => (
+              <option key={i.id} value={i.id}>
+                {i.name}
+              </option>
+            ))}
+          </select>
+          <small>Ideas that need this food will use it.</small>
+        </label>
+        <div className="sheet-footer">
+          <button type="button" onClick={onClose} disabled={pending}>
+            Skip
+          </button>
+          <button
+            aria-busy={pending || undefined}
+            className="primary"
+            disabled={pending}
+          >
+            {pending ? "Saving…" : "Save"}
+          </button>
+        </div>
+      </form>
+    </Dialog>
   );
 }
-function HomeDetails({ initial, pending, onDirty, onCancel, onSave }) {
+function HomeDetails({ initial, pending, onDirty, onSave }) {
   const [draft, setDraft] = useState({
     ...initial,
     availability:
@@ -654,9 +627,7 @@ function HomeDetails({ initial, pending, onDirty, onCancel, onSave }) {
         />
       </label>
       <div className="sheet-footer">
-        <button type="button" onClick={onCancel} disabled={!!pending}>
-          Cancel
-        </button>
+        <DialogCancel disabled={!!pending} />
         <button
           aria-busy={pending || undefined}
           className="primary"

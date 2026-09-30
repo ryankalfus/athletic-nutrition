@@ -12,16 +12,16 @@ import { SEASONS } from "../../domain/you.js";
 import {
   SCHOOL_FOOD_CHOICES,
   activitiesDraft,
-  activitiesError,
+  activitiesProblem,
   activitiesFromSetup,
   applyFoodAccess,
   firstPlanPreview,
   foodAccessDraft,
-  schoolDayError,
+  schoolDayProblem,
   schoolDraft,
   schoolFromSetup,
   sportStepData,
-  sportStepError,
+  sportStepProblem,
 } from "../../domain/setup.js";
 import { SportField } from "../You/SportField.jsx";
 import { FoodNeedsFields } from "../You/FoodNeedsFields.jsx";
@@ -31,6 +31,7 @@ import {
   toggleDay,
 } from "../Schedule/ScheduleFields.jsx";
 import { StepForm } from "./StepForm.jsx";
+import { FieldError, Input } from "../../components/ui/FieldError.jsx";
 
 const WHERE = [
   ["home", "Home"],
@@ -50,7 +51,7 @@ export function SportStep({ data, title, next, finish }) {
       title={title}
       helper="Nourally uses this to name your sessions and time your snacks."
       onSkipAll={() => finish()}
-      onNext={() => sportStepError(draft) || next(save)}
+      onNext={() => sportStepProblem(draft) || next(save)}
     >
       <label>
         First name <span className="optional-label">Optional</span>
@@ -89,7 +90,7 @@ export function SchoolStep({ data, title, next, finish, todayKey }) {
       helper="Nourally times food around your classes and lunch."
       onSkipAll={() => finish()}
       onNext={() =>
-        schoolDayError(draft) ||
+        schoolDayProblem(draft) ||
         next((d) => {
           d.schoolSchedule = schoolFromSetup(draft, d.schoolSchedule, todayKey);
         })
@@ -97,12 +98,14 @@ export function SchoolStep({ data, title, next, finish, todayKey }) {
     >
       <WeekdayPicker
         legend="School days"
+        field="weekdays"
         value={draft.weekdays}
         onToggle={(day) => set({ weekdays: toggleDay(draft.weekdays, day) })}
       />
       <TimeRange
         startLabel="School starts"
         endLabel="School ends"
+        endField="endTime"
         start={draft.startTime}
         end={draft.endTime}
         onStart={(startTime) => set({ startTime })}
@@ -111,6 +114,7 @@ export function SchoolStep({ data, title, next, finish, todayKey }) {
       <TimeRange
         startLabel="Lunch starts"
         endLabel="Lunch ends"
+        field="lunch"
         start={draft.lunchStartTime}
         end={draft.lunchEndTime}
         onStart={(lunchStartTime) => set({ lunchStartTime })}
@@ -135,7 +139,7 @@ export function PracticesStep({ data, title, next, finish, todayKey }) {
       helper="No set practices? Skip this. You can add sessions any time."
       onSkipAll={() => finish()}
       onNext={() =>
-        activitiesError(draft) ||
+        activitiesProblem(draft) ||
         next((d) => {
           d.schedule = activitiesFromSetup(draft, d.schedule, {
             sport: d.profile.sport,
@@ -158,6 +162,7 @@ export function PracticesStep({ data, title, next, finish, todayKey }) {
           className="time-fields"
           startLabel="Starts"
           endLabel="Ends"
+          endField="practiceEnd"
           start={practice.startTime}
           end={practice.endTime}
           onStart={(startTime) => setPractice({ startTime })}
@@ -175,17 +180,20 @@ export function PracticesStep({ data, title, next, finish, todayKey }) {
           <legend>Game</legend>
           <label>
             Game date
-            <input
+            <Input
+              field="gameDate"
               type="date"
               min={todayKey}
               value={game.date}
               onChange={(event) => setGame({ date: event.target.value })}
             />
           </label>
+          <FieldError field="gameDate" />
           <TimeRange
             className="time-fields"
             startLabel="Game starts"
             endLabel="Game ends"
+            endField="gameEnd"
             start={game.startTime}
             end={game.endTime}
             onStart={(startTime) => setGame({ startTime })}
@@ -275,7 +283,7 @@ export function FoodNeedsStep({ data, title, next, finish }) {
         })
       }
     >
-      <FoodNeedsFields draft={draft} onChange={setDraft} />
+      <FoodNeedsFields draft={draft} onChange={setDraft} headingLevel={2} />
     </StepForm>
   );
 }

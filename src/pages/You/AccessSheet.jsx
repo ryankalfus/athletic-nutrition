@@ -2,6 +2,7 @@ import { useState } from "react";
 import { changeData } from "../../store.js";
 import { FOOD_SOURCES, SCHOOL_ACCESS, parseBudget } from "../../domain/you.js";
 import { lowCostOn } from "../../domain/ranking.js";
+import { FieldError, Input } from "../../components/ui/FieldError.jsx";
 import { SettingsSheet, toggle } from "./SettingsSheet.jsx";
 import {
   ChipGroup,
@@ -33,8 +34,11 @@ export function AccessSheet({ data, onClose, onNavigate }) {
       onClose={onClose}
       onSave={async () => {
         if (!draft.foodSources.length)
-          return "Choose at least one place you can get food.";
-        if (budget.error) return budget.error;
+          return {
+            message: "Choose at least one place you can get food.",
+            field: "foodSources",
+          };
+        if (budget.error) return { message: budget.error, field: "budget" };
         return changeData((next) => {
           next.profile.foodSources = draft.foodSources;
           next.profile.familyPrep = draft.familyPrep;
@@ -52,6 +56,7 @@ export function AccessSheet({ data, onClose, onNavigate }) {
     >
       <ChipGroup
         legend="Where you can get food"
+        field="foodSources"
         options={FOOD_SOURCES}
         selected={draft.foodSources}
         onToggle={(value) =>
@@ -103,7 +108,8 @@ export function AccessSheet({ data, onClose, onNavigate }) {
         Grocery budget <span className="optional-label">Optional</span>
         <span className="budget-input">
           <span aria-hidden="true">$</span>
-          <input
+          <Input
+            field="budget"
             inputMode="decimal"
             value={draft.budget}
             aria-invalid={Boolean(budget.error)}
@@ -115,6 +121,7 @@ export function AccessSheet({ data, onClose, onNavigate }) {
           Shown on Groceries when price estimates are on.
         </span>
       </label>
+      <FieldError field="budget" />
     </SettingsSheet>
   );
 }

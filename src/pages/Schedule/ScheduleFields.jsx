@@ -1,3 +1,8 @@
+import {
+  FieldError,
+  useFieldInvalid,
+} from "../../components/ui/FieldError.jsx";
+
 // Field groups shared by the school day editor, the activity sheet and setup
 // steps 2 and 3 (ONB-02).
 
@@ -11,9 +16,10 @@ const DAYS = [
   ["S", 6, "Saturday"],
 ];
 
-export function WeekdayPicker({ legend, value, onToggle }) {
+export function WeekdayPicker({ legend, value, onToggle, field }) {
+  const invalid = useFieldInvalid(field);
   return (
-    <fieldset>
+    <fieldset {...invalid}>
       <legend>{legend}</legend>
       <div className="school-weekdays">
         {DAYS.map(([label, day, name]) => (
@@ -29,6 +35,7 @@ export function WeekdayPicker({ legend, value, onToggle }) {
           </button>
         ))}
       </div>
+      <FieldError field={field} />
     </fieldset>
   );
 }
@@ -41,28 +48,38 @@ export function TimeRange({
   onStart,
   onEnd,
   className = "school-date-fields",
+  field,
+  endField,
 }) {
+  const both = useFieldInvalid(field);
+  const endOnly = useFieldInvalid(endField);
   return (
-    <div className={className}>
-      <label>
-        {startLabel}
-        <input
-          required
-          type="time"
-          value={start}
-          onChange={(event) => onStart(event.target.value)}
-        />
-      </label>
-      <label>
-        {endLabel}
-        <input
-          required
-          type="time"
-          value={end}
-          onChange={(event) => onEnd(event.target.value)}
-        />
-      </label>
-    </div>
+    <>
+      <div className={className}>
+        <label>
+          {startLabel}
+          <input
+            required
+            type="time"
+            value={start}
+            onChange={(event) => onStart(event.target.value)}
+            {...both}
+          />
+        </label>
+        <label>
+          {endLabel}
+          <input
+            required
+            type="time"
+            value={end}
+            onChange={(event) => onEnd(event.target.value)}
+            {...both}
+            {...endOnly}
+          />
+        </label>
+      </div>
+      <FieldError field={[field, endField].filter(Boolean)} />
+    </>
   );
 }
 

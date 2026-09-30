@@ -1,9 +1,16 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { portionCalories, validPortion } from "../../domain/food.js";
 import { portionHint, sourceLine } from "../../domain/search.js";
 import { APPROX_TIMES, clockTime, entryClock } from "../../domain/log.js";
 import { LabelCheck } from "../../components/ui/LabelCheck.jsx";
-import { InlineError } from "../../components/ui/InlineError.jsx";
+import { DialogCancel } from "../../components/Dialog.jsx";
+import {
+  FieldError,
+  FieldErrors,
+  FormError,
+  Input,
+  useFieldInvalid,
+} from "../../components/ui/FieldError.jsx";
 import { SegmentedControl } from "../../components/ui/SelectionControls.jsx";
 
 // When the food was eaten (LOG-04). Today starts at the current time; a past
@@ -26,8 +33,9 @@ export function useWhen({ entry, isToday }) {
 }
 
 export function WhenField({ when, isToday }) {
+  const invalid = useFieldInvalid("when");
   return (
-    <fieldset className="when-field">
+    <fieldset className="when-field" {...invalid}>
       <legend>{isToday ? "Time" : "About when?"}</legend>
       {!isToday && (
         <SegmentedControl
@@ -51,13 +59,15 @@ export function WhenField({ when, isToday }) {
           }}
         />
       </label>
+      <FieldError field="when" />
     </fieldset>
   );
 }
 
 // The log portion sheet (CMP-13): amount, time, a quiet source line (LOG-06)
 // and calories only under "Nutrition details (optional)" (LOG-02).
-export function PortionSheet({ food, entry, isToday, onSave, onCancel }) {
+// `onDirty(bool)` reports unsaved changes so the dialog can ask first (DS-15).
+export function PortionSheet({ food, entry, isToday, onSave, onDirty }) {
   const hint = portionHint(food);
   const [name, setName] = useState(
     entry?.name || food.displayName || food.name,
@@ -76,9 +86,15 @@ export function PortionSheet({ food, entry, isToday, onSave, onCancel }) {
     entry && (entry.userAdjusted || !entry.food) ? (entry.calories ?? "") : "",
   );
   const when = useWhen({ entry, isToday });
-  const [error, setError] = useState("");
+  const [error, setError] = useState(null);
   const [busy, setBusy] = useState(false);
   const calories = portionCalories(food, amount, unit);
+  const snapshot = JSON.stringify([name, amount, unit, override, when.value]);
+  const initial = useRef(snapshot);
+  const dirty = snapshot !== initial.current;
+  useEffect(() => {
+    onDirty?.(dirty);
+  }, [dirty]);
   async function save(e) {
     e.preventDefault();
     if (busy) return;
@@ -90,13 +106,15 @@ export function PortionSheet({ food, entry, isToday, onSave, onCancel }) {
           Number(override) < 0 ||
           Number(override) > 20000))
     ) {
-      setError(
-        "Check the name and amount. Amount must be above zero, up to 2000 g or ml, or 100 of anything else.",
-      );
+      setError({
+        message:
+          "Check the name and amount. Amount must be above zero, up to 2000 g or ml, or 100 of anything else.",
+        field: name.trim() ? "amount" : "name",
+      });
       return;
     }
     if (when.missing) {
-      setError("Choose about when you ate it.");
+      setError({ message: "Choose about when you ate it.", field: "when" });
       return;
     }
     setBusy(true);
@@ -115,60 +133,66 @@ export function PortionSheet({ food, entry, isToday, onSave, onCancel }) {
   }
   return (
     <form className="portion-form" onSubmit={save}>
-      <label>
-        Food name
-        <input
-          required
-          maxLength={240}
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-        />
-      </label>
-      {hint && <p className="muted">Usual portion: {hint.label}</p>}
-      <div className="form-grid">
+      <FieldErrors error={error}>
         <label>
-          Amount eaten
-          <input
+          Food name
+          <Input
+            field="name"
             required
-            type="number"
-            step="any"
-            min="0.01"
-            max={["g", "ml"].includes(unit) ? 2000 : 100}
-            value={amount}
-            onChange={(e) => setAmount(e.target.value)}
+            maxLength={240}
+            value={name}
+            onChange={(e) => setName(e.target.value)}
           />
         </label>
-        <label>
-          Unit
-          <select value={unit} onChange={(e) => setUnit(e.target.value)}>
-            {["g", "ml", "portion", "piece", "package"].map((u) => (
-              <option key={u}>{u}</option>
-            ))}
-          </select>
-        </label>
-      </div>
-      <WhenField when={when} isToday={isToday} />
-      <LabelCheck food={food} />
-      <p className="food-source">{sourceLine(food)}</p>
-      <details>
-        <summary>Nutrition details (optional)</summary>
-        <p role="status">
-          {calories == null
-            ? "Calories aren't known for this amount."
-            : `About ${calories} kcal for this amount.`}
-        </p>
-        <label>
-          Use your own calorie number (optional)
-          <input
-            type="number"
-            min="0"
-            max="20000"
-            value={override}
-            onChange={(e) => setOverride(e.target.value)}
-          />
-        </label>
-      </details>
-      <InlineError message={error} />
+        <FieldError field="name" />
+        {hint && <p className="muted">Usual portion: {hint.label}</p>}
+        <div className="form-grid">
+          <label>
+            Amount eaten
+            <Input
+              field="amount"
+              required
+              type="number"
+              step="any"
+              min="0.01"
+              max={["g", "ml"].includes(unit) ? 2000 : 100}
+              value={amount}
+              onChange={(e) => setAmount(e.target.value)}
+            />
+          </label>
+          <label>
+            Unit
+            <select value={unit} onChange={(e) => setUnit(e.target.value)}>
+              {["g", "ml", "portion", "piece", "package"].map((u) => (
+                <option key={u}>{u}</option>
+              ))}
+            </select>
+          </label>
+        </div>
+        <FieldError field="amount" />
+        <WhenField when={when} isToday={isToday} />
+        <LabelCheck food={food} />
+        <p className="food-source">{sourceLine(food)}</p>
+        <details>
+          <summary>Nutrition details (optional)</summary>
+          <p role="status">
+            {calories == null
+              ? "Calories aren't known for this amount."
+              : `About ${calories} kcal for this amount.`}
+          </p>
+          <label>
+            Use your own calorie number (optional)
+            <input
+              type="number"
+              min="0"
+              max="20000"
+              value={override}
+              onChange={(e) => setOverride(e.target.value)}
+            />
+          </label>
+        </details>
+        <FormError />
+      </FieldErrors>
       <div className="button-row">
         <button
           aria-busy={busy || undefined}
@@ -177,9 +201,7 @@ export function PortionSheet({ food, entry, isToday, onSave, onCancel }) {
         >
           {busy ? "Saving…" : "Save"}
         </button>
-        <button type="button" onClick={onCancel} disabled={busy}>
-          Cancel
-        </button>
+        <DialogCancel disabled={busy} />
       </div>
     </form>
   );

@@ -59,8 +59,8 @@ async (page) => {
     const bananas = p
       .locator(".stock-row")
       .filter({ has: p.getByText("Bananas", { exact: true }) });
-    await bananas.locator("summary").click();
-    await bananas.getByRole("button", { name: "Edit details" }).click();
+    await bananas.getByRole("button", { name: "Bananas options" }).click();
+    await bananas.getByRole("menuitem", { name: "Edit details" }).click();
     const details = p.getByRole("dialog");
     await details
       .getByRole("combobox", { name: "Amount type" })
@@ -142,8 +142,8 @@ async (page) => {
 
     // LOG-04: editing keeps the time.
     const shownTime = await row("Bananas").locator(".log-time").innerText();
-    await row("Bananas").locator("summary").click();
-    await row("Bananas").getByRole("button", { name: "Edit" }).click();
+    await row("Bananas").getByRole("button", { name: "Bananas options" }).click();
+    await row("Bananas").getByRole("menuitem", { name: "Edit" }).click();
     const edit = p.getByRole("dialog", { name: "Edit food" });
     await edit.getByRole("spinbutton", { name: "Amount eaten" }).fill("150");
     await edit.getByRole("button", { name: "Save", exact: true }).click();
@@ -324,8 +324,8 @@ async (page) => {
 
     // Remove with Undo.
     await p.goto(`${base}#/food/log`);
-    await row("Bananas").locator("summary").click();
-    await row("Bananas").getByRole("button", { name: "Remove" }).click();
+    await row("Bananas").getByRole("button", { name: "Bananas options" }).click();
+    await row("Bananas").getByRole("menuitem", { name: "Remove" }).click();
     await p.getByRole("status").getByText("Removed Bananas.").waitFor();
     await p.getByRole("status").getByRole("button", { name: "Undo" }).click();
     await row("Bananas").waitFor();

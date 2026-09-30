@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { MoreHorizontal } from "lucide-react";
+import { Menu } from "../../components/ui/Menu.jsx";
 import { Shell } from "../../components/AppFrame.jsx";
 import { ConfirmDialog } from "../../components/ui/ConfirmDialog.jsx";
 import {
@@ -95,46 +95,28 @@ export default function WelcomePage({ firstRun, onNavigate }) {
                         </span>
                       </span>
                     </button>
-                    <details className="row-menu">
-                      <summary aria-label={`${name} options`}>
-                        <MoreHorizontal
-                          size={20}
-                          strokeWidth={1.75}
-                          aria-hidden="true"
-                        />
-                      </summary>
-                      <div className="row-menu-items">
-                        <button
-                          type="button"
-                          onClick={(event) => {
-                            event.currentTarget
-                              .closest("details")
-                              ?.removeAttribute("open");
+                    <Menu
+                      label={`${name} options`}
+                      items={[
+                        {
+                          label: "Rename",
+                          onSelect: () =>
                             setNaming({
                               id: athlete.id,
                               name: athleteName(athlete),
-                            });
-                          }}
-                        >
-                          Rename
-                        </button>
-                        <button
-                          type="button"
-                          className="danger"
-                          onClick={(event) => {
-                            event.currentTarget
-                              .closest("details")
-                              ?.removeAttribute("open");
+                            }),
+                        },
+                        {
+                          label: "Remove from this device",
+                          danger: true,
+                          onSelect: () =>
                             setRemoving({
                               id: athlete.id,
                               name: athleteName(athlete),
-                            });
-                          }}
-                        >
-                          Remove from this device
-                        </button>
-                      </div>
-                    </details>
+                            }),
+                        },
+                      ]}
+                    />
                   </li>
                 );
               })}

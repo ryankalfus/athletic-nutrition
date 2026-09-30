@@ -20,7 +20,10 @@ export function FoodNeedsFields({
   onChange,
   reviewed = ALLERGY_TAGS_REVIEWED,
   allergyHint = "Pick every allergy. Ideas that list these foods are hidden.",
+  headingLevel = 3,
 }) {
+  // h3 under a sheet's h2; setup passes 2 because the step title is the h1.
+  const Heading = `h${headingLevel}`;
   const allergies = draft.allergies || [];
   const status = allergyStatusLine(draft, reviewed);
   return (
@@ -46,7 +49,7 @@ export function FoodNeedsFields({
           </>
         ) : (
           <>
-            <h3 id="you-allergies-title">Allergies</h3>
+            <Heading id="you-allergies-title">Allergies</Heading>
             <p className="label-check">{ALLERGY_WAITING}</p>
           </>
         )}

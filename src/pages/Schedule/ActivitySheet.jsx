@@ -1,10 +1,16 @@
 import { useRef } from "react";
 import { useAsyncAction } from "../../hooks/useAsyncAction.js";
-import { Dialog } from "../../components/Dialog.jsx";
+import { Dialog, DialogCancel } from "../../components/Dialog.jsx";
 import { formatDate, formatTime } from "../../format.js";
 import { timeToMinutes } from "../../domain/timing.js";
 import { SegmentedControl } from "../../components/ui/SelectionControls.jsx";
 import { TimeRange, WeekdayPicker } from "./ScheduleFields.jsx";
+import {
+  FieldError,
+  FieldErrors,
+  FormError,
+  Input,
+} from "../../components/ui/FieldError.jsx";
 export function ActivitySheet({ model }) {
   const initialFocus = useRef(null);
   const { pending, run } = useAsyncAction();
@@ -13,6 +19,7 @@ export function ActivitySheet({ model }) {
     selectedKey,
     type,
     closeActivitySheet,
+    activityDirty,
     saveEvent,
     setType,
     title,
@@ -48,6 +55,8 @@ export function ActivitySheet({ model }) {
       initialFocusRef={initialFocus}
       className="activity-sheet"
       onClose={closeActivitySheet}
+      dirty={activityDirty}
+      discardMessage="Your unsaved activity changes will be lost."
     >
       <form
         className="schedule-form"
@@ -57,156 +66,160 @@ export function ActivitySheet({ model }) {
         }}
       >
         <div className="schedule-form-scroll">
-          <fieldset>
-            <legend>Type</legend>
-            <SegmentedControl
-              mode="pressed"
-              label="Type"
-              firstRef={initialFocus}
-              options={[
-                ["practice", "Practice"],
-                ["game", "Game"],
-                ["workout", "Workout"],
-                ["other", "Other"],
-              ]}
-              value={type}
-              onChange={setType}
-            />
-          </fieldset>
-          <label>
-            Name
-            <input
-              value={title}
-              onChange={(event) => setTitle(event.target.value)}
-              placeholder={activityPlaceholder}
-            />
-          </label>
-          {editingScope === "date" ? (
-            <p>Changing {formatDate(selectedKey)} only.</p>
-          ) : (
+          <FieldErrors error={formError}>
             <fieldset>
-              <legend>Date or days</legend>
+              <legend>Type</legend>
               <SegmentedControl
                 mode="pressed"
-                label="Date or days"
+                label="Type"
+                firstRef={initialFocus}
                 options={[
-                  ["once", "One day"],
-                  ["weekly", "Every week"],
+                  ["practice", "Practice"],
+                  ["game", "Game"],
+                  ["workout", "Workout"],
+                  ["other", "Other"],
                 ]}
-                value={repeatMode}
-                onChange={setRepeatMode}
+                value={type}
+                onChange={setType}
               />
-              {repeatMode === "once" ? (
-                <label>
-                  Activity date
-                  <input
-                    required
-                    type="date"
-                    value={selectedKey}
-                    onChange={(event) => setSelectedKey(event.target.value)}
-                  />
-                </label>
-              ) : (
-                <div className="repeat-settings">
-                  <WeekdayPicker
-                    legend="Repeat on"
-                    value={repeatWeekdays}
-                    onToggle={toggleRepeatDay}
-                  />
+            </fieldset>
+            <label>
+              Name
+              <input
+                value={title}
+                onChange={(event) => setTitle(event.target.value)}
+                placeholder={activityPlaceholder}
+              />
+            </label>
+            {editingScope === "date" ? (
+              <p>Changing {formatDate(selectedKey)} only.</p>
+            ) : (
+              <fieldset>
+                <legend>Date or days</legend>
+                <SegmentedControl
+                  mode="pressed"
+                  label="Date or days"
+                  options={[
+                    ["once", "One day"],
+                    ["weekly", "Every week"],
+                  ]}
+                  value={repeatMode}
+                  onChange={setRepeatMode}
+                />
+                {repeatMode === "once" ? (
                   <label>
-                    Until
+                    Activity date
                     <input
                       required
                       type="date"
-                      min={selectedKey}
-                      value={repeatEndDate}
-                      onChange={(event) => setRepeatEndDate(event.target.value)}
+                      value={selectedKey}
+                      onChange={(event) => setSelectedKey(event.target.value)}
                     />
                   </label>
-                </div>
-              )}
-            </fieldset>
-          )}
-          <TimeRange
-            className="time-fields"
-            startLabel="Starts"
-            endLabel="Ends"
-            start={startTime}
-            end={endTime}
-            onStart={setStartTime}
-            onEnd={setEndTime}
-          />
-          <fieldset>
-            <legend>Where</legend>
-            <SegmentedControl
-              mode="pressed"
-              label="Where"
-              options={[
-                ["home", "Home"],
-                ["away", "Away"],
-              ]}
-              value={location}
-              onChange={setLocation}
-            />
-          </fieldset>
-          {location === "away" && (
-            <label>
-              Travel time (min)
-              <input
-                type="number"
-                min="0"
-                max="360"
-                step="5"
-                value={travelMinutes}
-                onChange={(event) => setTravelMinutes(event.target.value)}
-              />
-              <small>Minutes from home to the venue.</small>
-              {Number(travelMinutes) > 0 &&
-                Number(travelMinutes) <= timeToMinutes(startTime) && (
-                  <small>
-                    Leave by{" "}
-                    {formatTime(
-                      `${String(Math.floor((timeToMinutes(startTime) - Number(travelMinutes)) / 60)).padStart(2, "0")}:${String((timeToMinutes(startTime) - Number(travelMinutes)) % 60).padStart(2, "0")}`,
-                    )}
-                  </small>
+                ) : (
+                  <div className="repeat-settings">
+                    <WeekdayPicker
+                      legend="Repeat on"
+                      field="repeatDays"
+                      value={repeatWeekdays}
+                      onToggle={toggleRepeatDay}
+                    />
+                    <label>
+                      Until
+                      <Input
+                        field="repeatEnd"
+                        required
+                        type="date"
+                        min={selectedKey}
+                        value={repeatEndDate}
+                        onChange={(event) =>
+                          setRepeatEndDate(event.target.value)
+                        }
+                      />
+                    </label>
+                    <FieldError field="repeatEnd" />
+                  </div>
                 )}
-            </label>
-          )}
-          <details className="schedule-more-options">
-            <summary>More options</summary>
+              </fieldset>
+            )}
+            <TimeRange
+              className="time-fields"
+              startLabel="Starts"
+              endLabel="Ends"
+              endField="endTime"
+              start={startTime}
+              end={endTime}
+              onStart={setStartTime}
+              onEnd={setEndTime}
+            />
             <fieldset>
-              <legend>Activity level</legend>
+              <legend>Where</legend>
               <SegmentedControl
                 mode="pressed"
-                label="Activity level"
+                label="Where"
                 options={[
-                  ["low", "Easy"],
-                  ["medium", "Normal"],
-                  ["high", "Hard"],
+                  ["home", "Home"],
+                  ["away", "Away"],
                 ]}
-                value={intensity}
-                onChange={setIntensity}
+                value={location}
+                onChange={setLocation}
               />
             </fieldset>
-            <label>
-              Notes (optional)
-              <textarea
-                value={notes}
-                onChange={(event) => setNotes(event.target.value)}
-                maxLength={500}
-              />
-            </label>
-          </details>
-          {formError && (
-            <p className="schedule-error" role="alert">
-              {formError}
-            </p>
-          )}
+            {location === "away" && (
+              <label>
+                Travel time (min)
+                <Input
+                  field="travel"
+                  type="number"
+                  min="0"
+                  max="360"
+                  step="5"
+                  value={travelMinutes}
+                  onChange={(event) => setTravelMinutes(event.target.value)}
+                />
+                <small>Minutes from home to the venue.</small>
+                {Number(travelMinutes) > 0 &&
+                  Number(travelMinutes) <= timeToMinutes(startTime) && (
+                    <small>
+                      Leave by{" "}
+                      {formatTime(
+                        `${String(Math.floor((timeToMinutes(startTime) - Number(travelMinutes)) / 60)).padStart(2, "0")}:${String((timeToMinutes(startTime) - Number(travelMinutes)) % 60).padStart(2, "0")}`,
+                      )}
+                    </small>
+                  )}
+              </label>
+            )}
+            <FieldError field="travel" />
+            <details className="schedule-more-options">
+              <summary>More options</summary>
+              <fieldset>
+                <legend>Activity level</legend>
+                <SegmentedControl
+                  mode="pressed"
+                  label="Activity level"
+                  options={[
+                    ["low", "Easy"],
+                    ["medium", "Normal"],
+                    ["high", "Hard"],
+                  ]}
+                  value={intensity}
+                  onChange={setIntensity}
+                />
+              </fieldset>
+              <label>
+                Notes (optional)
+                <textarea
+                  value={notes}
+                  onChange={(event) => setNotes(event.target.value)}
+                  maxLength={500}
+                />
+              </label>
+            </details>
+            <FormError />
+          </FieldErrors>
         </div>
         <div className="schedule-form-footer">
-          <button type="button" onClick={closeActivitySheet}>
-            Cancel
-          </button>
+          <DialogCancel />
           <button
             aria-busy={pending || undefined}
             className="primary"

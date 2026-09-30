@@ -1,13 +1,14 @@
-import { useEffect, useState } from "react";
-import { Dialog } from "../../components/Dialog.jsx";
-import { ConfirmDialog } from "../../components/ui/ConfirmDialog.jsx";
+import { useState } from "react";
+import { Dialog, DialogCancel } from "../../components/Dialog.jsx";
+import { Button } from "../../components/ui/Button.jsx";
+import { FieldErrors, FormError } from "../../components/ui/FieldError.jsx";
 import { showToast } from "../../components/ui/Toast.jsx";
 import { useAsyncAction } from "../../hooks/useAsyncAction.js";
 
 // One You settings sheet (YOU-06): Save closes it, shows "Saved", and stays
 // on You. Cancel with changes asks "Discard changes?". `onSave` resolves to
-// true on success, a message to show inline, or false when the store already
-// shows its own save error.
+// true on success, a message to show inline, { message, field } for an error
+// under one field, or false when the store already shows its own save error.
 export function SettingsSheet({
   title,
   dirty,
@@ -16,23 +17,13 @@ export function SettingsSheet({
   children,
   className = "",
   savedToast = "Saved.",
+  discardMessage = "Your changes to this section aren't saved yet.",
 }) {
-  const [confirmDiscard, setConfirmDiscard] = useState(false);
-  const [error, setError] = useState("");
+  const [error, setError] = useState(null);
   const { pending, run } = useAsyncAction();
-  useEffect(() => {
-    const warn = (event) => {
-      if (!dirty) return;
-      event.preventDefault();
-      event.returnValue = "";
-    };
-    window.addEventListener("beforeunload", warn);
-    return () => window.removeEventListener("beforeunload", warn);
-  }, [dirty]);
-  const close = () => (dirty ? setConfirmDiscard(true) : onClose());
   const submit = (event) => {
     event.preventDefault();
-    setError("");
+    setError(null);
     run("save", async () => {
       let result;
       try {
@@ -46,51 +37,35 @@ export function SettingsSheet({
         onClose();
         // Closing changes the route, which clears toasts; show "Saved" after.
         if (savedToast) window.setTimeout(() => showToast(savedToast), 0);
-      } else if (typeof result === "string") setError(result);
+      } else if (result) setError(result);
       return result === true;
     });
   };
   return (
     <Dialog
       title={title}
-      onClose={close}
+      onClose={onClose}
+      dirty={dirty}
+      discardMessage={discardMessage}
       className={`settings-sheet ${className}`.trim()}
     >
       <form onSubmit={submit} noValidate>
-        {children}
-        {error && (
-          <p className="inline-error" role="alert">
-            {error}
-          </p>
-        )}
+        <FieldErrors error={error}>
+          {children}
+          <FormError />
+        </FieldErrors>
         <div className="dialog-actions">
-          <button type="button" onClick={close}>
-            Cancel
-          </button>
-          <button
-            aria-busy={pending || undefined}
-            className="primary"
+          <DialogCancel />
+          <Button
             type="submit"
-            disabled={!!pending}
+            variant="primary"
+            busy={!!pending}
+            busyLabel="Saving…"
           >
-            {pending ? "Saving…" : "Save"}
-          </button>
+            Save
+          </Button>
         </div>
       </form>
-      {confirmDiscard && (
-        <ConfirmDialog
-          title="Discard changes?"
-          body="Your changes to this section aren't saved yet."
-          confirmLabel="Discard"
-          cancelLabel="Keep editing"
-          destructive
-          onCancel={() => setConfirmDiscard(false)}
-          onConfirm={() => {
-            setConfirmDiscard(false);
-            onClose();
-          }}
-        />
-      )}
     </Dialog>
   );
 }

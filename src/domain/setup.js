@@ -44,16 +44,24 @@ export const DEFAULT_SCHOOL_DAY = {
 };
 
 // Shared with Schedule's school editor: the same messages for the same rules.
-export function schoolDayError(fields) {
+// The problem names the field so forms can mark and focus it (A11Y-09).
+export function schoolDayProblem(fields) {
   if (fields.startDate && fields.endDate && fields.endDate < fields.startDate)
-    return "The school year must end after it starts.";
+    return {
+      message: "The school year must end after it starts.",
+      field: "endDate",
+    };
   if (
     !fields.startTime ||
     !fields.endTime ||
     fields.endTime <= fields.startTime
   )
-    return "The school day must end after it starts.";
-  if (!fields.weekdays?.length) return "Choose at least one school day.";
+    return {
+      message: "The school day must end after it starts.",
+      field: "endTime",
+    };
+  if (!fields.weekdays?.length)
+    return { message: "Choose at least one school day.", field: "weekdays" };
   if (
     !fields.lunchStartTime ||
     !fields.lunchEndTime ||
@@ -61,8 +69,14 @@ export function schoolDayError(fields) {
     fields.lunchStartTime < fields.startTime ||
     fields.lunchEndTime > fields.endTime
   )
-    return "Lunch must fit inside the school day and end after it starts.";
-  return "";
+    return {
+      message: "Lunch must fit inside the school day and end after it starts.",
+      field: "lunch",
+    };
+  return null;
+}
+export function schoolDayError(fields) {
+  return schoolDayProblem(fields)?.message || "";
 }
 
 // Draft values for step 2 from what is already saved.
@@ -136,13 +150,20 @@ export function activitiesDraft(schedule = []) {
   };
 }
 
-export function activitiesError({ practice, game }) {
+export function activitiesProblem({ practice, game }) {
   if (practice.weekdays.length && practice.endTime <= practice.startTime)
-    return "End time must be after start time.";
-  if (game && !game.date) return "Choose the game date.";
+    return {
+      message: "End time must be after start time.",
+      field: "practiceEnd",
+    };
+  if (game && !game.date)
+    return { message: "Choose the game date.", field: "gameDate" };
   if (game && game.endTime <= game.startTime)
-    return "End time must be after start time.";
-  return "";
+    return { message: "End time must be after start time.", field: "gameEnd" };
+  return null;
+}
+export function activitiesError(draft) {
+  return activitiesProblem(draft)?.message || "";
 }
 
 // Replaces the practice and game setup made earlier, so Back → Next never
@@ -250,6 +271,10 @@ export function sportStepData(profile = {}) {
 
 export function sportStepError(draft) {
   return normalizeSport(draft.sport) ? "" : "Enter your sport.";
+}
+export function sportStepProblem(draft) {
+  const message = sportStepError(draft);
+  return message ? { message, field: "sport" } : null;
 }
 
 // Step 6: "Here's your first plan: Soccer practice today at 4:00 PM. Plan a

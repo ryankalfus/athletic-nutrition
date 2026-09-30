@@ -56,7 +56,19 @@ async (page) => {
     await step(p, "What do you play?").waitFor();
     await fits(p, "Step 1");
     await next(p);
-    await p.getByRole("alert").getByText("Enter your sport.").waitFor();
+    await p.getByText("Enter your sport.").waitFor();
+    // A11Y-09: the field is marked invalid, described by the message, and focused.
+    const sport = p.getByRole("combobox", { name: /^Sport/ });
+    if (
+      (await sport.getAttribute("aria-invalid")) !== "true" ||
+      (await sport.evaluate(
+        (node) =>
+          document.getElementById(node.getAttribute("aria-describedby"))
+            ?.textContent,
+      )) !== "Enter your sport." ||
+      !(await sport.evaluate((node) => node === document.activeElement))
+    )
+      throw new Error("Sport error is not tied to the Sport field");
     await p.getByRole("textbox", { name: /First name/ }).fill("Maya");
     await p.getByRole("combobox", { name: /^Sport/ }).fill("Soccer");
     const season = p.getByRole("radiogroup", { name: "Season" });

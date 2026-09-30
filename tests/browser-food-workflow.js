@@ -79,8 +79,8 @@ async (page) => {
     // Give Bananas an exact count in bunches. It must still satisfy an idea that
     // needs "1 banana" (other-unit counts count as available), and a log can use it.
     await p.goto(`${base}#/food/home`);
-    await homeRow("Bananas").locator("summary").click();
-    await homeRow("Bananas").getByRole("button", { name: "Edit details" }).click();
+    await homeRow("Bananas").getByRole("button", { name: "Bananas options" }).click();
+    await homeRow("Bananas").getByRole("menuitem", { name: "Edit details" }).click();
     const details = p.getByRole("dialog");
     await details
       .getByRole("combobox", { name: "Amount type" })
@@ -149,8 +149,8 @@ async (page) => {
     const entry = p
       .locator("li.log-entry")
       .filter({ hasText: "Banana + pretzels" });
-    await entry.locator("summary").click();
-    await entry.getByRole("button", { name: "Used from At home…" }).click();
+    await entry.getByRole("button", { name: /options$/ }).click();
+    await entry.getByRole("menuitem", { name: "Used from At home…" }).click();
     const use = p.getByRole("dialog", { name: "Use food from home" });
     await use.getByRole("spinbutton", { name: /^Bananas — 3/ }).fill("1");
     await use.getByRole("button", { name: "Save" }).click();
@@ -159,8 +159,8 @@ async (page) => {
     await homeRow("Bananas").getByText("2 left").waitFor();
     await p.goto(`${base}#/food/log`);
     await entry.getByText("Used from At home").waitFor();
-    await entry.locator("summary").click();
-    await entry.getByRole("button", { name: "Put back at home" }).click();
+    await entry.getByRole("button", { name: /options$/ }).click();
+    await entry.getByRole("menuitem", { name: "Put back at home" }).click();
     await p.getByRole("status").getByText("Put the food back at home.").waitFor();
     await p.goto(`${base}#/food/home`);
     await homeRow("Bananas").getByText("3 left").waitFor();

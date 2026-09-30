@@ -25,7 +25,7 @@ import {
 import { SchoolDayEditor } from "./SchoolDayEditor.jsx";
 import { ActivitySheet } from "./ActivitySheet.jsx";
 import { activityTitle } from "../../domain/sport.js";
-import { schoolDayError } from "../../domain/setup.js";
+import { schoolDayProblem } from "../../domain/setup.js";
 import ScheduleWeek from "./ScheduleWeek.jsx";
 import MonthGrid from "./MonthGrid.jsx";
 import { EmptyState } from "../../components/ui/EmptyState.jsx";
@@ -187,19 +187,10 @@ export default function ScheduleCalendar({
   if (!initialActivityDraft.current)
     initialActivityDraft.current = activityDraft();
 
+  // The sheet's Dialog asks "Discard changes?" when this is dirty (DS-15).
+  const activityDirty = activityDraft() !== initialActivityDraft.current;
   function closeActivitySheet() {
-    if (activityDraft() !== initialActivityDraft.current) {
-      setConfirmation({
-        title: "Discard changes?",
-        body: "Your unsaved activity changes will be lost.",
-        confirmLabel: "Discard changes",
-        destructive: true,
-        onConfirm: () => {
-          resetForm();
-          setConfirmation(null);
-        },
-      });
-    } else resetForm();
+    resetForm();
   }
 
   function isConfiguredSchoolDay(date) {
@@ -294,9 +285,11 @@ export default function ScheduleCalendar({
   async function saveEvent(event, approvedOverlap = false) {
     event.preventDefault();
     if (endTime <= startTime) {
-      setFormError(
-        "End time must be later than start time on the same day. Overnight events are not supported.",
-      );
+      setFormError({
+        message:
+          "End time must be later than start time on the same day. Overnight events are not supported.",
+        field: "endTime",
+      });
       return;
     }
     if (
@@ -305,7 +298,10 @@ export default function ScheduleCalendar({
         Number(travelMinutes) < 0 ||
         Number(travelMinutes) > 360)
     ) {
-      setFormError("Travel time must be between 0 and 360 minutes.");
+      setFormError({
+        message: "Travel time must be between 0 and 360 minutes.",
+        field: "travel",
+      });
       return;
     }
     if (
@@ -313,7 +309,10 @@ export default function ScheduleCalendar({
       repeatMode === "weekly" &&
       !repeatWeekdays.length
     ) {
-      setFormError("Choose at least one repeat day.");
+      setFormError({
+        message: "Choose at least one repeat day.",
+        field: "repeatDays",
+      });
       return;
     }
     if (
@@ -321,9 +320,10 @@ export default function ScheduleCalendar({
       repeatMode === "weekly" &&
       repeatEndDate < selectedKey
     ) {
-      setFormError(
-        "The repeat end date must be on or after the first activity.",
-      );
+      setFormError({
+        message: "The repeat end date must be on or after the first activity.",
+        field: "repeatEnd",
+      });
       return;
     }
     const overlap = eventsForDate(events, selectedKey).find(
@@ -346,9 +346,11 @@ export default function ScheduleCalendar({
       location === "away" &&
       Number(travelMinutes) > timeToMinutes(startTime)
     ) {
-      setFormError(
-        "Travel cannot begin on the previous day. Adjust the start or travel time.",
-      );
+      setFormError({
+        message:
+          "Travel cannot begin on the previous day. Adjust the start or travel time.",
+        field: "travel",
+      });
       return;
     }
     const existingEvent = events.find((item) => item.id === editingId);
@@ -492,7 +494,7 @@ export default function ScheduleCalendar({
 
   async function saveSchoolSchedule(event) {
     event.preventDefault();
-    const dayError = schoolDayError({
+    const dayError = schoolDayProblem({
       startDate: schoolStartDate,
       endDate: schoolEndDate,
       startTime: schoolStartTime,
@@ -510,7 +512,10 @@ export default function ScheduleCalendar({
         (time) => time && (time < schoolStartTime || time > schoolEndTime),
       )
     ) {
-      setSchoolError("Optional snack times must fall inside the school day.");
+      setSchoolError({
+        message: "Optional snack times must fall inside the school day.",
+        field: "snacks",
+      });
       return;
     }
     const parsedCommuteMinutes = Number(commuteMinutes);
@@ -519,11 +524,17 @@ export default function ScheduleCalendar({
       parsedCommuteMinutes < 0 ||
       parsedCommuteMinutes > 180
     ) {
-      setSchoolError("Commute time must be between 0 and 180 minutes.");
+      setSchoolError({
+        message: "Commute time must be between 0 and 180 minutes.",
+        field: "commute",
+      });
       return;
     }
     if (pauseSchool && pausedUntil < pausedFrom) {
-      setSchoolError("Pause end must be on or after its start.");
+      setSchoolError({
+        message: "Pause end must be on or after its start.",
+        field: "pause",
+      });
       return;
     }
     const saved = await setSchoolSchedule({
@@ -598,9 +609,10 @@ export default function ScheduleCalendar({
 
   function addDaysOff() {
     if (!daysOffStart || !daysOffEnd || daysOffEnd < daysOffStart) {
-      setSchoolError(
-        "Choose a days-off range with an end on or after its start.",
-      );
+      setSchoolError({
+        message: "Choose a days-off range with an end on or after its start.",
+        field: "daysOff",
+      });
       return;
     }
     setExcludedRanges((ranges) =>
@@ -634,7 +646,7 @@ export default function ScheduleCalendar({
 
   return (
     <Shell>
-      <section className="calendar-head">
+      <header className="calendar-head">
         <div>
           <h1 className="page-title">Schedule</h1>
         </div>
@@ -652,7 +664,7 @@ export default function ScheduleCalendar({
             School day
           </button>
         </div>
-      </section>
+      </header>
       {(schoolSchedule || showSchoolForm) && (
         <section className="card school-schedule-card">
           <div className="school-schedule-summary">
@@ -992,6 +1004,7 @@ export default function ScheduleCalendar({
             selectedKey,
             type,
             closeActivitySheet,
+            activityDirty,
             saveEvent,
             setType,
             title,

@@ -9,6 +9,13 @@ import {
   shoppingDefaults,
 } from "../../domain/food.js";
 import { LabelCheck } from "../../components/ui/LabelCheck.jsx";
+import { DialogCancel } from "../../components/Dialog.jsx";
+import {
+  FieldError,
+  FieldErrors,
+  FormError,
+  Input,
+} from "../../components/ui/FieldError.jsx";
 
 export const money = (value) =>
   new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(
@@ -138,7 +145,7 @@ export function GroceryItemForm({
   item,
   showPrices,
   pending,
-  onCancel,
+  onDirty,
   onSave,
 }) {
   const resolved = food ? ingredientId(food) : null;
@@ -153,8 +160,11 @@ export function GroceryItemForm({
     notes: item?.notes || "",
     price: item?.price ?? "",
   }));
-  const [error, setError] = useState("");
-  const set = (key, value) => setDraft((d) => ({ ...d, [key]: value }));
+  const [error, setError] = useState(null);
+  const set = (key, value) => {
+    setDraft((d) => ({ ...d, [key]: value }));
+    onDirty?.();
+  };
   const units = SHOPPING_UNIT_CHOICES.includes(draft.unit)
     ? SHOPPING_UNIT_CHOICES
     : [...SHOPPING_UNIT_CHOICES, draft.unit];
@@ -165,10 +175,16 @@ export function GroceryItemForm({
         e.preventDefault();
         const quantity = Number(draft.quantity);
         if (!draft.name.trim() || !(quantity > 0) || quantity > 100)
-          return setError("Add a name and an amount from 1 to 100.");
+          return setError({
+            message: "Add a name and an amount from 1 to 100.",
+            field: draft.name.trim() ? "quantity" : "name",
+          });
         if (showPrices && draft.price !== "" && !(Number(draft.price) >= 0))
-          return setError("Prices can't be negative.");
-        setError("");
+          return setError({
+            message: "Prices can't be negative.",
+            field: "price",
+          });
+        setError(null);
         onSave({
           name: draft.name.trim(),
           quantity,
@@ -184,91 +200,95 @@ export function GroceryItemForm({
         });
       }}
     >
-      {food && <LabelCheck food={food} />}
-      <label>
-        Name
-        <input
-          required
-          maxLength={240}
-          value={draft.name}
-          onChange={(e) => set("name", e.target.value)}
-        />
-      </label>
-      <div className="form-grid">
+      <FieldErrors error={error}>
+        {food && <LabelCheck food={food} />}
         <label>
-          Amount
-          <input
-            type="number"
-            min="1"
-            max="100"
-            step="1"
+          Name
+          <Input
+            field="name"
             required
-            value={draft.quantity}
-            onChange={(e) => set("quantity", e.target.value)}
+            maxLength={240}
+            value={draft.name}
+            onChange={(e) => set("name", e.target.value)}
           />
         </label>
+        <FieldError field="name" />
+        <div className="form-grid">
+          <label>
+            Amount
+            <Input
+              field="quantity"
+              type="number"
+              min="1"
+              max="100"
+              step="1"
+              required
+              value={draft.quantity}
+              onChange={(e) => set("quantity", e.target.value)}
+            />
+          </label>
+          <label>
+            Unit
+            <select
+              value={draft.unit}
+              onChange={(e) => set("unit", e.target.value)}
+            >
+              {units.map((unit) => (
+                <option key={unit} value={unit}>
+                  {unit}
+                </option>
+              ))}
+            </select>
+          </label>
+        </div>
+        <FieldError field="quantity" />
+        {!(food && resolved && food.source !== "Manual") && (
+          <label>
+            Counts as
+            <select
+              value={draft.ingredientId}
+              onChange={(e) => set("ingredientId", e.target.value)}
+            >
+              <option value="">Nothing specific</option>
+              {INGREDIENTS.map((i) => (
+                <option key={i.id} value={i.id}>
+                  {i.name}
+                </option>
+              ))}
+            </select>
+            <small className="muted">
+              Ideas that need this food will use it.
+            </small>
+          </label>
+        )}
+        {showPrices && (
+          <>
+            <label>
+              Price estimate ($, optional)
+              <Input
+                field="price"
+                type="number"
+                min="0"
+                step="0.01"
+                value={draft.price}
+                onChange={(e) => set("price", e.target.value)}
+              />
+            </label>
+            <FieldError field="price" />
+          </>
+        )}
         <label>
-          Unit
-          <select
-            value={draft.unit}
-            onChange={(e) => set("unit", e.target.value)}
-          >
-            {units.map((unit) => (
-              <option key={unit} value={unit}>
-                {unit}
-              </option>
-            ))}
-          </select>
-        </label>
-      </div>
-      {!(food && resolved && food.source !== "Manual") && (
-        <label>
-          Counts as
-          <select
-            value={draft.ingredientId}
-            onChange={(e) => set("ingredientId", e.target.value)}
-          >
-            <option value="">Nothing specific</option>
-            {INGREDIENTS.map((i) => (
-              <option key={i.id} value={i.id}>
-                {i.name}
-              </option>
-            ))}
-          </select>
-          <small className="muted">
-            Ideas that need this food will use it.
-          </small>
-        </label>
-      )}
-      {showPrices && (
-        <label>
-          Price estimate ($, optional)
-          <input
-            type="number"
-            min="0"
-            step="0.01"
-            value={draft.price}
-            onChange={(e) => set("price", e.target.value)}
+          Notes (optional)
+          <textarea
+            maxLength={500}
+            value={draft.notes}
+            onChange={(e) => set("notes", e.target.value)}
           />
         </label>
-      )}
-      <label>
-        Notes (optional)
-        <textarea
-          maxLength={500}
-          value={draft.notes}
-          onChange={(e) => set("notes", e.target.value)}
-        />
-      </label>
-      {error && (
-        <p className="inline-error" role="alert">
-          {error}
-        </p>
-      )}
+        <FormError />
+      </FieldErrors>
       <div className="sheet-footer">
-        <button type="button" onClick={onCancel} disabled={pending}>
-          Cancel
-        </button>
+        <DialogCancel disabled={pending} />
         <button
           aria-busy={pending || undefined}
           className="primary"
