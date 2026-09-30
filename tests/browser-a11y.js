@@ -113,6 +113,61 @@ async (page) => {
   };
   const small = [];
 
+  // Runs in the page: non-text contrast (WCAG 1.4.11, audit 9.6). Field
+  // borders, selected chip and segment borders, and the focus ring must reach
+  // 3:1 against what is behind them.
+  const weakBoundaries = () => {
+    const parse = (c) => {
+      const m = c.match(/rgba?\(([^)]+)\)/);
+      if (!m) return null;
+      const [r, g, b, a = 1] = m[1]
+        .split(/[ ,/]+/)
+        .filter(Boolean)
+        .map(Number);
+      return { r, g, b, a };
+    };
+    const lum = ({ r, g, b }) => {
+      const f = (v) => {
+        v /= 255;
+        return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4;
+      };
+      return 0.2126 * f(r) + 0.7152 * f(g) + 0.0722 * f(b);
+    };
+    const ratio = (x, y) => {
+      const [hi, lo] = [lum(x), lum(y)].sort((m, n) => n - m);
+      return (hi + 0.05) / (lo + 0.05);
+    };
+    const behind = (el) => {
+      for (let n = el.parentElement; n; n = n.parentElement) {
+        const c = parse(getComputedStyle(n).backgroundColor);
+        if (c && c.a > 0) return c;
+      }
+      return { r: 255, g: 255, b: 255, a: 1 };
+    };
+    const modal = [...document.querySelectorAll("dialog[open]")].at(-1);
+    const out = [];
+    const controls = document.querySelectorAll(
+      'input:not([type=checkbox]):not([type=radio]):not([type=hidden]), select, textarea, .chip-group > button[aria-pressed="true"], .segmented > button:is([aria-pressed="true"], [aria-checked="true"])',
+    );
+    for (const el of controls) {
+      if (modal && !modal.contains(el)) continue;
+      const rect = el.getBoundingClientRect();
+      if (!rect.width || !rect.height || el.closest(".sr-only")) continue;
+      const style = getComputedStyle(el);
+      if (style.borderTopStyle === "none" || !parseFloat(style.borderTopWidth))
+        continue;
+      const border = parse(style.borderTopColor);
+      if (!border || border.a === 0) continue;
+      const value = ratio(border, behind(el));
+      if (value < 3)
+        out.push(
+          `${el.tagName.toLowerCase()} "${(el.getAttribute("aria-label") || el.textContent || el.name || "").trim().slice(0, 24)}" border ${value.toFixed(2)}:1`,
+        );
+    }
+    return [...new Set(out)];
+  };
+  const weak = [];
+
   const scan = async (name, width) => {
     await p.waitForTimeout(250); // let sheet entry transitions settle
     const { violations } = await new AxeBuilder({ page: p })
@@ -128,6 +183,8 @@ async (page) => {
     scans++;
     for (const target of await p.evaluate(smallTargets))
       small.push(`${name} @${width}: ${target}`);
+    for (const boundary of await p.evaluate(weakBoundaries))
+      weak.push(`${name} @${width}: ${boundary}`);
     for (const v of violations) {
       const where = `${name} @${width}`;
       if (v.impact === "serious" || v.impact === "critical")
@@ -336,6 +393,10 @@ async (page) => {
       result.warnings.push(
         `axe ${rule} on ${where.length} scans (${where[0]}…)`,
       );
+    if (weak.length)
+      failures.push(
+        `Control boundaries under 3:1:\n    ${weak.slice(0, 20).join("\n    ")}`,
+      );
     if (small.length)
       failures.push(
         `Targets under 44 × 44 px:\n    ${small.slice(0, 20).join("\n    ")}`,
@@ -353,6 +414,7 @@ async (page) => {
     result.checks.push(
       `axe: ${scans} scans (every route, setup step and key dialog, sheet and menu state at 390 and 1280 px) have zero serious or critical violations.`,
       "Every visible control in those scans is at least 44 × 44 px (inline links in sentences at least 24 px).",
+      "Field borders and selected chip and segment borders reach 3:1 against their background in every scan (WCAG 1.4.11).",
     );
 
     // Keyboard: skip link first, then the frame nav in order.
@@ -374,13 +436,41 @@ async (page) => {
     ];
     if (order.join("|") !== want.join("|"))
       throw new Error(`Tab order is ${order.join(" → ")}`);
-    const visible = await p.evaluate(() => {
+    const ring = await p.evaluate(() => {
       const style = getComputedStyle(document.activeElement);
-      return (
-        style.outlineStyle !== "none" && parseFloat(style.outlineWidth) >= 2
-      );
+      const rgb = (c) =>
+        c
+          .match(/\d+(\.\d+)?/g)
+          .slice(0, 3)
+          .map(Number);
+      const lum = (c) =>
+        rgb(c)
+          .map((v) => {
+            v /= 255;
+            return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4;
+          })
+          .reduce((sum, v, i) => sum + v * [0.2126, 0.7152, 0.0722][i], 0);
+      let bg = "rgb(255, 255, 255)";
+      for (
+        let n = document.activeElement.parentElement;
+        n;
+        n = n.parentElement
+      ) {
+        const c = getComputedStyle(n).backgroundColor;
+        if (!/rgba\(.*, 0\)$/.test(c) && c !== "transparent") {
+          bg = c;
+          break;
+        }
+      }
+      const [hi, lo] = [lum(style.outlineColor), lum(bg)].sort((a, b) => b - a);
+      return {
+        width: parseFloat(style.outlineWidth),
+        shown: style.outlineStyle !== "none",
+        ratio: (hi + 0.05) / (lo + 0.05),
+      };
     });
-    if (!visible) throw new Error("Focused nav item has no visible focus ring");
+    if (!ring.shown || ring.width < 2 || ring.ratio < 3)
+      throw new Error(`Focus ring is not visible: ${JSON.stringify(ring)}`);
     // Enter on the focused Schedule item: the H1 takes focus and is announced.
     await p.keyboard.press("Shift+Tab");
     await p.keyboard.press("Shift+Tab");
@@ -397,7 +487,7 @@ async (page) => {
     if ((await p.title()) !== "Schedule · Nourally")
       throw new Error(`Page title is ${await p.title()}`);
     result.checks.push(
-      "Tab order: Skip to content → Today → Schedule → Food → You → Switch athlete with a visible ring; Enter on Schedule focuses its H1, announces it and sets the title “Schedule · Nourally”.",
+      "Tab order: Skip to content → Today → Schedule → Food → You → Switch athlete with a 3 px focus ring at 3:1 or more; Enter on Schedule focuses its H1, announces it and sets the title “Schedule · Nourally”.",
     );
 
     // Dialog: open with the keyboard, focus the first control (the Type chips,

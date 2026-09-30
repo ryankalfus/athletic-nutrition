@@ -29,7 +29,7 @@ async (page) => {
     "you/device",
     "you/about",
   ];
-  const widths = [320, 375, 768, 1024, 1440];
+  const widths = [320, 375, 390, 768, 1024, 1280, 1440];
 
   // Runs in the page. Returns design-system problems for the current screen.
   const measure = (route) => {
