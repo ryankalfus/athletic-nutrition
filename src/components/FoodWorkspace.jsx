@@ -23,10 +23,9 @@ export default function FoodHub({ now, todayKey }) {
   const [, navigate, subroute] = useRoute();
   const first = subroute.split("/")[0];
   const section = tabs.some(([key]) => key === first) ? first : "ideas";
-  const heading = useRef(null);
   const foodNav = useRef(null);
+  // Focus and the section name announcement come from RouteAnnouncer (A11Y-02).
   useEffect(() => {
-    heading.current?.focus({ preventScroll: true });
     foodNav.current
       ?.querySelector(".active")
       ?.scrollIntoView({ block: "nearest", inline: "nearest" });
@@ -40,11 +39,11 @@ export default function FoodHub({ now, todayKey }) {
 
   return (
     <Shell>
-      <section className="dashboard-head">
+      <header className="dashboard-head">
         <div>
           <h1 className="page-title">Food</h1>
         </div>
-      </section>
+      </header>
       <nav className="food-sections" aria-label="Food sections" ref={foodNav}>
         {tabs.map(([key, label]) => (
           <a
@@ -71,9 +70,6 @@ export default function FoodHub({ now, todayKey }) {
           </a>
         ))}
       </nav>
-      <span ref={heading} tabIndex={-1} className="sr-only">
-        {tabs.find(([key]) => key === section)[1]}
-      </span>
 
       {section === "home" && <HomePage todayKey={todayKey} />}
       {section === "groceries" && <GroceriesPage todayKey={todayKey} />}

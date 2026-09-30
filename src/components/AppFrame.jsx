@@ -53,8 +53,22 @@ export function Shell({
         ? "grid"
         : "reading";
 
+  // A11Y-01: the first focusable element. Hash routing owns the URL fragment,
+  // so the link focuses the page heading (or main) instead of following #.
+  const skip = (event) => {
+    event.preventDefault();
+    const main = document.getElementById("main-content");
+    const target = main?.querySelector("h1") || main;
+    if (!target) return;
+    if (!target.hasAttribute("tabindex")) target.tabIndex = -1;
+    target.focus();
+  };
+
   return (
     <div className={`app-frame${navigation ? " has-navigation" : ""}`}>
+      <a className="skip-link" href="#main-content" onClick={skip}>
+        Skip to content
+      </a>
       {navigation && (
         <header className="frame-header">
           <div className="frame-brand" aria-label="Nourally">
@@ -92,12 +106,12 @@ export function Shell({
           </div>
         )}
         {children}
-        {footer && (
-          <footer>
-            Saved on this device. Food search uses online food databases.
-          </footer>
-        )}
       </main>
+      {footer && (
+        <footer className="frame-footer">
+          Saved on this device. Food search uses online food databases.
+        </footer>
+      )}
     </div>
   );
 }

@@ -30,7 +30,8 @@ import SetupFlow from "./pages/Setup/SetupFlow.jsx";
 import { addHydration, undoHydration } from "./domain/hydration.js";
 import { useField, useStore, useSignedOut } from "./store.js";
 import { Recovery } from "./components/Profiles.jsx";
-import { useRoute } from "./routing.js";
+import { pageOf, useRoute } from "./routing.js";
+import { RouteAnnouncer } from "./components/RouteAnnouncer.jsx";
 
 import { getDateKey } from "./domain/timing.js";
 import { Skeleton } from "./components/ui/Skeleton.jsx";
@@ -131,67 +132,89 @@ function App() {
   // the app navigation; a first visit shows Welcome; setup resumes at its step.
   const firstRun =
     !signedOut && step === "setup" && !setupStep && athleteCount === 1;
-  if (view === "you" && subroute === "about" && (signedOut || step === "setup"))
-    return <AboutPage standalone onNavigate={setView} />;
-  if (signedOut || view === "welcome" || firstRun)
-    return <WelcomePage firstRun={firstRun} onNavigate={setView} />;
-  if (view === "notFound") return <NotFoundPage onNavigate={setView} />;
-  if (step === "setup")
-    return <SetupFlow onNavigate={setView} now={now} todayKey={todayKey} />;
-  if (view === "you")
-    return (
-      <YouPage
-        subroute={subroute === "ideas" ? "" : subroute}
-        onNavigate={setView}
-      />
-    );
-  if (view === "schedule")
-    return (
-      <ScheduleCalendar
-        events={schedule}
-        setEvents={setSchedule}
-        schoolSchedule={schoolSchedule}
-        setSchoolSchedule={setSchoolSchedule}
-        todayKey={todayKey}
-      />
-    );
-  if (view === "food")
-    return (
-      <FoodHub
-        now={now}
-        groceryState={groceryState}
-        setGroceryState={setGroceryState}
-        profile={profile}
-        setProfile={setProfile}
-        events={schedule}
-        schoolSchedule={schoolSchedule}
-        todayKey={todayKey}
-        entries={todayLog.entries}
-        setEntries={setTodayEntries}
-        dayPlans={dayPlans}
-        setDayPlans={setDayPlans}
-        onNavigate={setView}
-      />
-    );
-  if (view === "today" || view === "setup")
-    return (
-      <Dashboard
-        now={now}
-        todayKey={todayKey}
-        events={schedule}
-        schoolSchedule={schoolSchedule}
-        profile={profile}
-        water={todayLog.water || 0}
-        setHydration={setTodayHydration}
-        dayPlans={dayPlans}
-        setDayPlans={setDayPlans}
-        notificationError={notificationError}
-        reminderSettings={reminderSettings}
-        setReminderSettings={setReminderSettings}
-        onNavigate={setView}
-      />
-    );
-  return <NotFoundPage onNavigate={setView} />;
+  const aboutAlone =
+    view === "you" && subroute === "about" && (signedOut || step === "setup");
+  const welcome = signedOut || view === "welcome" || firstRun;
+  const page = aboutAlone
+    ? "you/about"
+    : welcome
+      ? "welcome"
+      : view === "notFound"
+        ? "notFound"
+        : step === "setup"
+          ? "setup"
+          : view === "setup"
+            ? "today"
+            : pageOf(window.location.hash);
+  return (
+    <>
+      <RouteAnnouncer page={page} />
+      {renderPage()}
+    </>
+  );
+
+  function renderPage() {
+    if (aboutAlone) return <AboutPage standalone onNavigate={setView} />;
+    if (welcome)
+      return <WelcomePage firstRun={firstRun} onNavigate={setView} />;
+    if (view === "notFound") return <NotFoundPage onNavigate={setView} />;
+    if (step === "setup")
+      return <SetupFlow onNavigate={setView} now={now} todayKey={todayKey} />;
+    if (view === "you")
+      return (
+        <YouPage
+          subroute={subroute === "ideas" ? "" : subroute}
+          onNavigate={setView}
+        />
+      );
+    if (view === "schedule")
+      return (
+        <ScheduleCalendar
+          events={schedule}
+          setEvents={setSchedule}
+          schoolSchedule={schoolSchedule}
+          setSchoolSchedule={setSchoolSchedule}
+          todayKey={todayKey}
+        />
+      );
+    if (view === "food")
+      return (
+        <FoodHub
+          now={now}
+          groceryState={groceryState}
+          setGroceryState={setGroceryState}
+          profile={profile}
+          setProfile={setProfile}
+          events={schedule}
+          schoolSchedule={schoolSchedule}
+          todayKey={todayKey}
+          entries={todayLog.entries}
+          setEntries={setTodayEntries}
+          dayPlans={dayPlans}
+          setDayPlans={setDayPlans}
+          onNavigate={setView}
+        />
+      );
+    if (view === "today" || view === "setup")
+      return (
+        <Dashboard
+          now={now}
+          todayKey={todayKey}
+          events={schedule}
+          schoolSchedule={schoolSchedule}
+          profile={profile}
+          water={todayLog.water || 0}
+          setHydration={setTodayHydration}
+          dayPlans={dayPlans}
+          setDayPlans={setDayPlans}
+          notificationError={notificationError}
+          reminderSettings={reminderSettings}
+          setReminderSettings={setReminderSettings}
+          onNavigate={setView}
+        />
+      );
+    return <NotFoundPage onNavigate={setView} />;
+  }
 }
 
 function NotFoundPage({ onNavigate }) {

@@ -151,13 +151,54 @@
   padding-top: var(--space-2);
 }
 
-.shell > footer {
-  margin-top: var(--space-12);
-  padding-top: var(--space-4);
-  border-top: var(--border);
+/* Frame footer: a contentinfo landmark after </main> (A11Y-03), on the same
+ * column as the page. Main hands its bottom space to the footer. */
+.shell:has(+ .frame-footer),
+.app-frame.has-navigation .shell:has(+ .frame-footer) {
+  padding-bottom: 0;
+}
+
+.frame-footer {
+  box-sizing: content-box;
+  max-width: var(--layout-max);
+  margin: var(--space-12) auto 0;
+  padding: 0 var(--gutter) var(--space-8);
   color: var(--color-ink-muted);
   font-size: var(--text-caption);
   line-height: var(--leading-caption);
+}
+
+.frame-footer::before {
+  content: "";
+  display: block;
+  margin-bottom: var(--space-4);
+  border-top: var(--border);
+}
+
+.app-frame.has-navigation .frame-footer {
+  padding-bottom: calc(var(--tab-bar) + var(--space-8) + env(safe-area-inset-bottom));
+}
+
+/* Skip link (A11Y-01): off screen until focused. */
+.skip-link {
+  position: fixed;
+  top: var(--space-2);
+  left: var(--space-2);
+  z-index: calc(var(--z-rail) + 10);
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 var(--space-4);
+  border-radius: var(--radius-md);
+  background: var(--color-ink);
+  color: var(--color-paper);
+  font-weight: 600;
+  text-decoration: none;
+  transform: translateY(-200%);
+}
+
+.skip-link:focus {
+  transform: none;
 }
 
 /* Page header: title row with optional tools. On phones the top bar already
@@ -245,6 +286,10 @@
   .shell,
   .app-frame.has-navigation .shell {
     padding-top: var(--space-6);
+    padding-bottom: var(--space-12);
+  }
+
+  .app-frame.has-navigation .frame-footer {
     padding-bottom: var(--space-12);
   }
 
