@@ -309,7 +309,8 @@
   display: grid;
   grid-template-columns: minmax(0, 1fr) var(--stock-control) var(--target);
   align-items: center;
-  gap: var(--space-2);
+  /* 4px below 360px leaves the name room for one whole word ("Applesauce"). */
+  gap: var(--space-1);
   min-height: 56px;
   padding: var(--space-2) 0;
   border-bottom: var(--border);
@@ -326,7 +327,9 @@
   font-size: var(--text-body);
   line-height: var(--leading-body);
   font-weight: 600;
-  overflow-wrap: anywhere;
+  /* Break long words at hyphenation points, never mid-syllable. */
+  overflow-wrap: break-word;
+  hyphens: auto;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
   line-clamp: 2;
@@ -389,6 +392,10 @@
 }
 
 @media (min-width: 360px) {
+  .stock-row {
+    gap: var(--space-2);
+  }
+
   .stock-label {
     position: static;
     width: auto;
