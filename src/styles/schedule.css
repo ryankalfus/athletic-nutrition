@@ -396,6 +396,7 @@
 }
 
 .event-actions button {
+  min-width: var(--target);
   padding: var(--space-2) var(--space-1);
   border: 0;
   background: transparent;

@@ -42,6 +42,17 @@
   }
 }
 
+/* 44px touch area around a 40px section link (9.6). */
+.food-sections :is(a, button) {
+  position: relative;
+}
+
+.food-sections :is(a, button)::after {
+  position: absolute;
+  inset: -2px 0;
+  content: "";
+}
+
 .food-sections :is(a, button)[aria-current="page"] {
   border-color: var(--color-line-strong);
   background: var(--color-surface);
@@ -668,7 +679,8 @@
 .week-strip ol {
   display: grid;
   grid-template-columns: repeat(7, minmax(0, 1fr));
-  gap: var(--space-1);
+  /* No column gap: seven days fit 44px targets in the 320px aside (9.6). */
+  gap: var(--space-1) 0;
   margin: 0;
   padding: 0;
   list-style: none;

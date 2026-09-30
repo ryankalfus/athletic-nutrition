@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { X } from "lucide-react";
+import { IconButton } from "./Button.jsx";
 
 export function showToast(message, undo, action) {
   if (typeof window === "undefined") return;
@@ -35,51 +36,52 @@ export function ToastProvider({ children }) {
   return (
     <>
       {children}
-      {toast && (
-        <div className="app-toast" role="status">
-          <span>{toast.message}</span>
-          {toast.action && (
-            <button
-              type="button"
-              onClick={() => {
-                toast.action.onClick();
-                setToast(null);
-              }}
-            >
-              {toast.action.label}
-            </button>
-          )}
-          {toast.undo && (
-            <button
-              type="button"
-              onClick={async () => {
-                let ok = false;
-                try {
-                  ok = await toast.undo();
-                } catch {
-                  ok = false;
-                }
-                setToast({
-                  message: ok
-                    ? "Undone."
-                    : "This changed again, so it could not be undone.",
-                  id: Date.now(),
-                });
-              }}
-            >
-              Undo
-            </button>
-          )}
-          <button
-            className="toast-dismiss"
-            type="button"
-            aria-label="Dismiss message"
-            onClick={() => setToast(null)}
-          >
-            <X size={20} strokeWidth={1.75} aria-hidden="true" />
-          </button>
-        </div>
-      )}
+      {/* The live region stays in the page so each toast is announced (A11Y-06). */}
+      <div role="status" aria-live="polite" className="app-toast-region">
+        {toast && (
+          <div className="app-toast" key={toast.id}>
+            <span>{toast.message}</span>
+            {toast.action && (
+              <button
+                type="button"
+                onClick={() => {
+                  toast.action.onClick();
+                  setToast(null);
+                }}
+              >
+                {toast.action.label}
+              </button>
+            )}
+            {toast.undo && (
+              <button
+                type="button"
+                onClick={async () => {
+                  let ok = false;
+                  try {
+                    ok = await toast.undo();
+                  } catch {
+                    ok = false;
+                  }
+                  setToast({
+                    message: ok
+                      ? "Undone."
+                      : "This changed again, so it could not be undone.",
+                    id: Date.now(),
+                  });
+                }}
+              >
+                Undo
+              </button>
+            )}
+            <IconButton
+              className="toast-dismiss"
+              label="Dismiss message"
+              icon={X}
+              onClick={() => setToast(null)}
+            />
+          </div>
+        )}
+      </div>
     </>
   );
 }

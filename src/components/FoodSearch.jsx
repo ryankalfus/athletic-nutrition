@@ -15,6 +15,7 @@ import {
 } from "../domain/search.js";
 import { changeData, useStore } from "../store.js";
 import { Skeleton } from "./ui/Skeleton.jsx";
+import { IconButton } from "./ui/Button.jsx";
 import { ScanBarcode, Star } from "lucide-react";
 const BarcodeScanner = lazy(() => import("./BarcodeScanner.jsx"));
 
@@ -209,22 +210,23 @@ export function FoodSearch({
               placeholder="Search foods or brands"
             />
           </label>
-          <button
-            type="button"
-            className="icon-button"
+          <IconButton
+            label="Scan barcode"
+            icon={ScanBarcode}
             onClick={() => setScan(true)}
-            aria-label="Scan barcode"
-          >
-            <ScanBarcode size={20} strokeWidth={1.75} aria-hidden="true" />
-          </button>
+          />
         </div>
-        {providerMode === "api" && term.length >= 2 && !current$ && !loading && (
-          <p className="muted field-hint">Press Enter to search.</p>
-        )}
+        {providerMode === "api" &&
+          term.length >= 2 &&
+          !current$ &&
+          !loading && (
+            <p className="muted field-hint">Press Enter to search.</p>
+          )}
       </form>
-      {offline && (
-        <p role="status">You're offline. Recent and saved foods still work.</p>
-      )}
+      {/* Always rendered so screen readers hear the change (A11Y-07). */}
+      <p role="status" className={offline ? "" : "sr-only"}>
+        {offline ? "You're offline. Recent and saved foods still work." : ""}
+      </p>
       {!term && recent.length > 0 && (
         <section aria-labelledby="search-recent">
           <h3 id="search-recent">Recent</h3>
@@ -269,7 +271,10 @@ export function FoodSearch({
           <p>Saved foods and manual entry remain available.</p>
         </div>
       )}
-      <p role="status" className={current$ && !results.foods.length ? "" : "sr-only"}>
+      <p
+        role="status"
+        className={current$ && !results.foods.length ? "" : "sr-only"}
+      >
         {current$ && !results.foods.length
           ? "No matching foods. Try a simpler name or add it yourself."
           : ""}

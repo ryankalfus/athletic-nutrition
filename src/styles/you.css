@@ -198,3 +198,9 @@
   font-size: var(--text-h3);
   line-height: var(--leading-h3);
 }
+
+/* Setup step 5 uses an h2 (the step title is the h1) with the h3 look. */
+.you-allergies h2 {
+  font-size: var(--text-h3);
+  line-height: var(--leading-h3);
+}

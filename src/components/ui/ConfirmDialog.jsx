@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Dialog } from "../Dialog.jsx";
 import { InlineError } from "./InlineError.jsx";
+import { Button } from "./Button.jsx";
 
 export function ConfirmDialog({
   title,
@@ -29,14 +30,12 @@ export function ConfirmDialog({
         </label>
       )}
       <div className="confirm-actions">
-        <button type="button" onClick={onCancel}>
-          {cancelLabel}
-        </button>
-        <button
-          aria-busy={pending || undefined}
-          type="button"
-          className={destructive ? "danger-button" : "primary"}
-          disabled={pending || (requireText && typed !== requireText)}
+        <Button onClick={onCancel}>{cancelLabel}</Button>
+        <Button
+          variant={destructive ? "destructive" : "primary"}
+          busy={pending}
+          busyLabel="Working…"
+          disabled={requireText && typed !== requireText}
           onClick={async () => {
             if (pending) return;
             setPending(true);
@@ -49,8 +48,8 @@ export function ConfirmDialog({
             }
           }}
         >
-          {pending ? "Working…" : confirmLabel}
-        </button>
+          {confirmLabel}
+        </Button>
       </div>
     </Dialog>
   );

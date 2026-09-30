@@ -1,3 +1,5 @@
+import { FieldError, useFieldInvalid } from "./FieldError.jsx";
+
 // Selection primitives (DS-12, CMP-03). State is always carried by
 // aria-checked / aria-pressed, which the CSS styles directly.
 
@@ -59,9 +61,17 @@ export function SegmentedControl({
 }
 
 // Multi-select chips with a leading check when selected.
-export function ChipGroup({ legend, hint, options, selected, onToggle }) {
+export function ChipGroup({
+  legend,
+  hint,
+  options,
+  selected,
+  onToggle,
+  field,
+}) {
+  const invalid = useFieldInvalid(field);
   return (
-    <fieldset className="choice-field">
+    <fieldset className="choice-field" {...invalid}>
       <legend>{legend}</legend>
       {hint && <p className="muted field-hint">{hint}</p>}
       <div className="chip-group">
@@ -76,6 +86,7 @@ export function ChipGroup({ legend, hint, options, selected, onToggle }) {
           </button>
         ))}
       </div>
+      <FieldError field={field} />
     </fieldset>
   );
 }

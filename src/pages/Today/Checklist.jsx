@@ -1,6 +1,7 @@
 import { X } from "lucide-react";
 import { formatClock, timeToMinutes } from "../../domain/timing.js";
 import { syncPlanPreparation } from "../../domain/plans.js";
+import { IconButton } from "../../components/ui/Button.jsx";
 
 // CMP-12: one checklist for today's Pack & prep and tomorrow's list.
 // Due times read "By 7:15 AM"; a missed one on today's list reads "Was due".
@@ -43,10 +44,9 @@ export default function Checklist({ tasks, dateKey, pending, write, now }) {
                 )}
               </span>
             </label>
-            <button
-              type="button"
-              className="icon-button"
-              aria-label={`Remove ${t.label}`}
+            <IconButton
+              label={`Remove ${t.label}`}
+              icon={X}
               disabled={!!pending}
               onClick={() =>
                 write(
@@ -59,9 +59,7 @@ export default function Checklist({ tasks, dateKey, pending, write, now }) {
                   "Task removed.",
                 )
               }
-            >
-              <X size={18} strokeWidth={1.75} aria-hidden="true" />
-            </button>
+            />
           </li>
         );
       })}

@@ -137,7 +137,10 @@
 }
 
 .welcome-how {
+  display: inline-flex;
+  align-items: center;
   justify-self: start;
+  min-height: var(--target);
   font-weight: 600;
 }
 

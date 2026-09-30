@@ -327,3 +327,18 @@ td {
     opacity: 0;
   }
 }
+
+/* Forced colors (A11Y-12): fills and shadows are dropped, so selected,
+ * pressed and current states get a system-color outline as well. */
+@media (forced-colors: active) {
+  :where(
+      [aria-pressed="true"],
+      [aria-checked="true"],
+      [aria-current="page"],
+      [aria-current="date"],
+      .calendar-day.selected
+    ):not(:focus-visible) {
+    outline: 2px solid Highlight;
+    outline-offset: -2px;
+  }
+}
