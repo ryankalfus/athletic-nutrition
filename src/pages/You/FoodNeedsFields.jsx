@@ -4,7 +4,7 @@ import {
   ALLERGY_WAITING,
   OTHER_ALLERGY_LINE,
   allergyStatusLine,
-  legacyAllergyPrompts,
+  legacyAllergyNotice,
 } from "../../domain/allergens.js";
 import { DIET_CHOICES, DISLIKE_CHOICES } from "../../domain/you.js";
 import { LabelCheck } from "../../components/ui/LabelCheck.jsx";
@@ -26,6 +26,7 @@ export function FoodNeedsFields({
   const Heading = `h${headingLevel}`;
   const allergies = draft.allergies || [];
   const status = allergyStatusLine(draft, reviewed);
+  const legacy = legacyAllergyNotice(draft, reviewed);
   return (
     <>
       <section
@@ -45,12 +46,21 @@ export function FoodNeedsFields({
             />
             {status && <p role="status">{status}</p>}
             {allergies.includes("other") && <p>{OTHER_ALLERGY_LINE}</p>}
+            {legacy && (
+              <p className="label-check" role="status">
+                {legacy}
+              </p>
+            )}
             <LabelCheck />
           </>
         ) : (
           <>
             <Heading id="you-allergies-title">Allergies</Heading>
-            <p className="label-check">{ALLERGY_WAITING}</p>
+            {/* One warning notice: the waiting line and any legacy choice. */}
+            <div className="label-check" role={legacy ? "status" : undefined}>
+              <p>{ALLERGY_WAITING}</p>
+              {legacy && <p>{legacy}</p>}
+            </div>
           </>
         )}
       </section>
@@ -65,11 +75,6 @@ export function FoodNeedsFields({
           })
         }
       />
-      {legacyAllergyPrompts(draft, reviewed).map((text) => (
-        <p role="status" key={text}>
-          {text}
-        </p>
-      ))}
       <ChipGroup
         legend="Not a fan of"
         hint="Ideas that use these are hidden. This is not an allergy filter."

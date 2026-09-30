@@ -44,11 +44,16 @@ export const FOOD_SOURCES = [
   ["store", "Nearby store"],
 ];
 
+// Food at school: one list for setup step 4, You › Food access and
+// Schedule › School day (6.2 step 4).
 export const SCHOOL_ACCESS = [
   ["cafeteria", "Cafeteria"],
   ["refrigerator", "Fridge"],
   ["microwave", "Microwave"],
+  ["eatInClass", "Can eat in class"],
 ];
+
+export const FAMILY_PREP_LABEL = "Someone at home can help pack or cook";
 
 const SOURCE_SHORT = {
   packed: "Packed",
@@ -76,7 +81,7 @@ export function normalizeYouProfile(profile = {}) {
       DISLIKE_CHOICES.some(([choice]) => choice === id),
     ),
     // P1-09: chosen allergies. A legacy Nut-free choice never becomes one; the
-    // Food needs sheet shows a prompt instead (legacyAllergyPrompts).
+    // Food needs sheet shows a prompt instead (legacyAllergyNotice).
     allergies: normalizeAllergies(profile.allergies),
     lowCostIdeas,
     // Older readers (plan signatures, earlier backups) still use `budget`.
@@ -198,12 +203,20 @@ export function lastBackupText(iso, now = new Date()) {
 }
 
 // DATA-07: imported athletes read "(from backup)" until renamed.
+// Older documents name an unnamed athlete "My profile"; show "Athlete" (and
+// offer "Add your name" on You) instead of a made-up name and an "M" avatar.
+export const UNNAMED = ["My profile", "Athlete"];
 export function athleteName(profile) {
   const name =
     profile?.data?.profile?.name ||
     String(profile?.name || "").replace(/ \(imported\)$/, "") ||
     "Athlete";
-  return name.trim() || "Athlete";
+  const trimmed = name.trim();
+  return trimmed && !UNNAMED.includes(trimmed) ? trimmed : "Athlete";
+}
+
+export function hasAthleteName(profile) {
+  return athleteName(profile) !== "Athlete";
 }
 export function athleteLabel(profile) {
   const fromBackup =

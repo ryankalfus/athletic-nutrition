@@ -278,7 +278,9 @@ async (page) => {
       await activity.getByText(/End time must be later/).waitFor();
       await scan("Activity sheet with a field error", width);
       await closeDialog(activity);
-      await p.getByRole("button", { name: "School day", exact: true }).click();
+      await p
+        .getByRole("button", { name: /^(Edit|Set up) school day$/ })
+        .click();
       const school = p.getByRole("dialog", { name: "School day" });
       await school.waitFor();
       await scan("School-day sheet", width);

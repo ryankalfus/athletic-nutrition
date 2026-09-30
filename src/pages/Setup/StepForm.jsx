@@ -1,6 +1,10 @@
-import { useState } from "react";
+import { createContext, useContext, useState } from "react";
 import { FieldErrors, FormError } from "../../components/ui/FieldError.jsx";
 import { useAsyncAction } from "../../hooks/useAsyncAction.js";
+
+// "Skip setup" (leave setup for Today's SETUP state), set by SetupFlow on
+// steps 1-5. It differs from the header's "Skip step", which moves on one step.
+export const SkipSetup = createContext(null);
 
 // One step's form: title, fields, inline error and the pinned action bar.
 // onNext returns true, a message about the form, or { message, field } for
@@ -11,9 +15,9 @@ export function StepForm({
   children,
   onNext,
   nextLabel = "Next",
-  onSkipAll,
 }) {
   const [error, setError] = useState(null);
+  const skipSetup = useContext(SkipSetup);
   const { pending, run } = useAsyncAction();
   return (
     <form
@@ -36,11 +40,11 @@ export function StepForm({
         <FormError />
       </FieldErrors>
       <div className="setup-actions">
-        {onSkipAll && (
+        {skipSetup && (
           <button
             type="button"
             className="text-button"
-            onClick={() => onSkipAll()}
+            onClick={() => skipSetup()}
           >
             Skip setup
           </button>

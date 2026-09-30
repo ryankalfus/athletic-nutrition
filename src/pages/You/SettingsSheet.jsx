@@ -17,6 +17,7 @@ export function SettingsSheet({
   children,
   className = "",
   savedToast = "Saved.",
+  saveLabel = "Save",
   discardMessage = "Your changes to this section aren't saved yet.",
 }) {
   const [error, setError] = useState(null);
@@ -62,7 +63,7 @@ export function SettingsSheet({
             busy={!!pending}
             busyLabel="Saving…"
           >
-            Save
+            {saveLabel}
           </Button>
         </div>
       </form>

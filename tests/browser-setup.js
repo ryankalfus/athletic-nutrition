@@ -61,10 +61,12 @@ async (page) => {
     const sport = p.getByRole("combobox", { name: /^Sport/ });
     if (
       (await sport.getAttribute("aria-invalid")) !== "true" ||
+      // aria-describedby lists the error first, then the hint.
       (await sport.evaluate(
         (node) =>
-          document.getElementById(node.getAttribute("aria-describedby"))
-            ?.textContent,
+          document.getElementById(
+            node.getAttribute("aria-describedby").split(" ")[0],
+          )?.textContent,
       )) !== "Enter your sport." ||
       !(await sport.evaluate((node) => node === document.activeElement))
     )
@@ -191,7 +193,7 @@ async (page) => {
     await p.getByRole("button", { name: "Add another athlete" }).click();
     const add = p.getByRole("dialog", { name: "Add athlete" });
     await add.getByRole("textbox", { name: "First name" }).fill("Sam");
-    await add.getByRole("button", { name: "Save", exact: true }).click();
+    await add.getByRole("button", { name: "Add athlete", exact: true }).click();
     await step(p, "What do you play?").waitFor();
     await p.getByRole("combobox", { name: /^Sport/ }).fill("Tennis");
     await next(p);

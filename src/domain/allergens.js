@@ -114,16 +114,22 @@ const LEGACY = [
   ["glutenFree", "Gluten-free"],
   ["dairyFree", "Dairy-free"],
 ];
-export function legacyAllergyPrompts(
+// One notice for every legacy choice, shown inside the Allergies section:
+// "Your earlier Nut-free and Dairy-free choices no longer filter foods. …"
+// Pending qualified review (NUTRITION-REVIEW.md, 2026.09.29).
+export function legacyAllergyNotice(
   profile = {},
   reviewed = ALLERGY_TAGS_REVIEWED,
 ) {
   const needs = profile.dietaryNeeds || [];
-  return LEGACY.filter(([id]) => needs.includes(id)).map(([, label]) =>
-    reviewed
-      ? `Your earlier ${label} choice no longer filters foods. Choose each allergy under Allergies, and check every label.`
-      : `Your earlier ${label} choice no longer filters foods. Review each label and discuss allergy needs with a qualified professional.`,
+  const labels = LEGACY.filter(([id]) => needs.includes(id)).map(
+    ([, label]) => label,
   );
+  if (!labels.length) return "";
+  const lead = `Your earlier ${joinNames(labels)} ${labels.length === 1 ? "choice no longer filters" : "choices no longer filter"} foods.`;
+  return reviewed
+    ? `${lead} Choose each allergy under Allergies, and check every label.`
+    : `${lead} Review each label and discuss allergy needs with a qualified professional.`;
 }
 
 // Product allergen text lives in one place: allergenLine in search.js.

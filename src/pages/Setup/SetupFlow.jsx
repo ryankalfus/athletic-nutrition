@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import { SkipSetup } from "./StepForm.jsx";
 import { ChevronLeft } from "lucide-react";
 import { Shell } from "../../components/AppFrame.jsx";
 import { changeData, useStore } from "../../store.js";
@@ -74,13 +75,15 @@ export default function SetupFlow({ onNavigate, now, todayKey }) {
           <p className="setup-count">
             Step {step} of {SETUP_STEP_COUNT}
           </p>
+          {/* "Skip step" moves on one step; the footer's "Skip setup" leaves
+              setup. Different names, so the two never compete (6.2). */}
           {step >= 2 && step <= 5 ? (
             <button
               type="button"
               className="text-button setup-skip"
               onClick={() => moveTo(step + 1)}
             >
-              {step === 2 ? "No school right now" : "Skip"}
+              Skip step
             </button>
           ) : (
             <span />
@@ -94,22 +97,29 @@ export default function SetupFlow({ onNavigate, now, todayKey }) {
             aria-valuenow={step}
             aria-valuetext={`Step ${step} of ${SETUP_STEP_COUNT}`}
           >
-            <span style={{ width: `${(step / SETUP_STEP_COUNT) * 100}%` }} />
+            {/* Steps done so far: empty on step 1, full on "You're set". */}
+            <span
+              style={{
+                width: `${((step - 1) / (SETUP_STEP_COUNT - 1)) * 100}%`,
+              }}
+            />
           </div>
         </header>
-        <Step
-          key={step}
-          data={data}
-          now={now}
-          todayKey={todayKey}
-          title={
-            <h1 ref={heading} tabIndex={-1}>
-              {SETUP_STEPS[step - 1]}
-            </h1>
-          }
-          next={(apply) => moveTo(step + 1, apply)}
-          finish={finish}
-        />
+        <SkipSetup.Provider value={step <= 5 ? () => finish() : null}>
+          <Step
+            key={step}
+            data={data}
+            now={now}
+            todayKey={todayKey}
+            title={
+              <h1 ref={heading} tabIndex={-1}>
+                {SETUP_STEPS[step - 1]}
+              </h1>
+            }
+            next={(apply) => moveTo(step + 1, apply)}
+            finish={finish}
+          />
+        </SkipSetup.Provider>
       </div>
     </Shell>
   );

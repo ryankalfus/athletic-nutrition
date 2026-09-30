@@ -19,6 +19,10 @@ export function RemindersSheet({ settings, onClose }) {
   const [draft, setDraft] = useState(initial);
   const [permission, setPermission] = useState(notificationPermission);
   const dirty = JSON.stringify(draft) !== JSON.stringify(initial);
+  // A browser that blocks or cannot show notifications can't turn reminders
+  // on; the switch stays usable only to turn them off.
+  const blocked =
+    (permission === "denied" || permission === "unsupported") && !draft.enabled;
 
   const save = async () => {
     const next = draft;
@@ -53,15 +57,17 @@ export function RemindersSheet({ settings, onClose }) {
       <SwitchRow
         label="Remind me before activities"
         checked={draft.enabled}
+        disabled={blocked}
+        hint={describePermission(permission)}
         onChange={(enabled) => setDraft({ ...draft, enabled })}
       />
       <fieldset className="choice-field" disabled={!draft.enabled}>
-        <legend>How early</legend>
+        <legend>How long before</legend>
         <SegmentedControl
-          label="How early"
+          label="How long before"
           options={REMINDER_LEAD_OPTIONS.map((minutes) => [
             minutes,
-            `${minutes} min before`,
+            `${minutes} min`,
           ])}
           value={draft.leadMinutes}
           onChange={(minutes) => setDraft({ ...draft, leadMinutes: minutes })}
@@ -78,9 +84,6 @@ export function RemindersSheet({ settings, onClose }) {
         />
         <span>Evening reminder when tomorrow starts before 10 AM</span>
       </label>
-      <p className="reminder-permission" data-permission={permission}>
-        {describePermission(permission)}
-      </p>
       <p className="reminder-honesty">{REMINDER_HONESTY_LINE}</p>
     </SettingsSheet>
   );

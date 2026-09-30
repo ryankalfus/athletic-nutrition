@@ -9,6 +9,7 @@ import {
 import {
   accessSummary,
   athleteName,
+  hasAthleteName,
   lastBackupText,
   needsSummary,
   sportSummary,
@@ -20,6 +21,7 @@ import { RemindersSheet } from "./RemindersSheet.jsx";
 import { AthleteNameSheet } from "./AthleteNameSheet.jsx";
 import { DevicePage } from "./DevicePage.jsx";
 import { AboutPage } from "./AboutPage.jsx";
+import { Avatar } from "../../components/ui/Avatar.jsx";
 
 const plural = (n, word) => `${n} ${word}${n === 1 ? "" : "s"}`;
 
@@ -29,6 +31,7 @@ const plural = (n, word) => `${n} ${word}${n === 1 ? "" : "s"}`;
 export default function YouPage({ subroute, onNavigate }) {
   const state = useStore();
   const [adding, setAdding] = useState(false);
+  const [naming, setNaming] = useState(false);
   if (subroute === "device") return <DevicePage onNavigate={onNavigate} />;
   if (subroute === "about") return <AboutPage onNavigate={onNavigate} />;
   const data = state.current.data;
@@ -61,14 +64,20 @@ export default function YouPage({ subroute, onNavigate }) {
       <div className="you-page">
         <h1 className="page-title">You</h1>
         <section className="you-athlete" aria-label="Athlete">
-          <span className="you-avatar" aria-hidden="true">
-            {name.charAt(0).toUpperCase()}
-          </span>
+          <Avatar name={name} className="you-avatar" />
           <div>
             <p className="you-athlete-name">{name}</p>
-            <p className="muted">
-              {profile.sport ? sportSummary(profile) : "No sport set"}
-            </p>
+            {hasAthleteName(state.current) ? (
+              <p className="muted">{profile.sport || "No sport set"}</p>
+            ) : (
+              <button
+                type="button"
+                className="text-button"
+                onClick={() => setNaming(true)}
+              >
+                Add your name
+              </button>
+            )}
           </div>
           {athletes > 1 ? (
             <button
@@ -113,6 +122,12 @@ export default function YouPage({ subroute, onNavigate }) {
         <RemindersSheet settings={data.reminderSettings} onClose={close} />
       )}
       {adding && <AthleteNameSheet onClose={() => setAdding(false)} />}
+      {naming && (
+        <AthleteNameSheet
+          athlete={{ id: state.current.id, name: "" }}
+          onClose={() => setNaming(false)}
+        />
+      )}
     </Shell>
   );
 }

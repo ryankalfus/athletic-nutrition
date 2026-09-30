@@ -29,6 +29,7 @@
   font-size: var(--text-display);
   line-height: var(--leading-display);
   font-style: normal;
+  text-wrap: balance;
 }
 
 .welcome h1:focus {
@@ -83,6 +84,7 @@
   border: var(--border);
   border-radius: var(--radius-lg);
   background: var(--color-surface);
+  box-shadow: var(--shadow-1);
 }
 
 .welcome-tile-open {
@@ -100,34 +102,31 @@
   text-align: left;
 }
 
-.welcome-avatar {
-  display: grid;
-  flex: 0 0 48px;
-  place-items: center;
-  width: 48px;
-  height: 48px;
-  border-radius: var(--radius-full);
-  background: var(--color-selected-bg);
-  color: var(--color-primary);
-  font-size: var(--text-h3);
-  font-weight: 700;
-}
-
+/* Name (up to two lines), then sport and last used on their own lines, so
+ * nothing is cut off at 320px. */
 .welcome-tile-text {
   display: grid;
   min-width: 0;
+  font-weight: 400;
 }
 
-.welcome-tile-text > * {
+.welcome-tile-text > strong {
+  display: -webkit-box;
   overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  font-size: var(--text-h3);
+  line-height: var(--leading-h3);
+  font-weight: 600;
+  overflow-wrap: anywhere;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
 }
 
 .welcome-tile-text .muted {
   font-size: var(--text-small);
   line-height: var(--leading-small);
   font-weight: 400;
+  overflow-wrap: anywhere;
 }
 
 .welcome-privacy {
@@ -151,6 +150,8 @@
   margin-inline: auto;
 }
 
+/* Phones: the step header sticks (56px) with a divider under it, so content
+ * scrolling beneath has an edge. */
 .setup-header {
   position: sticky;
   top: 0;
@@ -159,12 +160,16 @@
   grid-template-columns: 1fr auto 1fr;
   align-items: center;
   min-height: 56px;
+  padding-bottom: var(--space-2);
   background: var(--color-paper);
+  box-shadow: 0 1px 0 var(--color-line);
 }
 
+/* Text buttons in the header line up with the column edges. */
 .setup-header > :last-child:not(.setup-progress),
 .setup-skip {
   justify-self: end;
+  justify-content: flex-end;
 }
 
 .setup-back {
@@ -235,9 +240,17 @@
   border: 0;
 }
 
+/* A group's legend is a small heading; the fields inside keep label style. */
 .setup-group > legend {
   margin-bottom: var(--space-2);
-  font-weight: 700;
+  font-size: var(--text-h3);
+  line-height: var(--leading-h3);
+  font-weight: 600;
+}
+
+.setup-group > .text-button,
+.setup-no-school {
+  justify-self: start;
 }
 
 /* Two time fields side by side even on phones, so steps fit 390 × 844. */
@@ -250,11 +263,32 @@
   gap: var(--space-2);
 }
 
+/* "You're set": the first plan as a small Now card (pitch surface). */
 .setup-preview {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--card-padding);
+  border-radius: var(--radius-xl);
+  background: linear-gradient(
+    160deg,
+    var(--color-pitch),
+    var(--color-pitch-end)
+  );
+  color: var(--color-on-dark);
+}
+
+.setup-preview p {
   margin: 0;
   font-size: var(--text-h3);
   line-height: var(--leading-h3);
   font-weight: 600;
+}
+
+.setup-preview .setup-preview-label {
+  color: var(--color-lime);
+  font-family: var(--font-numeral);
+  font-size: var(--text-numeral-m);
+  line-height: var(--leading-numeral-m);
 }
 
 /* Mobile: "Next" pinned to the bottom with safe-area padding. */
@@ -272,11 +306,10 @@
   background: var(--color-paper);
 }
 
+/* Phones: "Next" is full width between the gutters on every step. */
 .setup-actions > .primary {
   flex: 1 1 auto;
-  max-width: 280px;
-  min-height: var(--control-height);
-  margin-left: auto;
+  min-height: 52px;
 }
 
 /* ---------- Recovery and not-found ---------- */
@@ -294,9 +327,20 @@
 }
 
 @media (min-width: 768px) {
+  /* Brand and content are centered together in the viewport (6.1). */
+  .shell:has(> .welcome) {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: calc(100dvh - var(--space-6) - var(--space-12));
+  }
+
+  .shell:has(> .welcome) > .brand {
+    width: 100%;
+  }
+
   .welcome {
-    min-height: calc(100dvh - 240px);
-    align-content: center;
+    width: 100%;
     padding-top: 0;
   }
 
@@ -315,6 +359,7 @@
 
   .setup-header {
     position: static;
+    box-shadow: none;
   }
 
   .setup-step {
@@ -329,6 +374,6 @@
 
   .setup-actions > .primary {
     flex: 0 0 auto;
-    margin-left: 0;
+    min-height: var(--control-height);
   }
 }

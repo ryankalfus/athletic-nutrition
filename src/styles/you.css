@@ -16,9 +16,11 @@
   padding-left: 0;
 }
 
+/* Avatar and name on the first row; the action lines up under the name on
+ * phones and sits at the end of the row from 480px. */
 .you-athlete {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
   align-items: center;
   gap: var(--space-3) var(--space-4);
   padding: var(--card-padding);
@@ -29,8 +31,22 @@
 }
 
 .you-athlete > div {
-  flex: 1 1 140px;
   min-width: 0;
+}
+
+.you-athlete > .you-secondary {
+  grid-column: 2;
+  justify-self: start;
+}
+
+@media (min-width: 480px) {
+  .you-athlete {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+  }
+
+  .you-athlete > .you-secondary {
+    grid-column: 3;
+  }
 }
 
 .you-athlete p {
@@ -42,18 +58,6 @@
   line-height: var(--leading-h2);
   font-weight: 600;
   overflow-wrap: anywhere;
-}
-
-.you-avatar {
-  display: inline-grid;
-  flex: 0 0 auto;
-  place-items: center;
-  width: 40px;
-  height: 40px;
-  border-radius: var(--radius-full);
-  background: var(--color-pitch);
-  color: var(--color-lime);
-  font-weight: 700;
 }
 
 /* Settings list: one grouped card, 56px rows. */
@@ -100,6 +104,10 @@
 .you-list a > span {
   display: grid;
   min-width: 0;
+}
+
+.you-list strong {
+  font-weight: 600;
 }
 
 .you-summary {
@@ -171,6 +179,23 @@
   font-weight: 400;
 }
 
+/* Sections 32px apart (DS-09); the grid gap gives 24. */
+.device-page > section:not(.danger-zone) {
+  margin-top: var(--space-2);
+}
+
+/* Backup actions: full-width rows on phones, one row from 768px. */
+.device-page .button-row > button {
+  flex: 1 1 auto;
+  min-height: var(--control-height);
+}
+
+@media (min-width: 768px) {
+  .device-page .button-row > button {
+    flex: 0 0 auto;
+  }
+}
+
 .device-athlete-actions {
   display: flex;
   gap: var(--space-2);
@@ -185,7 +210,7 @@
 /* About */
 .about-page section {
   display: grid;
-  gap: var(--space-1);
+  gap: var(--space-2);
 }
 
 .about-page section h2,
@@ -199,8 +224,19 @@
   line-height: var(--leading-h3);
 }
 
-/* Setup step 5 uses an h2 (the step title is the h1) with the h3 look. */
-.you-allergies h2 {
-  font-size: var(--text-h3);
-  line-height: var(--leading-h3);
+/* The Allergies title reads like the other groups' legends (15/600), whether
+ * it is an h2 (setup step 5) or an h3 (the You sheet). */
+.you-allergies :is(h2, h3) {
+  margin: 0 0 var(--space-2);
+  font-size: var(--text-label);
+  line-height: var(--leading-label);
+  font-weight: 600;
+}
+
+.you-allergies .label-check p {
+  margin: 0;
+}
+
+.you-allergies .label-check p + p {
+  margin-top: var(--space-2);
 }

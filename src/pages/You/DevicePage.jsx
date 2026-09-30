@@ -19,13 +19,17 @@ import {
   lastBackupText,
 } from "../../domain/you.js";
 import { AthleteNameSheet } from "./AthleteNameSheet.jsx";
+import { Avatar } from "../../components/ui/Avatar.jsx";
 
 // You › This device (6.14): athletes, backup, storage, then the danger zone.
 export function DevicePage({ onNavigate }) {
   const state = useStore();
   const current = state.current;
   const name = athleteName(current);
-  const athletes = Object.values(state.doc.profiles);
+  // The athlete open now comes first.
+  const athletes = Object.values(state.doc.profiles).sort(
+    (a, b) => (b.id === current.id) - (a.id === current.id),
+  );
   const fileRef = useRef(null);
   const [includeAll, setIncludeAll] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -66,7 +70,11 @@ export function DevicePage({ onNavigate }) {
   };
 
   return (
-    <Shell onNavigate={onNavigate}>
+    <Shell
+      onNavigate={onNavigate}
+      title="This device"
+      back={{ label: "Back to You", onClick: () => onNavigate("you") }}
+    >
       <div className="you-page device-page">
         <button
           type="button"
@@ -75,7 +83,7 @@ export function DevicePage({ onNavigate }) {
         >
           <ChevronLeft size={18} aria-hidden="true" /> You
         </button>
-        <h1>This device</h1>
+        <h1 className="page-title">This device</h1>
         <p className="muted">
           Nourally saves each athlete&apos;s plans in this browser. There is no
           account or cloud copy. Save a backup file now and then.
@@ -88,12 +96,10 @@ export function DevicePage({ onNavigate }) {
               const isCurrent = athlete.id === current.id;
               return (
                 <li key={athlete.id}>
-                  <span className="you-avatar" aria-hidden="true">
-                    {athleteName(athlete).charAt(0).toUpperCase()}
-                  </span>
+                  <Avatar name={athleteName(athlete)} className="you-avatar" />
                   <span className="device-athlete-name">
                     {athleteLabel(athlete)}
-                    {isCurrent && <small> · Open now</small>}
+                    {isCurrent && <small>Open now</small>}
                   </span>
                   <span className="device-athlete-actions">
                     {!isCurrent && (
@@ -129,7 +135,7 @@ export function DevicePage({ onNavigate }) {
             className="you-secondary"
             onClick={() => setNaming({ add: true })}
           >
-            Add athlete
+            Add another athlete
           </button>
         </section>
 

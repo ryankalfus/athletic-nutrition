@@ -8,7 +8,7 @@ import {
 import { ALLERGY_TAGS_REVIEWED } from "../../domain/catalog.js";
 import { SETUP_ALLERGY_LINE } from "../../domain/allergens.js";
 import { normalizeSport } from "../../domain/sport.js";
-import { SEASONS } from "../../domain/you.js";
+import { FAMILY_PREP_LABEL, SEASONS } from "../../domain/you.js";
 import {
   SCHOOL_FOOD_CHOICES,
   activitiesDraft,
@@ -39,7 +39,7 @@ const WHERE = [
 ];
 
 // Step 1 — "What do you play?"
-export function SportStep({ data, title, next, finish }) {
+export function SportStep({ data, title, next }) {
   const [draft, setDraft] = useState(() => sportStepData(data.profile));
   const save = (d) => {
     d.profile.name = draft.name.trim() || d.profile.name;
@@ -50,7 +50,6 @@ export function SportStep({ data, title, next, finish }) {
     <StepForm
       title={title}
       helper="Nourally uses this to name your sessions and time your snacks."
-      onSkipAll={() => finish()}
       onNext={() => sportStepProblem(draft) || next(save)}
     >
       <label>
@@ -81,14 +80,13 @@ export function SportStep({ data, title, next, finish }) {
 }
 
 // Step 2 — "Your school day" (reuses Schedule's school fields, ONB-02).
-export function SchoolStep({ data, title, next, finish, todayKey }) {
+export function SchoolStep({ data, title, next, todayKey }) {
   const [draft, setDraft] = useState(() => schoolDraft(data.schoolSchedule));
   const set = (patch) => setDraft({ ...draft, ...patch });
   return (
     <StepForm
       title={title}
       helper="Nourally times food around your classes and lunch."
-      onSkipAll={() => finish()}
       onNext={() =>
         schoolDayProblem(draft) ||
         next((d) => {
@@ -96,6 +94,13 @@ export function SchoolStep({ data, title, next, finish, todayKey }) {
         })
       }
     >
+      <button
+        type="button"
+        className="text-button setup-no-school"
+        onClick={() => next()}
+      >
+        No school right now
+      </button>
       <WeekdayPicker
         legend="School days"
         field="weekdays"
@@ -125,7 +130,7 @@ export function SchoolStep({ data, title, next, finish, todayKey }) {
 }
 
 // Step 3 — "Practices and games" (the activity sheet's fields, ONB-02).
-export function PracticesStep({ data, title, next, finish, todayKey }) {
+export function PracticesStep({ data, title, next, todayKey }) {
   const [draft, setDraft] = useState(() => activitiesDraft(data.schedule));
   const practice = draft.practice;
   const game = draft.game;
@@ -137,7 +142,6 @@ export function PracticesStep({ data, title, next, finish, todayKey }) {
     <StepForm
       title={title}
       helper="No set practices? Skip this. You can add sessions any time."
-      onSkipAll={() => finish()}
       onNext={() =>
         activitiesProblem(draft) ||
         next((d) => {
@@ -168,12 +172,15 @@ export function PracticesStep({ data, title, next, finish, todayKey }) {
           onStart={(startTime) => setPractice({ startTime })}
           onEnd={(endTime) => setPractice({ endTime })}
         />
-        <SegmentedControl
-          label="Practice location"
-          options={WHERE}
-          value={practice.location}
-          onChange={(location) => setPractice({ location })}
-        />
+        <fieldset className="choice-field">
+          <legend>Where</legend>
+          <SegmentedControl
+            label="Practice location"
+            options={WHERE}
+            value={practice.location}
+            onChange={(location) => setPractice({ location })}
+          />
+        </fieldset>
       </fieldset>
       {game ? (
         <fieldset className="setup-group">
@@ -199,12 +206,15 @@ export function PracticesStep({ data, title, next, finish, todayKey }) {
             onStart={(startTime) => setGame({ startTime })}
             onEnd={(endTime) => setGame({ endTime })}
           />
-          <SegmentedControl
-            label="Game location"
-            options={WHERE}
-            value={game.location}
-            onChange={(location) => setGame({ location })}
-          />
+          <fieldset className="choice-field">
+            <legend>Where</legend>
+            <SegmentedControl
+              label="Game location"
+              options={WHERE}
+              value={game.location}
+              onChange={(location) => setGame({ location })}
+            />
+          </fieldset>
           <button
             type="button"
             className="text-button"
@@ -237,13 +247,12 @@ export function PracticesStep({ data, title, next, finish, todayKey }) {
 }
 
 // Step 4 — "Food at school"
-export function FoodAccessStep({ data, title, next, finish }) {
+export function FoodAccessStep({ data, title, next }) {
   const [draft, setDraft] = useState(() => foodAccessDraft(data));
   return (
     <StepForm
       title={title}
       helper="Ideas use only what you can get to."
-      onSkipAll={() => finish()}
       onNext={() => next((d) => applyFoodAccess(d, draft))}
     >
       <ChipGroup
@@ -255,7 +264,7 @@ export function FoodAccessStep({ data, title, next, finish }) {
         }
       />
       <SwitchRow
-        label="Someone at home can help pack or cook"
+        label={FAMILY_PREP_LABEL}
         checked={draft.familyPrep}
         onChange={(familyPrep) => setDraft({ ...draft, familyPrep })}
       />
@@ -264,7 +273,7 @@ export function FoodAccessStep({ data, title, next, finish }) {
 }
 
 // Step 5 — "Food needs" (the You sheet's fields; allergies are gated).
-export function FoodNeedsStep({ data, title, next, finish }) {
+export function FoodNeedsStep({ data, title, next }) {
   const [draft, setDraft] = useState(() => ({
     allergies: data.profile.allergies || [],
     dietaryNeeds: data.profile.dietaryNeeds || [],
@@ -274,7 +283,6 @@ export function FoodNeedsStep({ data, title, next, finish }) {
     <StepForm
       title={title}
       helper={ALLERGY_TAGS_REVIEWED ? SETUP_ALLERGY_LINE : undefined}
-      onSkipAll={() => finish()}
       onNext={() =>
         next((d) => {
           d.profile.allergies = draft.allergies;
@@ -293,7 +301,10 @@ export function ReadyStep({ data, title, finish, now }) {
   const preview = firstPlanPreview(data.schedule, now);
   return (
     <StepForm title={title} nextLabel="Open Today" onNext={() => finish()}>
-      <p className="setup-preview">{preview.text}</p>
+      <section className="setup-preview" aria-label="Your first plan">
+        <p className="setup-preview-label">Today</p>
+        <p>{preview.text}</p>
+      </section>
       <p className="muted">Change any of this later in You and Schedule.</p>
     </StepForm>
   );

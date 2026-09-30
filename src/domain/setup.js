@@ -5,6 +5,7 @@ import { formatTime } from "../format.js";
 import { activityTitle, normalizeSport } from "./sport.js";
 import { addDays, eventsForDate, getDateKey, timeToMinutes } from "./timing.js";
 import { uid } from "./storage.js";
+import { SCHOOL_ACCESS } from "./you.js";
 
 export const SETUP_STEPS = [
   "What do you play?",
@@ -224,12 +225,7 @@ export function activitiesFromSetup(
   return next;
 }
 
-export const SCHOOL_FOOD_CHOICES = [
-  ["cafeteria", "Cafeteria"],
-  ["refrigerator", "Fridge"],
-  ["microwave", "Microwave"],
-  ["eatInClass", "Can eat in class"],
-];
+export const SCHOOL_FOOD_CHOICES = SCHOOL_ACCESS;
 
 export function foodAccessDraft(data) {
   const access = data.schoolSchedule?.foodAccess;
@@ -263,7 +259,9 @@ export function applyFoodAccess(data, { selected, familyPrep }) {
 
 export function sportStepData(profile = {}) {
   return {
-    name: profile.name === "My profile" ? "" : profile.name || "",
+    name: ["My profile", "Athlete"].includes(profile.name)
+      ? ""
+      : profile.name || "",
     sport: profile.sport || "",
     season: profile.season || "",
   };

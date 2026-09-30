@@ -11,6 +11,7 @@ import {
 import { athleteLabel, athleteName } from "../../domain/you.js";
 import { lastUsedText } from "../../domain/setup.js";
 import { AthleteNameSheet } from "../You/AthleteNameSheet.jsx";
+import { Avatar } from "../../components/ui/Avatar.jsx";
 
 // Welcome and athlete chooser (6.1, ENTRY-01 to ENTRY-06). A first visit
 // shows "Get started"; otherwise the athletes on this device, last used first.
@@ -85,14 +86,15 @@ export default function WelcomePage({ firstRun, onNavigate }) {
                         .join(", ")}
                       onClick={() => choose(athlete.id)}
                     >
-                      <span className="welcome-avatar" aria-hidden="true">
-                        {athleteName(athlete).charAt(0).toUpperCase()}
-                      </span>
+                      <Avatar
+                        name={athleteName(athlete)}
+                        size="lg"
+                        className="welcome-avatar"
+                      />
                       <span className="welcome-tile-text">
                         <strong>{name}</strong>
-                        <span className="muted">
-                          {[sport, used].filter(Boolean).join(" · ")}
-                        </span>
+                        <span className="muted">{sport}</span>
+                        {used && <span className="muted">{used}</span>}
                       </span>
                     </button>
                     <Menu

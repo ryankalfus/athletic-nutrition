@@ -1,6 +1,11 @@
 import { useState } from "react";
 import { changeData } from "../../store.js";
-import { FOOD_SOURCES, SCHOOL_ACCESS, parseBudget } from "../../domain/you.js";
+import {
+  FAMILY_PREP_LABEL,
+  FOOD_SOURCES,
+  SCHOOL_ACCESS,
+  parseBudget,
+} from "../../domain/you.js";
 import { lowCostOn } from "../../domain/ranking.js";
 import { FieldError, Input } from "../../components/ui/FieldError.jsx";
 import { SettingsSheet, toggle } from "./SettingsSheet.jsx";
@@ -90,7 +95,7 @@ export function AccessSheet({ data, onClose, onNavigate }) {
       <SwitchRow
         checked={draft.familyPrep}
         onChange={(familyPrep) => set({ familyPrep })}
-        label="Someone at home can help pack or prep"
+        label={FAMILY_PREP_LABEL}
       />
       <SwitchRow
         checked={draft.lowCostIdeas}
@@ -104,24 +109,27 @@ export function AccessSheet({ data, onClose, onNavigate }) {
         label="Show price estimates"
         hint="Groceries shows an estimated total."
       />
-      <label>
-        Grocery budget <span className="optional-label">Optional</span>
-        <span className="budget-input">
-          <span aria-hidden="true">$</span>
-          <Input
-            field="budget"
-            inputMode="decimal"
-            value={draft.budget}
-            aria-invalid={Boolean(budget.error)}
-            onChange={(event) => set({ budget: event.target.value })}
-            placeholder="None"
-          />
-        </span>
-        <span className="muted field-hint">
+      {/* Checked on Save only, so the box does not turn red while typing. */}
+      <div className="field">
+        <label>
+          Grocery budget <span className="optional-label">Optional</span>
+          <span className="budget-input">
+            <span aria-hidden="true">$</span>
+            <Input
+              field="budget"
+              inputMode="decimal"
+              value={draft.budget}
+              aria-describedby="budget-hint"
+              onChange={(event) => set({ budget: event.target.value })}
+              placeholder="None"
+            />
+          </span>
+        </label>
+        <FieldError field="budget" />
+        <span id="budget-hint" className="muted field-hint">
           Shown on Groceries when price estimates are on.
         </span>
-      </label>
-      <FieldError field="budget" />
+      </div>
     </SettingsSheet>
   );
 }

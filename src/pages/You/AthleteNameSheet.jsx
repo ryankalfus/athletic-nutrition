@@ -10,7 +10,14 @@ export function AthleteNameSheet({ athlete, onClose, onCreated }) {
   const [name, setName] = useState(initial);
   return (
     <SettingsSheet
-      title={athlete ? "Rename" : "Add athlete"}
+      title={
+        !athlete
+          ? "Add athlete"
+          : athlete.name
+            ? `Rename ${athlete.name}`
+            : "Add your name"
+      }
+      saveLabel={athlete ? "Save" : "Add athlete"}
       savedToast={athlete ? "Saved." : null}
       dirty={name.trim() !== initial.trim()}
       onClose={onClose}

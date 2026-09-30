@@ -368,7 +368,7 @@ export function migrateLegacy(storage) {
     profiles: {
       [id]: {
         id,
-        name: account?.name || data.profile.name || "My profile",
+        name: account?.name || data.profile.name || "Athlete",
         email: account?.email || "",
         data,
       },

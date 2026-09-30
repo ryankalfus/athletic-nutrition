@@ -10,6 +10,8 @@ export function AboutPage({ onNavigate, standalone = false }) {
       onNavigate={onNavigate}
       navigation={!standalone}
       footer={!standalone}
+      title="About"
+      back={{ label: "Back to You", onClick: () => onNavigate("you") }}
     >
       <article className="you-page about-page">
         <button
@@ -20,7 +22,7 @@ export function AboutPage({ onNavigate, standalone = false }) {
           <ChevronLeft size={18} aria-hidden="true" />{" "}
           {standalone ? "Back" : "You"}
         </button>
-        <h1>About Nourally&apos;s guidance</h1>
+        <h1 className="page-title">About Nourally&apos;s guidance</h1>
         <p className="about-intro">
           Nourally gives food ideas and timing tips for busy school and sport
           days. It does not set calorie goals, track weight, or give medical

@@ -17,7 +17,7 @@ import {
   groceryAllergyMatches,
   ideaAllergens,
   ideaAllergyMatches,
-  legacyAllergyPrompts,
+  legacyAllergyNotice,
   normalizeAllergies,
 } from "../src/domain/allergens.js";
 import * as allergenModule from "../src/domain/allergens.js";
@@ -229,8 +229,20 @@ test("P1-09: profile.allergies is stored, validated and migrated", () => {
   const migrated = validateData(legacy).profile;
   assert.deepEqual(migrated.allergies, [], "Nut-free never becomes an allergy");
   assert.deepEqual(migrated.dietaryNeeds, ["nutFree", "vegetarian"]);
-  assert.equal(legacyAllergyPrompts(migrated, false).length, 1);
-  assert.match(legacyAllergyPrompts(migrated, true)[0], /Choose each allergy/);
+  assert.match(
+    legacyAllergyNotice(migrated, false),
+    /^Your earlier Nut-free choice no longer filters foods\. Review each label/,
+  );
+  assert.match(legacyAllergyNotice(migrated, true), /Choose each allergy/);
+  // Several legacy choices make one notice, not one paragraph each.
+  assert.match(
+    legacyAllergyNotice(
+      { dietaryNeeds: ["nutFree", "glutenFree", "dairyFree"] },
+      false,
+    ),
+    /^Your earlier Nut-free, Gluten-free and Dairy-free choices no longer filter foods\./,
+  );
+  assert.equal(legacyAllergyNotice({ dietaryNeeds: ["vegan"] }, false), "");
   assert.deepEqual(normalizeAllergies(null), []);
 });
 

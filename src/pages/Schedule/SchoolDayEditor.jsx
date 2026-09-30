@@ -9,6 +9,7 @@ import {
 } from "../../components/ui/FieldError.jsx";
 import { formatDate } from "../../format.js";
 import { ChipGroup } from "../../components/ui/SelectionControls.jsx";
+import { SCHOOL_ACCESS } from "../../domain/you.js";
 import { TimeRange, WeekdayPicker } from "./ScheduleFields.jsx";
 export function SchoolDayEditor({ model }) {
   const { pending, run } = useAsyncAction();
@@ -145,7 +146,8 @@ export function SchoolDayEditor({ model }) {
                 />
                 <div className="school-date-fields">
                   <label>
-                    Morning snack <span>Optional</span>
+                    Morning snack{" "}
+                    <span className="optional-label">Optional</span>
                     <Input
                       field="snacks"
                       type="time"
@@ -156,7 +158,8 @@ export function SchoolDayEditor({ model }) {
                     />
                   </label>
                   <label>
-                    Afternoon snack <span>Optional</span>
+                    Afternoon snack{" "}
+                    <span className="optional-label">Optional</span>
                     <Input
                       field="snacks"
                       type="time"
@@ -188,12 +191,7 @@ export function SchoolDayEditor({ model }) {
                 <h3>Food at school</h3>
                 <ChipGroup
                   legend="Food access at school"
-                  options={[
-                    ["cafeteria", "Cafeteria"],
-                    ["refrigerator", "Refrigerator"],
-                    ["microwave", "Microwave"],
-                    ["eatInClass", "Can eat in class"],
-                  ]}
+                  options={SCHOOL_ACCESS}
                   selected={Object.keys(foodAccess).filter(
                     (option) => foodAccess[option],
                   )}
