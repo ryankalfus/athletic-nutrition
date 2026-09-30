@@ -39,7 +39,7 @@ Owner Ryan Kalfus confirmed the recommended options previously presented for aud
 - [ ] **P1-10** — Blocked on P1-09 sign-off: 6.14 passes; 6.13's peanut-allergy criterion needs the review gate open. DATA-08 is done in P1-12.
 - [x] **P1-11** — Allergy chips in step 5 stay hidden behind the P1-09 review gate (ONB-04).
 - [x] **P1-12**
-- [ ] **P1-13**
+- [ ] **P1-13** — Automated 9.6 criteria pass (`tests/browser-a11y.js`: axe with zero serious or critical issues on 70 scans at 390 and 1280 px, 44 px targets, 3:1 boundaries and focus ring, keyboard, forced colors, reduced motion; `tests/browser-responsive.js` at all seven widths). Still open: the manual VoiceOver and NVDA smoke test and a keyboard-only run of the whole core journey (setup → plan → groceries → pack → log).
 
 ### P2
 
@@ -95,9 +95,9 @@ Each ID is an individual checkbox. Implementation notes and blockers go on the m
 - [x] **DS-10**
 - [x] **DS-11**
 - [x] **DS-12**
-- [ ] **DS-13** — Partial: 48 px inputs, selects with chevron, 22 px checkboxes, focus and `aria-invalid` error styles and the error icon are in `base.css`/`components.css`; field-level error messages linked with `aria-describedby` are not wired yet (errors are form-level; P1-13).
+- [x] **DS-13**
 - [x] **DS-14**
-- [ ] **DS-15** — Partial: 560/640 px dialogs, bottom sheets under 768 px with drag handle, sticky header and footer, backdrop, 200 ms entry and first-field focus are done; "Discard changes?" exists only in the You, activity, school-day and At home edit sheets, not yet in grocery edit, portion, water or Counts as.
+- [x] **DS-15**
 - [x] **DS-16**
 - [x] **DS-17**
 - [x] **DS-18**
@@ -245,8 +245,8 @@ Each ID is an individual checkbox. Implementation notes and blockers go on the m
 
 ### DLG
 
-- [ ] **DLG-01**
-- [ ] **DLG-02**
+- [x] **DLG-01**
+- [x] **DLG-02**
 - [ ] **DLG-03**
 - [ ] **DLG-04**
 
@@ -394,20 +394,20 @@ Each ID is an individual checkbox. Implementation notes and blockers go on the m
 
 ### A11Y
 
-- [ ] **A11Y-01**
-- [ ] **A11Y-02**
-- [ ] **A11Y-03**
-- [ ] **A11Y-04**
-- [ ] **A11Y-05**
-- [ ] **A11Y-06**
-- [ ] **A11Y-07**
-- [ ] **A11Y-08**
-- [ ] **A11Y-09**
+- [x] **A11Y-01**
+- [x] **A11Y-02**
+- [x] **A11Y-03**
+- [x] **A11Y-04**
+- [x] **A11Y-05**
+- [x] **A11Y-06**
+- [x] **A11Y-07**
+- [x] **A11Y-08**
+- [x] **A11Y-09**
 - [x] **A11Y-10**
-- [ ] **A11Y-11**
-- [ ] **A11Y-12**
-- [ ] **A11Y-13**
-- [ ] **A11Y-14**
+- [x] **A11Y-11**
+- [x] **A11Y-12**
+- [x] **A11Y-13**
+- [x] **A11Y-14**
 
 ### STATE
 
@@ -432,9 +432,9 @@ Each ID is an individual checkbox. Implementation notes and blockers go on the m
 ### CMP
 
 - [ ] **CMP-01**
-- [ ] **CMP-02** — Partial: button variants (primary, secondary default, text, destructive, icon, lime Go, busy spinner) are consolidated in `components.css`; no `Button`/`IconButton` React components yet.
+- [x] **CMP-02** — `Button` and `IconButton` in `components/ui/Button.jsx`, used by `Dialog`, `ConfirmDialog`, `SettingsSheet`, `Toast`, `InlineError`, `FoodSearch` and `Checklist`; other buttons keep the same `components.css` classes.
 - [x] **CMP-03**
-- [ ] **CMP-04** — Partial: `Dialog` has `initialFocusRef`, `aria-labelledby`, the inline error slot, sticky footer and phone sheet styling; the dirty guard still lives in each sheet, not in `Dialog`.
+- [x] **CMP-04**
 - [x] **CMP-05**
 - [x] **CMP-06**
 - [x] **CMP-07**
@@ -447,7 +447,7 @@ Each ID is an individual checkbox. Implementation notes and blockers go on the m
 - [ ] **CMP-14**
 - [ ] **CMP-15**
 - [x] **CMP-16**
-- [ ] **CMP-17** — Partial: row menus share one details-based style with a 44 px trigger and one panel; no `Menu` component with menu keyboard semantics for At home and Groceries yet.
+- [x] **CMP-17**
 
 ## Owner decisions and review gates (§13.7, §11.6)
 
