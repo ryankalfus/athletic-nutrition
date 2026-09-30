@@ -74,6 +74,10 @@ export function ingredientId(item) {
   if (aliases[item.catalogId]) return item.catalogId;
   return lookup.get(normalized(item.name)) || null;
 }
+// A catalog basic (Quick add, a grocery suggestion): its id is a catalog
+// ingredient, not a branded product.
+const catalogFood = (item) =>
+  Boolean(aliases[item.food?.id] || aliases[item.catalogId]);
 export function sameProduct(a, b) {
   const first =
     a.food?.source === "Manual"
@@ -83,9 +87,16 @@ export function sameProduct(a, b) {
     b.food?.source === "Manual"
       ? null
       : b.food?.id || (b.fdcId && `fdc-${b.fdcId}`);
-  return first || second
-    ? Boolean(first && first === second)
-    : normalized(a.name) === normalized(b.name);
+  if (first && second) return first === second;
+  // HOME-05: a catalog basic matches a row with no product id (bought
+  // through Groceries, typed in) when both are the same catalog ingredient,
+  // so Quick add offers to merge instead of adding a duplicate row.
+  if (first || second) {
+    const [withId, without] = first ? [a, b] : [b, a];
+    const id = ingredientId(withId);
+    return Boolean(catalogFood(withId) && id && id === ingredientId(without));
+  }
+  return normalized(a.name) === normalized(b.name);
 }
 const optional = (value) =>
   value === undefined || value === "" ? null : value;

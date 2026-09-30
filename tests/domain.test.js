@@ -26,6 +26,7 @@ import {
   portionCalories,
   purchase,
   putAwayPlace,
+  sameProduct,
   removeLogEntry,
   reviseLogEntry,
   toggleStockOut,
@@ -1780,6 +1781,31 @@ test("TODAY-01/04: countdown labels are sentence case, never legacy codes", () =
     );
     assert.notEqual(label, label.toUpperCase());
   }
+});
+
+test("HOME-05: Quick add matches an existing row without a product id", () => {
+  // A Bananas row bought through Groceries or seeded has no food.id.
+  const bought = { id: "r1", name: "Bananas", availability: "have" };
+  const quick = {
+    name: "Bananas",
+    food: { id: "bananas", name: "Bananas", source: "Quick basic" },
+    catalogId: "bananas",
+    ingredientId: "bananas",
+  };
+  assert.equal(sameProduct(bought, quick), true);
+  assert.equal(sameProduct(quick, bought), true);
+  // Different ingredients, or a branded product, still stay apart.
+  assert.equal(sameProduct({ name: "Pretzels" }, quick), false);
+  const branded = { name: "Bananas", food: { id: "off-123", name: "Bananas" } };
+  assert.equal(sameProduct(bought, branded), false);
+  // Two product ids compare by id.
+  assert.equal(
+    sameProduct(
+      { name: "A", food: { id: "fdc-1" } },
+      { name: "B", food: { id: "fdc-1" } },
+    ),
+    true,
+  );
 });
 
 test("HOME-04/07: Out toggles back to the previous state, legacy rows are Have, catalog foods resolve", () => {
