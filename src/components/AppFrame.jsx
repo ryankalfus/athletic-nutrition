@@ -5,7 +5,14 @@ import {
   CircleUserRound,
   Sunrise,
 } from "lucide-react";
-import { useStore, exportBackup, retryLastWrite } from "../store.js";
+import { useState } from "react";
+import {
+  useStore,
+  exportBackup,
+  retryLastWrite,
+  setSignedOut,
+} from "../store.js";
+import { AthleteNameSheet } from "../pages/You/AthleteNameSheet.jsx";
 import { navigate, useRoute } from "../routing.js";
 import { athleteName as nameOf } from "../domain/you.js";
 import { Avatar } from "./ui/Avatar.jsx";
@@ -60,6 +67,8 @@ export function Shell({
     (view === "notFound" ? "Page not found" : "Food");
   const go = onNavigate || navigate;
   const athleteName = nameOf(state.current);
+  const severalAthletes = Object.keys(state.doc?.profiles || {}).length > 1;
+  const [addingAthlete, setAddingAthlete] = useState(false);
   // Column width per route (DS-08): Today and Schedule gain a right column at
   // 1200px, Food uses the 960px grid column, everything else reads at 720px.
   const layout = !navigation
@@ -112,15 +121,23 @@ export function Shell({
               {action.label}
             </button>
           )}
+          {/* IA-14 / COPY-28: with 2+ athletes this opens the chooser
+              (Welcome); with one it reads "Add another athlete" (6.13). */}
           <button
             className="frame-athlete"
             type="button"
-            onClick={() => go("you")}
-            aria-label="Switch athlete"
+            onClick={() =>
+              severalAthletes ? setSignedOut(true) : setAddingAthlete(true)
+            }
+            aria-label={
+              severalAthletes ? "Switch athlete" : "Add another athlete"
+            }
           >
             <Avatar name={athleteName} size="sm" className="frame-avatar" />
             <span className="frame-athlete-name">{athleteName}</span>
-            <span className="frame-athlete-switch">Switch</span>
+            <span className="frame-athlete-switch">
+              {severalAthletes ? "Switch" : "Add"}
+            </span>
           </button>
           <div className="frame-mobile-title" aria-hidden="true">
             {title}
@@ -142,6 +159,9 @@ export function Shell({
         )}
         {children}
       </main>
+      {addingAthlete && (
+        <AthleteNameSheet onClose={() => setAddingAthlete(false)} />
+      )}
       {footer && (
         <footer className="frame-footer">
           Saved on this device. Food search uses online food databases.

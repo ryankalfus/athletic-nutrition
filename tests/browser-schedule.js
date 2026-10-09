@@ -168,7 +168,7 @@ async (page) => {
     if (await rows("Practice test").count())
       throw new Error("Series delete left occurrences");
     result.checks.push(
-      "Deleting a repeating practice asks for scope, can be closed, and 'all' removes the series.",
+      `Deleting a repeating practice asks for scope and can be closed; on a ${weekday}-only series "Delete all ${weekday} practices" removes it.`,
     );
 
     await p.getByRole("button", { name: /^(Edit|Set up) school day$/ }).click();
@@ -179,8 +179,9 @@ async (page) => {
     if ((await day.getAttribute("aria-pressed")) !== "true") await day.click();
     await school.getByRole("button", { name: "Save school day" }).click();
     await school.waitFor({ state: "hidden" });
-    await today().getByText("School", { exact: true }).waitFor();
-    await actions("School");
+    // COPY-29: the agenda row reads "School day".
+    await today().getByText("School day", { exact: true }).waitFor();
+    await actions("School day");
     await today().getByRole("menuitem", { name: "Skip this day" }).click();
     // A skipped school day with nothing else reads "Day off" in its row.
     await p
@@ -193,9 +194,135 @@ async (page) => {
     await p.getByRole("button", { name: "Restore", exact: true }).click();
     await p.getByText("No school this day.").waitFor({ state: "hidden" });
     await p.getByRole("radio", { name: "Week" }).click();
-    await today().getByText("School", { exact: true }).waitFor();
+    await today().getByText("School day", { exact: true }).waitFor();
     result.checks.push(
       `School day saves, today (${todayKey}) can be skipped to No school, and Month view restores it.`,
+    );
+
+    // ACT-02 / ACT-03 / SCH-09 on a Mon–Fri series next week (Oct 12–16).
+    const until = async (test, message) => {
+      for (let i = 0; i < 60; i++) {
+        if (await test()) return;
+        await p.waitForTimeout(100);
+      }
+      throw new Error(message);
+    };
+    const dayOf = (label) =>
+      p.getByRole("region", { name: label, exact: true });
+    const week = {
+      Monday: "Mon, Oct 12",
+      Tuesday: "Tue, Oct 13",
+      Wednesday: "Wed, Oct 14",
+      Thursday: "Thu, Oct 15",
+      Friday: "Fri, Oct 16",
+    };
+    const practiceTimes = async () => {
+      const out = {};
+      for (const [name, label] of Object.entries(week)) {
+        const row = dayOf(label)
+          .locator("article.schedule-week-row")
+          .filter({ hasText: "Soccer practice" });
+        out[name] = (await row.count())
+          ? (await row.locator(".schedule-week-time").innerText()).trim()
+          : null;
+      }
+      return out;
+    };
+    await p.getByRole("button", { name: /^Next week/ }).click();
+    await p
+      .getByRole("button", { name: `Add activity on ${week.Monday}` })
+      .click();
+    const add = p.getByRole("dialog", { name: "Add practice" });
+    // A plain "Practice" reads "Soccer practice" once the sport is set.
+    await add.getByRole("textbox", { name: "Name" }).fill("Practice");
+    await add.getByRole("button", { name: "Every week" }).click();
+    for (const name of ["Tuesday", "Wednesday", "Thursday", "Friday"])
+      await add.getByRole("button", { name, exact: true }).click();
+    await add
+      .getByRole("button", { name: "Add practice", exact: true })
+      .click();
+    await add.waitFor({ state: "hidden" });
+    await dayOf(week.Friday).getByText("Soccer practice").waitFor();
+    const all = "4:00 PM–5:30 PM";
+    let times = await practiceTimes();
+    if (Object.values(times).some((time) => time !== all))
+      throw new Error(
+        `Mon–Fri series not on every weekday: ${JSON.stringify(times)}`,
+      );
+    if (
+      await p
+        .locator("article.schedule-week-row strong")
+        .filter({ hasText: /^Practice$/ })
+        .count()
+    )
+      throw new Error("A Schedule row shows the raw title Practice (SCH-09)");
+    result.checks.push(
+      "SCH-09: a Mon–Fri series named Practice reads Soccer practice in every row.",
+    );
+
+    // ACT-03: "Delete all Friday practices" removes Fridays only; Undo restores.
+    await dayOf(week.Friday)
+      .getByRole("button", { name: "Actions for Soccer practice", exact: true })
+      .click();
+    await dayOf(week.Friday).getByRole("menuitem", { name: "Delete…" }).click();
+    await del.getByText("Soccer practice repeats.").waitFor();
+    await del
+      .getByRole("button", { name: "Delete all Friday practices" })
+      .click();
+    await del.waitFor({ state: "hidden" });
+    await until(
+      async () => (await practiceTimes()).Friday === null,
+      "Friday practice still shows after Delete all Friday practices",
+    );
+    times = await practiceTimes();
+    for (const name of ["Monday", "Tuesday", "Wednesday", "Thursday"])
+      if (times[name] !== all)
+        throw new Error(
+          `Delete all Friday practices removed ${name}: ${JSON.stringify(times)}`,
+        );
+    await p.getByRole("button", { name: "Undo", exact: true }).click();
+    await until(
+      async () => (await practiceTimes()).Friday === all,
+      "Undo did not bring Friday back",
+    );
+    result.checks.push(
+      "ACT-03: Delete all Friday practices removes Fridays only; Mon–Thu stay; Undo restores Friday.",
+    );
+
+    // ACT-02: "Change all Tuesday practices" changes Tuesdays only.
+    await dayOf(week.Tuesday)
+      .getByRole("button", { name: "Actions for Soccer practice", exact: true })
+      .click();
+    await dayOf(week.Tuesday).getByRole("menuitem", { name: "Edit" }).click();
+    const change = p.getByRole("dialog", { name: "Change repeating activity" });
+    await change.getByText("Soccer practice repeats.").waitFor();
+    await change
+      .getByRole("button", { name: "Change all Tuesday practices" })
+      .click();
+    const tue = p.getByRole("dialog", { name: "Edit Tuesday practice" });
+    await tue
+      .getByText("Changing all Tuesday practices.", { exact: false })
+      .waitFor();
+    await tue.getByLabel("Starts").fill("17:00");
+    await tue.getByLabel("Ends").fill("18:00");
+    await tue.getByRole("button", { name: "Save changes" }).click();
+    await tue.waitFor({ state: "hidden" });
+    await until(
+      async () => (await practiceTimes()).Tuesday === "5:00 PM–6:00 PM",
+      "Tuesday did not change",
+    );
+    times = await practiceTimes();
+    for (const name of ["Monday", "Wednesday", "Thursday", "Friday"])
+      if (times[name] !== all)
+        throw new Error(
+          `Change all Tuesday practices changed ${name}: ${JSON.stringify(times)}`,
+        );
+    // The following Tuesday follows the change; the following Monday does not.
+    await p.getByRole("button", { name: /^Next week/ }).click();
+    await dayOf("Tue, Oct 20").getByText("5:00 PM–6:00 PM").waitFor();
+    await dayOf("Mon, Oct 19").getByText(all).waitFor();
+    result.checks.push(
+      "ACT-02: Change all Tuesday practices moves Tuesdays to 5:00 PM; Mon, Wed, Thu, Fri stay at 4:00 PM.",
     );
     return result;
   } catch (e) {

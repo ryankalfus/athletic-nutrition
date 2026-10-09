@@ -2,6 +2,7 @@ import { useSyncExternalStore } from "react";
 import { showToast } from "./components/ui/Toast.jsx";
 import { syncPlanPreparation } from "./domain/plans.js";
 import { signedOutFlag } from "./session.js";
+import { athleteName } from "./domain/you.js";
 import {
   backupDocument,
   backupFilename,
@@ -363,20 +364,40 @@ export async function importBackupDocument(imported) {
 }
 export async function deleteCurrentProfile() {
   if (!(await exportBackup())) return false;
+  const name = athleteName(snapshot.current);
   // Sign out before the write publishes, so no render or reminder effect can
   // run for the next athlete while Welcome is showing.
   signedOutFlag.set(true);
+  let last = false;
   const ok = await transaction((doc, id) => {
-    if (Object.keys(doc.profiles).length === 1) {
+    // DATA-05: the last athlete leaves an empty device, the same as a first
+    // visit (a fresh record the app needs, never shown as a "New profile").
+    last = Object.keys(doc.profiles).length === 1;
+    if (last) {
       const next = uid();
-      doc.profiles[next] = { id: next, name: "New profile", data: emptyData() };
+      doc.profiles[next] = {
+        id: next,
+        name: "Athlete",
+        email: "",
+        data: emptyData(),
+      };
     }
     delete doc.profiles[id];
     doc.defaultProfileId = Object.keys(doc.profiles)[0];
   });
   if (ok) {
-    window.location.hash = "/welcome";
-    showToast("Profile deleted.");
+    // A route change clears toasts, so the toast waits for the move to
+    // Welcome to land.
+    const toast = () => showToast(`Deleted ${name}'s data from this device.`);
+    if (window.location.hash === "#/welcome") toast();
+    else {
+      window.addEventListener("hashchange", () => setTimeout(toast, 0), {
+        once: true,
+      });
+      window.location.hash = "/welcome";
+    }
+    // First-run Welcome ("Get started") rather than an athlete chooser.
+    if (last) signedOutFlag.set(false);
   } else signedOutFlag.set(false);
   return ok;
 }

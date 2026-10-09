@@ -1,7 +1,7 @@
 import { useRef } from "react";
 import { useAsyncAction } from "../../hooks/useAsyncAction.js";
 import { Dialog, DialogCancel } from "../../components/Dialog.jsx";
-import { formatDate, formatTime } from "../../format.js";
+import { formatDate, formatTime, plural } from "../../format.js";
 import { timeToMinutes } from "../../domain/timing.js";
 import { SegmentedControl } from "../../components/ui/SelectionControls.jsx";
 import { TimeRange, WeekdayPicker } from "./ScheduleFields.jsx";
@@ -47,13 +47,12 @@ export function ActivitySheet({ model }) {
     setNotes,
     formError,
   } = model;
+  const weekday = new Intl.DateTimeFormat("en-US", { weekday: "long" }).format(
+    new Date(`${selectedKey}T12:00:00`),
+  );
   return (
     <Dialog
-      title={
-        editingId
-          ? `Edit ${new Intl.DateTimeFormat("en-US", { weekday: "long" }).format(new Date(`${selectedKey}T12:00:00`))} ${type}`
-          : `Add ${type}`
-      }
+      title={editingId ? `Edit ${weekday} ${type}` : `Add ${type}`}
       initialFocusRef={editingScope === "date" ? undefined : initialFocus}
       className="activity-sheet"
       onClose={closeActivitySheet}
@@ -74,6 +73,14 @@ export function ActivitySheet({ model }) {
             {editingScope === "date" && (
               <p className="info-callout">
                 Changing {formatDate(selectedKey)} only.
+              </p>
+            )}
+            {/* ACT-02: one weekday of a series; other weekdays keep their
+                values. Days picked below follow the new values. */}
+            {editingScope === "weekday" && (
+              <p className="info-callout">
+                Changing all {weekday} {plural(2, type)}. Other days stay as
+                they are.
               </p>
             )}
             <fieldset hidden={editingScope === "date"}>
@@ -103,17 +110,19 @@ export function ActivitySheet({ model }) {
             {editingScope === "date" ? null : (
               <fieldset>
                 <legend>Date or days</legend>
-                <SegmentedControl
-                  mode="pressed"
-                  label="Date or days"
-                  options={[
-                    ["once", "One day"],
-                    ["weekly", "Every week"],
-                  ]}
-                  value={repeatMode}
-                  onChange={setRepeatMode}
-                />
-                {repeatMode === "once" ? (
+                {editingScope !== "weekday" && (
+                  <SegmentedControl
+                    mode="pressed"
+                    label="Date or days"
+                    options={[
+                      ["once", "One day"],
+                      ["weekly", "Every week"],
+                    ]}
+                    value={repeatMode}
+                    onChange={setRepeatMode}
+                  />
+                )}
+                {repeatMode === "once" && editingScope !== "weekday" ? (
                   <label>
                     Activity date
                     <input

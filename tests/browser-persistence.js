@@ -7,8 +7,11 @@ async (page) => {
   p.setDefaultTimeout(15000);
   const result = { checks: [], errors: [] };
   p.on("pageerror", (error) => result.errors.push(error.message));
+  // With one athlete the frame button reads "Add another athlete" (6.13).
   const athlete = () =>
-    p.getByRole("banner").getByRole("button", { name: "Switch athlete" });
+    p.getByRole("banner").getByRole("button", {
+      name: /^(Switch athlete|Add another athlete)$/,
+    });
   const athletes = () =>
     p
       .getByRole("region", { name: "Athletes on this device" })

@@ -434,7 +434,8 @@ async (page) => {
       "Schedule",
       "Food",
       "You",
-      "Switch athlete",
+      // One athlete on this device: the frame button adds one (6.13).
+      "Add another athlete",
     ];
     if (order.join("|") !== want.join("|"))
       throw new Error(`Tab order is ${order.join(" → ")}`);
@@ -489,7 +490,7 @@ async (page) => {
     if ((await p.title()) !== "Schedule · Nourally")
       throw new Error(`Page title is ${await p.title()}`);
     result.checks.push(
-      "Tab order: Skip to content → Today → Schedule → Food → You → Switch athlete with a 3 px focus ring at 3:1 or more; Enter on Schedule focuses its H1, announces it and sets the title “Schedule · Nourally”.",
+      "Tab order: Skip to content → Today → Schedule → Food → You → Add another athlete with a 3 px focus ring at 3:1 or more; Enter on Schedule focuses its H1, announces it and sets the title “Schedule · Nourally”.",
     );
 
     // Dialog: open with the keyboard, focus the first control (the Type chips,

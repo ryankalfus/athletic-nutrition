@@ -114,6 +114,92 @@ export function skipOccurrence(event, dateKey) {
   };
 }
 
+export const weekdayOf = (dateKey) => new Date(`${dateKey}T12:00:00`).getDay();
+
+// Keep only the skipped dates and single-day changes that still fall on one
+// of the series' weekdays.
+function keepWeekdays(recurrence, weekdays) {
+  const on = (dateKey) => weekdays.includes(weekdayOf(dateKey));
+  return {
+    ...recurrence,
+    weekdays: [...weekdays].sort((a, b) => a - b),
+    excludedDates: (recurrence.excludedDates || []).filter(on),
+    overrides: Object.fromEntries(
+      Object.entries(recurrence.overrides || {}).filter(([date]) => on(date)),
+    ),
+  };
+}
+
+/**
+ * ACT-03 "Delete all Friday practices": removes that weekday from a weekly
+ * series and keeps its other weekdays. A series that only repeats on that
+ * weekday is removed. Pure: returns a new list (Undo restores the old one).
+ * @param {any[]} events
+ * @param {string} eventId
+ * @param {number} weekday 0 (Sunday) to 6
+ */
+export function deleteSeriesWeekday(events, eventId, weekday) {
+  return events.flatMap((event) => {
+    if (event.id !== eventId || !event.recurrence) return [event];
+    const weekdays = (event.recurrence.weekdays || []).filter(
+      (day) => day !== weekday,
+    );
+    return weekdays.length
+      ? [{ ...event, recurrence: keepWeekdays(event.recurrence, weekdays) }]
+      : [];
+  });
+}
+
+/**
+ * ACT-02 "Change all Tuesday practices": the new values apply to that
+ * weekday only. The days picked in the sheet (`weekdays`, normally just that
+ * weekday) leave the series and become their own series with the new values;
+ * every other weekday keeps the old values. When no weekday is left over, the
+ * series is changed in place and keeps its id (plans point at it).
+ * Pure: returns a new list (Undo restores the old one).
+ * @param {any[]} events
+ * @param {string} eventId
+ * @param {number} weekday the weekday the athlete chose to change
+ * @param {{fields: object, weekdays?: number[], endDate?: string}} change
+ * @param {string} newId id for the split-off series
+ */
+export function changeSeriesWeekday(
+  events,
+  eventId,
+  weekday,
+  { fields, weekdays, endDate },
+  newId,
+) {
+  const series = events.find((event) => event.id === eventId);
+  if (!series?.recurrence) throw new Error("This activity does not repeat.");
+  const picked = weekdays?.length ? [...new Set(weekdays)] : [weekday];
+  const values = Object.fromEntries(
+    Object.entries(fields).filter(
+      ([key]) => !["date", "recurrence", "id"].includes(key),
+    ),
+  );
+  const rest = series.recurrence.weekdays.filter(
+    (day) => day !== weekday && !picked.includes(day),
+  );
+  const changed = {
+    ...series,
+    ...values,
+    recurrence: keepWeekdays(
+      { ...series.recurrence, endDate: endDate || series.recurrence.endDate },
+      picked,
+    ),
+  };
+  if (!rest.length) return events.map((e) => (e.id === eventId ? changed : e));
+  return events.flatMap((event) =>
+    event.id === eventId
+      ? [
+          { ...series, recurrence: keepWeekdays(series.recurrence, rest) },
+          { ...changed, id: newId },
+        ]
+      : [event],
+  );
+}
+
 export function eventOccursOn(event, dateKey) {
   if (event.date) return event.date === dateKey;
   if (!event.recurrence) return false;

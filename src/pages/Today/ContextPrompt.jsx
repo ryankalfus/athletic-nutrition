@@ -92,8 +92,10 @@ export default function ContextPrompt({
     return null;
   return (
     <aside className="today-prompt" aria-label="Reminders">
+      {/* TODAY-09 question, then COPY-34's honesty line. */}
       <p>
         Get a heads-up 60 min before {activityWord(guidance.nextEvent.type)}?
+        Works while Nourally is open in your browser.
       </p>
       <div className="button-row">
         <button
