@@ -22,12 +22,12 @@ Owner Ryan Kalfus confirmed the recommended options previously presented for aud
 ### P0
 
 - [x] **P0-01**
-- [ ] **P0-02** — Re-verified 2026.10.09, not true: Food pages at 320x740: content starts at 128 px (limit 120); test measures the inner bar only.
+- [x] **P0-02** — Fixed 2026.10.09: the Food strip is 56 px (4 px padding), so phone chrome is 112 px and content starts at 120 px on every Food route at 320x740; browser-responsive.js now measures the outer strip and the first content box (browser-responsive.js).
 - [x] **P0-03**
-- [ ] **P0-04** — Re-verified 2026.10.09, not true: Deleting an activity shows a generic "Saved." toast; dialog error sits under the header, not above the footer.
-- [ ] **P0-05** — Re-verified 2026.10.09, not true: "allow 1 minutes for travel" can render (timing.js:225).
+- [x] **P0-04** — Fixed 2026.10.09: Schedule writes toast what happened ("Practice deleted."); dialog errors sit just above the footer and "Try again" repeats only the failed write, then closes the sheet (browser-dialogs.js).
+- [x] **P0-05** — Fixed 2026.10.09: travel prep uses plural() ("allow 1 minute for travel"); unit test plus the route scan for "1 minutes"-style counts (domain.test.js, browser-shared-ui.js).
 - [ ] **P0-06** — Re-verified 2026.10.09, not true: Log food Recent/Saved list and the At home "Counts as?" dialog show branded products without the label line.
-- [ ] **P0-07** — Re-verified 2026.10.09, not true: The 7.6 scan fails on "streaks" in You › About; no test scans every route.
+- [x] **P0-07** — Fixed 2026.10.09: About reads "No calorie targets, weight tracking, or food grades. No daily counts to keep up."; browser-shared-ui.js runs the 7.6 term scan over Welcome and every route at 320 and 1280 px.
 - [x] **P0-08**
 - [x] **P0-09**
 - [x] **P0-10**
@@ -46,7 +46,7 @@ Owner Ryan Kalfus confirmed the recommended options previously presented for aud
 - [x] **P1-08**
 - [ ] **P1-09** — Incomplete, skipped for now (will come back to). Awaiting approval: allergy filtering is built but switched off (`ALLERGY_TAGS_REVIEWED = false` in `src/domain/catalog.js`); it will be switched on once the allergen tags are approved. Built: per-ingredient tags, `profile.allergies`, idea and grocery filters, Open Food Facts allergens on product views, and tests for both gate states.
 - [ ] **P1-10** — Incomplete, skipped for now (will come back to). Awaiting approval (allergy criterion): 6.14 passes; 6.13's peanut-allergy criterion needs allergy filtering on. Awaiting approval: allergy filtering is built but switched off (`ALLERGY_TAGS_REVIEWED = false`); it will be switched on once the allergen tags are approved. DATA-08 is done in P1-12.
-- [ ] **P1-11** — Re-verified 2026.10.09, not true: Small gaps: 1 px page scroll from an sr-only div; save-error button says "Export backup". (Earlier note: — Allergy chips in step 5 stay hidden while allergy filtering is switched off awaiting approval of the allergen tags (`ALLERGY_TAGS_REVIEWED = false`, P1-09; ONB-04).)
+- [ ] **P1-11** — Fixed 2026.10.09: the sr-only route announcer no longer adds a 1 px page scroll, and the save-error banner says "Save a backup file" (browser-shared-ui.js, browser-persistence.js). Stays open: ONB-04 (allergy chips) awaits allergen approval (P1-09, P1-10). (Earlier note: — Allergy chips in step 5 stay hidden while allergy filtering is switched off awaiting approval of the allergen tags (`ALLERGY_TAGS_REVIEWED = false`, P1-09; ONB-04).)
 - [ ] **P1-12** — Re-verified 2026.10.09, not true: Partial: ADD-09 sport titles missing in Schedule.
 - [ ] **P1-13** — Incomplete, skipped for now (will come back to): the manual screen-reader test and the keyboard-only core journey are not done. Automated 9.6 criteria pass (`tests/browser-a11y.js`: axe with zero serious or critical issues on 70 scans at 390 and 1280 px, 44 px targets, 3:1 boundaries and focus ring, keyboard, forced colors, reduced motion; `tests/browser-responsive.js` at all seven widths). Still open: the manual VoiceOver and NVDA smoke test and a keyboard-only run of the whole core journey (setup → plan → groceries → pack → log).
 
@@ -77,7 +77,7 @@ Each ID is an individual checkbox. Implementation notes and blockers go on the m
 
 - [x] **IA-01**
 - [x] **IA-02**
-- [ ] **IA-03** — Re-verified 2026.10.09, not true: Food pages: content starts at 128 px at 320x740 (4.9 criterion).
+- [x] **IA-03** — Fixed 2026.10.09: Food content starts at 120 px at 320x740 (4.9); covered by browser-responsive.js.
 - [x] **IA-04**
 - [x] **IA-05**
 - [x] **IA-06**
@@ -94,16 +94,16 @@ Each ID is an individual checkbox. Implementation notes and blockers go on the m
 
 - [x] **DS-01**
 - [x] **DS-02**
-- [ ] **DS-03** — Re-verified 2026.10.09, not true: Now card countdown is 16-17 px, not Numeral XL 32/40.
+- [x] **DS-03** — Fixed 2026.10.09: the Now card countdown is Numeral XL 32/36 (phone) and 40/44 (desktop); the water total is Numeral M 16/17 px (browser-shared-ui.js).
 - [x] **DS-04**
 - [x] **DS-05**
 - [x] **DS-06**
 - [x] **DS-07**
-- [ ] **DS-08** — Re-verified 2026.10.09, not true: Log is 608 px at 1440, not the 720 px reading column.
-- [ ] **DS-09** — Re-verified 2026.10.09, not true: You and About sections are 24 px apart, not 32.
+- [x] **DS-08** — Fixed 2026.10.09: Food › Log uses the reading layout (720 px column plus the 320 px right column from 1200 px); Log Day and Week measure 720 px at 1440 (browser-shared-ui.js).
+- [x] **DS-09** — Fixed 2026.10.09: You, About and This device sections are 32 px apart (grid gap, no compensating margins) (browser-shared-ui.js).
 - [x] **DS-10**
-- [ ] **DS-11** — Re-verified 2026.10.09, not true: Phone top-bar "+ Add" primary is 44 px; "Undo trip" busy state has no aria-busy or spinner.
-- [ ] **DS-12** — Re-verified 2026.10.09, not true: Log Day/Week is underline tabs, not the segmented control; selected weekdays have no check.
+- [x] **DS-11** — Fixed 2026.10.09: the phone top-bar "+ Add" is 48 px; "Undo trip" uses Button busy (spinner, aria-busy, "Undoing…") (browser-shared-ui.js, browser-dialogs.js).
+- [x] **DS-12** — Fixed 2026.10.09: Log Day/Week is the shared segmented control (muted track, white selected segment, shadow); selected weekdays use the selected tint, 2 px primary border and a check badge (browser-shared-ui.js).
 - [x] **DS-13**
 - [x] **DS-14**
 - [x] **DS-15**
@@ -254,8 +254,8 @@ Each ID is an individual checkbox. Implementation notes and blockers go on the m
 
 ### DLG
 
-- [ ] **DLG-01** — Re-verified 2026.10.09, not true: After picking a food in Log food or Add to groceries, the next step leaves focus on <body>.
-- [ ] **DLG-02** — Re-verified 2026.10.09, not true: "Add food for this week" and "Put these away?" close silently when dirty (no Discard prompt).
+- [x] **DLG-01** — Fixed 2026.10.09: when a step swaps the dialog content and the focused control leaves, Dialog moves focus to the new step's first field (browser-dialogs.js).
+- [x] **DLG-02** — Fixed 2026.10.09: "Add food for this week" and "Put these away?" report dirty state; Escape, × and Cancel ask "Discard changes?" (browser-dialogs.js).
 - [ ] **DLG-03** — Open: `Dialog` shows the save error under the sheet header, not above the footer, so on a long sheet it can sit out of view of Save.
 - [x] **DLG-04**
 
@@ -385,12 +385,12 @@ Each ID is an individual checkbox. Implementation notes and blockers go on the m
 
 ### RWD
 
-- [ ] **RWD-01** — Re-verified 2026.10.09, not true: Off-scale 360 px queries remain (tokens.css, food.css).
+- [x] **RWD-01** — Fixed 2026.10.09: the 360 px media queries are gone; the At home stock words and the Log day label use a container query on the page column; styles.test.js allows only 480/768/1024/1200 (and the 1280 Ideas grid).
 - [x] **RWD-02**
 - [x] **RWD-03**
-- [ ] **RWD-04** — Re-verified 2026.10.09, not true: Food pages: chrome is 120 px and content starts at 128 px at 320x740.
-- [ ] **RWD-05** — Re-verified 2026.10.09, not true: Food tab focus ring clipped by 1 px in the scroller.
-- [ ] **RWD-06** — Re-verified 2026.10.09, not true: Setup steps 2 and 3 put time fields two-up at 320 px.
+- [x] **RWD-04** — Fixed 2026.10.09: Food chrome is 112 px and content starts at 120 px at 320x740 (browser-responsive.js).
+- [x] **RWD-05** — Fixed 2026.10.09: Food chip focus ring uses a 1 px offset, so 3 + 1 px fits the 4 px scroller padding; browser-responsive.js checks each focused chip at 320 px.
+- [x] **RWD-06** — Fixed 2026.10.09: setup steps 2 and 3 stack time fields below 480 px and still fit 390x844 (browser-shared-ui.js, browser-setup.js).
 - [x] **RWD-07**
 - [x] **RWD-08**
 - [x] **RWD-09**
@@ -403,16 +403,16 @@ Each ID is an individual checkbox. Implementation notes and blockers go on the m
 
 ### A11Y
 
-- [ ] **A11Y-01** — Re-verified 2026.10.09, not true: On a fresh load of a Food route, the first Tab skips the skip link (scrollIntoView in FoodWorkspace).
+- [x] **A11Y-01** — Fixed 2026.10.09: the Food section and Ideas moment tracks scroll themselves instead of scrollIntoView(), so the first Tab on a fresh load reaches the skip link (browser-shared-ui.js).
 - [x] **A11Y-02**
-- [ ] **A11Y-03** — Re-verified 2026.10.09, not true: H1 not inside a <header> on You, This device, About, Not found and Welcome.
-- [ ] **A11Y-04** — Re-verified 2026.10.09, not true: Log food: picking a food leaves focus on <body> when the portion step appears.
+- [x] **A11Y-03** — Fixed 2026.10.09: the H1 sits in a <header> on You, This device, About, Not found and Welcome (browser-shared-ui.js checks every route).
+- [x] **A11Y-04** — Fixed 2026.10.09: Log food and Add to groceries keep focus in the dialog on the next step's first field (browser-dialogs.js).
 - [x] **A11Y-05**
 - [x] **A11Y-06**
 - [x] **A11Y-07**
 - [x] **A11Y-08**
-- [ ] **A11Y-09** — Re-verified 2026.10.09, not true: Add practice with an empty date or time uses the browser popup; no aria-invalid or linked message.
-- [ ] **A11Y-10** — Re-verified 2026.10.09, not true: Calendar button reads "Today", not "Go to today" (reverted in 6e187d9).
+- [x] **A11Y-09** — Fixed 2026.10.09: Add practice is noValidate; an empty date, start or end time gets the app message with aria-invalid, aria-describedby and focus (browser-dialogs.js, domain.test.js).
+- [x] **A11Y-10** — Fixed 2026.10.09: the calendar button keeps the visible "Today" and is named "Go to today" in Week and Month (browser-dialogs.js).
 - [x] **A11Y-11**
 - [x] **A11Y-12**
 - [x] **A11Y-13**
@@ -420,8 +420,8 @@ Each ID is an individual checkbox. Implementation notes and blockers go on the m
 
 ### STATE
 
-- [ ] **STATE-01** — Re-verified 2026.10.09, not true: Schedule writes (add, edit, skip, delete) all toast "Saved.".
-- [ ] **STATE-02** — Re-verified 2026.10.09, not true: Dialog error shows under the header; "Try again" in Add activity can create a duplicate.
+- [x] **STATE-01** — Fixed 2026.10.09: Schedule writes toast "Practice added.", "Practice updated.", "Practice deleted.", "Day skipped.", "School day saved." (browser-dialogs.js, domain.test.js).
+- [x] **STATE-02** — Fixed 2026.10.09: the dialog error renders just above the footer and scrolls into view; "Try again" repeats only the failed write and closes the sheet, leaving one copy (browser-dialogs.js, Add practice and Add food for this week).
 - [ ] **STATE-03** — Open: no app-frame offline banner; only search shows "You're offline. Recent and saved foods still work."
 - [ ] **STATE-04** — Open: Today's Now card flags a moved session ("Update your snack time?", Update/Keep), but Ideas plan cards do not, and the prompt does not name the new snack time ("Move your snack to about 3:30?", Move/Keep).
 - [ ] **STATE-05** — Open: when permission is lost, reminders switch off at once with "Reminders are off because this browser does not allow notifications." instead of asking "Turn them on again?" first.
