@@ -47,7 +47,7 @@ Owner Ryan Kalfus confirmed the recommended options previously presented for aud
 - [ ] **P1-09** — Incomplete, skipped for now (will come back to). Awaiting approval: allergy filtering is built but switched off (`ALLERGY_TAGS_REVIEWED = false` in `src/domain/catalog.js`); it will be switched on once the allergen tags are approved. Built: per-ingredient tags, `profile.allergies`, idea and grocery filters, Open Food Facts allergens on product views, and tests for both gate states.
 - [ ] **P1-10** — Incomplete, skipped for now (will come back to). Awaiting approval (allergy criterion): 6.14 passes; 6.13's peanut-allergy criterion needs allergy filtering on. Awaiting approval: allergy filtering is built but switched off (`ALLERGY_TAGS_REVIEWED = false`); it will be switched on once the allergen tags are approved. DATA-08 is done in P1-12.
 - [ ] **P1-11** — Re-verified 2026.10.09, not true: Small gaps: 1 px page scroll from an sr-only div; save-error button says "Export backup". (Earlier note: — Allergy chips in step 5 stay hidden while allergy filtering is switched off awaiting approval of the allergen tags (`ALLERGY_TAGS_REVIEWED = false`, P1-09; ONB-04).)
-- [ ] **P1-12** — Re-verified 2026.10.09, not true: Partial: ADD-09 sport titles missing in Schedule.
+- [x] **P1-12** — Fixed 2026.10.09: ADD-09 sport titles now in Schedule rows, menus and scope dialogs; checked at 390 and 1280 px (`tests/browser-today.js`, `tests/browser-schedule.js`).
 - [ ] **P1-13** — Incomplete, skipped for now (will come back to): the manual screen-reader test and the keyboard-only core journey are not done. Automated 9.6 criteria pass (`tests/browser-a11y.js`: axe with zero serious or critical issues on 70 scans at 390 and 1280 px, 44 px targets, 3:1 boundaries and focus ring, keyboard, forced colors, reduced motion; `tests/browser-responsive.js` at all seven widths). Still open: the manual VoiceOver and NVDA smoke test and a keyboard-only run of the whole core journey (setup → plan → groceries → pack → log).
 
 ### P2
@@ -88,7 +88,7 @@ Each ID is an individual checkbox. Implementation notes and blockers go on the m
 - [x] **IA-11**
 - [x] **IA-12**
 - [x] **IA-13**
-- [ ] **IA-14** — Re-verified 2026.10.09, not true: Desktop rail "Switch athlete" only opens You.
+- [x] **IA-14** — Fixed 2026.10.09: with 2+ athletes the top-bar "Switch athlete" opens the chooser on Welcome; with one it reads "Add another athlete" (`tests/browser-athletes.js`).
 
 ### DS
 
@@ -132,8 +132,8 @@ Each ID is an individual checkbox. Implementation notes and blockers go on the m
 
 ### TODAY
 
-- [ ] **TODAY-01** — Re-verified 2026.10.09, not true: "Add 2 items to groceries" never advances; repeat taps repeat the toast; missing check ignores the grocery list.
-- [ ] **TODAY-02** — Re-verified 2026.10.09, not true: Activity and school rail rows go to Schedule instead of opening a details sheet.
+- [x] **TODAY-01** — Fixed 2026.10.09: the groceries step counts items already on the list, adds once, toasts Undo and View list, then moves to "Mark packed" (`tests/browser-today.js`).
+- [x] **TODAY-02** — Fixed 2026.10.09: activity and school rail rows open the activity sheet and School day sheet on Today (`tests/browser-today.js`).
 - [x] **TODAY-03**
 - [x] **TODAY-04**
 - [x] **TODAY-05**
@@ -206,14 +206,14 @@ Each ID is an individual checkbox. Implementation notes and blockers go on the m
 - [x] **SCH-06**
 - [x] **SCH-07**
 - [x] **SCH-08**
-- [ ] **SCH-09** — Re-verified 2026.10.09, not true: Schedule rows, menus and scope dialogs show raw titles ("Practice"), not sport titles.
+- [x] **SCH-09** — Fixed 2026.10.09: Schedule rows, row menus and scope dialogs use sport titles ("Soccer practice") (`tests/browser-schedule.js`, `tests/browser-today.js`).
 - [ ] **SCH-10** — Deferred: P2-01 (ADD-08).
 
 ### ACT
 
 - [x] **ACT-01**
-- [ ] **ACT-02** — Re-verified 2026.10.09, not true: "Change all Tuesday practices" changes all five weekdays of a Mon-Fri series.
-- [ ] **ACT-03** — Re-verified 2026.10.09, not true: "Delete all Friday practices" deletes the whole Mon-Fri series; the browser check asserts the wrong behavior.
+- [x] **ACT-02** — Fixed 2026.10.09: "Change all Tuesday practices" splits Tuesdays off; other weekdays keep their values (`changeSeriesWeekday`, `tests/domain.test.js`, `tests/browser-schedule.js`).
+- [x] **ACT-03** — Fixed 2026.10.09: "Delete all Friday practices" removes Fridays only; a one-weekday series is removed; Undo restores (`deleteSeriesWeekday`, `tests/domain.test.js`, `tests/browser-schedule.js`).
 - [x] **ACT-04**
 - [x] **ACT-05**
 
@@ -246,7 +246,7 @@ Each ID is an individual checkbox. Implementation notes and blockers go on the m
 - [x] **DATA-02**
 - [x] **DATA-03**
 - [x] **DATA-04**
-- [ ] **DATA-05** — Re-verified 2026.10.09, not true: Deleting the last athlete shows a "New profile" tile on Welcome, not first-run; toast says "Profile deleted.".
+- [x] **DATA-05** — Fixed 2026.10.09: deleting the last athlete opens first-run Welcome ("Get started", no tile); toast "Deleted [name]'s data from this device." (`tests/browser-athletes.js`).
 - [x] **DATA-06**
 - [x] **DATA-07**
 - [x] **DATA-08** — Done in P1-12 (ADD-12 backup nudge on Today).
@@ -293,18 +293,18 @@ Each ID is an individual checkbox. Implementation notes and blockers go on the m
 - [x] **COPY-20**
 - [x] **COPY-21**
 - [x] **COPY-22**
-- [ ] **COPY-23** — Re-verified 2026.10.09, not true: "Follow your coach's or doctor's plan if you have one." is only on About, not on the water row or during card.
+- [x] **COPY-23** — Fixed 2026.10.09: the water row says "Bring a full bottle. Follow your coach's or doctor's plan if you have one." (`tests/browser-today.js`).
 - [x] **COPY-24**
 - [x] **COPY-25**
 - [x] **COPY-26**
 - [x] **COPY-27**
-- [ ] **COPY-28** — Re-verified 2026.10.09, not true: Top-bar "Switch athlete" only goes to You.
-- [ ] **COPY-29** — Re-verified 2026.10.09, not true: Agenda rows read "School", not "School day".
+- [x] **COPY-28** — Fixed 2026.10.09: the top-bar button reads "Switch athlete" and opens the chooser with 2+ athletes; "Add another athlete" with one (`tests/browser-athletes.js`).
+- [x] **COPY-29** — Fixed 2026.10.09: Schedule agenda rows and the school card read "School day" (`tests/browser-schedule.js`).
 - [x] **COPY-30**
 - [x] **COPY-31**
 - [x] **COPY-32**
 - [x] **COPY-33**
-- [ ] **COPY-34** — Re-verified 2026.10.09, not true: Today prompt drops "Works while Nourally is open in your browser.".
+- [x] **COPY-34** — Fixed 2026.10.09: the Today prompt reads "Get a heads-up 60 min before practice? Works while Nourally is open in your browser." (TODAY-09 question plus COPY-34 line; `tests/browser-today.js`).
 - [x] **COPY-35**
 - [x] **COPY-36**
 - [x] **COPY-37**
@@ -374,7 +374,7 @@ Each ID is an individual checkbox. Implementation notes and blockers go on the m
 - [x] **ADD-06**
 - [x] **ADD-07**
 - [ ] **ADD-08** — Deferred: P2-01.
-- [ ] **ADD-09** — Re-verified 2026.10.09, not true: Schedule does not use sport titles (see SCH-09).
+- [x] **ADD-09** — Fixed 2026.10.09: Schedule uses sport titles like Today (see SCH-09).
 - [x] **ADD-10**
 - [x] **ADD-11**
 - [x] **ADD-12**

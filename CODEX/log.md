@@ -639,3 +639,17 @@ Audited the browser checks for date dependence by running them under 12 fixed cl
 Changed the allergy notice to "Allergy filtering coming soon." and kept the approved copy for Packaged food, Discard/Keep editing and Skip step. 2026.10.09
 Marked P1-09, P1-10 and P1-13 as incomplete and skipped for now in the tracker. 2026.10.09
 Unticked 45 items after an independent re-verification of every ticked P0 and P1 item found gaps; each has a Re-verified 2026.10.09 note. 2026.10.09
+ACT-03: "Delete all [weekday] practices" now removes only that weekday from a multi-weekday series (deleteSeriesWeekday in timing.js); a one-weekday series is removed; unit and browser tests added. 2026.10.09
+ACT-02: "Change all [weekday] practices" now splits that weekday into its own series and leaves the other weekdays unchanged (changeSeriesWeekday in timing.js); the sheet says "Changing all Tuesday practices. Other days stay as they are."; unit and browser tests added. 2026.10.09
+browser-schedule.js no longer asserts that "all" removes a Mon-Fri series; it checks Friday-only delete, Undo, Tuesday-only change and sport titles on a Mon-Fri series. 2026.10.09
+The activity sheet, scope question and School day sheet moved into useActivityEditor and useSchoolEditor so Schedule and Today share them. 2026.10.09
+SCH-09 / ADD-09: Schedule rows, row menus, scope dialogs and skipped rows use sport titles (withSportTitles), matching Today. 2026.10.09
+COPY-29: Schedule agenda rows and the school card read "School day". 2026.10.09
+TODAY-01: the Now card's groceries step counts items already on the grocery list, adds once, toasts with Undo and View list, then advances to "Mark packed". 2026.10.09
+TODAY-02: Day rail activity and school rows open the activity sheet and School day sheet on Today instead of going to Schedule. 2026.10.09
+COPY-23: the water row says "Bring a full bottle. Follow your coach's or doctor's plan if you have one." 2026.10.09
+COPY-34: the Today reminder prompt adds "Works while Nourally is open in your browser." after the TODAY-09 question. 2026.10.09
+IA-14 / COPY-28: the top-bar athlete button opens the chooser on Welcome with 2+ athletes and reads "Add another athlete" (opens the Add athlete sheet) with one; a11y and persistence checks updated. 2026.10.09
+DATA-05: deleting the last athlete opens first-run Welcome ("Get started", no "New profile" tile); the toast reads "Deleted [name]'s data from this device." and now shows after the route change. 2026.10.09
+Added browser checks browser-today.js (TODAY-01, TODAY-02, COPY-23, COPY-34, ADD-09 at 390 px) and browser-athletes.js (IA-14, COPY-28, DATA-05). 2026.10.09
+Re-ticked ACT-02, ACT-03, TODAY-01, TODAY-02, SCH-09, ADD-09, P1-12, IA-14, COPY-23, COPY-28, COPY-29, COPY-34 and DATA-05 with Fixed 2026.10.09 notes after npm run check and 16/16 browser checks passed. 2026.10.09
