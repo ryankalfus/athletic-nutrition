@@ -56,12 +56,14 @@ export default function WelcomePage({ firstRun, onNavigate }) {
   return (
     <Shell navigation={false} footer={false} onNavigate={onNavigate}>
       <section className="welcome">
-        <h1 ref={heading} tabIndex={-1}>
-          Fuel for the day you actually have.
-        </h1>
-        <p className="welcome-promise">
-          Nourally plans snacks and meals around school and practice.
-        </p>
+        <header className="welcome-head">
+          <h1 ref={heading} tabIndex={-1}>
+            Fuel for the day you actually have.
+          </h1>
+          <p className="welcome-promise">
+            Nourally plans snacks and meals around school and practice.
+          </p>
+        </header>
         {firstRun ? (
           <div className="welcome-start">
             <button type="button" className="primary" onClick={start}>

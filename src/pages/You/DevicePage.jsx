@@ -76,14 +76,16 @@ export function DevicePage({ onNavigate }) {
       back={{ label: "Back to You", onClick: () => onNavigate("you") }}
     >
       <div className="you-page device-page">
-        <button
-          type="button"
-          className="text-button you-back"
-          onClick={() => onNavigate("you")}
-        >
-          <ChevronLeft size={18} aria-hidden="true" /> You
-        </button>
-        <h1 className="page-title">This device</h1>
+        <header>
+          <button
+            type="button"
+            className="text-button you-back"
+            onClick={() => onNavigate("you")}
+          >
+            <ChevronLeft size={18} aria-hidden="true" /> You
+          </button>
+          <h1 className="page-title">This device</h1>
+        </header>
         <p className="muted">
           Nourally saves each athlete&apos;s plans in this browser. There is no
           account or cloud copy. Save a backup file now and then.

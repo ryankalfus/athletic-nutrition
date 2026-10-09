@@ -276,8 +276,35 @@ async (page) => {
     await p.getByRole("button", { name: "Suggest for this week" }).click();
     await week.getByRole("checkbox", { name: /^Bananas · / }).check();
     await week.getByRole("checkbox", { name: /^Pretzels · / }).check();
+    // STATE-02 in a Food sheet too: the error sits above its footer and Try
+    // again adds the two items once and closes the sheet.
+    await p.evaluate(() => {
+      window.__failSaves = true;
+    });
     await week.getByRole("button", { name: "Add selected" }).click();
+    const weekError = week
+      .locator(".inline-error")
+      .filter({ hasText: "Not saved:" });
+    await weekError.waitFor();
+    if (
+      !(await weekError.evaluate(
+        (node) =>
+          node.nextElementSibling?.classList.contains("sheet-footer") &&
+          node.getBoundingClientRect().bottom <=
+            node.nextElementSibling.getBoundingClientRect().top + 1,
+      ))
+    )
+      throw new Error(
+        "Add food for this week: the error is not above the footer",
+      );
+    await p.evaluate(() => {
+      window.__failSaves = false;
+    });
+    await weekError.getByRole("button", { name: "Try again" }).click();
     await week.waitFor({ state: "hidden" });
+    await toast("Added 2 items to groceries.");
+    if ((await p.getByRole("checkbox", { name: "Got Bananas" }).count()) !== 1)
+      throw new Error("Try again added Bananas more than once");
     await p.getByRole("checkbox", { name: "Got Bananas" }).click();
     await p.getByRole("checkbox", { name: "Got Pretzels" }).click();
     await p.getByRole("button", { name: "Finish shopping (2)" }).click();
@@ -287,7 +314,7 @@ async (page) => {
       .selectOption({ label: "Bag" });
     await guarded("Put these away?");
     result.checks.push(
-      'Add food for this week and Put these away? close at once when clean, and ask "Discard changes?" on Escape, × and Cancel once changed (DLG-02).',
+      'Add food for this week and Put these away? close at once when clean, and ask "Discard changes?" on Escape, × and Cancel once changed (DLG-02); a failed Add selected shows its error above the footer and Try again adds the items once and closes the sheet (STATE-02).',
     );
 
     // DS-11: Undo trip shows the spinner and aria-busy while it saves.

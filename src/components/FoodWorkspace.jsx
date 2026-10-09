@@ -8,6 +8,7 @@ import { useStore } from "../store.js";
 import { useRoute } from "../routing.js";
 import { plural } from "../format.js";
 import { Shell } from "./AppFrame.jsx";
+import { scrollIntoTrack } from "./ui/scrollIntoTrack.js";
 
 const tabs = [
   ["ideas", "Ideas"],
@@ -42,10 +43,9 @@ export default function FoodHub({ now, todayKey }) {
     return () => window.removeEventListener("scroll", check);
   }, []);
   // Focus and the section name announcement come from RouteAnnouncer (A11Y-02).
+  // Keep the active section in view without moving the Tab start (A11Y-01).
   useEffect(() => {
-    foodNav.current
-      ?.querySelector(".active")
-      ?.scrollIntoView({ block: "nearest", inline: "nearest" });
+    scrollIntoTrack(foodNav.current, foodNav.current?.querySelector(".active"));
   }, [section]);
   const unchecked = grocery.items.filter(
     (i) => !i.checked && i.status !== "bought",

@@ -102,7 +102,7 @@ async (page) => {
     await p.goto(`${base}#/today`);
     await p.getByRole("button", { name: "+8", exact: true }).click();
     const alert = p.getByRole("alert").filter({ hasText: "Not saved:" });
-    await alert.getByRole("button", { name: "Export backup" }).waitFor();
+    await alert.getByRole("button", { name: "Save a backup file" }).waitFor();
     if (
       !(await p.getByRole("region", { name: "Water" }).innerText()).includes(
         "Water today · 0 oz",
@@ -110,7 +110,7 @@ async (page) => {
     )
       throw new Error("Failed write changed the visible water total");
     result.checks.push(
-      "A simulated quota failure keeps the saved water total and shows Not saved with Export backup.",
+      "A simulated quota failure keeps the saved water total and shows Not saved with Save a backup file.",
     );
     return result;
   } catch (error) {

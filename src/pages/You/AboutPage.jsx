@@ -14,15 +14,17 @@ export function AboutPage({ onNavigate, standalone = false }) {
       back={{ label: "Back to You", onClick: () => onNavigate("you") }}
     >
       <article className="you-page about-page">
-        <button
-          type="button"
-          className="text-button you-back"
-          onClick={() => onNavigate(standalone ? "welcome" : "you")}
-        >
-          <ChevronLeft size={18} aria-hidden="true" />{" "}
-          {standalone ? "Back" : "You"}
-        </button>
-        <h1 className="page-title">About Nourally&apos;s guidance</h1>
+        <header>
+          <button
+            type="button"
+            className="text-button you-back"
+            onClick={() => onNavigate(standalone ? "welcome" : "you")}
+          >
+            <ChevronLeft size={18} aria-hidden="true" />{" "}
+            {standalone ? "Back" : "You"}
+          </button>
+          <h1 className="page-title">About Nourally&apos;s guidance</h1>
+        </header>
         <p className="about-intro">
           Nourally gives food ideas and timing tips for busy school and sport
           days. It does not set calorie goals, track weight, or give medical
@@ -38,8 +40,8 @@ export function AboutPage({ onNavigate, standalone = false }) {
         <section aria-labelledby="about-not">
           <h2 id="about-not">What it doesn&apos;t do</h2>
           <p>
-            No calorie targets, weight tracking, food grades, or streaks. It
-            doesn&apos;t diagnose or treat any condition.
+            No calorie targets, weight tracking, or food grades. No daily counts
+            to keep up. It doesn&apos;t diagnose or treat any condition.
           </p>
         </section>
         <section aria-labelledby="about-help">

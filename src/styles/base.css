@@ -407,6 +407,13 @@ h1[tabindex="-1"]:focus {
   border: 0;
 }
 
+/* The route announcer sits after the app; pinned to the top, its 1px box no
+ * longer adds a 1px page scroll below a full-height page (P1-11). */
+body > .sr-only {
+  top: 0;
+  left: 0;
+}
+
 .muted {
   color: var(--color-ink-muted);
 }
