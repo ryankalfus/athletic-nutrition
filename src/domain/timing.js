@@ -1,5 +1,9 @@
 import { ideasFor, ideaAccess, DIET_FILTERS, lowCostOn } from "./ranking.js";
-import { formatCountdown, formatTime as formatClock } from "../format.js";
+import {
+  formatCountdown,
+  formatTime as formatClock,
+  plural,
+} from "../format.js";
 import { ideaUsesDislike } from "./you.js";
 import { activityTitle, normalizeSport } from "./sport.js";
 import { activeAllergies, ideaAllergyMatches } from "./allergens.js";
@@ -222,7 +226,7 @@ export function tomorrowPrepTasks(event) {
   if (event.location === "away" || Number(event.travelMinutes || 0) >= 30) {
     if (Number(event.travelMinutes) > 0)
       tasks.push({
-        label: `Check the route and allow ${event.travelMinutes} minutes for travel`,
+        label: `Check the route and allow ${event.travelMinutes} ${plural(event.travelMinutes, "minute")} for travel`,
         kind: "prep",
       });
     tasks.push({ label: "Pack one extra shelf-stable snack", kind: "food" });

@@ -22,7 +22,7 @@ import {
 } from "../../domain/timing.js";
 import { SchoolDayEditor } from "./SchoolDayEditor.jsx";
 import { ActivitySheet } from "./ActivitySheet.jsx";
-import { activityTitle } from "../../domain/sport.js";
+import { activityTitle, activityToast } from "../../domain/sport.js";
 import { schoolDayProblem } from "../../domain/setup.js";
 import ScheduleWeek from "./ScheduleWeek.jsx";
 import ScheduleRow from "./ScheduleRow.jsx";
@@ -386,16 +386,18 @@ export default function ScheduleCalendar({
           }
         : { date: selectedKey }),
     };
-    const saved = await setEvents((current) =>
-      editingId
-        ? current.map((item) =>
-            item.id !== editingId
-              ? item
-              : item.recurrence && editingScope === "date"
-                ? applyOccurrenceOverride(item, selectedKey, eventFields)
-                : scheduledEvent,
-          )
-        : [...current, scheduledEvent],
+    const saved = await setEvents(
+      (current) =>
+        editingId
+          ? current.map((item) =>
+              item.id !== editingId
+                ? item
+                : item.recurrence && editingScope === "date"
+                  ? applyOccurrenceOverride(item, selectedKey, eventFields)
+                  : scheduledEvent,
+            )
+          : [...current, scheduledEvent],
+      activityToast(type, editingId ? "updated" : "added"),
     );
     if (saved) resetForm();
     return saved;
@@ -471,8 +473,9 @@ export default function ScheduleCalendar({
       destructive: true,
       onConfirm: async () => {
         if (
-          await setEvents((current) =>
-            current.filter((event) => event.id !== id),
+          await setEvents(
+            (current) => current.filter((event) => event.id !== id),
+            activityToast(target?.type, "deleted"),
           )
         ) {
           if (editingId === id) resetForm();
@@ -483,10 +486,12 @@ export default function ScheduleCalendar({
   }
 
   function skipRecurringOccurrence(event, dateKey = selectedKey) {
-    setEvents((current) =>
-      current.map((item) =>
-        item.id === event.id ? skipOccurrence(item, dateKey) : item,
-      ),
+    setEvents(
+      (current) =>
+        current.map((item) =>
+          item.id === event.id ? skipOccurrence(item, dateKey) : item,
+        ),
+      "Day skipped.",
     );
   }
 
@@ -541,25 +546,28 @@ export default function ScheduleCalendar({
       });
       return;
     }
-    const saved = await setSchoolSchedule({
-      enabled: true,
-      name: schoolName.trim() || "School",
-      startDate: schoolStartDate,
-      endDate: schoolEndDate,
-      startTime: schoolStartTime,
-      endTime: schoolEndTime,
-      weekdays: [...schoolWeekdays].sort(),
-      lunchStartTime,
-      lunchEndTime,
-      morningSnackTime,
-      afternoonSnackTime,
-      commuteMinutes: parsedCommuteMinutes,
-      foodAccess,
-      excludedDates: schoolSchedule?.excludedDates || [],
-      excludedRanges,
-      pausedFrom: pauseSchool ? pausedFrom : "",
-      pausedUntil: pauseSchool ? pausedUntil : "",
-    });
+    const saved = await setSchoolSchedule(
+      {
+        enabled: true,
+        name: schoolName.trim() || "School",
+        startDate: schoolStartDate,
+        endDate: schoolEndDate,
+        startTime: schoolStartTime,
+        endTime: schoolEndTime,
+        weekdays: [...schoolWeekdays].sort(),
+        lunchStartTime,
+        lunchEndTime,
+        morningSnackTime,
+        afternoonSnackTime,
+        commuteMinutes: parsedCommuteMinutes,
+        foodAccess,
+        excludedDates: schoolSchedule?.excludedDates || [],
+        excludedRanges,
+        pausedFrom: pauseSchool ? pausedFrom : "",
+        pausedUntil: pauseSchool ? pausedUntil : "",
+      },
+      "School day saved.",
+    );
     if (saved) {
       setSchoolError("");
       setShowSchoolForm(false);
@@ -633,19 +641,27 @@ export default function ScheduleCalendar({
   }
 
   function cancelSchoolDay(dateKey) {
-    setSchoolSchedule((current) => ({
-      ...current,
-      excludedDates: [...new Set([...(current.excludedDates || []), dateKey])],
-    }));
+    setSchoolSchedule(
+      (current) => ({
+        ...current,
+        excludedDates: [
+          ...new Set([...(current.excludedDates || []), dateKey]),
+        ],
+      }),
+      "No school that day.",
+    );
   }
 
   function restoreSchoolDay(dateKey) {
-    setSchoolSchedule((current) => ({
-      ...current,
-      excludedDates: (current.excludedDates || []).filter(
-        (date) => date !== dateKey,
-      ),
-    }));
+    setSchoolSchedule(
+      (current) => ({
+        ...current,
+        excludedDates: (current.excludedDates || []).filter(
+          (date) => date !== dateKey,
+        ),
+      }),
+      "School day restored.",
+    );
   }
 
   const addOn = (date) => {
@@ -857,21 +873,23 @@ export default function ScheduleCalendar({
                 <span>{e.title} · Skipped this day</span>
                 <button
                   onClick={() =>
-                    setEvents((list) =>
-                      list.map((item) =>
-                        item.id === e.id
-                          ? {
-                              ...item,
-                              recurrence: {
-                                ...item.recurrence,
-                                excludedDates:
-                                  item.recurrence.excludedDates.filter(
-                                    (date) => date !== selectedKey,
-                                  ),
-                              },
-                            }
-                          : item,
-                      ),
+                    setEvents(
+                      (list) =>
+                        list.map((item) =>
+                          item.id === e.id
+                            ? {
+                                ...item,
+                                recurrence: {
+                                  ...item.recurrence,
+                                  excludedDates:
+                                    item.recurrence.excludedDates.filter(
+                                      (date) => date !== selectedKey,
+                                    ),
+                                },
+                              }
+                            : item,
+                        ),
+                      "Day restored.",
                     )
                   }
                 >
@@ -970,11 +988,16 @@ export default function ScheduleCalendar({
                   setScopePrompt(null);
                   openEventEditor(event, dateKey, "date");
                 } else if (
-                  await setEvents((current) =>
-                    current.map((item) =>
-                      item.id === event.id
-                        ? skipOccurrence(item, dateKey)
-                        : item,
+                  await setEvents(
+                    (current) =>
+                      current.map((item) =>
+                        item.id === event.id
+                          ? skipOccurrence(item, dateKey)
+                          : item,
+                      ),
+                    activityToast(
+                      event.type,
+                      `deleted for ${formatDate(dateKey)}`,
                     ),
                   )
                 )
@@ -994,8 +1017,9 @@ export default function ScheduleCalendar({
                   setScopePrompt(null);
                   openEventEditor(event, dateKey, "all");
                 } else if (
-                  await setEvents((current) =>
-                    current.filter((item) => item.id !== event.id),
+                  await setEvents(
+                    (current) => current.filter((item) => item.id !== event.id),
+                    activityToast(event.type, "deleted"),
                   )
                 ) {
                   setScopePrompt(null);

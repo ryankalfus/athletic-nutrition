@@ -44,6 +44,27 @@ export const DEFAULT_SCHOOL_DAY = {
   lunchEndTime: "12:00",
 };
 
+// An empty date or time in the activity sheet: the app's own message on the
+// field (aria-invalid, linked by aria-describedby), not the browser's popup
+// (A11Y-09). Returns null when every required value is there.
+export function missingActivityField({
+  date,
+  startTime,
+  endTime,
+  repeatMode,
+  repeatEndDate,
+  oneDate = false,
+}) {
+  if (!oneDate && repeatMode !== "weekly" && !date)
+    return { message: "Choose a date.", field: "date" };
+  if (!oneDate && repeatMode === "weekly" && !repeatEndDate)
+    return { message: "Choose the last date it repeats.", field: "repeatEnd" };
+  if (!startTime)
+    return { message: "Choose a start time.", field: "startTime" };
+  if (!endTime) return { message: "Choose an end time.", field: "endTime" };
+  return null;
+}
+
 // Shared with Schedule's school editor: the same messages for the same rules.
 // The problem names the field so forms can mark and focus it (A11Y-09).
 export function schoolDayProblem(fields) {
