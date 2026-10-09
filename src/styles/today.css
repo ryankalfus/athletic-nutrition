@@ -102,10 +102,14 @@
   color: var(--color-on-dark);
 }
 
+/* The countdown is the Now card's hero: Numeral XL, 32/36 on phones and
+ * 40/44 on desktop (DS-03, 5.4). */
 .today-countdown {
+  margin: 0;
   font-family: var(--font-numeral);
-  font-size: var(--text-numeral-m);
-  line-height: var(--leading-numeral-m);
+  font-size: var(--text-numeral-xl);
+  line-height: var(--leading-numeral-xl);
+  text-wrap: balance;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
 }
@@ -511,8 +515,9 @@ button.rail-body {
   margin: 0;
 }
 
+/* The water total is a total: Numeral M, 16 / 17px (DS-03). */
 .water-row h2 .numeral {
-  font-size: var(--text-h2);
+  font-size: var(--text-numeral-m);
 }
 
 .water-row div {

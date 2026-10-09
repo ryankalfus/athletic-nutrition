@@ -3,7 +3,7 @@ import { portionCalories, validPortion } from "../../domain/food.js";
 import { portionHint, sourceLine } from "../../domain/search.js";
 import { APPROX_TIMES, clockTime, entryClock } from "../../domain/log.js";
 import { LabelCheck } from "../../components/ui/LabelCheck.jsx";
-import { DialogCancel, useReportDirty } from "../../components/Dialog.jsx";
+import { DialogCancel, useReportDirty, DialogError } from "../../components/Dialog.jsx";
 import {
   FieldError,
   FieldErrors,
@@ -194,6 +194,7 @@ export function PortionSheet({ food, entry, isToday, onSave, onDirty }) {
         </details>
         <FormError />
       </FieldErrors>
+      <DialogError />
       <div className="sheet-footer">
         <DialogCancel disabled={busy} />
         <button

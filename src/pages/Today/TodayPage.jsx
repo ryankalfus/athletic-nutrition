@@ -6,7 +6,7 @@ import { useState } from "react";
 import { advanceCompletedMoment } from "../../domain/ranking.js";
 import NowCard from "./NowCard.jsx";
 import { Shell } from "../../components/AppFrame.jsx";
-import { Dialog } from "../../components/Dialog.jsx";
+import { Dialog, DialogError } from "../../components/Dialog.jsx";
 import { useStore, changeData, setField } from "../../store.js";
 import { useActivityEditor } from "../Schedule/useActivityEditor.jsx";
 import { useSchoolEditor } from "../Schedule/useSchoolEditor.jsx";
@@ -109,13 +109,14 @@ export default function TodayPage({
   // TODAY-02: rail rows open the same sheets as Schedule.
   const activity = useActivityEditor({
     events: data.schedule,
-    setEvents: (update) => setField("schedule", update),
+    setEvents: (update, message) => setField("schedule", update, message),
     sport: data.profile.sport,
     todayKey,
   });
   const school = useSchoolEditor({
     schoolSchedule: data.schoolSchedule,
-    setSchoolSchedule: (update) => setField("schoolSchedule", update),
+    setSchoolSchedule: (update, message) =>
+      setField("schoolSchedule", update, message),
     todayKey,
   });
   const openActivity = (id) => {
@@ -360,6 +361,7 @@ export default function TodayPage({
               ))}
             </ul>
           )}
+          <DialogError />
           <div className="dialog-actions">
             <button onClick={() => setOpenPlanId(null)}>Close</button>
           </div>

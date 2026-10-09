@@ -62,7 +62,9 @@ export default function YouPage({ subroute, onNavigate }) {
   return (
     <Shell onNavigate={onNavigate}>
       <div className="you-page">
-        <h1 className="page-title">You</h1>
+        <header>
+          <h1 className="page-title">You</h1>
+        </header>
         <section className="you-athlete" aria-label="Athlete">
           <Avatar name={name} className="you-avatar" />
           <div>

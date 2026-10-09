@@ -741,6 +741,11 @@
   margin-left: auto;
 }
 
+/* A dialog's save error sits just above the sticky footer (STATE-02). */
+.app-dialog .inline-error {
+  scroll-margin-bottom: calc(var(--control-height) + 2 * var(--space-4));
+}
+
 .save-error {
   margin-bottom: var(--space-4);
   border-color: var(--color-warning);

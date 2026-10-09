@@ -131,7 +131,7 @@ export async function transaction(reducer) {
     );
     emit({
       ...snapshot,
-      error: `Not saved: ${reason}. Export a backup before closing this tab.`,
+      error: `Not saved: ${reason}. Save a backup file before closing this tab.`,
     });
     return false;
   }
@@ -165,13 +165,13 @@ export async function changeData(reducer, message = "Saved.", action) {
     );
   return true;
 }
-export const setField = (field, update) =>
+export const setField = (field, update, message) =>
   changeData((data) => {
     data[field] = typeof update === "function" ? update(data[field]) : update;
     if (field === "dayPlans")
       for (const date of Object.keys(data.dayPlans))
         syncPlanPreparation(data, date);
-  });
+  }, message);
 export function useSignedOut() {
   return useSyncExternalStore(signedOutFlag.subscribe, signedOutFlag.get);
 }
@@ -181,7 +181,10 @@ export function useStore() {
 }
 export function useField(field) {
   const state = useStore();
-  return [state.current?.data[field], (update) => setField(field, update)];
+  return [
+    state.current?.data[field],
+    (update, message) => setField(field, update, message),
+  ];
 }
 export async function createProfile(name, email = "") {
   const id = uid();

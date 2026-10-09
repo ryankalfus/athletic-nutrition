@@ -38,6 +38,7 @@ import { LabelCheck } from "../../components/ui/LabelCheck.jsx";
 import { EmptyState } from "../../components/ui/EmptyState.jsx";
 import { Menu } from "../../components/ui/Menu.jsx";
 import { SegmentedControl } from "../../components/ui/SelectionControls.jsx";
+import { scrollIntoTrack } from "../../components/ui/scrollIntoTrack.js";
 
 // Icons for ideaTags (IDEA-02); the text always shows beside them.
 const TAG_ICONS = {
@@ -87,11 +88,13 @@ export default function IdeasPage({ now, todayKey }) {
           : true),
   );
   const moments = useRef(null);
-  // The chosen moment is scrolled into view in the phone scroller.
+  // The chosen moment is scrolled into view in the phone scroller, without
+  // moving the Tab start point (A11Y-01).
   useEffect(() => {
-    moments.current
-      ?.querySelector('[aria-checked="true"]')
-      ?.scrollIntoView({ block: "nearest", inline: "nearest" });
+    scrollIntoTrack(
+      moments.current,
+      moments.current?.querySelector('[aria-checked="true"]'),
+    );
   }, [moment]);
   const write = (key, fn, message) => run(key, () => changeData(fn, message));
   const addMissing = (idea) => {

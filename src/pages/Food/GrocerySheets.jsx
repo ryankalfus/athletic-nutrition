@@ -5,6 +5,11 @@ import {
   shoppingAmount,
 } from "../../domain/food.js";
 // Grocery item add, edit and swap use the shared FoodDetailsSheet (CMP-13).
+import {
+  DialogCancel,
+  DialogError,
+  useReportDirty,
+} from "../../components/Dialog.jsx";
 
 export const money = (value) =>
   new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(
@@ -18,10 +23,12 @@ const PLACES = [
 ];
 
 /** GROC-03: "Put these away?" after Finish shopping. */
-export function PutAwaySheet({ items, pantry, pending, onCancel, onConfirm }) {
+export function PutAwaySheet({ items, pantry, pending, onDirty, onConfirm }) {
   const [places, setPlaces] = useState(() =>
     Object.fromEntries(items.map((i) => [i.id, putAwayPlace(pantry, i)])),
   );
+  // A changed place asks "Discard changes?" on Escape, × and Cancel (DLG-02).
+  useReportDirty(JSON.stringify(places), onDirty);
   return (
     <form
       className="grocery-sheet"
@@ -62,10 +69,9 @@ export function PutAwaySheet({ items, pantry, pending, onCancel, onConfirm }) {
           );
         })}
       </ul>
+      <DialogError />
       <div className="sheet-footer">
-        <button type="button" onClick={onCancel} disabled={pending}>
-          Cancel
-        </button>
+        <DialogCancel disabled={pending} />
         <button
           aria-busy={pending || undefined}
           className="primary"
@@ -79,8 +85,10 @@ export function PutAwaySheet({ items, pantry, pending, onCancel, onConfirm }) {
 }
 
 /** "Add food for this week": suggestions start unchecked (J6 step 7). */
-export function WeekIdeasSheet({ ideas, summary, pending, onCancel, onAdd }) {
+export function WeekIdeasSheet({ ideas, summary, pending, onDirty, onAdd }) {
   const [selected, setSelected] = useState([]);
+  // A checked suggestion asks "Discard changes?" before closing (DLG-02).
+  useReportDirty(selected.length > 0 ? "dirty" : "", onDirty);
   return (
     <form
       className="grocery-sheet"
@@ -116,10 +124,9 @@ export function WeekIdeasSheet({ ideas, summary, pending, onCancel, onAdd }) {
           </li>
         ))}
       </ul>
+      <DialogError />
       <div className="sheet-footer">
-        <button type="button" onClick={onCancel} disabled={pending}>
-          Cancel
-        </button>
+        <DialogCancel disabled={pending} />
         <button
           aria-busy={pending || undefined}
           className="primary"

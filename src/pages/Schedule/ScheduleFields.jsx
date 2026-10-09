@@ -49,9 +49,11 @@ export function TimeRange({
   onEnd,
   className = "school-date-fields",
   field,
+  startField,
   endField,
 }) {
   const both = useFieldInvalid(field);
+  const startOnly = useFieldInvalid(startField);
   const endOnly = useFieldInvalid(endField);
   return (
     <>
@@ -64,6 +66,7 @@ export function TimeRange({
             value={start}
             onChange={(event) => onStart(event.target.value)}
             {...both}
+            {...startOnly}
           />
         </label>
         <label>
@@ -78,7 +81,7 @@ export function TimeRange({
           />
         </label>
       </div>
-      <FieldError field={[field, endField].filter(Boolean)} />
+      <FieldError field={[field, startField, endField].filter(Boolean)} />
     </>
   );
 }

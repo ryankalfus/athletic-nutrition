@@ -12,7 +12,7 @@ import { uid } from "../../domain/storage.js";
 import { changeData, useStore } from "../../store.js";
 import { useAsyncAction } from "../../hooks/useAsyncAction.js";
 import { plural } from "../../format.js";
-import { DialogCancel, useReportDirty } from "../../components/Dialog.jsx";
+import { DialogCancel, useReportDirty, DialogError } from "../../components/Dialog.jsx";
 import {
   FieldError,
   FieldErrors,
@@ -93,6 +93,7 @@ export function UseFromHomeSheet({ entry, only, onDone, onDirty }) {
           />
         </label>
       ))}
+      <DialogError />
       <div className="sheet-footer">
         <DialogCancel />
         <button
@@ -225,6 +226,7 @@ export function ChangedPlanSheet({ plan, date, todayKey, onDone, onDirty }) {
         <p className="food-source">From your plan</p>
         <FormError />
       </FieldErrors>
+      <DialogError />
       <div className="sheet-footer">
         <DialogCancel />
         <button

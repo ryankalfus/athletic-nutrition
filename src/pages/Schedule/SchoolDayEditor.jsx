@@ -1,6 +1,6 @@
 import { useRef } from "react";
 import { useAsyncAction } from "../../hooks/useAsyncAction.js";
-import { Dialog, DialogCancel } from "../../components/Dialog.jsx";
+import { Dialog, DialogCancel, DialogError } from "../../components/Dialog.jsx";
 import {
   FieldError,
   FieldErrors,
@@ -286,6 +286,7 @@ export function SchoolDayEditor({ model }) {
               <FormError />
             </FieldErrors>
           </div>
+          <DialogError />
           <div className="schedule-form-footer">
             <DialogCancel />
             <button

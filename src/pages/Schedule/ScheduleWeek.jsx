@@ -102,7 +102,11 @@ export default function ScheduleWeek({
         >
           <ChevronRight size={20} strokeWidth={1.75} aria-hidden="true" />
         </button>
-        <button className="text-button schedule-today" onClick={goToToday}>
+        <button
+          className="text-button schedule-today"
+          aria-label="Go to today"
+          onClick={goToToday}
+        >
           Today
         </button>
       </div>

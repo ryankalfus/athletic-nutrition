@@ -221,7 +221,9 @@ function NotFoundPage({ onNavigate }) {
   return (
     <Shell>
       <section className="not-found">
-        <h1>Page not found</h1>
+        <header>
+          <h1>Page not found</h1>
+        </header>
         <p>That page is not part of Nourally.</p>
         <button className="primary" onClick={() => onNavigate("today")}>
           Go to Today

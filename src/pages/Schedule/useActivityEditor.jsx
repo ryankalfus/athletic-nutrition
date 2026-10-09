@@ -2,7 +2,7 @@ import { useRef, useState } from "react";
 import { Dialog, DialogCancel } from "../../components/Dialog.jsx";
 import { ConfirmDialog } from "../../components/ui/ConfirmDialog.jsx";
 import { uid } from "../../domain/storage.js";
-import { activityTitle } from "../../domain/sport.js";
+import { activityTitle, activityToast } from "../../domain/sport.js";
 import { formatDate, plural } from "../../format.js";
 import {
   addDays,
@@ -162,7 +162,12 @@ export function useActivityEditor({
       confirmLabel: "Delete",
       destructive: true,
       onConfirm: async () => {
-        if (await setEvents((current) => current.filter((e) => e.id !== id))) {
+        if (
+          await setEvents(
+            (current) => current.filter((e) => e.id !== id),
+            activityToast(target.type, "deleted"),
+          )
+        ) {
           if (editingId === id) close();
           setConfirmation(null);
         }
@@ -170,11 +175,14 @@ export function useActivityEditor({
     });
   }
 
-  function skip(event, dateKey) {
-    return setEvents((current) =>
-      current.map((item) =>
-        item.id === event.id ? skipOccurrence(item, dateKey) : item,
-      ),
+  // STATE-01: Schedule toasts say what happened ("Day skipped.").
+  function skip(event, dateKey, message = "Day skipped.") {
+    return setEvents(
+      (current) =>
+        current.map((item) =>
+          item.id === event.id ? skipOccurrence(item, dateKey) : item,
+        ),
+      message,
     );
   }
 
@@ -277,25 +285,30 @@ export function useActivityEditor({
         : { date: formDate }),
     };
     const newId = uid();
-    const saved = await setEvents((current) => {
-      if (!editingId) return [...current, scheduled];
-      const series = current.find((item) => item.id === editingId);
-      if (series?.recurrence && editingScope === "date")
+    const saved = await setEvents(
+      (current) => {
+        if (!editingId) return [...current, scheduled];
+        const series = current.find((item) => item.id === editingId);
+        if (series?.recurrence && editingScope === "date")
+          return current.map((item) =>
+            item.id === editingId
+              ? applyOccurrenceOverride(item, formDate, fields)
+              : item,
+          );
+        if (series?.recurrence && editingScope === "weekday")
+          return changeSeriesWeekday(
+            current,
+            editingId,
+            weekdayOf(formDate),
+            { fields, weekdays: repeatWeekdays, endDate: repeatEndDate },
+            newId,
+          );
         return current.map((item) =>
-          item.id === editingId
-            ? applyOccurrenceOverride(item, formDate, fields)
-            : item,
+          item.id === editingId ? scheduled : item,
         );
-      if (series?.recurrence && editingScope === "weekday")
-        return changeSeriesWeekday(
-          current,
-          editingId,
-          weekdayOf(formDate),
-          { fields, weekdays: repeatWeekdays, endDate: repeatEndDate },
-          newId,
-        );
-      return current.map((item) => (item.id === editingId ? scheduled : item));
-    });
+      },
+      activityToast(type, editingId ? "updated" : "added"),
+    );
     if (saved) close();
     return saved;
   }
@@ -305,7 +318,14 @@ export function useActivityEditor({
     if (kind === "edit") {
       setScopePrompt(null);
       openEditor(event, dateKey, "date");
-    } else if (await skip(event, dateKey)) setScopePrompt(null);
+    } else if (
+      await skip(
+        event,
+        dateKey,
+        activityToast(event.type, `deleted for ${formatDate(dateKey)}`),
+      )
+    )
+      setScopePrompt(null);
   }
 
   async function chooseAll() {
@@ -319,8 +339,11 @@ export function useActivityEditor({
     // ACT-03: "Delete all Friday practices" removes Fridays only; a series
     // that repeats on Fridays alone is removed.
     if (
-      await setEvents((current) =>
-        deleteSeriesWeekday(current, event.id, weekdayOf(dateKey)),
+      await setEvents(
+        (current) => deleteSeriesWeekday(current, event.id, weekdayOf(dateKey)),
+        several
+          ? activityToast(event.type, `deleted on ${weekdayName(dateKey)}s`)
+          : activityToast(event.type, "deleted"),
       )
     ) {
       setScopePrompt(null);

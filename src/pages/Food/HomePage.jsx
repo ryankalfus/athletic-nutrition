@@ -2,7 +2,7 @@ import { BatteryLow, CircleCheck, CircleOff, Minus, Plus } from "lucide-react";
 import { useState, useRef } from "react";
 import { useStore, changeData } from "../../store.js";
 import { useAsyncAction } from "../../hooks/useAsyncAction.js";
-import { Dialog } from "../../components/Dialog.jsx";
+import { Dialog, DialogError } from "../../components/Dialog.jsx";
 import { Menu } from "../../components/ui/Menu.jsx";
 import { FoodSearch } from "../../components/FoodSearch.jsx";
 import { GROCERY_CATALOG } from "../../domain/catalog.js";
@@ -415,6 +415,7 @@ export default function HomePage({ todayKey }) {
                 : "Out"}
             ). Update it or keep both?
           </p>
+          <DialogError />
           <div className="dialog-actions">
             <button
               disabled={!!pending}
@@ -512,6 +513,7 @@ function CountsAsSheet({ row, pending, onClose, onSave }) {
           </select>
           <small>Ideas that need this food will use it.</small>
         </label>
+        <DialogError />
         <div className="sheet-footer">
           <button type="button" onClick={onClose} disabled={pending}>
             Skip

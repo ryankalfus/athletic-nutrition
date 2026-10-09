@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Dialog } from "../Dialog.jsx";
+import { Dialog, DialogError } from "../Dialog.jsx";
 import { InlineError } from "./InlineError.jsx";
 import { Button } from "./Button.jsx";
 
@@ -29,6 +29,7 @@ export function ConfirmDialog({
           />
         </label>
       )}
+      <DialogError />
       <div className="confirm-actions">
         <Button onClick={onCancel}>{cancelLabel}</Button>
         <Button

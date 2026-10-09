@@ -7,7 +7,7 @@ import {
   shoppingDefaults,
 } from "../../domain/food.js";
 import { LabelCheck } from "../../components/ui/LabelCheck.jsx";
-import { DialogCancel } from "../../components/Dialog.jsx";
+import { DialogCancel, DialogError } from "../../components/Dialog.jsx";
 import {
   FieldError,
   FieldErrors,
@@ -275,6 +275,7 @@ export function FoodDetailsSheet({
         </label>
         <FormError />
       </FieldErrors>
+      <DialogError />
       <div className="sheet-footer">
         <DialogCancel disabled={!!pending} />
         <button

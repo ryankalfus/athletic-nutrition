@@ -27,6 +27,13 @@ const TYPE_WORDS = {
   other: "activity",
 };
 
+// STATE-01: a Schedule toast names the activity and what happened:
+// "Practice added.", "Game deleted.".
+export function activityToast(type, verb) {
+  const word = TYPE_WORDS[type] || "activity";
+  return `${word[0].toUpperCase()}${word.slice(1)} ${verb}.`;
+}
+
 // SCH-09: "Soccer practice" when the athlete's sport is soccer.
 export function activityTitle(sport, type = "practice") {
   const name = normalizeSport(sport);

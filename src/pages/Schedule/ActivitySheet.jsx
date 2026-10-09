@@ -1,8 +1,9 @@
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { useAsyncAction } from "../../hooks/useAsyncAction.js";
-import { Dialog, DialogCancel } from "../../components/Dialog.jsx";
+import { Dialog, DialogCancel, DialogError } from "../../components/Dialog.jsx";
 import { formatDate, formatTime, plural } from "../../format.js";
 import { timeToMinutes } from "../../domain/timing.js";
+import { missingActivityField } from "../../domain/setup.js";
 import { SegmentedControl } from "../../components/ui/SelectionControls.jsx";
 import { TimeRange, WeekdayPicker } from "./ScheduleFields.jsx";
 import {
@@ -50,6 +51,11 @@ export function ActivitySheet({ model }) {
   const weekday = new Intl.DateTimeFormat("en-US", { weekday: "long" }).format(
     new Date(`${selectedKey}T12:00:00`),
   );
+  // The date field keeps its own draft: an emptied field must not clear the
+  // page's selected day, and an empty date or time gets the app's own field
+  // error instead of the browser's popup (A11Y-09).
+  const [dateDraft, setDateDraft] = useState(selectedKey);
+  const [missing, setMissing] = useState(null);
   return (
     <Dialog
       title={editingId ? `Edit ${weekday} ${type}` : `Add ${type}`}
@@ -61,13 +67,23 @@ export function ActivitySheet({ model }) {
     >
       <form
         className="schedule-form"
+        noValidate
         onSubmit={(event) => {
           event.preventDefault();
-          run("activity", () => saveEvent(event));
+          const problem = missingActivityField({
+            date: dateDraft,
+            startTime,
+            endTime,
+            repeatMode: editingScope === "weekday" ? "weekly" : repeatMode,
+            repeatEndDate,
+            oneDate: editingScope === "date",
+          });
+          setMissing(problem);
+          if (!problem) run("activity", () => saveEvent(event));
         }}
       >
         <div className="schedule-form-scroll">
-          <FieldErrors error={formError}>
+          <FieldErrors error={missing || formError}>
             {/* One date of a repeating activity: say so first; its type
                 belongs to the series, so it is not asked again. */}
             {editingScope === "date" && (
@@ -123,15 +139,23 @@ export function ActivitySheet({ model }) {
                   />
                 )}
                 {repeatMode === "once" && editingScope !== "weekday" ? (
-                  <label>
-                    Activity date
-                    <input
-                      required
-                      type="date"
-                      value={selectedKey}
-                      onChange={(event) => setSelectedKey(event.target.value)}
-                    />
-                  </label>
+                  <>
+                    <label>
+                      Activity date
+                      <Input
+                        field="date"
+                        required
+                        type="date"
+                        value={dateDraft}
+                        onChange={(event) => {
+                          setDateDraft(event.target.value);
+                          if (event.target.value)
+                            setSelectedKey(event.target.value);
+                        }}
+                      />
+                    </label>
+                    <FieldError field="date" />
+                  </>
                 ) : (
                   <div className="repeat-settings">
                     <WeekdayPicker
@@ -162,6 +186,7 @@ export function ActivitySheet({ model }) {
               className="time-fields"
               startLabel="Starts"
               endLabel="Ends"
+              startField="startTime"
               endField="endTime"
               start={startTime}
               end={endTime}
@@ -234,6 +259,7 @@ export function ActivitySheet({ model }) {
             <FormError />
           </FieldErrors>
         </div>
+        <DialogError />
         <div className="schedule-form-footer">
           <DialogCancel />
           <button

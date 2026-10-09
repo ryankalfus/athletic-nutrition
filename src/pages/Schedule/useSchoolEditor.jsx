@@ -121,25 +121,28 @@ export function useSchoolEditor({
       });
       return;
     }
-    const saved = await setSchoolSchedule({
-      enabled: true,
-      name: schoolName.trim() || "School",
-      startDate: schoolStartDate,
-      endDate: schoolEndDate,
-      startTime: schoolStartTime,
-      endTime: schoolEndTime,
-      weekdays: [...schoolWeekdays].sort(),
-      lunchStartTime,
-      lunchEndTime,
-      morningSnackTime,
-      afternoonSnackTime,
-      commuteMinutes: parsedCommuteMinutes,
-      foodAccess,
-      excludedDates: schoolSchedule?.excludedDates || [],
-      excludedRanges,
-      pausedFrom: pauseSchool ? pausedFrom : "",
-      pausedUntil: pauseSchool ? pausedUntil : "",
-    });
+    const saved = await setSchoolSchedule(
+      {
+        enabled: true,
+        name: schoolName.trim() || "School",
+        startDate: schoolStartDate,
+        endDate: schoolEndDate,
+        startTime: schoolStartTime,
+        endTime: schoolEndTime,
+        weekdays: [...schoolWeekdays].sort(),
+        lunchStartTime,
+        lunchEndTime,
+        morningSnackTime,
+        afternoonSnackTime,
+        commuteMinutes: parsedCommuteMinutes,
+        foodAccess,
+        excludedDates: schoolSchedule?.excludedDates || [],
+        excludedRanges,
+        pausedFrom: pauseSchool ? pausedFrom : "",
+        pausedUntil: pauseSchool ? pausedUntil : "",
+      },
+      "School day saved.",
+    );
     if (saved) {
       setSchoolError("");
       setShowSchoolForm(false);

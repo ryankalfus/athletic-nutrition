@@ -667,3 +667,25 @@ Idea cards now follow IDEA-02: availability chips per ingredient ("1 banana", "B
 The shared Menu accepts `checked` on an item and renders it as a menuitemcheckbox with aria-checked, so Save as favorite announces its state; a saved idea also shows "Saved" with a filled heart on the card (IDEA-05 kept). 2026.10.09
 Idea card chip, tag and header styles live in food.css; the old .idea-secondary and ingredient-row rules were removed. 2026.10.09
 Ticked IDEA-02 after npm run check and all 14 browser checks passed (unit test for ideaTags/availabilityChips; browser-food-workflow.js checks the card anatomy and menu). 2026.10.09
+Dialog moves focus to the next step's first field when a search result swaps the content (Log food, Add to groceries); DLG-01 and A11Y-04 ticked. 2026.10.09
+"Add food for this week" and "Put these away?" report dirty state, so Escape, × and Cancel ask "Discard changes?"; DLG-02 ticked. 2026.10.09
+Dialog save errors render just above the sheet footer (DialogError) and "Try again" repeats only the failed write, then closes the sheet; STATE-02 ticked. 2026.10.09
+Schedule writes toast what happened ("Practice added.", "Practice updated.", "Practice deleted.", "Day skipped.", "School day saved."); STATE-01 and P0-04 ticked. 2026.10.09
+Add practice validates an empty date, start or end time in the app (aria-invalid, aria-describedby, focus) instead of the browser popup, and an emptied date no longer crashes Schedule; A11Y-09 ticked. 2026.10.09
+The calendar Today button is named "Go to today" in Week and Month; A11Y-10 ticked. 2026.10.09
+Travel prep pluralizes minutes with plural(); P0-05 ticked. 2026.10.09
+About says "No calorie targets, weight tracking, or food grades. No daily counts to keep up." and a browser check runs the 7.6 term scan over every route; P0-07 ticked. 2026.10.09
+The Food section strip is 56 px on phones, so chrome is 112 px and content starts at 120 px at 320x740; browser-responsive.js measures the strip and the first content box; P0-02, RWD-04 and IA-03 ticked. 2026.10.09
+Food chip focus rings use a 1 px offset and fit the scroller padding; RWD-05 ticked. 2026.10.09
+Setup steps 2 and 3 stack time fields below 480 px with tighter setup spacing so they still fit 390x844; RWD-06 ticked. 2026.10.09
+Removed the 360 px media queries (At home stock words and the Log day label now use a container query) and added styles.test.js for the breakpoint scale; RWD-01 ticked. 2026.10.09
+Now card countdown uses Numeral XL and the water total Numeral M; DS-03 ticked. 2026.10.09
+Food › Log uses the 720 px reading column with the right column from 1200 px; DS-08 ticked. 2026.10.09
+You, About and This device sections are 32 px apart; DS-09 ticked. 2026.10.09
+The phone top-bar "+ Add" is 48 px and "Undo trip" shows the Button spinner with aria-busy; DS-11 ticked. 2026.10.09
+Log Day/Week is the shared segmented control and selected weekdays show the selected tint with a check badge; DS-12 ticked. 2026.10.09
+Food section and Ideas moment tracks scroll themselves instead of scrollIntoView(), so the first Tab reaches the skip link on Food routes; A11Y-01 ticked. 2026.10.09
+Page H1s sit inside a <header> on You, This device, About, Not found and Welcome; A11Y-03 ticked. 2026.10.09
+The route announcer no longer adds a 1 px page scroll and the save-error banner says "Save a backup file"; P1-11 stays open on ONB-04 (allergy approval). 2026.10.09
+Added tests/browser-dialogs.js, tests/browser-shared-ui.js and tests/styles.test.js; npm run check and 16/16 browser checks pass. 2026.10.09
+Merged the shared UI and a11y branch into redesign/complete-p0-p1: Schedule verb toasts (STATE-01/P0-04) now live in useActivityEditor and useSchoolEditor (weekday delete toasts "Practice deleted on Fridays."; Today passes the toast through setField), A11Y-09 date draft and app validation sit beside the ACT-02 weekday scope in ActivitySheet, DialogError moved into FoodDetailsSheet, and the checklist keeps both sides' Fixed ticks (P1-11 stays open); npm run check and 18/18 browser checks pass. 2026.10.09

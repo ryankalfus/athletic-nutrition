@@ -1,9 +1,10 @@
 import { useRef, useState } from "react";
 import { changeData, useStore } from "../../store.js";
 import { useAsyncAction } from "../../hooks/useAsyncAction.js";
-import { Dialog } from "../../components/Dialog.jsx";
+import { Dialog, DialogError } from "../../components/Dialog.jsx";
 import { ConfirmDialog } from "../../components/ui/ConfirmDialog.jsx";
 import { Menu } from "../../components/ui/Menu.jsx";
+import { Button } from "../../components/ui/Button.jsx";
 import { FoodSearch } from "../../components/FoodSearch.jsx";
 import { addDays, eventsForDate, getDateKey } from "../../domain/timing.js";
 import {
@@ -345,12 +346,12 @@ export default function GroceriesPage({ todayKey }) {
       </div>
 
       {sheet?.type === "putaway" && (
-        <Dialog title="Put these away?" onClose={closeSheet}>
+        <Dialog title="Put these away?" onClose={closeSheet} dirty={formDirty}>
           <PutAwaySheet
             items={checked}
             pantry={grocery.pantry}
             pending={pending === "finish"}
-            onCancel={closeSheet}
+            onDirty={(dirty) => setDirtySheet(dirty ? sheet : null)}
             onConfirm={async (places) => {
               const ids = checked.map((i) => i.id);
               const ok = await write(
@@ -376,12 +377,16 @@ export default function GroceriesPage({ todayKey }) {
         </Dialog>
       )}
       {sheet?.type === "week" && (
-        <Dialog title="Add food for this week" onClose={closeSheet}>
+        <Dialog
+          title="Add food for this week"
+          onClose={closeSheet}
+          dirty={formDirty}
+        >
           <WeekIdeasSheet
             ideas={sheet.ideas}
             summary={sheet.summary}
             pending={pending === "week"}
-            onCancel={closeSheet}
+            onDirty={(dirty) => setDirtySheet(dirty ? sheet : null)}
             onAdd={async (chosen) => {
               const ok = await write(
                 "week",
@@ -419,6 +424,7 @@ export default function GroceriesPage({ todayKey }) {
                 {sheet.merge.existing.name} is already on your list. Add to it
                 or keep both?
               </p>
+              <DialogError />
               <div className="dialog-actions">
                 <button
                   disabled={!!pending}
@@ -488,16 +494,18 @@ export default function GroceriesPage({ todayKey }) {
                   {trip.undone ? " · Undone" : ""}
                 </span>
                 {index === 0 && trip.undoable && !trip.undone && (
-                  <button
+                  <Button
                     disabled={!!pending}
+                    busy={pending === "undo-trip"}
+                    busyLabel="Undoing…"
                     onClick={() => {
                       const usage = tripUsage(grocery, trip.id);
                       if (usage.used.length) setConfirm(trip);
                       else undoTrip(trip);
                     }}
                   >
-                    {pending === "undo-trip" ? "Undoing…" : "Undo trip"}
-                  </button>
+                    Undo trip
+                  </Button>
                 )}
               </li>
             ))}

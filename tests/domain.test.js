@@ -120,7 +120,12 @@ import {
   formatWeekdays,
   plural,
 } from "../src/format.js";
-import { activityTitle, normalizeSport } from "../src/domain/sport.js";
+import {
+  activityTitle,
+  activityToast,
+  normalizeSport,
+} from "../src/domain/sport.js";
+import { missingActivityField } from "../src/domain/setup.js";
 import {
   availabilityLabel,
   buildRailRows,
@@ -2291,4 +2296,57 @@ test("Idea prep: amounts match the idea name and use defined units", () => {
   for (const rows of Object.values(MEAL_INGREDIENTS))
     for (const row of rows)
       assert.doesNotMatch(row[4], /\b(scoop|bowl|a few)\b/i, row[4]);
+});
+
+test("P0-05: travel prep pluralizes minutes", () => {
+  const event = { location: "away", travelMinutes: 1, startTime: "16:00" };
+  const labels = tomorrowPrepTasks(event).map((task) => task.label);
+  assert.ok(labels.includes("Check the route and allow 1 minute for travel"));
+  assert.ok(!labels.some((label) => /\b1 minutes\b/.test(label)));
+  assert.ok(
+    tomorrowPrepTasks({ ...event, travelMinutes: 45 }).some(
+      (task) =>
+        task.label === "Check the route and allow 45 minutes for travel",
+    ),
+  );
+});
+
+test("STATE-01: Schedule toasts name the activity and the verb", () => {
+  assert.equal(activityToast("practice", "added"), "Practice added.");
+  assert.equal(activityToast("game", "deleted"), "Game deleted.");
+  assert.equal(activityToast("workout", "updated"), "Workout updated.");
+  assert.equal(activityToast("other", "added"), "Activity added.");
+  assert.equal(activityToast(undefined, "deleted"), "Activity deleted.");
+});
+
+test("A11Y-09: an empty activity date or time is the app's own field error", () => {
+  const filled = {
+    date: "2026-10-09",
+    startTime: "16:00",
+    endTime: "17:30",
+    repeatMode: "once",
+    repeatEndDate: "2026-12-31",
+  };
+  assert.equal(missingActivityField(filled), null);
+  assert.deepEqual(missingActivityField({ ...filled, date: "" }), {
+    message: "Choose a date.",
+    field: "date",
+  });
+  assert.equal(
+    missingActivityField({ ...filled, date: "", oneDate: true }),
+    null,
+  );
+  assert.equal(
+    missingActivityField({ ...filled, repeatMode: "weekly", repeatEndDate: "" })
+      .field,
+    "repeatEnd",
+  );
+  assert.equal(
+    missingActivityField({ ...filled, startTime: "" }).field,
+    "startTime",
+  );
+  assert.equal(
+    missingActivityField({ ...filled, endTime: "" }).field,
+    "endTime",
+  );
 });

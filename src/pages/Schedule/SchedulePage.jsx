@@ -149,19 +149,27 @@ export default function ScheduleCalendar({
   }
 
   function cancelSchoolDay(dateKey) {
-    setSchoolSchedule((current) => ({
-      ...current,
-      excludedDates: [...new Set([...(current.excludedDates || []), dateKey])],
-    }));
+    setSchoolSchedule(
+      (current) => ({
+        ...current,
+        excludedDates: [
+          ...new Set([...(current.excludedDates || []), dateKey]),
+        ],
+      }),
+      "No school that day.",
+    );
   }
 
   function restoreSchoolDay(dateKey) {
-    setSchoolSchedule((current) => ({
-      ...current,
-      excludedDates: (current.excludedDates || []).filter(
-        (date) => date !== dateKey,
-      ),
-    }));
+    setSchoolSchedule(
+      (current) => ({
+        ...current,
+        excludedDates: (current.excludedDates || []).filter(
+          (date) => date !== dateKey,
+        ),
+      }),
+      "School day restored.",
+    );
   }
 
   const addOn = (date) => {
@@ -329,21 +337,23 @@ export default function ScheduleCalendar({
                 <span>{sportEventTitle(e, sport)} · Skipped this day</span>
                 <button
                   onClick={() =>
-                    setEvents((list) =>
-                      list.map((item) =>
-                        item.id === e.id
-                          ? {
-                              ...item,
-                              recurrence: {
-                                ...item.recurrence,
-                                excludedDates:
-                                  item.recurrence.excludedDates.filter(
-                                    (date) => date !== selectedKey,
-                                  ),
-                              },
-                            }
-                          : item,
-                      ),
+                    setEvents(
+                      (list) =>
+                        list.map((item) =>
+                          item.id === e.id
+                            ? {
+                                ...item,
+                                recurrence: {
+                                  ...item.recurrence,
+                                  excludedDates:
+                                    item.recurrence.excludedDates.filter(
+                                      (date) => date !== selectedKey,
+                                    ),
+                                },
+                              }
+                            : item,
+                        ),
+                      "Day restored.",
                     )
                   }
                 >
