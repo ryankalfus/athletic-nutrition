@@ -10,3 +10,4 @@ data/usda/*.sqlite*
 output/playwright/
 .playwright-cli/
 .claude/worktrees/
+output/

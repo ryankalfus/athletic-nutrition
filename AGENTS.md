@@ -5,6 +5,7 @@ This repo is worked on by both OpenAI Codex and Claude Code. Both read this file
 
 ## Before each action
 
+0. New machine or new session: read `HANDOFF.md` first.
 1. Read the files in `CODEX/` (`CODEX/AGENTS.md`, `CODEX/log.md`, the one pager).
 2. Read the tail of `CODEX/log.md` to see what the other agent did last.
 3. For redesign work, read the item in `CLAUDE-REDESIGN-AUDIT.md` (source of truth)

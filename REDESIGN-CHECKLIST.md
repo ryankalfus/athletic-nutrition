@@ -10,13 +10,13 @@ Owner Ryan Kalfus confirmed the recommended options previously presented for aud
 
 ## Phase tracker
 
-**Status 2026.10.09** — an independent re-verification unticked 45 items that were not fully true (each has a "Re-verified 2026.10.09" note). Earlier status: (re-verified against the code and the running app after the UI-fix pass, 92e0b6d..8887e70):
+**Status 2026.10.09** (after an independent re-verification of every ticked P0/P1 item and the fixes that followed; `npm run check` and all 18 browser scripts pass):
 
-- Phases done: P0 12/12 · P1 10/13 · P2 0/8 · P3 0/5.
-- Recommendations done: 279 of 304. Groups with open items: ADD 10/16, CMP 16/17, COPY 37/38, DLG 3/4, KEEP 14/15, MOVE 12/13, ONB 5/6, SCH 9/10, STATE 8/17, WEEK 4/5, YOU 4/6. All other groups are complete (A11Y, ACT, DATA, DEFER, DS, ENTRY, FOOD, GROC, HIST, HOME, IA, IDEA, LOG, RWD, SRCH, TODAY).
-- Awaiting approval: allergy filtering is built but switched off (`ALLERGY_TAGS_REVIEWED = false` in `src/domain/catalog.js`); it will be switched on once the allergen tags are approved. Items: P1-09, P1-10 (allergy criterion), ADD-03, ONB-04, YOU-02, YOU-03.
-- Incomplete, skipped for now (will come back to): P1-09, P1-10 (allergy filtering, awaiting approval) and P1-13 (manual screen-reader test and keyboard-only core journey not done).
-- Deferred to P2/P3: ADD-08 and SCH-10 (P2-01); ADD-13, MOVE-12 and STATE-10 (P2-03); ADD-14 (P2-04); WEEK-05 (P2-05); ADD-16 (P3-01); ADD-15 (P3-02).
+- Phases done: P0 12/12 · P1 9/13 · P2 0/8 · P3 0/5.
+- Recommendations done: 278 of 304.
+- Awaiting approval (allergy filtering built but switched off; `ALLERGY_TAGS_REVIEWED = false`): P1-09, P1-10, ADD-03, ONB-04, YOU-02, YOU-03. P1-11 waits on ONB-04.
+- Incomplete, skipped for now (will come back to): P1-09, P1-10 and P1-13 (manual screen-reader test and keyboard-only core journey not done).
+- Deferred to P2/P3: ADD-08 and SCH-10 (P2-01); ADD-13, MOVE-12 and STATE-10 (P2-03); ADD-14 (P2-04); WEEK-05 (P2-05); ADD-16 (P3-01); ADD-15 (P3-02); KEEP-01 per-threshold sources (P2-06).
 - Open work: DLG-03, COPY-38, KEEP-15, STATE-03, STATE-04, STATE-05, STATE-07, STATE-08, STATE-11, STATE-15, STATE-16, CMP-10.
 
 ### P0
