@@ -15,7 +15,7 @@ Owner Ryan Kalfus confirmed the recommended options previously presented for aud
 - Phases done: P0 12/12 · P1 10/13 · P2 0/8 · P3 0/5.
 - Recommendations done: 279 of 304. Groups with open items: ADD 10/16, CMP 16/17, COPY 37/38, DLG 3/4, KEEP 14/15, MOVE 12/13, ONB 5/6, SCH 9/10, STATE 8/17, WEEK 4/5, YOU 4/6. All other groups are complete (A11Y, ACT, DATA, DEFER, DS, ENTRY, FOOD, GROC, HIST, HOME, IA, IDEA, LOG, RWD, SRCH, TODAY).
 - Awaiting approval: allergy filtering is built but switched off (`ALLERGY_TAGS_REVIEWED = false` in `src/domain/catalog.js`); it will be switched on once the allergen tags are approved. Items: P1-09, P1-10 (allergy criterion), ADD-03, ONB-04, YOU-02, YOU-03.
-- Blocked on manual accessibility testing (VoiceOver and NVDA smoke test, keyboard-only core journey): P1-13.
+- Incomplete, skipped for now (will come back to): P1-09, P1-10 (allergy filtering, awaiting approval) and P1-13 (manual screen-reader test and keyboard-only core journey not done).
 - Deferred to P2/P3: ADD-08 and SCH-10 (P2-01); ADD-13, MOVE-12 and STATE-10 (P2-03); ADD-14 (P2-04); WEEK-05 (P2-05); ADD-16 (P3-01); ADD-15 (P3-02).
 - Open work: DLG-03, COPY-38, KEEP-15, STATE-03, STATE-04, STATE-05, STATE-07, STATE-08, STATE-11, STATE-15, STATE-16, CMP-10.
 
@@ -44,11 +44,11 @@ Owner Ryan Kalfus confirmed the recommended options previously presented for aud
 - [x] **P1-06**
 - [x] **P1-07**
 - [x] **P1-08**
-- [ ] **P1-09** — Awaiting approval: allergy filtering is built but switched off (`ALLERGY_TAGS_REVIEWED = false` in `src/domain/catalog.js`); it will be switched on once the allergen tags are approved. Built: per-ingredient tags, `profile.allergies`, idea and grocery filters, Open Food Facts allergens on product views, and tests for both gate states.
-- [ ] **P1-10** — Awaiting approval (allergy criterion): 6.14 passes; 6.13's peanut-allergy criterion needs allergy filtering on. Awaiting approval: allergy filtering is built but switched off (`ALLERGY_TAGS_REVIEWED = false`); it will be switched on once the allergen tags are approved. DATA-08 is done in P1-12.
+- [ ] **P1-09** — Incomplete, skipped for now (will come back to). Awaiting approval: allergy filtering is built but switched off (`ALLERGY_TAGS_REVIEWED = false` in `src/domain/catalog.js`); it will be switched on once the allergen tags are approved. Built: per-ingredient tags, `profile.allergies`, idea and grocery filters, Open Food Facts allergens on product views, and tests for both gate states.
+- [ ] **P1-10** — Incomplete, skipped for now (will come back to). Awaiting approval (allergy criterion): 6.14 passes; 6.13's peanut-allergy criterion needs allergy filtering on. Awaiting approval: allergy filtering is built but switched off (`ALLERGY_TAGS_REVIEWED = false`); it will be switched on once the allergen tags are approved. DATA-08 is done in P1-12.
 - [x] **P1-11** — Allergy chips in step 5 stay hidden while allergy filtering is switched off awaiting approval of the allergen tags (`ALLERGY_TAGS_REVIEWED = false`, P1-09; ONB-04).
 - [x] **P1-12**
-- [ ] **P1-13** — Blocked — manual accessibility testing. Automated 9.6 criteria pass (`tests/browser-a11y.js`: axe with zero serious or critical issues on 70 scans at 390 and 1280 px, 44 px targets, 3:1 boundaries and focus ring, keyboard, forced colors, reduced motion; `tests/browser-responsive.js` at all seven widths). Still open: the manual VoiceOver and NVDA smoke test and a keyboard-only run of the whole core journey (setup → plan → groceries → pack → log).
+- [ ] **P1-13** — Incomplete, skipped for now (will come back to): the manual screen-reader test and the keyboard-only core journey are not done. Automated 9.6 criteria pass (`tests/browser-a11y.js`: axe with zero serious or critical issues on 70 scans at 390 and 1280 px, 44 px targets, 3:1 boundaries and focus ring, keyboard, forced colors, reduced motion; `tests/browser-responsive.js` at all seven widths). Still open: the manual VoiceOver and NVDA smoke test and a keyboard-only run of the whole core journey (setup → plan → groceries → pack → log).
 
 ### P2
 

@@ -12,8 +12,7 @@ export const ALLERGY_CHOICES = [...MAJOR_ALLERGENS, ["other", "Other"]];
 const MAJOR_IDS = MAJOR_ALLERGENS.map(([id]) => id);
 const ALLERGY_IDS = ALLERGY_CHOICES.map(([id]) => id);
 
-export const ALLERGY_WAITING =
-  "Allergy filtering is waiting for review. Check every label.";
+export const ALLERGY_WAITING = "Allergy filtering coming soon.";
 export const SETUP_ALLERGY_LINE =
   "Nourally hides ideas that list your allergies, but always check labels.";
 export const OTHER_ALLERGY_LINE =

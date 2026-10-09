@@ -146,7 +146,7 @@ async (page) => {
     await step(p, "Food needs").waitFor();
     await p
       .getByText(
-        "Allergy filtering is waiting for review. Check every label.",
+        "Allergy filtering coming soon.",
         {
           exact: true,
         },

@@ -62,7 +62,7 @@ async (page) => {
     if (allergen) throw new Error(`Allergen chip is visible: ${allergen}`);
     // P1-09 gate closed: no allergy chips, only the waiting line.
     await needs
-      .getByText("Allergy filtering is waiting for review. Check every label.", {
+      .getByText("Allergy filtering coming soon.", {
         exact: true,
       })
       .waitFor();
