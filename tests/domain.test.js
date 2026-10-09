@@ -4,6 +4,9 @@ import { FOOD_IDEAS, DEFAULT_PROFILE } from "../src/domain/catalog.js";
 import {
   addDays,
   applyOccurrenceOverride,
+  changeSeriesWeekday,
+  deleteSeriesWeekday,
+  weekdayOf,
   getDateKey,
   getFuelingGuidance,
   eventsForDate,
@@ -983,6 +986,139 @@ test("P1-02: editing one weekly occurrence leaves its other dates unchanged", ()
   assert.equal(eventsForDate([skipped], "2026-09-21").length, 0);
   assert.equal(eventsForDate([skipped], "2026-09-28").length, 1);
 });
+
+// ACT-02 / ACT-03: weekday scope on a Mon–Fri series. Week of Oct 5, 2026:
+// Mon 5, Tue 6, Wed 7, Thu 8, Fri 9.
+const deepFreeze = (value) => {
+  if (value && typeof value === "object") {
+    Object.values(value).forEach(deepFreeze);
+    Object.freeze(value);
+  }
+  return value;
+};
+const weekDates = [
+  "2026-10-05",
+  "2026-10-06",
+  "2026-10-07",
+  "2026-10-08",
+  "2026-10-09",
+];
+const monFri = () => ({
+  id: "series",
+  title: "Practice",
+  type: "practice",
+  startTime: "16:00",
+  endTime: "17:30",
+  recurrence: {
+    startDate: "2026-09-01",
+    endDate: "2026-12-14",
+    weekdays: [1, 2, 3, 4, 5],
+    excludedDates: ["2026-10-02", "2026-10-07"],
+    overrides: { "2026-10-09": { startTime: "15:00" } },
+  },
+});
+const onDays = (events) =>
+  weekDates.map((date) => eventsForDate(events, date).map((e) => e.startTime));
+
+test("ACT-03: deleting all Friday practices keeps Mon–Thu", () => {
+  const before = deepFreeze([monFri(), { id: "game", date: "2026-10-10" }]);
+  const after = deleteSeriesWeekday(before, "series", weekdayOf("2026-10-09"));
+  assert.deepEqual(onDays(after), [["16:00"], ["16:00"], [], ["16:00"], []]);
+  assert.deepEqual(after[0].recurrence.weekdays, [1, 2, 3, 4]);
+  // The Friday override and the Friday skip go with Friday; Wed's skip stays.
+  assert.deepEqual(after[0].recurrence.overrides, {});
+  assert.deepEqual(after[0].recurrence.excludedDates, ["2026-10-07"]);
+  assert.equal(after[0].id, "series");
+  assert.equal(after[1].id, "game");
+  // Undo: the input list is untouched, so restoring it restores every day.
+  assert.deepEqual(onDays(before), [
+    ["16:00"],
+    ["16:00"],
+    [],
+    ["16:00"],
+    ["15:00"],
+  ]);
+});
+
+test("ACT-03: on a one-weekday series, 'all' removes the series", () => {
+  const tuesdays = { ...monFri(), recurrence: { ...monFri().recurrence } };
+  tuesdays.recurrence.weekdays = [2];
+  const after = deleteSeriesWeekday([tuesdays], "series", 2);
+  assert.deepEqual(after, []);
+});
+
+test("ACT-02: changing all Tuesday practices leaves the other weekdays", () => {
+  const before = deepFreeze([monFri()]);
+  const after = changeSeriesWeekday(
+    before,
+    "series",
+    2,
+    { fields: { startTime: "17:00", endTime: "18:30", id: "x", date: "y" } },
+    "tuesdays",
+  );
+  assert.deepEqual(onDays(after), [
+    ["16:00"],
+    ["17:00"],
+    [],
+    ["16:00"],
+    ["15:00"],
+  ]);
+  const [rest, split] = after;
+  assert.equal(rest.id, "series");
+  assert.deepEqual(rest.recurrence.weekdays, [1, 3, 4, 5]);
+  assert.equal(split.id, "tuesdays");
+  assert.deepEqual(split.recurrence.weekdays, [2]);
+  assert.equal(split.recurrence.startDate, "2026-09-01");
+  assert.deepEqual(split.recurrence.overrides, {});
+  // A later Tuesday and a later Thursday.
+  assert.equal(eventsForDate(after, "2026-10-13")[0].endTime, "18:30");
+  assert.equal(eventsForDate(after, "2026-10-15")[0].endTime, "17:30");
+  // Undo restores the untouched input.
+  assert.deepEqual(onDays(before)[1], ["16:00"]);
+});
+
+test("ACT-02: picking more days in the sheet moves them too", () => {
+  const after = changeSeriesWeekday(
+    [monFri()],
+    "series",
+    2,
+    { fields: { startTime: "17:00" }, weekdays: [2, 4], endDate: "2026-11-30" },
+    "split",
+  );
+  assert.deepEqual(after[0].recurrence.weekdays, [1, 3, 5]);
+  assert.deepEqual(after[1].recurrence.weekdays, [2, 4]);
+  assert.equal(after[1].recurrence.endDate, "2026-11-30");
+  assert.equal(after[0].recurrence.endDate, "2026-12-14");
+  assert.deepEqual(onDays(after), [
+    ["16:00"],
+    ["17:00"],
+    [],
+    ["17:00"],
+    ["15:00"],
+  ]);
+});
+
+test("ACT-02: on a one-weekday series, 'all' changes the series in place", () => {
+  const tuesdays = { ...monFri(), recurrence: { ...monFri().recurrence } };
+  tuesdays.recurrence.weekdays = [2];
+  const after = changeSeriesWeekday(
+    [tuesdays],
+    "series",
+    2,
+    { fields: { title: "Field practice" } },
+    "unused",
+  );
+  assert.equal(after.length, 1);
+  assert.equal(after[0].id, "series");
+  assert.equal(after[0].title, "Field practice");
+  assert.deepEqual(after[0].recurrence.weekdays, [2]);
+  assert.throws(() =>
+    changeSeriesWeekday([{ id: "one", date: "2026-10-06" }], "one", 2, {
+      fields: {},
+    }),
+  );
+});
+
 test("P1-02: days-off range and pause remove school from timing", () => {
   const off = {
     ...school,
