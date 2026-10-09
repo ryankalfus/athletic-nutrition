@@ -60,6 +60,26 @@ async (page) => {
       result.checks.push(
         "Search is focused, plain banana ranks first, rows show Basic food and the label line, more results load.",
       );
+      // P1-07: USDA's own first page for "rice" holds no plain rice (rice
+      // cake, rice milk, rice paper first); the gateway fetches basic forms.
+      await search("rice");
+      await p.waitForFunction(() =>
+        [...document.querySelectorAll(".food-result-row")].some((row) =>
+          /^Rice, /.test(row.innerText),
+        ),
+      );
+      const rice = (await p.locator(".food-result-row").allInnerTexts()).slice(
+        0,
+        3,
+      );
+      for (const row of rice)
+        if (!/^Rice, (cooked|white)\b/.test(row))
+          throw new Error(
+            `Plain rice is not in the top 3: ${rice.join(" | ")}`,
+          );
+      result.checks.push(
+        `Live "rice" ranks plain rice first: ${rice.map((row) => row.split("\n")[0]).join(" | ")}.`,
+      );
       // A no-hit query takes the second (basic foods) request. Fail with the
       // provider's message instead of a timeout if the live call errors.
       await search("abcdefnonfood");

@@ -1,15 +1,22 @@
 // Food search ranking, duplicate collapse, debounce and result lines (P1-07).
-// Uses fixture data only; nothing here calls the live USDA API.
+// Uses fixture data only; nothing here calls the live USDA API. The ranking
+// acceptance set replays real USDA answers recorded with the live key.
 import test from "node:test";
 import assert from "node:assert/strict";
 import { DatabaseSync } from "node:sqlite";
 import { BASIC_MATCH, SEARCH_FIXTURES } from "./fixtures/food-search.js";
+import {
+  USDA_RECORDING,
+  recordedRows,
+  replayUsda,
+} from "./fixtures/usda-search.js";
 import {
   allergenLine,
   collapseFoodMatches,
   debounce,
   foodMatchKey,
   isBrandQuery,
+  namesQuery,
   normalizeFoodText,
   portionHint,
   rankFoods,
@@ -186,47 +193,123 @@ test("local catalog pages past the ranked pool without repeating rows", () => {
   }
 });
 
-test("API mode asks for basic foods only when the mixed page has none", async () => {
+test("API mode asks for basic foods only when the mixed page has no plain one", async () => {
   const calls = [];
-  const productsOnly = SEARCH_FIXTURES.banana.filter(
-    (food) => food.dataType === "Branded",
-  );
-  const basics = SEARCH_FIXTURES.banana.filter(
-    (food) => food.dataType !== "Branded",
-  );
   // Searches POST a JSON body; the URL carries only the key.
-  const typeOf = (url, { body }) => {
+  const replay = replayUsda(calls);
+  const fetchJson = (url, options) => {
     assert.deepEqual([...new URL(url).searchParams.keys()], ["api_key"]);
-    return body.dataType?.join(",") || "all";
+    assert.equal(
+      typeof options.transform,
+      "function",
+      "rows slimmed before caching",
+    );
+    return replay(url, options);
   };
-  const fetchJson = async (url, options) => {
-    const dataType = typeOf(url, options);
-    calls.push(dataType);
-    return dataType !== "all"
-      ? { foods: basics, totalHits: basics.length, totalPages: 1 }
-      : { foods: productsOnly, totalHits: 400, totalPages: 16 };
-  };
-  const result = await searchRemote("banana", "all", 1, "KEY", fetchJson);
-  assert.deepEqual(calls, ["all", "Foundation,SR Legacy,Survey (FNDDS)"]);
-  assert.match(result.foods[0].description, /^Bananas?, raw$/);
-  assert.equal(result.hasMore, true);
+  const banana = await searchRemote("banana", "all", 1, "KEY", fetchJson);
+  assert.deepEqual(calls, ["all"], "USDA's page already has Banana, raw");
+  assert.equal(banana.hasMore, true);
 
   calls.length = 0;
-  const mixed = async (url, options) => {
-    calls.push(typeOf(url, options));
-    return { foods: SEARCH_FIXTURES.rice, totalHits: 11, totalPages: 1 };
-  };
-  const rice = await searchRemote("rice", "all", 1, "KEY", mixed);
+  await searchRemote("rice", "all", 1, "KEY", fetchJson);
   assert.deepEqual(
     calls,
-    ["all"],
-    "no second request when a basic match exists",
+    ["all", "Foundation,SR Legacy", "Survey (FNDDS)"],
+    "no plain rice on USDA's first page, so basic forms are fetched",
   );
-  assert.equal(rice.hasMore, false);
 
   calls.length = 0;
-  await searchRemote("banana", "all", 2, "KEY", fetchJson);
-  assert.deepEqual(calls, ["all"], "later pages never add a request");
+  const later = async (url, { body }) => {
+    calls.push(body.dataType?.join(",") || "all");
+    return { foods: [], totalHits: 0, totalPages: 0 };
+  };
+  await searchRemote("rice", "all", 2, "KEY", later);
+  await searchRemote("0016000275287", "all", 1, "KEY", later);
+  assert.deepEqual(
+    calls,
+    ["all", "all"],
+    "later pages and barcodes never add a request",
+  );
+});
+
+// The 6.15 acceptance set on real USDA answers recorded with the live key
+// (tests/fixtures/usda-search.json), in both server modes.
+const CLOSEST = {
+  banana: /^Bananas?, raw$/,
+  "peanut butter": /^Peanut butter$/,
+  cheerios: /^Cheerios( cereal)?$/i,
+  rice: /^Rice, (cooked|white)\b/,
+};
+function assertClosestFirst(query, foods, mode) {
+  const top = names(foods.slice(0, 3));
+  assert.match(top[0], CLOSEST[query], `${mode} ${query}: ${top.join(" | ")}`);
+  if (query === "cheerios") {
+    assert.equal(foods[0].dataType, "Branded");
+    assert.match(foods[0].brandOwner, /general mills/i);
+    return;
+  }
+  assert.notEqual(foods[0].dataType, "Branded", `${mode} ${query}`);
+  if (query === "rice") {
+    // Plain rice, not rice cake, rice milk or rice paper, fills the top 3.
+    for (const name of top)
+      assert.match(name, CLOSEST.rice, `${mode} rice: ${top.join(" | ")}`);
+    // "Gumbo, no rice" does not name rice: it sinks below every rice row.
+    const gumbo = names(foods).indexOf("Gumbo, no rice");
+    if (gumbo >= 0)
+      assert.ok(
+        foods.slice(gumbo + 1).every((food) => !/rice/i.test(food.description)),
+        `${mode}: Gumbo, no rice at ${gumbo + 1}`,
+      );
+  }
+}
+
+test("recorded live USDA: the closest basic match ranks first (API mode)", async () => {
+  // USDA's own first page for "rice" has no plain rice in 25 rows: the
+  // failure the recording guards against.
+  const mixed = USDA_RECORDING.queries.rice[0].answer.foods;
+  assert.equal(names(mixed).filter((name) => /^Rice, /.test(name)).length, 0);
+  assert.ok(names(mixed).includes("Gumbo, no rice"));
+  for (const query of QUERIES) {
+    const result = await searchRemote(query, "all", 1, "KEY", replayUsda());
+    assertClosestFirst(query, result.foods, "API");
+  }
+});
+
+test("recorded live USDA: the closest basic match ranks first (local catalog)", () => {
+  useLocalCatalog(fixtureCatalog(recordedRows()));
+  try {
+    for (const query of QUERIES)
+      assertClosestFirst(query, searchLocal(query, "all", 1).foods, "local");
+  } finally {
+    useLocalCatalog(null);
+  }
+});
+
+test("a name that negates the query does not match it", () => {
+  assert.equal(
+    namesQuery(
+      { description: "Gumbo, no rice", dataType: "Survey (FNDDS)" },
+      "rice",
+    ),
+    false,
+  );
+  assert.equal(
+    namesQuery(
+      { description: "Gumbo with rice", dataType: "Survey (FNDDS)" },
+      "rice",
+    ),
+    true,
+  );
+  assert.equal(
+    namesQuery(
+      {
+        description: "Rice, white, cooked, no added fat",
+        dataType: "Survey (FNDDS)",
+      },
+      "rice",
+    ),
+    true,
+  );
 });
 
 test("result lines: no database labels or kcal; brand, portion and allergen lines", () => {

@@ -42,7 +42,7 @@ Owner Ryan Kalfus confirmed the recommended options previously presented for aud
 - [x] **P1-04**
 - [x] **P1-05**
 - [x] **P1-06**
-- [ ] **P1-07** — Re-verified 2026.10.09, not true: Live USDA "rice" search shows no plain rice in the top 24; tests pass only on fixture order.
+- [x] **P1-07** — Fixed 2026.10.09: when USDA's first page has no plain match, the gateway fetches Foundation/SR Legacy and FNDDS basic forms and ranks plain forms first ("no rice" no longer matches); live "rice" top 3 is plain rice; covered by recorded-USDA tests in `tests/search.test.js` (API and local modes) and the live rice check in `tests/browser-provider.js`.
 - [x] **P1-08**
 - [ ] **P1-09** — Incomplete, skipped for now (will come back to). Awaiting approval: allergy filtering is built but switched off (`ALLERGY_TAGS_REVIEWED = false` in `src/domain/catalog.js`); it will be switched on once the allergen tags are approved. Built: per-ingredient tags, `profile.allergies`, idea and grocery filters, Open Food Facts allergens on product views, and tests for both gate states.
 - [ ] **P1-10** — Incomplete, skipped for now (will come back to). Awaiting approval (allergy criterion): 6.14 passes; 6.13's peanut-allergy criterion needs allergy filtering on. Awaiting approval: allergy filtering is built but switched off (`ALLERGY_TAGS_REVIEWED = false`); it will be switched on once the allergen tags are approved. DATA-08 is done in P1-12.
@@ -261,7 +261,7 @@ Each ID is an individual checkbox. Implementation notes and blockers go on the m
 
 ### SRCH
 
-- [ ] **SRCH-01** — Re-verified 2026.10.09, not true: Closest-match ranking fails for "rice" with live data.
+- [x] **SRCH-01** — Fixed 2026.10.09: closest-match ranking holds for banana, peanut butter, cheerios and rice on recorded live USDA answers (`tests/fixtures/usda-search.json`) in both server modes, and live in `tests/browser-provider.js`.
 - [x] **SRCH-02**
 - [x] **SRCH-03**
 - [x] **SRCH-04**

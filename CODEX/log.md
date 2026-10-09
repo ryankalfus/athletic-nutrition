@@ -639,3 +639,8 @@ Audited the browser checks for date dependence by running them under 12 fixed cl
 Changed the allergy notice to "Allergy filtering coming soon." and kept the approved copy for Packaged food, Discard/Keep editing and Skip step. 2026.10.09
 Marked P1-09, P1-10 and P1-13 as incomplete and skipped for now in the tracker. 2026.10.09
 Unticked 45 items after an independent re-verification of every ticked P0 and P1 item found gaps; each has a Re-verified 2026.10.09 note. 2026.10.09
+Food search ranking now ranks plain basic forms first ("Rice, cooked, NFS", "Rice, white, cooked, ..."), prefers the most common form and Foundation/SR Legacy rows on ties, and treats "no X"/"without X" as not naming X, so "Gumbo, no rice" sinks below every rice row (P1-07, SRCH-01). 2026.10.09
+The live USDA gateway now fetches Foundation/SR Legacy (200 rows) and FNDDS (200 rows) basic forms when its first page has no plain match, keeps the best 24 that name the query, and slims every USDA row to the fields the app reads before caching (a rice search answer fell from about 300 KB to 23 KB). 2026.10.09
+Recorded real USDA search answers for banana, peanut butter, cheerios and rice into tests/fixtures/usda-search.json with scripts/record-search-fixtures.mjs (key never written); new tests replay them through the API gateway and an in-memory local catalog and fail on the old ranking. 2026.10.09
+browser-provider.js now checks that a live "rice" search shows plain rice in the top 3. 2026.10.09
+Ticked P1-07 and SRCH-01 after npm run check and the search and provider browser checks passed; live top 3 for rice: Rice, cooked, NFS | Rice, white, cooked, no added fat | Rice, white, cooked, NS as to fat. 2026.10.09
