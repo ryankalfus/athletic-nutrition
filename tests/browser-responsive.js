@@ -2,7 +2,10 @@
 // Seeds a practice, a grocery list and food at home first so pages are not just empty states.
 // Fails on page-level horizontal scroll at 320 px and up, text under 12 px (13 px outside the
 // tab bar and badges), negative margins, an uncentered or over-wide page column, phone chrome
-// over 112 px, and Food sections that do not fit at 320 px. Screenshots at 375 px go to
+// over 112 px, and Food sections that do not fit at 320 px. At 320 × 740 the first content
+// block on every route starts at or above 120 px (4.5, 4.9): measured from the outer sticky
+// Food strip and the first visible block in main, not the inner chip track. The Food chips'
+// focus ring fits inside their scroller (RWD-05). Screenshots at 375 px go to
 // output/playwright/.
 async (page) => {
   const base = globalThis.BASE_URL ?? "http://127.0.0.1:5173/";
@@ -120,13 +123,35 @@ async (page) => {
         column = `gutter ${Math.round(before)} px (want ${gutter})`;
     }
 
-    // Chrome: the lowest top bar or sticky section control near the top.
+    // Chrome: the lowest top bar or sticky Food strip near the top (the
+    // strip itself, padding included, not the chip track inside it).
+    const chromeSelector = ".frame-header, .food-sections-bar";
     let chrome = 0;
-    for (const el of document.querySelectorAll(
-      ".frame-header, .food-sections",
-    )) {
+    for (const el of document.querySelectorAll(chromeSelector)) {
       const rect = el.getBoundingClientRect();
       if (!hidden(el) && rect.top < 120) chrome = Math.max(chrome, rect.bottom);
+    }
+    // Content start: the top of the first visible box in main that is not
+    // chrome (and does not hold it), page headers hidden on phones excluded.
+    let contentStart = Infinity;
+    let firstContent = "";
+    for (const el of document.querySelectorAll("main.shell *")) {
+      if (el.closest(chromeSelector) || el.querySelector(chromeSelector))
+        continue;
+      const style = getComputedStyle(el);
+      const rect = el.getBoundingClientRect();
+      if (
+        rect.width < 2 ||
+        rect.height < 2 ||
+        style.visibility === "hidden" ||
+        style.position === "fixed" ||
+        el.closest(".sr-only, [hidden]")
+      )
+        continue;
+      if (rect.top < contentStart) {
+        contentStart = rect.top;
+        firstContent = name(el);
+      }
     }
 
     const clippedTabs = [];
@@ -148,6 +173,8 @@ async (page) => {
       negative: [...negative].slice(0, 3),
       column,
       chrome: Math.round(chrome),
+      contentStart: Math.round(contentStart),
+      firstContent,
       clippedTabs,
     };
   };
@@ -174,6 +201,10 @@ async (page) => {
     if (width <= 375 && state.chrome > 112)
       problems.push(
         `${at} chrome before content is ${state.chrome}px (max 112)`,
+      );
+    if (width === 320 && state.contentStart > 120)
+      problems.push(
+        `${at} content starts at ${state.contentStart}px (${state.firstContent}; max 120)`,
       );
     if (state.clippedTabs.length)
       problems.push(
@@ -223,6 +254,45 @@ async (page) => {
     await p.goto(`${base}#/food/home`);
     await p.getByRole("button", { name: "Add Bananas", exact: true }).click();
     await p.getByRole("radiogroup", { name: "Bananas stock" }).waitFor();
+
+    // 4.5 / 4.9 at the reference phone: 320 × 740, every route.
+    await p.setViewportSize({ width: 320, height: 740 });
+    for (const route of routes) {
+      await p.goto(`${base}#/${route}`);
+      await p.locator("main").waitFor();
+      await p.waitForTimeout(100);
+      await check(route, 320);
+    }
+
+    // RWD-05: the 3 px ring around a focused Food chip stays inside the
+    // scroller's clip box at 320 px.
+    await p.goto(`${base}#/food/ideas`);
+    await p.locator("nav.food-sections a").first().waitFor();
+    await p.keyboard.press("Shift");
+    for (const link of await p.locator("nav.food-sections a").all()) {
+      await link.focus();
+      const ring = await link.evaluate((node) => {
+        const style = getComputedStyle(node);
+        const reach =
+          parseFloat(style.outlineWidth) + parseFloat(style.outlineOffset);
+        const box = node.getBoundingClientRect();
+        const clip = node.closest("nav").getBoundingClientRect();
+        return {
+          name: node.textContent.trim(),
+          visible:
+            node.matches(":focus-visible") && style.outlineStyle !== "none",
+          clipped:
+            box.left - reach < clip.left - 0.5 ||
+            box.right + reach > clip.right + 0.5 ||
+            box.top - reach < clip.top - 0.5 ||
+            box.bottom + reach > clip.bottom + 0.5,
+        };
+      });
+      if (!ring.visible)
+        problems.push(`Food chip ${ring.name} shows no focus ring`);
+      if (ring.clipped)
+        problems.push(`Food chip ${ring.name} focus ring is clipped at 320px`);
+    }
 
     for (const width of widths) {
       await p.setViewportSize({ width, height: 850 });
@@ -279,6 +349,8 @@ async (page) => {
       "No negative margins on any visible element (DS-09).",
       "Every page column is centered, at most 720/960/1072 px, with 16/24/32 px gutters (DS-07, DS-08).",
       "Phone chrome before content stays within 112 px and all four Food sections fit at 320 px (RWD-04, RWD-05).",
+      "At 320 × 740 the first content block starts at or above 120 px on every route, Food included (P0-02, RWD-04, IA-03).",
+      "A focused Food chip's ring stays inside its scroller at 320 px (RWD-05).",
       "The activity sheet fits every width with its footer on screen; full-width bottom sheet below 768 px (RWD-11).",
     );
     return result;

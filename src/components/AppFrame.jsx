@@ -52,7 +52,7 @@ export function Shell({
   action,
 }) {
   const state = useStore();
-  const [view] = useRoute();
+  const [view, , subroute] = useRoute();
   const current = destinations.find(({ id }) => id === view);
   const title =
     pageTitle ||
@@ -60,11 +60,14 @@ export function Shell({
     (view === "notFound" ? "Page not found" : "Food");
   const go = onNavigate || navigate;
   const athleteName = nameOf(state.current);
-  // Column width per route (DS-08): Today and Schedule gain a right column at
-  // 1200px, Food uses the 960px grid column, everything else reads at 720px.
+  // Column width per route (DS-08): Today, Schedule and Food › Log read at
+  // 720px and gain a right column at 1200px, the rest of Food uses the 960px
+  // grid column, everything else reads at 720px.
   const layout = !navigation
     ? "reading"
-    : view === "today" || view === "schedule"
+    : view === "today" ||
+        view === "schedule" ||
+        (view === "food" && /^log(\/|$)/.test(subroute || ""))
       ? "wide"
       : view === "food"
         ? "grid"
@@ -130,7 +133,8 @@ export function Shell({
       <main id="main-content" className="shell" data-layout={layout}>
         {state.error && (
           <div className="save-error" role="alert">
-            {state.error} <button onClick={exportBackup}>Export backup</button>
+            {state.error}{" "}
+            <button onClick={exportBackup}>Save a backup file</button>
             <button onClick={retryLastWrite}>Try again</button>
           </div>
         )}

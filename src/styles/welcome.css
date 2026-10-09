@@ -8,9 +8,17 @@
   margin-inline: auto;
 }
 
+/* Phones: time fields stack one per row below 480px (RWD-06), so setup gives
+ * back the space its pinned "Next" bar already covers: no page padding under
+ * it and a 16px brand gap, and steps 2 and 3 still fit 390 × 844 (6.2). */
+.shell:has(> .setup) {
+  padding-bottom: 0;
+}
+
 .shell:has(> .setup) > .brand {
   max-width: 560px;
   margin-inline: auto;
+  margin-bottom: var(--space-4);
 }
 
 .welcome {
@@ -22,6 +30,16 @@
 }
 
 .welcome > * {
+  margin: 0;
+}
+
+/* Title and promise (A11Y-03), spaced like the rest of the column. */
+.welcome-head {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.welcome-head > * {
   margin: 0;
 }
 
@@ -205,8 +223,8 @@
   gap: var(--space-4);
   /* Phones: fill the screen below the brand and step header so "Next" sits
      at the bottom even on short steps. */
-  min-height: calc(100dvh - 180px);
-  padding-top: var(--space-4);
+  min-height: calc(100dvh - 128px);
+  padding-top: var(--space-2);
 }
 
 .setup-step > h1 {
@@ -251,11 +269,6 @@
 .setup-group > .text-button,
 .setup-no-school {
   justify-self: start;
-}
-
-/* Two time fields side by side even on phones, so steps fit 390 × 844. */
-.setup :is(.time-fields, .school-date-fields) {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
 .setup-add {
@@ -364,6 +377,15 @@
 
   .setup-step {
     min-height: 0;
+    padding-top: var(--space-4);
+  }
+
+  .shell:has(> .setup) {
+    padding-bottom: var(--space-8);
+  }
+
+  .shell:has(> .setup) > .brand {
+    margin-bottom: var(--space-8);
   }
 
   .setup-actions {
