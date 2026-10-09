@@ -2,7 +2,7 @@ import { BatteryLow, CircleCheck, CircleOff, Minus, Plus } from "lucide-react";
 import { useState, useRef } from "react";
 import { useStore, changeData } from "../../store.js";
 import { useAsyncAction } from "../../hooks/useAsyncAction.js";
-import { Dialog, DialogCancel } from "../../components/Dialog.jsx";
+import { Dialog } from "../../components/Dialog.jsx";
 import { Menu } from "../../components/ui/Menu.jsx";
 import { FoodSearch } from "../../components/FoodSearch.jsx";
 import { GROCERY_CATALOG } from "../../domain/catalog.js";
@@ -13,6 +13,7 @@ import {
   sameProduct,
   stockStatus,
   setStockStatus,
+  stepStockCount,
   stockToGroceries,
   toggleStockOut,
   groceryFitsProfile,
@@ -20,6 +21,8 @@ import {
 import { EmptyState } from "../../components/ui/EmptyState.jsx";
 import { SegmentedControl } from "../../components/ui/SelectionControls.jsx";
 import { QuickAddList } from "../../components/ui/QuickAddList.jsx";
+import { LabelCheck } from "../../components/ui/LabelCheck.jsx";
+import { FoodDetailsSheet } from "./FoodDetailsSheet.jsx";
 
 // Have · Low · Out with an icon; below 360px only the icon shows and the
 // word stays for screen readers (6.5 mobile layout).
@@ -120,21 +123,17 @@ export default function HomePage({ todayKey }) {
         setCountsAs(record);
     }
   };
+  // HOME-04: an Out row has none left, so "+" gives "1 left", never the
+  // count it had before it ran out (stepStockCount).
   const step = (row, delta) => {
-    const quantity = Math.max(
-      0,
-      Number(counts[row.id] ?? row.quantity) + delta,
-    );
+    const { quantity } = stepStockCount(row, delta, todayKey, counts[row.id]);
     setCounts((c) => ({ ...c, [row.id]: quantity }));
     clearTimeout(timers.current[row.id]);
     timers.current[row.id] = setTimeout(async () => {
       await changeData((d) => {
-        const target = d.groceryState.pantry.find((i) => i.id === row.id);
-        if (target) {
-          target.quantity = quantity;
-          target.availability = quantity === 0 ? "out" : "exact";
-          target.updatedDate = todayKey;
-        }
+        d.groceryState.pantry = d.groceryState.pantry.map((i) =>
+          i.id === row.id ? stepStockCount(i, 0, todayKey, quantity) : i,
+        );
       }, null);
       setCounts((c) => {
         const next = { ...c };
@@ -212,7 +211,8 @@ export default function HomePage({ todayKey }) {
                           )}
                         </div>
                         {row.availability === "out" &&
-                        row.previousAvailability === "exact" ? (
+                        row.previousAvailability === "exact" &&
+                        counts[row.id] == null ? (
                           // Out after an exact count: "Out" and one restock
                           // step; "Back in stock" lives in the row menu.
                           <div className="stock-amount">
@@ -229,7 +229,8 @@ export default function HomePage({ todayKey }) {
                             </button>
                           </div>
                         ) : !row.availability ||
-                          row.availability === "exact" ? (
+                          row.availability === "exact" ||
+                          counts[row.id] != null ? (
                           <div className="stock-amount">
                             <button
                               aria-label={`Decrease ${row.name}`}
@@ -437,9 +438,10 @@ export default function HomePage({ todayKey }) {
           dirty={dirty}
           discardMessage="Your unsaved food details will be lost."
         >
-          <HomeDetails
-            initial={edit}
-            pending={pending}
+          <FoodDetailsSheet
+            mode="home"
+            item={edit}
+            pending={pending === "edit"}
             onDirty={() => setDirty(true)}
             onSave={(fields) =>
               write(
@@ -496,6 +498,8 @@ function CountsAsSheet({ row, pending, onClose, onSave }) {
           else onClose();
         }}
       >
+        {/* P0-06: a product added at home keeps the label line here too. */}
+        <LabelCheck food={row.food} />
         <label>
           What does {row.name} count as?
           <select value={id} onChange={(e) => setId(e.target.value)}>
@@ -522,130 +526,5 @@ function CountsAsSheet({ row, pending, onClose, onSave }) {
         </div>
       </form>
     </Dialog>
-  );
-}
-function HomeDetails({ initial, pending, onDirty, onSave }) {
-  const [draft, setDraft] = useState({
-    ...initial,
-    availability:
-      initial.availability === "some"
-        ? "have"
-        : initial.availability || "exact",
-  });
-  const change = (key, value) => {
-    setDraft((d) =>
-      key === "availability" && value === "out"
-        ? setStockStatus(d, value, initial.updatedDate)
-        : { ...d, [key]: value },
-    );
-    onDirty();
-  };
-  return (
-    <form
-      className="home-details"
-      onSubmit={(e) => {
-        e.preventDefault();
-        onSave(draft);
-      }}
-    >
-      <label>
-        Name
-        <input
-          required
-          maxLength={240}
-          value={draft.name}
-          onChange={(e) => change("name", e.target.value)}
-        />
-      </label>
-      <label>
-        Counts as
-        <select
-          value={draft.ingredientId || ingredientId(draft) || ""}
-          onChange={(e) => change("ingredientId", e.target.value)}
-        >
-          <option value="">No ingredient match</option>
-          {INGREDIENTS.map((i) => (
-            <option key={i.id} value={i.id}>
-              {i.name}
-            </option>
-          ))}
-        </select>
-      </label>
-      <label>
-        Place
-        <select
-          value={draft.location || "pantry"}
-          onChange={(e) => change("location", e.target.value)}
-        >
-          {[
-            ["pantry", "Kitchen & pantry"],
-            ["fridge", "Fridge"],
-            ["freezer", "Freezer"],
-            ["bag", "In my bag"],
-          ].map(([key, label]) => (
-            <option key={key} value={key}>
-              {label}
-            </option>
-          ))}
-        </select>
-      </label>
-      <label>
-        Amount type
-        <select
-          value={draft.availability}
-          onChange={(e) => change("availability", e.target.value)}
-        >
-          {[
-            ["have", "Have"],
-            ["low", "Low"],
-            ["out", "Out"],
-            ["exact", "Exact quantity"],
-          ].map(([key, label]) => (
-            <option key={key} value={key}>
-              {label}
-            </option>
-          ))}
-        </select>
-      </label>
-      {draft.availability === "exact" && (
-        <label>
-          Amount left
-          <input
-            type="number"
-            min="0"
-            max="100"
-            required
-            value={draft.quantity}
-            onChange={(e) => change("quantity", Number(e.target.value))}
-          />
-        </label>
-      )}
-      <label>
-        Use-by date (optional)
-        <input
-          type="date"
-          value={draft.expiry || ""}
-          onChange={(e) => change("expiry", e.target.value)}
-        />
-      </label>
-      <label>
-        Notes (optional)
-        <textarea
-          maxLength={500}
-          value={draft.notes || ""}
-          onChange={(e) => change("notes", e.target.value)}
-        />
-      </label>
-      <div className="sheet-footer">
-        <DialogCancel disabled={!!pending} />
-        <button
-          aria-busy={pending || undefined}
-          className="primary"
-          disabled={!!pending}
-        >
-          {pending ? "Saving…" : "Save details"}
-        </button>
-      </div>
-    </form>
   );
 }

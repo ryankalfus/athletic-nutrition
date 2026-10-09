@@ -26,7 +26,7 @@ Owner Ryan Kalfus confirmed the recommended options previously presented for aud
 - [x] **P0-03**
 - [ ] **P0-04** — Re-verified 2026.10.09, not true: Deleting an activity shows a generic "Saved." toast; dialog error sits under the header, not above the footer.
 - [ ] **P0-05** — Re-verified 2026.10.09, not true: "allow 1 minutes for travel" can render (timing.js:225).
-- [ ] **P0-06** — Re-verified 2026.10.09, not true: Log food Recent/Saved list and the At home "Counts as?" dialog show branded products without the label line.
+- [x] **P0-06** — Fixed 2026.10.09: Log food Recent/Saved show the label line once above them (product rows keep their allergen line) and At home "Counts as?" shows LabelCheck with the food; covered by `tests/browser-search.js`.
 - [ ] **P0-07** — Re-verified 2026.10.09, not true: The 7.6 scan fails on "streaks" in You › About; no test scans every route.
 - [x] **P0-08**
 - [x] **P0-09**
@@ -150,7 +150,7 @@ Each ID is an individual checkbox. Implementation notes and blockers go on the m
 - [x] **FOOD-02**
 - [x] **FOOD-03**
 - [x] **FOOD-04**
-- [ ] **FOOD-05** — Re-verified 2026.10.09, not true: Search result Save star has no repeat-tap guard (double-click saves then unsaves).
+- [x] **FOOD-05** — Fixed 2026.10.09: the search Save star runs through useAsyncAction (aria-busy, repeat taps ignored until the save settles); a double tap saves once in `tests/browser-search.js`.
 - [x] **FOOD-06**
 
 ### HOME
@@ -158,7 +158,7 @@ Each ID is an individual checkbox. Implementation notes and blockers go on the m
 - [x] **HOME-01**
 - [x] **HOME-02**
 - [x] **HOME-03**
-- [ ] **HOME-04** — Re-verified 2026.10.09, not true: Out row with an exact count: "+" adds to the hidden count (3, Out, + gives 4).
+- [x] **HOME-04** — Fixed 2026.10.09: "+" on an Out row restocks from 0 (3, Out, + gives 1 left; Back in stock still restores 3) via `stepStockCount`; covered by `tests/domain.test.js` and `tests/browser-food-workflow.js`.
 - [x] **HOME-05**
 - [x] **HOME-06**
 - [x] **HOME-07**
@@ -452,7 +452,7 @@ Each ID is an individual checkbox. Implementation notes and blockers go on the m
 - [ ] **CMP-10** — Open: the idea card is inline markup in `IdeasPage.jsx`; no shared `IdeaCard` / `AvailabilityChips` (Today renders its own availability list).
 - [x] **CMP-11**
 - [x] **CMP-12**
-- [ ] **CMP-13** — Re-verified 2026.10.09, not true: No shared FoodDetailsSheet; At home and Groceries use two forms.
+- [x] **CMP-13** — Fixed 2026.10.09: one `pages/Food/FoodDetailsSheet.jsx` replaces HomeDetails and GroceryItemForm (home and grocery modes keep their fields, validation and save labels); covered by `tests/browser-food-workflow.js`.
 - [x] **CMP-14**
 - [x] **CMP-15**
 - [x] **CMP-16**

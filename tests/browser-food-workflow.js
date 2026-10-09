@@ -134,11 +134,9 @@ async (page) => {
       .getByRole("radio", { name: "Tomorrow" })
       .click();
     await p.waitForURL(/moment=tomorrow/);
-    const fig = p
-      .locator("article.idea-card")
-      .filter({
-        has: p.getByRole("heading", { name: "Fig bar + fresh fruit" }),
-      });
+    const fig = p.locator("article.idea-card").filter({
+      has: p.getByRole("heading", { name: "Fig bar + fresh fruit" }),
+    });
     await fig.getByText("Buy 1 item").waitFor();
     await fig.getByText("Preparation & storage").click();
     await fig.getByRole("button", { name: "Add missing to groceries" }).click();
@@ -187,6 +185,28 @@ async (page) => {
       "Log row menu: Used from At home takes 1 banana (3 -> 2 left) and Put back at home restores it.",
     );
 
+    // HOME-04: Out after an exact count shows "Out" and "+"; "+" restocks
+    // from none left ("1 left"), never the hidden count (3 + 1 = 4).
+    await homeRow("Bananas")
+      .getByRole("button", { name: "Bananas options" })
+      .click();
+    await homeRow("Bananas")
+      .getByRole("menuitem", { name: "Mark out" })
+      .click();
+    await homeRow("Bananas").getByText("Out", { exact: true }).waitFor();
+    await homeRow("Bananas")
+      .getByRole("button", { name: "Increase Bananas" })
+      .click();
+    await homeRow("Bananas").getByText("1 left").waitFor();
+    await p.waitForTimeout(900);
+    await p.reload();
+    await homeRow("Bananas").getByText("1 left").waitFor();
+    if (await homeRow("Bananas").getByText("4 left").count())
+      throw new Error("+ on an Out row added to the hidden count");
+    result.checks.push(
+      "HOME-04: 3 left -> Mark out -> + reads 1 left (not 4) and stays after reload.",
+    );
+
     // Price estimates on: the estimate line and the price field appear.
     await p.goto(`${base}#/you/access`);
     const access = p.getByRole("dialog", { name: "Food access & budget" });
@@ -203,6 +223,54 @@ async (page) => {
     await p.getByText(/ · about \$\d+\.\d\d$/).waitFor();
     result.checks.push(
       "Turning on price estimates in the Access sheet shows the row price and the About $ total.",
+    );
+
+    // CMP-13: grocery item details and At home details are one shared
+    // FoodDetailsSheet, each with its own fields, and both still save.
+    const groceryMenu = p.getByRole("button", { name: / options$/ }).first();
+    const groceryName = (await groceryMenu.getAttribute("aria-label")).replace(
+      / options$/,
+      "",
+    );
+    await groceryMenu.click();
+    await p.getByRole("menuitem", { name: "Edit", exact: true }).click();
+    const groceryEdit = p.getByRole("dialog", { name: `Edit ${groceryName}` });
+    const groceryForm = groceryEdit.locator("form.food-details");
+    await groceryForm.getByRole("spinbutton", { name: "Amount" }).fill("4");
+    await groceryForm.getByRole("combobox", { name: "Unit" }).waitFor();
+    await groceryForm
+      .getByRole("spinbutton", { name: "Price estimate ($, optional)" })
+      .waitFor();
+    if (
+      await groceryForm.getByRole("combobox", { name: "Amount type" }).count()
+    )
+      throw new Error("Grocery details show At home's amount type");
+    await groceryForm
+      .getByRole("button", { name: "Save", exact: true })
+      .click();
+    await groceryEdit.waitFor({ state: "hidden" });
+    await p
+      .locator("li")
+      .filter({ hasText: groceryName })
+      .getByText(/^4 /)
+      .first()
+      .waitFor();
+    await p.goto(`${base}#/food/home`);
+    await homeRow("Bananas")
+      .getByRole("button", { name: "Bananas options" })
+      .click();
+    await homeRow("Bananas")
+      .getByRole("menuitem", { name: "Edit details" })
+      .click();
+    const homeForm = p
+      .getByRole("dialog", { name: "Edit Bananas" })
+      .locator("form.food-details");
+    await homeForm.getByRole("combobox", { name: "Place" }).waitFor();
+    await homeForm.getByRole("spinbutton", { name: "Amount left" }).fill("5");
+    await homeForm.getByRole("button", { name: "Save details" }).click();
+    await homeRow("Bananas").getByText("5 left").waitFor();
+    result.checks.push(
+      `CMP-13: ${groceryName} (groceries) and Bananas (At home) edit in the shared FoodDetailsSheet with their own fields and save.`,
     );
     return result;
   } catch (e) {

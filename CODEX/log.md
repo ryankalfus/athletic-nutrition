@@ -644,3 +644,8 @@ The live USDA gateway now fetches Foundation/SR Legacy (200 rows) and FNDDS (200
 Recorded real USDA search answers for banana, peanut butter, cheerios and rice into tests/fixtures/usda-search.json with scripts/record-search-fixtures.mjs (key never written); new tests replay them through the API gateway and an in-memory local catalog and fail on the old ranking. 2026.10.09
 browser-provider.js now checks that a live "rice" search shows plain rice in the top 3. 2026.10.09
 Ticked P1-07 and SRCH-01 after npm run check and the search and provider browser checks passed; live top 3 for rice: Rice, cooked, NFS | Rice, white, cooked, no added fat | Rice, white, cooked, NS as to fat. 2026.10.09
+At home "+" on an Out row with an exact count now restocks from 0 (3, Out, + reads 1 left, not 4) through the new stepStockCount in food.js; Back in stock still restores 3 (HOME-04, unit test and browser-food-workflow.js). 2026.10.09
+The search result Save star now runs through useAsyncAction with aria-busy and ignores repeat taps until the save settles, so a double tap saves once (FOOD-05, browser-search.js). 2026.10.09
+Log food's Recent and Saved lists now show "Allergies: check every label." once above them, and At home's "Counts as?" dialog shows LabelCheck with the product's allergen line (P0-06, browser-search.js). 2026.10.09
+Replaced HomeDetails (At home) and GroceryItemForm (Groceries) with one shared pages/Food/FoodDetailsSheet.jsx in home and grocery modes, keeping each form's fields, validation, labels and save behavior; edit details also show the label line for products (CMP-13, browser-food-workflow.js). 2026.10.09
+Ticked P0-06, FOOD-05, HOME-04 and CMP-13 after npm run check and the search and food-workflow browser checks passed. 2026.10.09
