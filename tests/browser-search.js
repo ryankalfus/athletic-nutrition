@@ -65,6 +65,8 @@ async (page) => {
       }),
     ],
   };
+  // A product that matches no ingredient, for At home's "Counts as?".
+  pages.mystery = [product("MYSTERY CRUNCH BAR", "Trail Snacks Co.")];
   const requests = [];
   let mode = "local-snapshot";
   await context.route("**/api/foods/status", (route) =>
@@ -196,6 +198,69 @@ async (page) => {
     await dialog.getByRole("button", { name: "Cancel" }).click();
     result.checks.push(
       "Add opens the portion sheet with the portion hint and the quiet source line.",
+    );
+
+    // FOOD-05: a double tap on the Save star saves once (not save + unsave).
+    dialog = await openSearch();
+    await dialog.getByRole("searchbox").fill("cheerios");
+    const star = dialog.getByRole("button", {
+      name: "Save Honey nut cheerios",
+    });
+    await star.dblclick();
+    await p.waitForTimeout(800);
+    if ((await star.getAttribute("aria-pressed")) !== "true")
+      throw new Error("A double tap on the Save star left the food unsaved");
+    // Log Cheerios so it shows under Recent.
+    await dialog.getByRole("button", { name: /^Add Cheerios, / }).click();
+    await dialog.getByRole("button", { name: "Save", exact: true }).click();
+    await dialog.waitFor({ state: "hidden" });
+    result.checks.push(
+      "FOOD-05: a double tap on a result's Save star saves it once.",
+    );
+
+    // P0-06: Recent and Saved list products with the label line above them.
+    dialog = await openSearch();
+    // The Log dialog keeps the last query; clear it for the idle lists.
+    await dialog.getByRole("searchbox").fill("");
+    const recent = dialog.getByRole("region", { name: "Recent" });
+    const saved = dialog.getByRole("region", { name: "Saved" });
+    for (const [list, name] of [
+      [recent, "Cheerios"],
+      [saved, "Honey nut cheerios"],
+    ]) {
+      const row = list
+        .locator("li.food-result-row")
+        .filter({ has: p.getByRole("heading", { name, exact: true }) });
+      const text = await row.innerText();
+      if (!text.includes("Brand: ") || !text.includes("Allergens: check"))
+        throw new Error(
+          `${name} in the idle list lacks its brand or allergen line`,
+        );
+    }
+    const idle = await dialog.innerText();
+    if (idle.split("Allergies: check every label.").length !== 2)
+      throw new Error("Recent and Saved do not show the label line once");
+    result.checks.push(
+      "P0-06: Recent and Saved show products with their allergen line and the label line once above them.",
+    );
+    await dialog.getByRole("button", { name: "Close Log food" }).click();
+
+    // P0-06: a product added At home that matches no ingredient opens
+    // "Counts as?", which keeps the allergen and label lines.
+    await p.goto(`${base}#/food/home`);
+    await p.getByRole("button", { name: "Add food", exact: true }).click();
+    const homeAdd = p.getByRole("dialog", { name: "Add food at home" });
+    await homeAdd.getByRole("searchbox").fill("mystery");
+    await homeAdd
+      .getByRole("button", { name: /^Add Mystery crunch bar/ })
+      .click();
+    const countsAs = p.getByRole("dialog", { name: "Counts as?" });
+    await countsAs.getByText("Allergies: check every label.").waitFor();
+    await countsAs.getByText("Allergens: check the package.").waitFor();
+    await countsAs.getByRole("button", { name: "Skip" }).click();
+    await countsAs.waitFor({ state: "hidden" });
+    result.checks.push(
+      "P0-06: At home “Counts as?” for a branded product shows the allergen and label lines.",
     );
 
     // API fallback mode: search waits for Enter, protecting the limited key.

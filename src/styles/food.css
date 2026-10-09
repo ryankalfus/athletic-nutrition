@@ -205,61 +205,84 @@
   align-self: flex-start;
 }
 
-/* "To buy" stands out from "At home": warning colour and a basket. */
-.idea-card li .to-buy {
+/* IDEA-02 card: the name with its "…" menu on one line. */
+.idea-card-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.idea-card-head h3 {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.idea-card-head .row-menu {
+  flex: 0 0 auto;
+}
+
+.idea-saved {
   display: inline-flex;
   align-items: center;
   gap: var(--space-1);
-  color: var(--color-warning);
+  color: var(--color-primary);
+  font-size: var(--text-small);
   font-weight: 600;
 }
 
-.idea-card ul {
-  display: grid;
+/* Availability chips: what is at home, and "Buy: …" in warning tint. */
+.idea-chips,
+.idea-tags {
+  display: flex;
+  flex-wrap: wrap;
   gap: var(--space-2);
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
-.idea-card li {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: var(--space-3);
+.idea-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  max-width: 100%;
+  min-height: 28px;
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-sm);
+  background: var(--color-success-tint);
+  color: var(--color-ink);
+  font-size: var(--text-small);
+  line-height: var(--leading-small);
+  overflow-wrap: anywhere;
 }
 
-.idea-card li small {
+.idea-chip svg {
   flex: 0 0 auto;
+  color: var(--color-success);
+}
+
+.idea-chip.to-buy {
+  background: var(--color-warning-tint);
+  font-weight: 600;
+}
+
+.idea-chip.to-buy svg {
+  color: var(--color-warning);
+}
+
+/* Tags: a small icon with text, quieter than the chips. */
+.idea-tags li {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
   color: var(--color-ink-muted);
-  white-space: nowrap;
+  font-size: var(--text-small);
+  line-height: var(--leading-small);
 }
 
 .idea-card .primary {
   margin-top: auto;
-}
-
-.idea-secondary {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-2);
-}
-
-/* Text actions start on the card's content edge. */
-.idea-secondary {
-  gap: var(--space-5);
-}
-
-.idea-secondary button {
-  justify-content: flex-start;
-  padding: var(--space-2) 0;
-  border: 0;
-  background: transparent;
-  color: var(--color-ink-muted);
-}
-
-.idea-secondary button[aria-pressed="true"] {
-  color: var(--color-primary);
 }
 
 :is(.idea-card, .meal-plan-card) details > :not(summary) + :not(summary) {

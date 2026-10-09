@@ -85,19 +85,55 @@ function describe(food) {
     .split(",")
     .map((part) => normalizeFoodText(part))
     .filter(Boolean);
+  const rest = segments.slice(1);
+  const extras = rest.filter((part) => !isPlainDescriptor(part));
   return {
-    basic: isBasic(food),
+    basic: Boolean(isBasic(food)),
     full: normalizeFoodText(name),
+    // The words the name really names: "Gumbo, no rice" names gumbo only.
+    named: segments.map(affirmed).filter(Boolean).join(" "),
     first: segments[0] || "",
-    rest: segments.slice(1),
+    rest,
+    // Descriptors that change the food ("white", "fried"), not plain ones.
+    extras,
     brand: brandKey(food.brand ?? food.brandOwner ?? food.brandName),
     brandName: normalizeFoodText(food.brandName),
     length: name.length,
+    source: SOURCE_ORDER[food.dataType] ?? 2,
   };
 }
 
-const PLAIN = new Set(["raw", "plain", "fresh", "whole"]);
+const SOURCE_ORDER = { Foundation: 0, "SR Legacy": 1 };
 const words = (text) => (text ? text.split(" ") : []);
+// A word that negates the words after it within one name segment.
+const NEGATIONS = new Set(["no", "without", "not", "non"]);
+/** The part of a name segment before a negation ("no rice" → ""). */
+function affirmed(segment) {
+  const list = words(segment);
+  const stop = list.findIndex((word) => NEGATIONS.has(word));
+  return stop < 0 ? segment : list.slice(0, stop).join(" ");
+}
+// Descriptors that leave a basic food in its everyday form. USDA writes
+// "NFS" (not further specified) and "NS as to fat" on the generic FNDDS row.
+const PLAIN = new Set([
+  "raw",
+  "plain",
+  "fresh",
+  "whole",
+  "cooked",
+  "nfs",
+  "regular",
+  "enriched",
+  "unenriched",
+  "unsalted",
+]);
+function isPlainDescriptor(part) {
+  return (
+    PLAIN.has(part) ||
+    part.startsWith("ns as to ") ||
+    NEGATIONS.has(words(part)[0])
+  );
+}
 const containsAll = (text, needle) => {
   const have = new Set(words(text));
   return words(needle).every((word) => have.has(word));
@@ -105,17 +141,18 @@ const containsAll = (text, needle) => {
 const startsWithWords = (text, needle) =>
   text === needle || text.startsWith(`${needle} `);
 
-// How closely a basic food's name matches the query (lower is closer).
+// The name does not name the query at all.
+const NO_MATCH = 9;
+
+// How closely a basic food's name matches the query (lower is closer):
+// 0 the food itself in a plain form ("Rice, cooked, NFS"), 1 the food in
+// another form ("Rice, white, cooked"), 3 a food whose name starts with it
+// ("Rice cake"), 4 a food that contains it ("Soup, rice").
 function basicTier(item, q) {
-  if (item.first === q) {
-    if (!item.rest.length || item.rest.every((part) => PLAIN.has(part)))
-      return 0;
-    if (item.rest.includes("raw")) return 1;
-    return 2;
-  }
+  if (item.first === q) return item.extras.length ? 1 : 0;
   if (startsWithWords(item.first, q)) return 3;
-  if (containsAll(item.full, q)) return 4;
-  return 5;
+  if (containsAll(item.named, q)) return 4;
+  return NO_MATCH;
 }
 
 // How closely a product's name or brand matches the query (lower is closer).
@@ -127,8 +164,16 @@ function productTier(item, q) {
     startsWithWords(item.brandName, q)
   )
     return 1;
-  if (containsAll(`${item.full} ${item.brand} ${item.brandName}`, q)) return 2;
-  return 3;
+  if (containsAll(`${item.named} ${item.brand} ${item.brandName}`, q)) return 2;
+  return NO_MATCH;
+}
+
+const tierOf = (item, q) =>
+  item.basic ? basicTier(item, q) : productTier(item, q);
+
+/** True when the food's name or brand names the query (not "no rice"). */
+export function namesQuery(food, query) {
+  return tierOf(describe(food), normalizeFoodText(query)) !== NO_MATCH;
 }
 
 /**
@@ -155,17 +200,34 @@ export function rankFoods(foods, query) {
   const brandFirst = isBrandQuery(foods, query);
   const scored = foods.map((food, index) => {
     const item = describe(food);
-    const tier = item.basic
-      ? basicTier(item, q) + (brandFirst ? 10 : 0)
-      : productTier(item, q) + (brandFirst ? 0 : 10);
+    const closeness = tierOf(item, q);
+    // Names that do not name the query ("Gumbo, no rice") sink below all.
+    const tier =
+      closeness === NO_MATCH
+        ? 30
+        : closeness + (item.basic === brandFirst ? 10 : 0);
     return { food, index, tier, item };
   });
+  // How many basic forms share a descriptor ("Rice, white, ..."): the form
+  // USDA lists most often is the everyday one, so "white" rice comes before
+  // "black" rice when both are one step from plain.
+  const forms = new Map();
+  for (const { item } of scored)
+    if (item.basic && item.first === q && item.extras.length)
+      forms.set(item.extras[0], (forms.get(item.extras[0]) || 0) + 1);
+  const common = (item) =>
+    item.basic && item.first === q ? forms.get(item.extras[0]) || 0 : 0;
   scored.sort(
     (a, b) =>
       a.tier - b.tier ||
-      // Among equally close basic foods, the simplest name reads best.
+      // Among equally close basic foods, the plainest, most common form with
+      // the simplest name reads best; Foundation and SR Legacy rows (fuller
+      // nutrient data) before FNDDS survey rows.
       (a.item.basic && b.item.basic
-        ? a.item.rest.length - b.item.rest.length ||
+        ? a.item.extras.length - b.item.extras.length ||
+          common(b.item) - common(a.item) ||
+          a.item.source - b.item.source ||
+          a.item.rest.length - b.item.rest.length ||
           a.item.length - b.item.length
         : 0) ||
       a.index - b.index,
@@ -173,12 +235,12 @@ export function rankFoods(foods, query) {
   return scored.map(({ food }) => food);
 }
 
-/** True when the ranked list already has a basic food named by the query. */
+/** True when the list already has the query's basic food in a plain form. */
 export function hasBasicMatch(foods, query) {
   const q = normalizeFoodText(query);
   return foods
     .map(describe)
-    .some((item) => item.basic && basicTier(item, q) <= 2);
+    .some((item) => item.basic && basicTier(item, q) === 0);
 }
 
 // Common household portions for basic foods, from USDA SR Legacy food
@@ -246,9 +308,7 @@ export function resultSubline(food) {
     : isPackagedProduct(food)
       ? "Packaged food"
       : "Basic food";
-  return [kind, hint?.label]
-    .filter(Boolean)
-    .join(" · ");
+  return [kind, hint?.label].filter(Boolean).join(" · ");
 }
 
 // Open Food Facts allergen tags ("en:milk") as plain names. Known tags get

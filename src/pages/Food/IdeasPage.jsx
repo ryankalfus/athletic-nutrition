@@ -1,11 +1,23 @@
 import { useEffect, useRef, useState } from "react";
-import { Heart, ShoppingBasket } from "lucide-react";
+import {
+  Backpack,
+  Check,
+  Heart,
+  Microwave,
+  Refrigerator,
+  ShoppingBasket,
+  Snowflake,
+} from "lucide-react";
 import { useStore, changeData } from "../../store.js";
 import { useRoute } from "../../routing.js";
 import { useAsyncAction } from "../../hooks/useAsyncAction.js";
 import { getDateKey } from "../../domain/timing.js";
 import { lowCostHiddenCount } from "../../domain/ranking.js";
-import { ideasForMoment } from "../../domain/ideaMoments.js";
+import {
+  availabilityChips,
+  ideaTags,
+  ideasForMoment,
+} from "../../domain/ideaMoments.js";
 import { SPORTS_DRINK_NOTE } from "../../domain/catalog.js";
 import { ingredientsForMeal, missingGroceries } from "../../domain/food.js";
 import {
@@ -26,6 +38,14 @@ import { LabelCheck } from "../../components/ui/LabelCheck.jsx";
 import { EmptyState } from "../../components/ui/EmptyState.jsx";
 import { Menu } from "../../components/ui/Menu.jsx";
 import { SegmentedControl } from "../../components/ui/SelectionControls.jsx";
+
+// Icons for ideaTags (IDEA-02); the text always shows beside them.
+const TAG_ICONS = {
+  packs: Backpack,
+  "no-fridge": Refrigerator,
+  cold: Snowflake,
+  microwave: Microwave,
+};
 
 const MOMENTS = [
   ["now", "Now"],
@@ -209,26 +229,87 @@ export default function IdeasPage({ now, todayKey }) {
           );
           const missing = ingredients.filter((i) => !i.sufficient);
           const saved = data.favorites.some((f) => f.id === idea.id);
+          // IDEA-02: name, note, availability chips, tags, one primary
+          // action; Save, Not for me and Add missing live in the "…" menu.
           return (
             <article className="idea-card" key={idea.id}>
-              <h3>{idea.name}</h3>
+              <div className="idea-card-head">
+                <h3>{idea.name}</h3>
+                <Menu
+                  label={`${idea.name} options`}
+                  items={[
+                    missing.length > 0 && {
+                      label: "Add missing to groceries",
+                      disabled: !!pending,
+                      onSelect: () => addMissing(idea),
+                    },
+                    {
+                      key: "save",
+                      label: "Save as favorite",
+                      checked: saved,
+                      disabled: !!pending,
+                      onSelect: () =>
+                        write(
+                          "favorite",
+                          (d) => {
+                            d.favorites = saved
+                              ? d.favorites.filter((f) => f.id !== idea.id)
+                              : [
+                                  ...d.favorites,
+                                  { ...idea, source: "Meal example" },
+                                ];
+                          },
+                          saved ? "Removed from saved ideas." : "Saved idea.",
+                        ),
+                    },
+                    {
+                      label: "Not for me",
+                      disabled: !!pending,
+                      onSelect: () =>
+                        write(
+                          "hide",
+                          (d) => {
+                            d.profile.hiddenIdeas = [
+                              ...(d.profile.hiddenIdeas || []),
+                              idea.id,
+                            ];
+                          },
+                          `Hidden ${idea.name}.`,
+                        ),
+                    },
+                  ]}
+                />
+              </div>
+              {/* IDEA-05: the saved state shows on the card as well. */}
+              {saved && (
+                <p className="idea-saved">
+                  <Heart
+                    size={16}
+                    strokeWidth={1.75}
+                    fill="currentColor"
+                    aria-hidden="true"
+                  />
+                  Saved
+                </p>
+              )}
               <p>{idea.note}</p>
-              <ul>
-                {ingredients.map((i) => (
-                  <li key={i.ingredientId}>
-                    <span>{i.displayAmount}</span>
-                    {i.sufficient ? (
-                      <small>At home</small>
+              <ul className="idea-chips" aria-label="Ingredients">
+                {availabilityChips(ingredients).map((chip) => (
+                  <li
+                    key={chip.id}
+                    className={`idea-chip ${chip.have ? "have" : "to-buy"}`}
+                  >
+                    {chip.have ? (
+                      <Check size={16} strokeWidth={2} aria-hidden="true" />
                     ) : (
-                      <small className="to-buy">
-                        <ShoppingBasket
-                          size={16}
-                          strokeWidth={1.75}
-                          aria-hidden="true"
-                        />
-                        To buy
-                      </small>
+                      <ShoppingBasket
+                        size={16}
+                        strokeWidth={1.75}
+                        aria-hidden="true"
+                      />
                     )}
+                    {chip.label}
+                    {chip.have && <span className="sr-only">, at home</span>}
                   </li>
                 ))}
               </ul>
@@ -240,6 +321,17 @@ export default function IdeasPage({ now, todayKey }) {
                   ? `Buy ${missing.length} ${missing.length === 1 ? "item" : "items"}`
                   : "Ready — you have everything"}
               </p>
+              <ul className="idea-tags" aria-label="Good to know">
+                {ideaTags(idea).map((tag) => {
+                  const Icon = TAG_ICONS[tag.id];
+                  return (
+                    <li key={tag.id}>
+                      <Icon size={16} strokeWidth={1.75} aria-hidden="true" />
+                      {tag.label}
+                    </li>
+                  );
+                })}
+              </ul>
               {ingredients.some((i) => i.ingredientId === "sports-drink") && (
                 <p className="muted">{SPORTS_DRINK_NOTE}</p>
               )}
@@ -264,65 +356,6 @@ export default function IdeasPage({ now, todayKey }) {
                     ? "Change idea"
                     : "Plan this"}
               </button>
-              <div className="idea-secondary">
-                <button
-                  aria-pressed={saved}
-                  disabled={!!pending}
-                  onClick={() =>
-                    write(
-                      "favorite",
-                      (d) => {
-                        d.favorites = saved
-                          ? d.favorites.filter((f) => f.id !== idea.id)
-                          : [
-                              ...d.favorites,
-                              { ...idea, source: "Meal example" },
-                            ];
-                      },
-                      saved ? "Removed from saved ideas." : "Saved idea.",
-                    )
-                  }
-                >
-                  <Heart
-                    size={20}
-                    fill={saved ? "currentColor" : "none"}
-                    aria-hidden="true"
-                  />
-                  {saved ? "Saved" : "Save"}
-                </button>
-                <button
-                  disabled={!!pending}
-                  onClick={() =>
-                    write(
-                      "hide",
-                      (d) => {
-                        d.profile.hiddenIdeas = [
-                          ...(d.profile.hiddenIdeas || []),
-                          idea.id,
-                        ];
-                      },
-                      `Hidden ${idea.name}.`,
-                    )
-                  }
-                >
-                  Not for me
-                </button>
-              </div>
-              <details>
-                <summary>Preparation &amp; storage</summary>
-                <p>
-                  {idea.needsCold
-                    ? "Keep refrigerated or pack with ice packs."
-                    : idea.needsHeat
-                      ? "Confirm kitchen or microwave access."
-                      : "Pack in a sealed container when needed."}
-                </p>
-                {missing.length > 0 && (
-                  <button disabled={!!pending} onClick={() => addMissing(idea)}>
-                    Add missing to groceries
-                  </button>
-                )}
-              </details>
             </article>
           );
         })}

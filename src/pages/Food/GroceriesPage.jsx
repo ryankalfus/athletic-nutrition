@@ -21,12 +21,8 @@ import {
 import { uid } from "../../domain/storage.js";
 import { SPORTS_DRINK_NOTE } from "../../domain/catalog.js";
 import { formatDate, plural } from "../../format.js";
-import {
-  GroceryItemForm,
-  PutAwaySheet,
-  WeekIdeasSheet,
-  money,
-} from "./GrocerySheets.jsx";
+import { PutAwaySheet, WeekIdeasSheet, money } from "./GrocerySheets.jsx";
+import { FoodDetailsSheet } from "./FoodDetailsSheet.jsx";
 import { EmptyState } from "../../components/ui/EmptyState.jsx";
 import { ShareButton } from "../../components/ui/ShareButton.jsx";
 import { formatGroceryText, groceryShareItems } from "../../domain/share.js";
@@ -444,7 +440,8 @@ export default function GroceriesPage({ todayKey }) {
               </div>
             </div>
           ) : sheet.food ? (
-            <GroceryItemForm
+            <FoodDetailsSheet
+              mode="grocery"
               food={sheet.food}
               item={sheet.type === "swap" ? sheet.item : null}
               showPrices={showPrices}
@@ -471,7 +468,8 @@ export default function GroceriesPage({ todayKey }) {
           onClose={closeSheet}
           dirty={formDirty}
         >
-          <GroceryItemForm
+          <FoodDetailsSheet
+            mode="grocery"
             item={sheet.item}
             showPrices={showPrices}
             pending={pending === "save-item"}

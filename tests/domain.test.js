@@ -33,6 +33,7 @@ import {
   removeLogEntry,
   reviseLogEntry,
   toggleStockOut,
+  stepStockCount,
   stockStatus,
   setStockStatus,
   shoppingAmount,
@@ -64,7 +65,11 @@ import {
   rankIdeas,
   searchableFavorites,
 } from "../src/domain/ranking.js";
-import { ideasForMoment } from "../src/domain/ideaMoments.js";
+import {
+  availabilityChips,
+  ideaTags,
+  ideasForMoment,
+} from "../src/domain/ideaMoments.js";
 import { ideaFitsProfile } from "../src/domain/timing.js";
 import { MEAL_INGREDIENTS } from "../src/domain/catalog.js";
 import { api } from "../server/api.js";
@@ -1979,6 +1984,56 @@ test("HOME-04/07: Out toggles back to the previous state, legacy rows are Have, 
   assert.equal(ingredientId({ name: "Bananas, raw" }), "bananas");
   assert.equal(ingredientId({ name: "x", catalogId: "hummus" }), "hummus");
   assert.equal(ingredientId({ name: "Mystery bar" }), null);
+});
+
+test("IDEA-02: idea tags come from the idea's flags; chips name what to buy", () => {
+  const label = (idea) => ideaTags(idea).map((tag) => tag.label);
+  assert.deepEqual(label({ portable: true }), [
+    "Packs well",
+    "No fridge needed",
+  ]);
+  assert.deepEqual(label({ portable: false, needsHeat: true }), [
+    "No fridge needed",
+    "Needs a microwave",
+  ]);
+  assert.deepEqual(label({ needsCold: true }), ["Keep cold"]);
+  for (const idea of FOOD_IDEAS)
+    assert.ok(ideaTags(idea).length > 0, `${idea.name} has no tags`);
+  assert.deepEqual(
+    availabilityChips([
+      { ingredientId: "bananas", displayAmount: "1 banana", sufficient: true },
+      {
+        ingredientId: "pretzels",
+        displayAmount: "1 small bag of pretzels",
+        sufficient: false,
+      },
+    ]),
+    [
+      { id: "bananas", have: true, label: "1 banana" },
+      { id: "pretzels", have: false, label: "Buy: 1 small bag of pretzels" },
+    ],
+  );
+});
+
+test("HOME-04: + on an Out row with an exact count restocks from 0, not the hidden count", () => {
+  const three = { id: "a", name: "Apples", availability: "exact", quantity: 3 };
+  const out = toggleStockOut(three, day);
+  assert.equal(out.quantity, 3, "Out keeps the count for Back in stock");
+  const plus = stepStockCount(out, 1, day);
+  assert.equal(plus.quantity, 1);
+  assert.equal(plus.availability, "exact");
+  assert.equal(plus.previousAvailability, undefined);
+  assert.equal(stockStatus(plus), "low");
+  // Back in stock still restores the exact count of 3.
+  assert.equal(toggleStockOut(out, day).quantity, 3);
+  assert.equal(toggleStockOut(out, day).availability, "exact");
+  // Counting down to 0 marks it Out; + then gives 1 left.
+  const zero = stepStockCount({ ...three, quantity: 1 }, -1, day);
+  assert.equal(zero.availability, "out");
+  assert.equal(stepStockCount(zero, 1, day).quantity, 1);
+  // Pending steps count from the number shown on screen, even on an Out row.
+  assert.equal(stepStockCount(three, 1, day, 5).quantity, 6);
+  assert.equal(stepStockCount(out, 1, day, 1).quantity, 2);
 });
 
 test("P0-06: grocery suggestions ignore unreviewed gluten and nut flags", () => {

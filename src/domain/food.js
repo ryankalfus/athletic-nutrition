@@ -138,6 +138,31 @@ export function toggleStockOut(item, date) {
     updatedDate: date,
   };
 }
+/**
+ * One −/+ step on an exact count (HOME-04). An Out row has none left, so "+"
+ * restocks from 0 ("1 left") rather than from the count it had before it ran
+ * out; reaching 0 marks it Out.
+ * @param {any} item a pantry row
+ * @param {number} delta
+ * @param {string} date
+ * @param {number|null} [from] the count on screen while steps are pending
+ */
+export function stepStockCount(item, delta, date, from = null) {
+  const start =
+    from != null
+      ? Number(from)
+      : item.availability === "out"
+        ? 0
+        : Number(item.quantity ?? 0);
+  const quantity = Math.max(0, start + delta);
+  const { previousAvailability: _previous, ...rest } = item;
+  return {
+    ...rest,
+    quantity,
+    availability: quantity === 0 ? "out" : "exact",
+    updatedDate: date,
+  };
+}
 export function usable(item, date) {
   return (
     item.availability !== "out" &&

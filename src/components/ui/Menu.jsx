@@ -5,7 +5,8 @@ import { MoreHorizontal } from "lucide-react";
 // opens a role="menu" list. Enter, Space or ArrowDown opens on the first item,
 // ArrowUp on the last; ArrowDown/ArrowUp wrap, Home/End jump; Escape closes
 // and returns focus to the button; Tab or a click outside closes it.
-// items: [{ label, onSelect, disabled?, danger?, separated?, key? }]; falsy
+// items: [{ label, onSelect, disabled?, danger?, separated?, key?, checked? }];
+// an item with `checked` is a menuitemcheckbox with aria-checked. Falsy
 // items are skipped so callers can write `cond && { … }`. `separated` draws a
 // divider above the item (before Remove). The panel opens upward when it
 // would cross the bottom of the screen or the phone tab bar, and closes when
@@ -21,8 +22,9 @@ export function Menu({ label, items, className = "" }) {
   const menuId = useId();
   const list = items.filter(Boolean);
   const enabled = () => [
-    ...(root.current?.querySelectorAll('[role="menuitem"]:not(:disabled)') ||
-      []),
+    ...(root.current?.querySelectorAll(
+      ':is([role="menuitem"], [role="menuitemcheckbox"]):not(:disabled)',
+    ) || []),
   ];
 
   // Placement is measured once per open, before paint: the panel renders
@@ -136,7 +138,8 @@ export function Menu({ label, items, className = "" }) {
             <button
               key={item.key || item.label}
               type="button"
-              role="menuitem"
+              role={item.checked == null ? "menuitem" : "menuitemcheckbox"}
+              aria-checked={item.checked == null ? undefined : item.checked}
               tabIndex={-1}
               className={
                 [item.danger && "danger", item.separated && "separated"]

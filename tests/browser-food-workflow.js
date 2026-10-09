@@ -109,13 +109,14 @@ async (page) => {
       .locator("article.idea-card")
       .filter({ has: p.getByRole("heading", { name: "Banana + pretzels" }) });
     await card.getByText("Ready — you have everything").waitFor();
-    if ((await card.getByText("To buy").count()) !== 0)
+    if ((await card.getByText(/^Buy: /).count()) !== 0)
       throw new Error("Ready idea still lists items to buy");
     const bananaLine = await card
+      .getByRole("list", { name: "Ingredients" })
       .getByRole("listitem")
       .filter({ hasText: "banana" })
-      .innerText();
-    if (!bananaLine.includes("At home"))
+      .textContent();
+    if (!/^1 banana, at home$/.test(bananaLine.trim()))
       throw new Error(`3 bunches at home do not cover 1 banana: ${bananaLine}`);
     await card.getByRole("button", { name: "Plan Banana + pretzels" }).click();
     const planned = p.getByRole("region", { name: "Planned food" });
@@ -134,14 +135,59 @@ async (page) => {
       .getByRole("radio", { name: "Tomorrow" })
       .click();
     await p.waitForURL(/moment=tomorrow/);
-    const fig = p
-      .locator("article.idea-card")
-      .filter({
-        has: p.getByRole("heading", { name: "Fig bar + fresh fruit" }),
-      });
+    const fig = p.locator("article.idea-card").filter({
+      has: p.getByRole("heading", { name: "Fig bar + fresh fruit" }),
+    });
     await fig.getByText("Buy 1 item").waitFor();
-    await fig.getByText("Preparation & storage").click();
-    await fig.getByRole("button", { name: "Add missing to groceries" }).click();
+    // IDEA-02 anatomy: availability chips, icon tags, one primary action and
+    // a "…" menu with Add missing, Save as favorite and Not for me.
+    const figChips = await fig
+      .getByRole("list", { name: "Ingredients" })
+      .getByRole("listitem")
+      .allInnerTexts();
+    if (!figChips.some((chip) => /^Buy: .*fig bar/i.test(chip)))
+      throw new Error(`No Buy chip for the fig bars: ${figChips.join(" | ")}`);
+    const figTags = await fig
+      .getByRole("list", { name: "Good to know" })
+      .innerText();
+    for (const tag of ["Packs well", "No fridge needed"])
+      if (!figTags.includes(tag))
+        throw new Error(`Fig bar card lacks the "${tag}" tag: ${figTags}`);
+    if ((await fig.locator(".idea-tags svg").count()) < 2)
+      throw new Error("Idea tags have no icons");
+    const figButtons = await fig.getByRole("button").allInnerTexts();
+    if (
+      figButtons.length !== 2 ||
+      !(await fig
+        .getByRole("button", { name: "Plan Fig bar + fresh fruit" })
+        .count())
+    )
+      throw new Error(`Card buttons: ${figButtons.join(" | ")}`);
+    const figMenu = fig.getByRole("button", {
+      name: "Fig bar + fresh fruit options",
+    });
+    await figMenu.click();
+    const items = await fig
+      .getByRole("menu")
+      .locator('[role^="menuitem"]')
+      .allInnerTexts();
+    if (
+      items.join("|") !== "Add missing to groceries|Save as favorite|Not for me"
+    )
+      throw new Error(`Idea menu: ${items.join(" | ")}`);
+    const save = fig.getByRole("menuitemcheckbox", {
+      name: "Save as favorite",
+    });
+    if ((await save.getAttribute("aria-checked")) !== "false")
+      throw new Error("Save as favorite starts checked");
+    await save.click();
+    await fig.getByText("Saved", { exact: true }).waitFor();
+    await figMenu.click();
+    if ((await save.getAttribute("aria-checked")) !== "true")
+      throw new Error("Saved idea is not announced as checked");
+    await fig
+      .getByRole("menuitem", { name: "Add missing to groceries" })
+      .click();
     await p
       .getByRole("status")
       .getByText("Added 1 item to groceries.")
@@ -157,7 +203,8 @@ async (page) => {
         "Groceries shows $ for a priced item with price estimates off",
       );
     result.checks.push(
-      "The Tomorrow moment works; Add missing to groceries adds only the fig bars, with no $ shown.",
+      "IDEA-02: the fig bar card shows Buy/Have chips, Packs well and No fridge needed tags with icons, one primary action and a menu (Add missing, Save as favorite [aria-checked, Saved on card], Not for me).",
+      "The Tomorrow moment works; Add missing to groceries (card menu) adds only the fig bars, with no $ shown.",
     );
 
     // Log: use from home, then put back.
@@ -187,6 +234,28 @@ async (page) => {
       "Log row menu: Used from At home takes 1 banana (3 -> 2 left) and Put back at home restores it.",
     );
 
+    // HOME-04: Out after an exact count shows "Out" and "+"; "+" restocks
+    // from none left ("1 left"), never the hidden count (3 + 1 = 4).
+    await homeRow("Bananas")
+      .getByRole("button", { name: "Bananas options" })
+      .click();
+    await homeRow("Bananas")
+      .getByRole("menuitem", { name: "Mark out" })
+      .click();
+    await homeRow("Bananas").getByText("Out", { exact: true }).waitFor();
+    await homeRow("Bananas")
+      .getByRole("button", { name: "Increase Bananas" })
+      .click();
+    await homeRow("Bananas").getByText("1 left").waitFor();
+    await p.waitForTimeout(900);
+    await p.reload();
+    await homeRow("Bananas").getByText("1 left").waitFor();
+    if (await homeRow("Bananas").getByText("4 left").count())
+      throw new Error("+ on an Out row added to the hidden count");
+    result.checks.push(
+      "HOME-04: 3 left -> Mark out -> + reads 1 left (not 4) and stays after reload.",
+    );
+
     // Price estimates on: the estimate line and the price field appear.
     await p.goto(`${base}#/you/access`);
     const access = p.getByRole("dialog", { name: "Food access & budget" });
@@ -203,6 +272,54 @@ async (page) => {
     await p.getByText(/ · about \$\d+\.\d\d$/).waitFor();
     result.checks.push(
       "Turning on price estimates in the Access sheet shows the row price and the About $ total.",
+    );
+
+    // CMP-13: grocery item details and At home details are one shared
+    // FoodDetailsSheet, each with its own fields, and both still save.
+    const groceryMenu = p.getByRole("button", { name: / options$/ }).first();
+    const groceryName = (await groceryMenu.getAttribute("aria-label")).replace(
+      / options$/,
+      "",
+    );
+    await groceryMenu.click();
+    await p.getByRole("menuitem", { name: "Edit", exact: true }).click();
+    const groceryEdit = p.getByRole("dialog", { name: `Edit ${groceryName}` });
+    const groceryForm = groceryEdit.locator("form.food-details");
+    await groceryForm.getByRole("spinbutton", { name: "Amount" }).fill("4");
+    await groceryForm.getByRole("combobox", { name: "Unit" }).waitFor();
+    await groceryForm
+      .getByRole("spinbutton", { name: "Price estimate ($, optional)" })
+      .waitFor();
+    if (
+      await groceryForm.getByRole("combobox", { name: "Amount type" }).count()
+    )
+      throw new Error("Grocery details show At home's amount type");
+    await groceryForm
+      .getByRole("button", { name: "Save", exact: true })
+      .click();
+    await groceryEdit.waitFor({ state: "hidden" });
+    await p
+      .locator("li")
+      .filter({ hasText: groceryName })
+      .getByText(/^4 /)
+      .first()
+      .waitFor();
+    await p.goto(`${base}#/food/home`);
+    await homeRow("Bananas")
+      .getByRole("button", { name: "Bananas options" })
+      .click();
+    await homeRow("Bananas")
+      .getByRole("menuitem", { name: "Edit details" })
+      .click();
+    const homeForm = p
+      .getByRole("dialog", { name: "Edit Bananas" })
+      .locator("form.food-details");
+    await homeForm.getByRole("combobox", { name: "Place" }).waitFor();
+    await homeForm.getByRole("spinbutton", { name: "Amount left" }).fill("5");
+    await homeForm.getByRole("button", { name: "Save details" }).click();
+    await homeRow("Bananas").getByText("5 left").waitFor();
+    result.checks.push(
+      `CMP-13: ${groceryName} (groceries) and Bananas (At home) edit in the shared FoodDetailsSheet with their own fields and save.`,
     );
     return result;
   } catch (e) {

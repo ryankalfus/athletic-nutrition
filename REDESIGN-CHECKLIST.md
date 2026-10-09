@@ -26,7 +26,7 @@ Owner Ryan Kalfus confirmed the recommended options previously presented for aud
 - [x] **P0-03**
 - [ ] **P0-04** — Re-verified 2026.10.09, not true: Deleting an activity shows a generic "Saved." toast; dialog error sits under the header, not above the footer.
 - [ ] **P0-05** — Re-verified 2026.10.09, not true: "allow 1 minutes for travel" can render (timing.js:225).
-- [ ] **P0-06** — Re-verified 2026.10.09, not true: Log food Recent/Saved list and the At home "Counts as?" dialog show branded products without the label line.
+- [x] **P0-06** — Fixed 2026.10.09: Log food Recent/Saved show the label line once above them (product rows keep their allergen line) and At home "Counts as?" shows LabelCheck with the food; covered by `tests/browser-search.js`.
 - [ ] **P0-07** — Re-verified 2026.10.09, not true: The 7.6 scan fails on "streaks" in You › About; no test scans every route.
 - [x] **P0-08**
 - [x] **P0-09**
@@ -42,7 +42,7 @@ Owner Ryan Kalfus confirmed the recommended options previously presented for aud
 - [x] **P1-04**
 - [x] **P1-05**
 - [x] **P1-06**
-- [ ] **P1-07** — Re-verified 2026.10.09, not true: Live USDA "rice" search shows no plain rice in the top 24; tests pass only on fixture order.
+- [x] **P1-07** — Fixed 2026.10.09: when USDA's first page has no plain match, the gateway fetches Foundation/SR Legacy and FNDDS basic forms and ranks plain forms first ("no rice" no longer matches); live "rice" top 3 is plain rice; covered by recorded-USDA tests in `tests/search.test.js` (API and local modes) and the live rice check in `tests/browser-provider.js`.
 - [x] **P1-08**
 - [ ] **P1-09** — Incomplete, skipped for now (will come back to). Awaiting approval: allergy filtering is built but switched off (`ALLERGY_TAGS_REVIEWED = false` in `src/domain/catalog.js`); it will be switched on once the allergen tags are approved. Built: per-ingredient tags, `profile.allergies`, idea and grocery filters, Open Food Facts allergens on product views, and tests for both gate states.
 - [ ] **P1-10** — Incomplete, skipped for now (will come back to). Awaiting approval (allergy criterion): 6.14 passes; 6.13's peanut-allergy criterion needs allergy filtering on. Awaiting approval: allergy filtering is built but switched off (`ALLERGY_TAGS_REVIEWED = false`); it will be switched on once the allergen tags are approved. DATA-08 is done in P1-12.
@@ -150,7 +150,7 @@ Each ID is an individual checkbox. Implementation notes and blockers go on the m
 - [x] **FOOD-02**
 - [x] **FOOD-03**
 - [x] **FOOD-04**
-- [ ] **FOOD-05** — Re-verified 2026.10.09, not true: Search result Save star has no repeat-tap guard (double-click saves then unsaves).
+- [x] **FOOD-05** — Fixed 2026.10.09: the search Save star runs through useAsyncAction (aria-busy, repeat taps ignored until the save settles); a double tap saves once in `tests/browser-search.js`.
 - [x] **FOOD-06**
 
 ### HOME
@@ -158,7 +158,7 @@ Each ID is an individual checkbox. Implementation notes and blockers go on the m
 - [x] **HOME-01**
 - [x] **HOME-02**
 - [x] **HOME-03**
-- [ ] **HOME-04** — Re-verified 2026.10.09, not true: Out row with an exact count: "+" adds to the hidden count (3, Out, + gives 4).
+- [x] **HOME-04** — Fixed 2026.10.09: "+" on an Out row restocks from 0 (3, Out, + gives 1 left; Back in stock still restores 3) via `stepStockCount`; covered by `tests/domain.test.js` and `tests/browser-food-workflow.js`.
 - [x] **HOME-05**
 - [x] **HOME-06**
 - [x] **HOME-07**
@@ -177,7 +177,7 @@ Each ID is an individual checkbox. Implementation notes and blockers go on the m
 ### IDEA
 
 - [x] **IDEA-01**
-- [ ] **IDEA-02** — Re-verified 2026.10.09, not true: No tag icons, Save and Not for me are buttons not a menu, Add missing hidden in a disclosure, no availability chips.
+- [x] **IDEA-02** — Fixed 2026.10.09: cards show availability chips ("1 banana" / "Buy: …"), icon tags from idea flags (Packs well, No fridge needed or Keep cold, Needs a microwave), one primary "Plan this" and a shared "…" Menu with Add missing to groceries, Save as favorite (aria-checked, "Saved" on the card) and Not for me; covered by `tests/domain.test.js` and `tests/browser-food-workflow.js`.
 - [x] **IDEA-03**
 - [x] **IDEA-04**
 - [x] **IDEA-05**
@@ -261,7 +261,7 @@ Each ID is an individual checkbox. Implementation notes and blockers go on the m
 
 ### SRCH
 
-- [ ] **SRCH-01** — Re-verified 2026.10.09, not true: Closest-match ranking fails for "rice" with live data.
+- [x] **SRCH-01** — Fixed 2026.10.09: closest-match ranking holds for banana, peanut butter, cheerios and rice on recorded live USDA answers (`tests/fixtures/usda-search.json`) in both server modes, and live in `tests/browser-provider.js`.
 - [x] **SRCH-02**
 - [x] **SRCH-03**
 - [x] **SRCH-04**
@@ -452,7 +452,7 @@ Each ID is an individual checkbox. Implementation notes and blockers go on the m
 - [ ] **CMP-10** — Open: the idea card is inline markup in `IdeasPage.jsx`; no shared `IdeaCard` / `AvailabilityChips` (Today renders its own availability list).
 - [x] **CMP-11**
 - [x] **CMP-12**
-- [ ] **CMP-13** — Re-verified 2026.10.09, not true: No shared FoodDetailsSheet; At home and Groceries use two forms.
+- [x] **CMP-13** — Fixed 2026.10.09: one `pages/Food/FoodDetailsSheet.jsx` replaces HomeDetails and GroceryItemForm (home and grocery modes keep their fields, validation and save labels); covered by `tests/browser-food-workflow.js`.
 - [x] **CMP-14**
 - [x] **CMP-15**
 - [x] **CMP-16**
