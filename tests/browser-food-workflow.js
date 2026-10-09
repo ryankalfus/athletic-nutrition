@@ -109,13 +109,14 @@ async (page) => {
       .locator("article.idea-card")
       .filter({ has: p.getByRole("heading", { name: "Banana + pretzels" }) });
     await card.getByText("Ready — you have everything").waitFor();
-    if ((await card.getByText("To buy").count()) !== 0)
+    if ((await card.getByText(/^Buy: /).count()) !== 0)
       throw new Error("Ready idea still lists items to buy");
     const bananaLine = await card
+      .getByRole("list", { name: "Ingredients" })
       .getByRole("listitem")
       .filter({ hasText: "banana" })
-      .innerText();
-    if (!bananaLine.includes("At home"))
+      .textContent();
+    if (!/^1 banana, at home$/.test(bananaLine.trim()))
       throw new Error(`3 bunches at home do not cover 1 banana: ${bananaLine}`);
     await card.getByRole("button", { name: "Plan Banana + pretzels" }).click();
     const planned = p.getByRole("region", { name: "Planned food" });
@@ -138,8 +139,55 @@ async (page) => {
       has: p.getByRole("heading", { name: "Fig bar + fresh fruit" }),
     });
     await fig.getByText("Buy 1 item").waitFor();
-    await fig.getByText("Preparation & storage").click();
-    await fig.getByRole("button", { name: "Add missing to groceries" }).click();
+    // IDEA-02 anatomy: availability chips, icon tags, one primary action and
+    // a "…" menu with Add missing, Save as favorite and Not for me.
+    const figChips = await fig
+      .getByRole("list", { name: "Ingredients" })
+      .getByRole("listitem")
+      .allInnerTexts();
+    if (!figChips.some((chip) => /^Buy: .*fig bar/i.test(chip)))
+      throw new Error(`No Buy chip for the fig bars: ${figChips.join(" | ")}`);
+    const figTags = await fig
+      .getByRole("list", { name: "Good to know" })
+      .innerText();
+    for (const tag of ["Packs well", "No fridge needed"])
+      if (!figTags.includes(tag))
+        throw new Error(`Fig bar card lacks the "${tag}" tag: ${figTags}`);
+    if ((await fig.locator(".idea-tags svg").count()) < 2)
+      throw new Error("Idea tags have no icons");
+    const figButtons = await fig.getByRole("button").allInnerTexts();
+    if (
+      figButtons.length !== 2 ||
+      !(await fig
+        .getByRole("button", { name: "Plan Fig bar + fresh fruit" })
+        .count())
+    )
+      throw new Error(`Card buttons: ${figButtons.join(" | ")}`);
+    const figMenu = fig.getByRole("button", {
+      name: "Fig bar + fresh fruit options",
+    });
+    await figMenu.click();
+    const items = await fig
+      .getByRole("menu")
+      .locator('[role^="menuitem"]')
+      .allInnerTexts();
+    if (
+      items.join("|") !== "Add missing to groceries|Save as favorite|Not for me"
+    )
+      throw new Error(`Idea menu: ${items.join(" | ")}`);
+    const save = fig.getByRole("menuitemcheckbox", {
+      name: "Save as favorite",
+    });
+    if ((await save.getAttribute("aria-checked")) !== "false")
+      throw new Error("Save as favorite starts checked");
+    await save.click();
+    await fig.getByText("Saved", { exact: true }).waitFor();
+    await figMenu.click();
+    if ((await save.getAttribute("aria-checked")) !== "true")
+      throw new Error("Saved idea is not announced as checked");
+    await fig
+      .getByRole("menuitem", { name: "Add missing to groceries" })
+      .click();
     await p
       .getByRole("status")
       .getByText("Added 1 item to groceries.")
@@ -155,7 +203,8 @@ async (page) => {
         "Groceries shows $ for a priced item with price estimates off",
       );
     result.checks.push(
-      "The Tomorrow moment works; Add missing to groceries adds only the fig bars, with no $ shown.",
+      "IDEA-02: the fig bar card shows Buy/Have chips, Packs well and No fridge needed tags with icons, one primary action and a menu (Add missing, Save as favorite [aria-checked, Saved on card], Not for me).",
+      "The Tomorrow moment works; Add missing to groceries (card menu) adds only the fig bars, with no $ shown.",
     );
 
     // Log: use from home, then put back.

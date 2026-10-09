@@ -62,7 +62,11 @@ import {
   rankIdeas,
   searchableFavorites,
 } from "../src/domain/ranking.js";
-import { ideasForMoment } from "../src/domain/ideaMoments.js";
+import {
+  availabilityChips,
+  ideaTags,
+  ideasForMoment,
+} from "../src/domain/ideaMoments.js";
 import { ideaFitsProfile } from "../src/domain/timing.js";
 import { MEAL_INGREDIENTS } from "../src/domain/catalog.js";
 import { api } from "../server/api.js";
@@ -1844,6 +1848,35 @@ test("HOME-04/07: Out toggles back to the previous state, legacy rows are Have, 
   assert.equal(ingredientId({ name: "Bananas, raw" }), "bananas");
   assert.equal(ingredientId({ name: "x", catalogId: "hummus" }), "hummus");
   assert.equal(ingredientId({ name: "Mystery bar" }), null);
+});
+
+test("IDEA-02: idea tags come from the idea's flags; chips name what to buy", () => {
+  const label = (idea) => ideaTags(idea).map((tag) => tag.label);
+  assert.deepEqual(label({ portable: true }), [
+    "Packs well",
+    "No fridge needed",
+  ]);
+  assert.deepEqual(label({ portable: false, needsHeat: true }), [
+    "No fridge needed",
+    "Needs a microwave",
+  ]);
+  assert.deepEqual(label({ needsCold: true }), ["Keep cold"]);
+  for (const idea of FOOD_IDEAS)
+    assert.ok(ideaTags(idea).length > 0, `${idea.name} has no tags`);
+  assert.deepEqual(
+    availabilityChips([
+      { ingredientId: "bananas", displayAmount: "1 banana", sufficient: true },
+      {
+        ingredientId: "pretzels",
+        displayAmount: "1 small bag of pretzels",
+        sufficient: false,
+      },
+    ]),
+    [
+      { id: "bananas", have: true, label: "1 banana" },
+      { id: "pretzels", have: false, label: "Buy: 1 small bag of pretzels" },
+    ],
+  );
 });
 
 test("HOME-04: + on an Out row with an exact count restocks from 0, not the hidden count", () => {

@@ -177,7 +177,7 @@ Each ID is an individual checkbox. Implementation notes and blockers go on the m
 ### IDEA
 
 - [x] **IDEA-01**
-- [ ] **IDEA-02** — Re-verified 2026.10.09, not true: No tag icons, Save and Not for me are buttons not a menu, Add missing hidden in a disclosure, no availability chips.
+- [x] **IDEA-02** — Fixed 2026.10.09: cards show availability chips ("1 banana" / "Buy: …"), icon tags from idea flags (Packs well, No fridge needed or Keep cold, Needs a microwave), one primary "Plan this" and a shared "…" Menu with Add missing to groceries, Save as favorite (aria-checked, "Saved" on the card) and Not for me; covered by `tests/domain.test.js` and `tests/browser-food-workflow.js`.
 - [x] **IDEA-03**
 - [x] **IDEA-04**
 - [x] **IDEA-05**
