@@ -526,6 +526,12 @@ button.rail-body {
   padding-inline: 0;
 }
 
+.water-row .water-note {
+  margin: 0;
+  color: var(--color-ink-muted);
+  font-size: var(--text-small);
+}
+
 .tonight-card {
   display: grid;
   gap: var(--space-3);

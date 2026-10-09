@@ -21,7 +21,23 @@ function SubLine({ text }) {
 // TODAY-02 Day rail: a time column, then a 12px activity-colour dot on a 2px
 // line, the title (with a status badge) and one sub-line. Rows are plain
 // list rows, not boxed buttons.
-export default function DayRail({ rows, onNavigate, onOpenPlan }) {
+export default function DayRail({
+  rows,
+  onNavigate,
+  onOpenPlan,
+  onOpenActivity,
+  onOpenSchool,
+}) {
+  // TODAY-02: each row opens its details sheet (food moment → plan,
+  // activity → activity sheet, school → School day); windows open Ideas.
+  const open = (r) =>
+    r.planId
+      ? onOpenPlan(r.planId)
+      : r.eventId
+        ? onOpenActivity(r.eventId)
+        : r.sheet === "school"
+          ? onOpenSchool()
+          : onNavigate(r.route);
   return (
     <section className="day-rail" aria-labelledby="day-title">
       <div className="today-section-header">
@@ -43,9 +59,8 @@ export default function DayRail({ rows, onNavigate, onOpenPlan }) {
             ) : (
               <button
                 className="rail-body"
-                onClick={() =>
-                  r.planId ? onOpenPlan(r.planId) : onNavigate(r.route)
-                }
+                aria-haspopup={r.route ? undefined : "dialog"}
+                onClick={() => open(r)}
               >
                 <strong>
                   {r.title}

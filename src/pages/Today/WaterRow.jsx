@@ -21,6 +21,11 @@ export default function WaterRow({
         ))}
         <button onClick={() => setCustom(true)}>Custom</button>
       </div>
+      {/* COPY-23: the hydration line sits at the water decision. */}
+      <p className="water-note">
+        Bring a full bottle. Follow your coach&apos;s or doctor&apos;s plan if
+        you have one.
+      </p>
     </section>
   );
 }

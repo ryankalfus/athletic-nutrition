@@ -7,7 +7,9 @@ import { advanceCompletedMoment } from "../../domain/ranking.js";
 import NowCard from "./NowCard.jsx";
 import { Shell } from "../../components/AppFrame.jsx";
 import { Dialog } from "../../components/Dialog.jsx";
-import { useStore, changeData } from "../../store.js";
+import { useStore, changeData, setField } from "../../store.js";
+import { useActivityEditor } from "../Schedule/useActivityEditor.jsx";
+import { useSchoolEditor } from "../Schedule/useSchoolEditor.jsx";
 import { useAsyncAction } from "../../hooks/useAsyncAction.js";
 import {
   getFuelingGuidance,
@@ -88,6 +90,9 @@ export default function TodayPage({
     ? ingredientsForMeal(idea, data.groceryState.pantry, todayKey)
     : [];
   const missing = ingredients.filter((i) => !i.sufficient);
+  // TODAY-01: what "Add to groceries" would still add. Items already on the
+  // grocery list count as handled, so after adding them the card moves on.
+  const toBuy = missingGroceries(missing, data.groceryState.items);
   const tasks = data.dayPlans[todayKey] || [];
   const done = tasks.filter((t) => t.done).length;
   const tonight = eveningPlan({
@@ -99,8 +104,24 @@ export default function TodayPage({
     dayPlans: data.dayPlans,
   });
   const next = tonight.events[0];
-  const write = (key, reduce, message) =>
-    run(key, () => changeData(reduce, message));
+  const write = (key, reduce, message, action) =>
+    run(key, () => changeData(reduce, message, action));
+  // TODAY-02: rail rows open the same sheets as Schedule.
+  const activity = useActivityEditor({
+    events: data.schedule,
+    setEvents: (update) => setField("schedule", update),
+    sport: data.profile.sport,
+    todayKey,
+  });
+  const school = useSchoolEditor({
+    schoolSchedule: data.schoolSchedule,
+    setSchoolSchedule: (update) => setField("schoolSchedule", update),
+    todayKey,
+  });
+  const openActivity = (id) => {
+    const event = events.find((e) => e.id === id);
+    if (event) activity.edit(event, todayKey);
+  };
   const water = (n) =>
     write(
       "water",
@@ -146,7 +167,7 @@ export default function TodayPage({
       return onNavigate(`food/ideas?moment=${next ? "tomorrow" : "now"}`);
     if (
       ["before_school", "travel"].includes(guidance.state) &&
-      (!plan || !missing.length)
+      (!plan || !toBuy.length)
     ) {
       if (!plan) return createPlan();
       document
@@ -162,15 +183,18 @@ export default function TodayPage({
         (d) => logPlanAsEaten(d, plan.id, now),
         "Logged what you ate.",
       );
-    if (missing.length)
+    if (toBuy.length)
       return write(
         "groceries",
         (d) => {
           d.groceryState.items.push(
-            ...missingGroceries(ingredients, d.groceryState.items),
+            ...missingGroceries(missing, d.groceryState.items),
           );
         },
-        "Added missing items to groceries.",
+        toBuy.length === 1
+          ? `Added ${toBuy[0].name.toLowerCase()} to groceries.`
+          : `Added ${toBuy.length} items to groceries.`,
+        { label: "View list", onClick: () => onNavigate("food/groceries") },
       );
     return write("pack", (d) => markPlanPacked(d, plan.id), "Marked packed.");
   };
@@ -191,7 +215,7 @@ export default function TodayPage({
               ? "Plan tomorrow"
               : "Choose a snack"
             : ["before_school", "travel"].includes(guidance.state) &&
-                (!plan || !missing.length)
+                (!plan || !toBuy.length)
               ? "Open packing list"
               : !plan
                 ? "Plan this"
@@ -199,8 +223,8 @@ export default function TodayPage({
                   ? early
                     ? `Eat around ${formatClock(plan.eatAt)}`
                     : "Log it"
-                  : missing.length
-                    ? `Add ${missing.length} ${missing.length === 1 ? "item" : "items"} to groceries`
+                  : toBuy.length
+                    ? `Add ${toBuy.length} ${toBuy.length === 1 ? "item" : "items"} to groceries`
                     : "Mark packed";
   const rows = buildRailRows({
     events,
@@ -267,7 +291,12 @@ export default function TodayPage({
           }}
         />
         {showRail && (
-          <DayRail {...{ rows, onNavigate }} onOpenPlan={setOpenPlanId} />
+          <DayRail
+            {...{ rows, onNavigate }}
+            onOpenPlan={setOpenPlanId}
+            onOpenActivity={openActivity}
+            onOpenSchool={() => school.open(todayKey)}
+          />
         )}
         {tasks.length > 0 && (
           <PackPrep
@@ -305,6 +334,8 @@ export default function TodayPage({
           }}
         />
       </div>
+      {activity.element}
+      {school.element}
       {openPlan && (
         <Dialog
           title={openPlan.template.name}

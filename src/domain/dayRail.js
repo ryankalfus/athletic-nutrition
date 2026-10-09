@@ -82,7 +82,8 @@ export function buildRailRows({
         time: e.startTime,
         title: e.title,
         detail: `${formatTime(e.startTime)}–${formatTime(e.endTime)} · ${e.location === "away" ? "Away" : "Home"}`,
-        route: "schedule",
+        // TODAY-02: the row opens the activity sheet for this activity.
+        eventId: e.id,
       },
       ...(travel > 0
         ? [
@@ -91,7 +92,7 @@ export function buildRailRows({
               time: minutesClock(timeToMinutes(e.startTime) - travel),
               title: `Leave by ${formatTime(minutesClock(timeToMinutes(e.startTime) - travel))}`,
               detail: `${travel} min to ${e.title}`,
-              route: "schedule",
+              eventId: e.id,
             },
           ]
         : []),
@@ -117,7 +118,8 @@ export function buildRailRows({
       time: schoolSchedule.startTime,
       title: "School",
       detail: `${formatTime(schoolSchedule.startTime)}–${formatTime(schoolSchedule.endTime)}${schoolSchedule.lunchStartTime ? ` · Lunch ${formatTime(schoolSchedule.lunchStartTime)}` : ""}`,
-      route: "schedule",
+      // TODAY-02: the row opens the School day sheet.
+      sheet: "school",
     });
     for (const time of [
       schoolSchedule.morningSnackTime,
