@@ -1,8 +1,10 @@
 import {
   createContext,
+  useCallback,
   useContext,
   useEffect,
   useId,
+  useLayoutEffect,
   useRef,
   useState,
 } from "react";
@@ -13,6 +15,8 @@ import { InlineError } from "./ui/InlineError.jsx";
 import { Button, IconButton } from "./ui/Button.jsx";
 
 const DialogClose = createContext(null);
+const DialogErrorSlot = createContext(null);
+const FIELDS = "input:not([type=hidden]), select, textarea";
 const TABBABLE =
   'a[href], button:not(:disabled), input:not(:disabled):not([type="hidden"]), select:not(:disabled), textarea:not(:disabled), summary, [tabindex]:not([tabindex="-1"])';
 
@@ -26,10 +30,43 @@ export const useDialogClose = () => useContext(DialogClose);
 export function useReportDirty(snapshot, onDirty) {
   const initial = useRef(snapshot);
   const dirty = snapshot !== initial.current;
-  useEffect(() => {
+  // Before paint, so an Escape pressed right after a change already sees it.
+  useLayoutEffect(() => {
     onDirty?.(dirty);
   }, [dirty]);
   return dirty;
+}
+
+// Where a failed save shows inside a dialog (STATE-02): put it just above the
+// sheet's footer. A dialog without one shows the error after its content.
+export function DialogError() {
+  const slot = useContext(DialogErrorSlot);
+  const register = slot?.register;
+  const ref = useRef(null);
+  const error = slot?.error;
+  useLayoutEffect(() => register?.(), [register]);
+  // The sheet may be scrolled up to its first fields: bring the error into
+  // view above the sticky footer (scroll-margin in components.css).
+  useEffect(() => {
+    if (error) ref.current?.scrollIntoView({ block: "nearest" });
+  }, [error]);
+  if (!slot) return null;
+  return <InlineError ref={ref} message={error} onRetry={slot.retry} />;
+}
+
+// First field of the dialog's body, else its first heading or button, for
+// initial focus and when the content swaps (DLG-01, A11Y-04).
+function firstStop(node) {
+  const field = [...node.querySelectorAll(FIELDS)].find(
+    (item) => !item.disabled && item.closest("dialog") === node,
+  );
+  if (field) return field;
+  const heading = node.querySelector(":scope > :not(header) :is(h2, h3)");
+  if (heading) {
+    heading.tabIndex = -1;
+    return heading;
+  }
+  return node.querySelector("button:not([aria-label^='Close'])");
 }
 
 export function DialogCancel({ children = "Cancel", ...props }) {
@@ -59,6 +96,16 @@ export function Dialog({
   const titleId = useId();
   const { error } = useStore();
   const [asking, setAsking] = useState(false);
+  const [slots, setSlots] = useState(0);
+  const register = useCallback(() => {
+    setSlots((count) => count + 1);
+    return () => setSlots((count) => count - 1);
+  }, []);
+  // "Try again" repeats only the failed write; once it is saved the dialog's
+  // job is done, so it closes instead of inviting a second save (STATE-02).
+  const retry = async () => {
+    if ((await retryLastWrite()) === true) latest.current.onClose();
+  };
   const latest = useRef({ dirty, onClose });
   latest.current = { dirty, onClose };
   const requestClose = () => {
@@ -71,11 +118,28 @@ export function Dialog({
     node.showModal();
     (
       initialFocusRef?.current ||
-      node.querySelector(
-        "input:not([type=hidden]), select, textarea, button:not([aria-label^='Close'])",
-      )
+      node.querySelector(FIELDS) ||
+      node.querySelector("button:not([aria-label^='Close'])")
     )?.focus();
+    // When a step swaps the content (a search result opens the portion or
+    // details step), the focused control leaves the page and focus would
+    // drop to <body>: move it to the new step's first field (DLG-01).
+    let focused = document.activeElement;
+    const track = (event) => {
+      focused = event.target;
+    };
+    node.addEventListener("focusin", track);
+    const observer = new MutationObserver(() => {
+      if (!node.open || focused?.isConnected) return;
+      const active = document.activeElement;
+      if (active && active !== document.body && active !== node) return;
+      focused = firstStop(node);
+      focused?.focus();
+    });
+    observer.observe(node, { childList: true, subtree: true });
     return () => {
+      observer.disconnect();
+      node.removeEventListener("focusin", track);
       node.close();
       // Only return focus to a control that is still on screen (a nested
       // confirm closes with its parent dialog).
@@ -125,16 +189,18 @@ export function Dialog({
       }}
     >
       <DialogClose.Provider value={requestClose}>
-        <header>
-          <h2 id={titleId}>{title}</h2>
-          <IconButton
-            label={`Close ${title}`}
-            icon={X}
-            onClick={requestClose}
-          />
-        </header>
-        <InlineError message={error} onRetry={retryLastWrite} />
-        {children}
+        <DialogErrorSlot.Provider value={{ error, retry, register }}>
+          <header>
+            <h2 id={titleId}>{title}</h2>
+            <IconButton
+              label={`Close ${title}`}
+              icon={X}
+              onClick={requestClose}
+            />
+          </header>
+          {children}
+          {!slots && <InlineError message={error} onRetry={retry} />}
+        </DialogErrorSlot.Provider>
       </DialogClose.Provider>
       {asking && (
         <DiscardDialog

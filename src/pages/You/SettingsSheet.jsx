@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Dialog, DialogCancel } from "../../components/Dialog.jsx";
+import { Dialog, DialogCancel, DialogError } from "../../components/Dialog.jsx";
 import { Button } from "../../components/ui/Button.jsx";
 import { FieldErrors, FormError } from "../../components/ui/FieldError.jsx";
 import { showToast } from "../../components/ui/Toast.jsx";
@@ -55,6 +55,7 @@ export function SettingsSheet({
           {children}
           <FormError />
         </FieldErrors>
+        <DialogError />
         <div className="dialog-actions">
           <DialogCancel />
           <Button

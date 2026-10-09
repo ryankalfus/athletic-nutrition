@@ -6,7 +6,7 @@ import { useState } from "react";
 import { advanceCompletedMoment } from "../../domain/ranking.js";
 import NowCard from "./NowCard.jsx";
 import { Shell } from "../../components/AppFrame.jsx";
-import { Dialog } from "../../components/Dialog.jsx";
+import { Dialog, DialogError } from "../../components/Dialog.jsx";
 import { useStore, changeData } from "../../store.js";
 import { useAsyncAction } from "../../hooks/useAsyncAction.js";
 import {
@@ -329,6 +329,7 @@ export default function TodayPage({
               ))}
             </ul>
           )}
+          <DialogError />
           <div className="dialog-actions">
             <button onClick={() => setOpenPlanId(null)}>Close</button>
           </div>
