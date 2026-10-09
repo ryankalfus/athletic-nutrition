@@ -638,3 +638,4 @@ Food search now POSTs its USDA queries as JSON: the GET endpoint answered about 
 Audited the browser checks for date dependence by running them under 12 fixed clocks (each weekday, late evening, month, year and DST edges): only browser-schedule.js depended on the day, now fixed; npm run check and 14/14 browser checks pass. 2026.10.09
 Changed the allergy notice to "Allergy filtering coming soon." and kept the approved copy for Packaged food, Discard/Keep editing and Skip step. 2026.10.09
 Marked P1-09, P1-10 and P1-13 as incomplete and skipped for now in the tracker. 2026.10.09
+Unticked 45 items after an independent re-verification of every ticked P0 and P1 item found gaps; each has a Re-verified 2026.10.09 note. 2026.10.09

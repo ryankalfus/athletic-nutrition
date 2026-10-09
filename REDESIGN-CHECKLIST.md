@@ -10,7 +10,7 @@ Owner Ryan Kalfus confirmed the recommended options previously presented for aud
 
 ## Phase tracker
 
-**Status 2026.09.29** (re-verified against the code and the running app after the UI-fix pass, 92e0b6d..8887e70):
+**Status 2026.10.09** — an independent re-verification unticked 45 items that were not fully true (each has a "Re-verified 2026.10.09" note). Earlier status: (re-verified against the code and the running app after the UI-fix pass, 92e0b6d..8887e70):
 
 - Phases done: P0 12/12 · P1 10/13 · P2 0/8 · P3 0/5.
 - Recommendations done: 279 of 304. Groups with open items: ADD 10/16, CMP 16/17, COPY 37/38, DLG 3/4, KEEP 14/15, MOVE 12/13, ONB 5/6, SCH 9/10, STATE 8/17, WEEK 4/5, YOU 4/6. All other groups are complete (A11Y, ACT, DATA, DEFER, DS, ENTRY, FOOD, GROC, HIST, HOME, IA, IDEA, LOG, RWD, SRCH, TODAY).
@@ -22,12 +22,12 @@ Owner Ryan Kalfus confirmed the recommended options previously presented for aud
 ### P0
 
 - [x] **P0-01**
-- [x] **P0-02**
+- [ ] **P0-02** — Re-verified 2026.10.09, not true: Food pages at 320x740: content starts at 128 px (limit 120); test measures the inner bar only.
 - [x] **P0-03**
-- [x] **P0-04**
-- [x] **P0-05**
-- [x] **P0-06**
-- [x] **P0-07**
+- [ ] **P0-04** — Re-verified 2026.10.09, not true: Deleting an activity shows a generic "Saved." toast; dialog error sits under the header, not above the footer.
+- [ ] **P0-05** — Re-verified 2026.10.09, not true: "allow 1 minutes for travel" can render (timing.js:225).
+- [ ] **P0-06** — Re-verified 2026.10.09, not true: Log food Recent/Saved list and the At home "Counts as?" dialog show branded products without the label line.
+- [ ] **P0-07** — Re-verified 2026.10.09, not true: The 7.6 scan fails on "streaks" in You › About; no test scans every route.
 - [x] **P0-08**
 - [x] **P0-09**
 - [x] **P0-10**
@@ -42,12 +42,12 @@ Owner Ryan Kalfus confirmed the recommended options previously presented for aud
 - [x] **P1-04**
 - [x] **P1-05**
 - [x] **P1-06**
-- [x] **P1-07**
+- [ ] **P1-07** — Re-verified 2026.10.09, not true: Live USDA "rice" search shows no plain rice in the top 24; tests pass only on fixture order.
 - [x] **P1-08**
 - [ ] **P1-09** — Incomplete, skipped for now (will come back to). Awaiting approval: allergy filtering is built but switched off (`ALLERGY_TAGS_REVIEWED = false` in `src/domain/catalog.js`); it will be switched on once the allergen tags are approved. Built: per-ingredient tags, `profile.allergies`, idea and grocery filters, Open Food Facts allergens on product views, and tests for both gate states.
 - [ ] **P1-10** — Incomplete, skipped for now (will come back to). Awaiting approval (allergy criterion): 6.14 passes; 6.13's peanut-allergy criterion needs allergy filtering on. Awaiting approval: allergy filtering is built but switched off (`ALLERGY_TAGS_REVIEWED = false`); it will be switched on once the allergen tags are approved. DATA-08 is done in P1-12.
-- [x] **P1-11** — Allergy chips in step 5 stay hidden while allergy filtering is switched off awaiting approval of the allergen tags (`ALLERGY_TAGS_REVIEWED = false`, P1-09; ONB-04).
-- [x] **P1-12**
+- [ ] **P1-11** — Re-verified 2026.10.09, not true: Small gaps: 1 px page scroll from an sr-only div; save-error button says "Export backup". (Earlier note: — Allergy chips in step 5 stay hidden while allergy filtering is switched off awaiting approval of the allergen tags (`ALLERGY_TAGS_REVIEWED = false`, P1-09; ONB-04).)
+- [ ] **P1-12** — Re-verified 2026.10.09, not true: Partial: ADD-09 sport titles missing in Schedule.
 - [ ] **P1-13** — Incomplete, skipped for now (will come back to): the manual screen-reader test and the keyboard-only core journey are not done. Automated 9.6 criteria pass (`tests/browser-a11y.js`: axe with zero serious or critical issues on 70 scans at 390 and 1280 px, 44 px targets, 3:1 boundaries and focus ring, keyboard, forced colors, reduced motion; `tests/browser-responsive.js` at all seven widths). Still open: the manual VoiceOver and NVDA smoke test and a keyboard-only run of the whole core journey (setup → plan → groceries → pack → log).
 
 ### P2
@@ -77,7 +77,7 @@ Each ID is an individual checkbox. Implementation notes and blockers go on the m
 
 - [x] **IA-01**
 - [x] **IA-02**
-- [x] **IA-03**
+- [ ] **IA-03** — Re-verified 2026.10.09, not true: Food pages: content starts at 128 px at 320x740 (4.9 criterion).
 - [x] **IA-04**
 - [x] **IA-05**
 - [x] **IA-06**
@@ -88,22 +88,22 @@ Each ID is an individual checkbox. Implementation notes and blockers go on the m
 - [x] **IA-11**
 - [x] **IA-12**
 - [x] **IA-13**
-- [x] **IA-14**
+- [ ] **IA-14** — Re-verified 2026.10.09, not true: Desktop rail "Switch athlete" only opens You.
 
 ### DS
 
 - [x] **DS-01**
 - [x] **DS-02**
-- [x] **DS-03**
+- [ ] **DS-03** — Re-verified 2026.10.09, not true: Now card countdown is 16-17 px, not Numeral XL 32/40.
 - [x] **DS-04**
 - [x] **DS-05**
 - [x] **DS-06**
 - [x] **DS-07**
-- [x] **DS-08**
-- [x] **DS-09**
+- [ ] **DS-08** — Re-verified 2026.10.09, not true: Log is 608 px at 1440, not the 720 px reading column.
+- [ ] **DS-09** — Re-verified 2026.10.09, not true: You and About sections are 24 px apart, not 32.
 - [x] **DS-10**
-- [x] **DS-11**
-- [x] **DS-12**
+- [ ] **DS-11** — Re-verified 2026.10.09, not true: Phone top-bar "+ Add" primary is 44 px; "Undo trip" busy state has no aria-busy or spinner.
+- [ ] **DS-12** — Re-verified 2026.10.09, not true: Log Day/Week is underline tabs, not the segmented control; selected weekdays have no check.
 - [x] **DS-13**
 - [x] **DS-14**
 - [x] **DS-15**
@@ -126,14 +126,14 @@ Each ID is an individual checkbox. Implementation notes and blockers go on the m
 - [x] **ONB-01**
 - [x] **ONB-02**
 - [x] **ONB-03**
-- [ ] **ONB-04** — Awaiting approval: allergy filtering is built but switched off (`ALLERGY_TAGS_REVIEWED = false`); it will be switched on once the allergen tags are approved. Partial: the safety paragraph is on You › About; step 5 shows "Allergy filtering is waiting for review. Check every label." and switches to the ONB-04 line only when `ALLERGY_TAGS_REVIEWED` is true.
+- [ ] **ONB-04** — Awaiting approval: allergy filtering is built but switched off (`ALLERGY_TAGS_REVIEWED = false`); it will be switched on once the allergen tags are approved. Partial: the safety paragraph is on You › About; step 5 shows "Allergy filtering is coming soon.." and switches to the ONB-04 line only when `ALLERGY_TAGS_REVIEWED` is true.
 - [x] **ONB-05**
 - [x] **ONB-06**
 
 ### TODAY
 
-- [x] **TODAY-01**
-- [x] **TODAY-02**
+- [ ] **TODAY-01** — Re-verified 2026.10.09, not true: "Add 2 items to groceries" never advances; repeat taps repeat the toast; missing check ignores the grocery list.
+- [ ] **TODAY-02** — Re-verified 2026.10.09, not true: Activity and school rail rows go to Schedule instead of opening a details sheet.
 - [x] **TODAY-03**
 - [x] **TODAY-04**
 - [x] **TODAY-05**
@@ -150,7 +150,7 @@ Each ID is an individual checkbox. Implementation notes and blockers go on the m
 - [x] **FOOD-02**
 - [x] **FOOD-03**
 - [x] **FOOD-04**
-- [x] **FOOD-05**
+- [ ] **FOOD-05** — Re-verified 2026.10.09, not true: Search result Save star has no repeat-tap guard (double-click saves then unsaves).
 - [x] **FOOD-06**
 
 ### HOME
@@ -158,7 +158,7 @@ Each ID is an individual checkbox. Implementation notes and blockers go on the m
 - [x] **HOME-01**
 - [x] **HOME-02**
 - [x] **HOME-03**
-- [x] **HOME-04**
+- [ ] **HOME-04** — Re-verified 2026.10.09, not true: Out row with an exact count: "+" adds to the hidden count (3, Out, + gives 4).
 - [x] **HOME-05**
 - [x] **HOME-06**
 - [x] **HOME-07**
@@ -177,7 +177,7 @@ Each ID is an individual checkbox. Implementation notes and blockers go on the m
 ### IDEA
 
 - [x] **IDEA-01**
-- [x] **IDEA-02**
+- [ ] **IDEA-02** — Re-verified 2026.10.09, not true: No tag icons, Save and Not for me are buttons not a menu, Add missing hidden in a disclosure, no availability chips.
 - [x] **IDEA-03**
 - [x] **IDEA-04**
 - [x] **IDEA-05**
@@ -206,14 +206,14 @@ Each ID is an individual checkbox. Implementation notes and blockers go on the m
 - [x] **SCH-06**
 - [x] **SCH-07**
 - [x] **SCH-08**
-- [x] **SCH-09**
+- [ ] **SCH-09** — Re-verified 2026.10.09, not true: Schedule rows, menus and scope dialogs show raw titles ("Practice"), not sport titles.
 - [ ] **SCH-10** — Deferred: P2-01 (ADD-08).
 
 ### ACT
 
 - [x] **ACT-01**
-- [x] **ACT-02**
-- [x] **ACT-03**
+- [ ] **ACT-02** — Re-verified 2026.10.09, not true: "Change all Tuesday practices" changes all five weekdays of a Mon-Fri series.
+- [ ] **ACT-03** — Re-verified 2026.10.09, not true: "Delete all Friday practices" deletes the whole Mon-Fri series; the browser check asserts the wrong behavior.
 - [x] **ACT-04**
 - [x] **ACT-05**
 
@@ -246,7 +246,7 @@ Each ID is an individual checkbox. Implementation notes and blockers go on the m
 - [x] **DATA-02**
 - [x] **DATA-03**
 - [x] **DATA-04**
-- [x] **DATA-05**
+- [ ] **DATA-05** — Re-verified 2026.10.09, not true: Deleting the last athlete shows a "New profile" tile on Welcome, not first-run; toast says "Profile deleted.".
 - [x] **DATA-06**
 - [x] **DATA-07**
 - [x] **DATA-08** — Done in P1-12 (ADD-12 backup nudge on Today).
@@ -254,14 +254,14 @@ Each ID is an individual checkbox. Implementation notes and blockers go on the m
 
 ### DLG
 
-- [x] **DLG-01**
-- [x] **DLG-02**
+- [ ] **DLG-01** — Re-verified 2026.10.09, not true: After picking a food in Log food or Add to groceries, the next step leaves focus on <body>.
+- [ ] **DLG-02** — Re-verified 2026.10.09, not true: "Add food for this week" and "Put these away?" close silently when dirty (no Discard prompt).
 - [ ] **DLG-03** — Open: `Dialog` shows the save error under the sheet header, not above the footer, so on a long sheet it can sit out of view of Save.
 - [x] **DLG-04**
 
 ### SRCH
 
-- [x] **SRCH-01**
+- [ ] **SRCH-01** — Re-verified 2026.10.09, not true: Closest-match ranking fails for "rice" with live data.
 - [x] **SRCH-02**
 - [x] **SRCH-03**
 - [x] **SRCH-04**
@@ -293,18 +293,18 @@ Each ID is an individual checkbox. Implementation notes and blockers go on the m
 - [x] **COPY-20**
 - [x] **COPY-21**
 - [x] **COPY-22**
-- [x] **COPY-23**
+- [ ] **COPY-23** — Re-verified 2026.10.09, not true: "Follow your coach's or doctor's plan if you have one." is only on About, not on the water row or during card.
 - [x] **COPY-24**
 - [x] **COPY-25**
 - [x] **COPY-26**
 - [x] **COPY-27**
-- [x] **COPY-28**
-- [x] **COPY-29**
+- [ ] **COPY-28** — Re-verified 2026.10.09, not true: Top-bar "Switch athlete" only goes to You.
+- [ ] **COPY-29** — Re-verified 2026.10.09, not true: Agenda rows read "School", not "School day".
 - [x] **COPY-30**
 - [x] **COPY-31**
 - [x] **COPY-32**
 - [x] **COPY-33**
-- [x] **COPY-34**
+- [ ] **COPY-34** — Re-verified 2026.10.09, not true: Today prompt drops "Works while Nourally is open in your browser.".
 - [x] **COPY-35**
 - [x] **COPY-36**
 - [x] **COPY-37**
@@ -312,7 +312,7 @@ Each ID is an individual checkbox. Implementation notes and blockers go on the m
 
 ### KEEP
 
-- [x] **KEEP-01**
+- [ ] **KEEP-01** — Re-verified 2026.10.09, not true: Timing thresholds have no per-threshold sources (deferred to P2-06).
 - [x] **KEEP-02**
 - [x] **KEEP-03**
 - [x] **KEEP-04**
@@ -374,7 +374,7 @@ Each ID is an individual checkbox. Implementation notes and blockers go on the m
 - [x] **ADD-06**
 - [x] **ADD-07**
 - [ ] **ADD-08** — Deferred: P2-01.
-- [x] **ADD-09**
+- [ ] **ADD-09** — Re-verified 2026.10.09, not true: Schedule does not use sport titles (see SCH-09).
 - [x] **ADD-10**
 - [x] **ADD-11**
 - [x] **ADD-12**
@@ -385,12 +385,12 @@ Each ID is an individual checkbox. Implementation notes and blockers go on the m
 
 ### RWD
 
-- [x] **RWD-01**
+- [ ] **RWD-01** — Re-verified 2026.10.09, not true: Off-scale 360 px queries remain (tokens.css, food.css).
 - [x] **RWD-02**
 - [x] **RWD-03**
-- [x] **RWD-04**
-- [x] **RWD-05**
-- [x] **RWD-06**
+- [ ] **RWD-04** — Re-verified 2026.10.09, not true: Food pages: chrome is 120 px and content starts at 128 px at 320x740.
+- [ ] **RWD-05** — Re-verified 2026.10.09, not true: Food tab focus ring clipped by 1 px in the scroller.
+- [ ] **RWD-06** — Re-verified 2026.10.09, not true: Setup steps 2 and 3 put time fields two-up at 320 px.
 - [x] **RWD-07**
 - [x] **RWD-08**
 - [x] **RWD-09**
@@ -403,16 +403,16 @@ Each ID is an individual checkbox. Implementation notes and blockers go on the m
 
 ### A11Y
 
-- [x] **A11Y-01**
+- [ ] **A11Y-01** — Re-verified 2026.10.09, not true: On a fresh load of a Food route, the first Tab skips the skip link (scrollIntoView in FoodWorkspace).
 - [x] **A11Y-02**
-- [x] **A11Y-03**
-- [x] **A11Y-04**
+- [ ] **A11Y-03** — Re-verified 2026.10.09, not true: H1 not inside a <header> on You, This device, About, Not found and Welcome.
+- [ ] **A11Y-04** — Re-verified 2026.10.09, not true: Log food: picking a food leaves focus on <body> when the portion step appears.
 - [x] **A11Y-05**
 - [x] **A11Y-06**
 - [x] **A11Y-07**
 - [x] **A11Y-08**
-- [x] **A11Y-09**
-- [x] **A11Y-10**
+- [ ] **A11Y-09** — Re-verified 2026.10.09, not true: Add practice with an empty date or time uses the browser popup; no aria-invalid or linked message.
+- [ ] **A11Y-10** — Re-verified 2026.10.09, not true: Calendar button reads "Today", not "Go to today" (reverted in 6e187d9).
 - [x] **A11Y-11**
 - [x] **A11Y-12**
 - [x] **A11Y-13**
@@ -420,8 +420,8 @@ Each ID is an individual checkbox. Implementation notes and blockers go on the m
 
 ### STATE
 
-- [x] **STATE-01**
-- [x] **STATE-02**
+- [ ] **STATE-01** — Re-verified 2026.10.09, not true: Schedule writes (add, edit, skip, delete) all toast "Saved.".
+- [ ] **STATE-02** — Re-verified 2026.10.09, not true: Dialog error shows under the header; "Try again" in Add activity can create a duplicate.
 - [ ] **STATE-03** — Open: no app-frame offline banner; only search shows "You're offline. Recent and saved foods still work."
 - [ ] **STATE-04** — Open: Today's Now card flags a moved session ("Update your snack time?", Update/Keep), but Ideas plan cards do not, and the prompt does not name the new snack time ("Move your snack to about 3:30?", Move/Keep).
 - [ ] **STATE-05** — Open: when permission is lost, reminders switch off at once with "Reminders are off because this browser does not allow notifications." instead of asking "Turn them on again?" first.
@@ -452,7 +452,7 @@ Each ID is an individual checkbox. Implementation notes and blockers go on the m
 - [ ] **CMP-10** — Open: the idea card is inline markup in `IdeasPage.jsx`; no shared `IdeaCard` / `AvailabilityChips` (Today renders its own availability list).
 - [x] **CMP-11**
 - [x] **CMP-12**
-- [x] **CMP-13**
+- [ ] **CMP-13** — Re-verified 2026.10.09, not true: No shared FoodDetailsSheet; At home and Groceries use two forms.
 - [x] **CMP-14**
 - [x] **CMP-15**
 - [x] **CMP-16**
