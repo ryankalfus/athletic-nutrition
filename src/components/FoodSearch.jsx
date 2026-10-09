@@ -20,13 +20,16 @@ import { QuickAddList } from "./ui/QuickAddList.jsx";
 import { allergenLine } from "../domain/search.js";
 import { IconButton } from "./ui/Button.jsx";
 import { SearchX, ScanBarcode, Star, WifiOff } from "lucide-react";
+import { useAsyncAction } from "../hooks/useAsyncAction.js";
 const BarcodeScanner = lazy(() => import("./BarcodeScanner.jsx"));
+// A double tap lands within this window after the first save settles.
+const REPEAT_TAP_MS = 350;
 
 // One search result (SRCH-01, SRCH-02, SRCH-07): name, one sub-line with the
 // brand or "Basic food" and a portion hint, the product's allergen line as
 // one muted line, and one Add button. The "check every label" banner shows
 // once above the list.
-function FoodResult({ food, saved, onFavorite, onChoose }) {
+function FoodResult({ food, saved, saving, onFavorite, onChoose }) {
   const name = sentenceCaseFoodName(food.name);
   const hint = portionHint(food);
   const allergens = allergenLine(food);
@@ -41,6 +44,8 @@ function FoodResult({ food, saved, onFavorite, onChoose }) {
         className="icon-button"
         aria-pressed={saved}
         aria-label={`Save ${name}`}
+        aria-busy={saving || undefined}
+        aria-disabled={saving || undefined}
         onClick={() => onFavorite(food)}
       >
         <Star
@@ -76,6 +81,7 @@ export function FoodSearch({
   const [offline, setOffline] = useState(() => navigator.onLine === false);
   const request = useRef(null);
   const serial = useRef(0);
+  const { pending, run } = useAsyncAction();
   const { current } = useStore();
   const favorites = current.data.favorites;
   // Saved meal ideas live on Ideas; search lists saved foods only (IDEA-05).
@@ -152,17 +158,23 @@ export function FoodSearch({
       if (id === serial.current) setLoading(false);
     }
   }
+  // FOOD-05: the star ignores repeat taps until the save settles, and stays
+  // quiet for a moment after, so a double tap saves once instead of saving
+  // and then unsaving.
   const favorite = (food) =>
-    changeData(
-      (data) => {
-        data.favorites = data.favorites.some((f) => f.id === food.id)
-          ? data.favorites.filter((f) => f.id !== food.id)
-          : [...data.favorites, food];
-      },
-      favorites.some((f) => f.id === food.id)
-        ? `Removed ${sentenceCaseFoodName(food.name)} from Saved.`
-        : `Saved ${sentenceCaseFoodName(food.name)}.`,
-    );
+    run(food.id, async () => {
+      await changeData(
+        (data) => {
+          data.favorites = data.favorites.some((f) => f.id === food.id)
+            ? data.favorites.filter((f) => f.id !== food.id)
+            : [...data.favorites, food];
+        },
+        favorites.some((f) => f.id === food.id)
+          ? `Removed ${sentenceCaseFoodName(food.name)} from Saved.`
+          : `Saved ${sentenceCaseFoodName(food.name)}.`,
+      );
+      await new Promise((resolve) => setTimeout(resolve, REPEAT_TAP_MS));
+    });
   const list = (foods) => (
     <ul className="food-result-list">
       {foods.map((food) => (
@@ -170,6 +182,7 @@ export function FoodSearch({
           key={food.id}
           food={food}
           saved={favorites.some((item) => item.id === food.id)}
+          saving={pending === food.id}
           onFavorite={favorite}
           onChoose={onChoose}
         />
@@ -233,6 +246,9 @@ export function FoodSearch({
         {offline && <WifiOff size={20} strokeWidth={1.75} aria-hidden="true" />}
         {offline ? "You're offline. Recent and saved foods still work." : ""}
       </p>
+      {/* P0-06: Recent and Saved hold products too, so the label line shows
+          once above them, as above search results. */}
+      {!term && (recent.length > 0 || savedFoods.length > 0) && <LabelCheck />}
       {!term && recent.length > 0 && (
         <section aria-labelledby="search-recent">
           <h3 id="search-recent">Recent</h3>
