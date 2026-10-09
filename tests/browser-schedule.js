@@ -1,14 +1,17 @@
 // Playwright snippet: schedule week view, activity validation, repeating scope prompts, school day skip/restore.
-// Everything is relative to today, so it works on any date.
+// The clock is fixed to Sunday 2026-10-11 10:00, so the 4:00 PM practice is
+// later today and today is the last row of the week list: its row menu opens
+// near the bottom of the window (the case that once closed the menu).
 async (page) => {
   const base = globalThis.BASE_URL ?? "http://127.0.0.1:5173/";
   const context = await page.context().browser().newContext();
+  const now = new Date(2026, 9, 11, 10, 0, 0);
+  await context.clock.setFixedTime(now);
   const p = await context.newPage();
   p.setDefaultTimeout(15000);
   const result = { checks: [], errors: [] };
   p.on("pageerror", (e) => result.errors.push(e.message));
   const pad = (n) => String(n).padStart(2, "0");
-  const now = new Date();
   const todayKey = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
   const weekday = new Intl.DateTimeFormat("en-US", { weekday: "long" }).format(
     now,
@@ -99,6 +102,30 @@ async (page) => {
     );
 
     await actions("Practice test");
+    // The open menu holds still: same place over six animation frames.
+    const tops = await p.evaluate(
+      () =>
+        new Promise((resolve) => {
+          const seen = [];
+          const sample = () => {
+            const menu = document.querySelector(".row-menu-items");
+            seen.push(
+              menu ? Math.round(menu.getBoundingClientRect().top) : null,
+            );
+            if (seen.length < 6) requestAnimationFrame(sample);
+            else resolve(seen);
+          };
+          requestAnimationFrame(sample);
+        }),
+    );
+    if (tops.includes(null) || new Set(tops).size !== 1)
+      throw new Error(`Row menu near the bottom is not stable: ${tops}`);
+    const menuBox = await today().getByRole("menu").boundingBox();
+    if (menuBox.y < 0 || menuBox.y + menuBox.height > 720)
+      throw new Error("Row menu near the bottom leaves the window");
+    result.checks.push(
+      "A row menu opened near the bottom of the window stays put and in view.",
+    );
     await today().getByRole("menuitem", { name: "Edit" }).click();
     const scope = p.getByRole("dialog", { name: "Change repeating activity" });
     await scope

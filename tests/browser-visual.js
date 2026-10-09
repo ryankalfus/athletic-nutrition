@@ -407,6 +407,24 @@ async (page) => {
       window.scrollTo(0, Math.max(0, y - window.innerHeight + 64 + 72));
     });
     await last.locator(".row-menu-trigger").click();
+    // It holds still right after the scroll: same place for six frames.
+    const tops = await p.evaluate(
+      () =>
+        new Promise((resolve) => {
+          const seen = [];
+          const sample = () => {
+            const items = document.querySelector(".row-menu-items");
+            seen.push(
+              items ? Math.round(items.getBoundingClientRect().top) : null,
+            );
+            if (seen.length < 6) requestAnimationFrame(sample);
+            else resolve(seen);
+          };
+          requestAnimationFrame(sample);
+        }),
+    );
+    if (tops.includes(null) || new Set(tops).size !== 1)
+      fail(`A row menu near the tab bar moves or closes (${tops})`);
     const menu = await box(p.locator(".row-menu-items"));
     if (menu.bottom > 844 - 64 + 1)
       fail(`A row menu runs under the tab bar (${Math.round(menu.bottom)}px)`);

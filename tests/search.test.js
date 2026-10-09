@@ -194,10 +194,15 @@ test("API mode asks for basic foods only when the mixed page has none", async ()
   const basics = SEARCH_FIXTURES.banana.filter(
     (food) => food.dataType !== "Branded",
   );
-  const fetchJson = async (url) => {
-    const params = new URL(url).searchParams;
-    calls.push(params.get("dataType") || "all");
-    return params.get("dataType")
+  // Searches POST a JSON body; the URL carries only the key.
+  const typeOf = (url, { body }) => {
+    assert.deepEqual([...new URL(url).searchParams.keys()], ["api_key"]);
+    return body.dataType?.join(",") || "all";
+  };
+  const fetchJson = async (url, options) => {
+    const dataType = typeOf(url, options);
+    calls.push(dataType);
+    return dataType !== "all"
       ? { foods: basics, totalHits: basics.length, totalPages: 1 }
       : { foods: productsOnly, totalHits: 400, totalPages: 16 };
   };
@@ -207,8 +212,8 @@ test("API mode asks for basic foods only when the mixed page has none", async ()
   assert.equal(result.hasMore, true);
 
   calls.length = 0;
-  const mixed = async (url) => {
-    calls.push(new URL(url).searchParams.get("dataType") || "all");
+  const mixed = async (url, options) => {
+    calls.push(typeOf(url, options));
     return { foods: SEARCH_FIXTURES.rice, totalHits: 11, totalPages: 1 };
   };
   const rice = await searchRemote("rice", "all", 1, "KEY", mixed);

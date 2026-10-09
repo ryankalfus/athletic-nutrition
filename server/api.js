@@ -8,14 +8,19 @@ import { hasBasicMatch, isBarcodeQuery } from "../src/domain/search.js";
 const cache = new Map();
 const rates = new Map();
 const TTL = 5 * 60 * 1000;
-async function cached(url, { notFoundMessage } = {}) {
-  const prior = cache.get(url);
+// A `body` sends a JSON POST; the cache keys on the URL plus the body.
+async function cached(url, { notFoundMessage, body } = {}) {
+  const id = body ? `${url} ${JSON.stringify(body)}` : url;
+  const prior = cache.get(id);
   if (prior && Date.now() - prior.time < TTL) return prior.data;
   const response = await fetch(url, {
+    method: body ? "POST" : "GET",
     signal: AbortSignal.timeout(12000),
     headers: {
       "User-Agent": "Nourally/0.2 (food-planning; local development)",
+      ...(body && { "Content-Type": "application/json" }),
     },
+    body: body ? JSON.stringify(body) : undefined,
   });
   if (!response.ok) {
     const error = new Error(
@@ -33,27 +38,32 @@ async function cached(url, { notFoundMessage } = {}) {
   }
   const data = await response.json();
   if (cache.size >= 200) cache.delete(cache.keys().next().value);
-  cache.set(url, { time: Date.now(), data });
+  cache.set(id, { time: Date.now(), data });
   return data;
 }
-const GENERIC_TYPES = "Foundation,SR Legacy,Survey (FNDDS)";
+const GENERIC_TYPES = ["Foundation", "SR Legacy", "Survey (FNDDS)"];
 const REMOTE_PAGE_SIZE = 25;
 // Live USDA search. The first page asks for basic foods separately only when
 // the mixed page has no basic food named by the query, so "banana" finds
 // "Bananas, raw" without spending a second request on most searches.
+// Searches POST a JSON body: USDA's GET endpoint answers about half of the
+// requests whose dataType holds "Survey (FNDDS)" with an nginx 400 (seen
+// 2026-10-09), which failed every basic-food follow-up at random.
 export async function searchRemote(query, type, page, key, fetchJson = cached) {
-  const request = (dataType, pageSize, pageNumber) => {
-    const params = new URLSearchParams({
-      api_key: key,
-      query,
-      pageSize: String(pageSize),
-      pageNumber: String(pageNumber),
-    });
-    if (dataType) params.set("dataType", dataType);
-    return fetchJson(`https://api.nal.usda.gov/fdc/v1/foods/search?${params}`);
-  };
+  const request = (dataType, pageSize, pageNumber) =>
+    fetchJson(
+      `https://api.nal.usda.gov/fdc/v1/foods/search?${new URLSearchParams({ api_key: key })}`,
+      {
+        body: {
+          query,
+          pageSize,
+          pageNumber,
+          ...(dataType && { dataType }),
+        },
+      },
+    );
   const remote = await request(
-    type === "all" ? "" : type === "generic" ? GENERIC_TYPES : "Branded",
+    type === "all" ? null : type === "generic" ? GENERIC_TYPES : ["Branded"],
     REMOTE_PAGE_SIZE,
     page,
   );

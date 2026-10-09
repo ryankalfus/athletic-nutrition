@@ -17,6 +17,7 @@ export function Menu({ label, items, className = "" }) {
   const panel = useRef(null);
   const root = useRef(null);
   const trigger = useRef(null);
+  const openedAt = useRef(0);
   const menuId = useId();
   const list = items.filter(Boolean);
   const enabled = () => [
@@ -24,16 +25,26 @@ export function Menu({ label, items, className = "" }) {
       []),
   ];
 
+  // Placement is measured once per open, before paint: the panel renders
+  // downward and flips up only if it would cross the floor (the fixed phone
+  // tab bar, else the screen bottom) and there is room above. Nothing here
+  // reads `up`, so it never re-measures or flips back and forth.
   useLayoutEffect(() => {
     if (!open || !panel.current || !trigger.current) return;
     const box = panel.current.getBoundingClientRect();
+    const spot = trigger.current.getBoundingClientRect();
     const tabBar = document.querySelector(".frame-nav");
-    const floor =
+    const barTop =
       tabBar && getComputedStyle(tabBar).position === "fixed"
         ? tabBar.getBoundingClientRect().top
-        : window.innerHeight;
-    const above = trigger.current.getBoundingClientRect().top;
-    setUp(box.bottom > floor && above - box.height > 0);
+        : Infinity;
+    // Only a bar below the trigger is a floor (a side rail is not).
+    const floor = Math.min(
+      window.innerHeight,
+      barTop > spot.top ? barTop : Infinity,
+    );
+    openedAt.current = window.scrollY;
+    setUp(box.bottom > floor && spot.top - box.height > 0);
   }, [open]);
 
   useEffect(() => {
@@ -45,7 +56,13 @@ export function Menu({ label, items, className = "" }) {
     const outside = (event) => {
       if (!root.current?.contains(event.target)) setOpen(false);
     };
-    const scrolled = () => setOpen(false);
+    // Close only when the page really moved since the menu opened. The
+    // scroll that brought the trigger into view (keyboard focus, a test
+    // runner) fires its event a frame after the click; it must not close
+    // the menu it just opened.
+    const scrolled = () => {
+      if (Math.abs(window.scrollY - openedAt.current) >= 1) setOpen(false);
+    };
     document.addEventListener("pointerdown", outside);
     window.addEventListener("scroll", scrolled, { passive: true });
     return () => {

@@ -60,8 +60,15 @@ async (page) => {
       result.checks.push(
         "Search is focused, plain banana ranks first, rows show Basic food and the label line, more results load.",
       );
+      // A no-hit query takes the second (basic foods) request. Fail with the
+      // provider's message instead of a timeout if the live call errors.
       await search("abcdefnonfood");
-      await p.getByText("No matching foods", { exact: false }).waitFor();
+      const noHits = p.getByText("No matching foods", { exact: false });
+      await noHits.or(p.getByRole("alert")).first().waitFor();
+      if (!(await noHits.count()))
+        throw new Error(
+          `Live search for a no-hit query failed: ${await p.getByRole("alert").first().innerText()}`,
+        );
       if (await dialog.getByRole("heading", { name: /Bananas?, raw/ }).count())
         throw new Error("Stale banana results remained after query change");
       result.checks.push(
