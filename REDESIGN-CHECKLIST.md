@@ -304,7 +304,7 @@ Each ID is an individual checkbox. Implementation notes and blockers go on the m
 - [x] **COPY-31**
 - [x] **COPY-32**
 - [x] **COPY-33**
-- [x] **COPY-34** — Fixed 2026.10.09: the Today prompt reads "Get a heads-up 60 min before practice? Works while Nourally is open in your browser." (TODAY-09 question plus COPY-34 line; `tests/browser-today.js`).
+- [x] **COPY-34** — Owner decision 2026.10.11: the Today prompt reads only "Get a heads-up 60 min before practice?"; the "Works while Nourally is open in your browser." sentence is removed.
 - [x] **COPY-35**
 - [x] **COPY-36**
 - [x] **COPY-37**

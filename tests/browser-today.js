@@ -79,13 +79,10 @@ async (page) => {
       .waitFor();
     await p
       .getByRole("complementary", { name: "Reminders" })
-      .getByText(
-        "Get a heads-up 60 min before practice? Works while Nourally is open in your browser.",
-        { exact: true },
-      )
+      .getByText("Get a heads-up 60 min before practice?", { exact: true })
       .waitFor();
     result.checks.push(
-      "Water row says “Bring a full bottle. Follow your coach's or doctor's plan if you have one.”; the reminder prompt adds “Works while Nourally is open in your browser.”",
+      "Water row says “Bring a full bottle. Follow your coach's or doctor's plan if you have one.”; the reminder prompt asks only the heads-up question",
     );
 
     // TODAY-01: Plan this → Add N items to groceries → Mark packed.
