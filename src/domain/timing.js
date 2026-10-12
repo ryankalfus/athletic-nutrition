@@ -120,6 +120,41 @@ export function skipOccurrence(event, dateKey) {
 
 export const weekdayOf = (dateKey) => new Date(`${dateKey}T12:00:00`).getDay();
 
+// P2-03 (ADD-13): a rest day is a weekly rest weekday (`restWeekdays`, 0 =
+// Sunday) or a one-off date (`restDays`), unless that one date was changed
+// back (`restExceptions`). No daily tap is needed on a weekly rest day.
+export function isRestDay(profile, dateKey) {
+  if (profile?.restExceptions?.includes(dateKey)) return false;
+  return Boolean(
+    profile?.restDays?.includes(dateKey) ||
+    profile?.restWeekdays?.includes(weekdayOf(dateKey)),
+  );
+}
+
+/** One day on or off rest, without changing the weekly pattern. Pure. */
+export function setRestDay(profile, dateKey, rest) {
+  const weekly = (profile.restWeekdays || []).includes(weekdayOf(dateKey));
+  const restDays = (profile.restDays || []).filter((d) => d !== dateKey);
+  const restExceptions = (profile.restExceptions || []).filter(
+    (d) => d !== dateKey,
+  );
+  if (rest && !weekly) restDays.push(dateKey);
+  if (!rest && weekly) restExceptions.push(dateKey);
+  return { ...profile, restDays, restExceptions };
+}
+
+/** Adds or removes a weekday from the weekly rest pattern. Pure. */
+export function toggleRestWeekday(profile, weekday) {
+  const days = profile.restWeekdays || [];
+  return {
+    ...profile,
+    restWeekdays: (days.includes(weekday)
+      ? days.filter((d) => d !== weekday)
+      : [...days, weekday]
+    ).sort((a, b) => a - b),
+  };
+}
+
 // Keep only the skipped dates and single-day changes that still fall on one
 // of the series' weekdays.
 function keepWeekdays(recurrence, weekdays) {
@@ -484,10 +519,7 @@ export function getFuelingGuidance({
   if (departureLabel) timing += ` · ${departureLabel}`;
   const tomorrowKey = getDateKey(addDays(new Date(`${todayKey}T12:00:00`), 1));
   const noSchedule =
-    !events.length &&
-    !schoolSchedule?.enabled &&
-    !profile.restDays?.includes(todayKey) &&
-    !profile.restWeekdays?.includes(new Date(`${todayKey}T12:00:00`).getDay());
+    !events.length && !schoolSchedule?.enabled && !isRestDay(profile, todayKey);
   const quietLate =
     currentMinutes >= 21 * 60 + 30 &&
     !active &&
@@ -510,11 +542,11 @@ export function getFuelingGuidance({
     timing = "";
   } else if (!training.length) {
     label =
-      events.length || profile.restDays?.includes(todayKey)
+      events.length || isRestDay(profile, todayKey)
         ? "No practice today"
         : "No schedule yet";
     explanation =
-      events.length || profile.restDays?.includes(todayKey)
+      events.length || isRestDay(profile, todayKey)
         ? "No sport is scheduled today. Keep regular meals and snacks that fit your day."
         : "Add school and sports for activity-based timing, or mark today as a rest day.";
   }
@@ -522,9 +554,7 @@ export function getFuelingGuidance({
     eventsForDate(events, tomorrowKey),
     sport,
   )[0];
-  const markedRest =
-    profile.restDays?.includes(todayKey) ||
-    profile.restWeekdays?.includes(new Date(`${todayKey}T12:00:00`).getDay());
+  const markedRest = isRestDay(profile, todayKey);
   if (!["late", "setup"].includes(state)) {
     state = active
       ? "during"
