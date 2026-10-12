@@ -257,6 +257,49 @@ export function weekSentence(summary) {
   return `${counts[0].toUpperCase()}${counts.slice(1)}. ${plans}`;
 }
 
+/** Monday on the local calendar. Noon avoids DST-shifted midnights. */
+export const isMonday = (dateKey) =>
+  isDateKey(dateKey) && new Date(`${dateKey}T12:00:00`).getDay() === 1;
+
+const countWord = (n, one, many) => `${n} ${n === 1 ? one : many}`;
+
+/** "Last week: 4 practices and 1 game. You planned food for 3 of them." */
+export function lastWeekSentence(summary) {
+  if (summary.activities) return `Last week: ${weekSentence(summary)}`;
+  return summary.foods
+    ? `Last week: no practices or games. You logged ${countWord(summary.foods, "food", "foods")}.`
+    : `Last week: no practices or games. You logged water on ${countWord(summary.waterDays, "day", "days")}.`;
+}
+
+/**
+ * WEEK-05 (P2-05): Today's Monday card. On a Monday, until hidden for that
+ * Monday, it sums up the 7 days before (Mon–Sun) with counts only and links
+ * to Log › Week for them. Null on other days, once hidden, or when last week
+ * has nothing to describe.
+ * @param {{todayKey: string, data?: {profile?: any, schedule?: any[],
+ *   mealPlans?: any[], dailyLogs?: Object<string, any>}}} input
+ */
+export function lastWeekCard({ todayKey, data = {} }) {
+  if (!isMonday(todayKey) || data.profile?.lastWeekHidden === todayKey)
+    return null;
+  const endKey = shiftDate(todayKey, -1);
+  const summary = weekSummary({
+    endKey,
+    events: data.schedule,
+    mealPlans: data.mealPlans,
+    dailyLogs: data.dailyLogs,
+    profile: data.profile,
+  });
+  if (!summary.activities && !summary.foods && !summary.waterDays) return null;
+  return {
+    weekKey: todayKey,
+    startKey: summary.startKey,
+    endKey,
+    route: `food/log/week/${endKey}`,
+    message: lastWeekSentence(summary),
+  };
+}
+
 const exactStock = (row) =>
   Number(row.quantity) > 0 &&
   (!row.availability || row.availability === "exact");

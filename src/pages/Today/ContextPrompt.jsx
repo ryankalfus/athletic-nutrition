@@ -2,6 +2,8 @@ import { changeData, exportBackup } from "../../store.js";
 import { notificationPermission } from "../../domain/reminders.js";
 import { backupNudge } from "../../domain/backupNudge.js";
 import { showToast } from "../../components/ui/Toast.jsx";
+import { lastWeekCard } from "../../domain/log.js";
+import LastWeekCard from "./LastWeekCard.jsx";
 
 // DATA-08 / ADD-12: the monthly backup nudge, after any reminder prompt.
 function BackupPrompt({ nudge, pending, run, write }) {
@@ -58,7 +60,9 @@ function activityWord(type) {
 // TODAY-09 / IA-12: one contextual prompt at most. Settings live in
 // You › Reminders; this slot only offers a one-time shortcut or surfaces a
 // reminder problem with a way to fix it. Order: a reminder problem, then a
-// due backup nudge (data safety, at most monthly), then the reminder offer.
+// due backup nudge (data safety, at most monthly), then the Monday "last
+// week" card (WEEK-05; Mondays only, so it goes before the standing offer),
+// then the reminder offer.
 export default function ContextPrompt({
   data,
   guidance,
@@ -68,6 +72,7 @@ export default function ContextPrompt({
   write,
   onNavigate,
   now = new Date(),
+  todayKey,
 }) {
   const openReminders = {
     label: "Open",
@@ -84,6 +89,9 @@ export default function ContextPrompt({
     );
   const nudge = backupNudge(data, now);
   if (nudge) return <BackupPrompt {...{ nudge, pending, run, write }} />;
+  const lastWeek = lastWeekCard({ todayKey, data });
+  if (lastWeek)
+    return <LastWeekCard card={lastWeek} {...{ pending, write, onNavigate }} />;
   if (
     !guidance.nextEvent ||
     data.reminderSettings.enabled ||
