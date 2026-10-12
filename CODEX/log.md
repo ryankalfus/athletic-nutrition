@@ -692,3 +692,12 @@ Merged the shared UI and a11y branch into redesign/complete-p0-p1: Schedule verb
 Added HANDOFF.md (current state, owner decisions, next work, new-machine setup), pointed AGENTS.md to it, updated the tracker status block, and ignored output/. 2026.10.09
 Removed HANDOFF.md and its pointer in AGENTS.md at the owner's request. 2026.10.10
 Removed "Works while Nourally is open in your browser." from the Today reminder prompt at the owner's request; COPY-34 note updated. 2026.10.11
+Added src/domain/ics.js: an RFC 5545 reader (folded lines, escaped text, UTC/TZID/floating/all-day times, DAILY/WEEKLY RRULE with BYDAY, INTERVAL, COUNT and UNTIL, EXDATE, RECURRENCE-ID, CANCELLED) that converts times to the device zone across DST, guesses Practice/Game/Other and Home/Away, and keys events by UID or date + start + title for duplicate skips; TeamSnap and GameChanger fixtures in tests/fixtures and tests/calendar.test.js. 2026.10.11
+Added GET /api/calendar (server/calendarFetch.js) with an SSRF guard: webcal to https, http(s) on ports 80/443 only, every DNS answer must be public and the socket connects to the checked address, private/loopback/link-local/multicast/reserved IPv4 and IPv6 (and decimal/octal/hex/IPv4-mapped forms) refused, up to 3 re-checked redirects, 10 s timeout, 1 MB limit, text/calendar or text/plain only; tests/calendar-fetch.test.js. 2026.10.11
+Schedule has an "Import team calendar" sheet (file or link) with a preview, type and Home/Away per event, and duplicate skip; P2-01, ADD-08 and SCH-10 ticked. 2026.10.11
+Team calendar links are stored on the athlete (calendarSubscriptions), refresh when the app opens and from Refresh, and only change that link's events (moved, new, dropped); events left out or deleted are not added back; P2-02 ticked. 2026.10.11
+Imported rows read "From team calendar" and keep their link when edited. 2026.10.11
+Schedule has a Rest days row whose weekday circles store profile.restWeekdays; isRestDay() in timing.js (also used by Log › Week) shows REST on Today with no daily tap and "Rest day" in Schedule; P2-03, ADD-13 and MOVE-12 ticked. 2026.10.11
+"Undo rest day" on the Now card now also undoes a weekly rest day for today only (profile.restExceptions); STATE-10 ticked. 2026.10.11
+storage.js validates calendarSubscriptions, imported-event sources, restWeekdays, restDays and restExceptions (additive; older data gets an empty list). 2026.10.11
+Added tests/rest-days.test.js and tests/browser-calendar-import.js; npm run check and 19/19 browser checks pass. 2026.10.11
