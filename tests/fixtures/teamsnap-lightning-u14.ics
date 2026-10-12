@@ -1,0 +1,266 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//TeamSnap//TeamSnap Calendar//EN
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Lightning U14 Girls
+X-WR-TIMEZONE:America/Chicago
+BEGIN:VTIMEZONE
+TZID:America/Chicago
+X-LIC-LOCATION:America/Chicago
+BEGIN:DAYLIGHT
+TZOFFSETFROM:-0600
+TZOFFSETTO:-0500
+TZNAME:CDT
+DTSTART:19700308T020000
+RRULE:FREQ=YEARLY;BYMONTH=3;BYDAY=2SU
+END:DAYLIGHT
+BEGIN:STANDARD
+TZOFFSETFROM:-0500
+TZOFFSETTO:-0600
+TZNAME:CST
+DTSTART:19701101T020000
+RRULE:FREQ=YEARLY;BYMONTH=11;BYDAY=1SU
+END:STANDARD
+END:VTIMEZONE
+BEGIN:VEVENT
+UID:practice-48213307@teamsnap.com
+DTSTAMP:20261005T141500Z
+DTSTART;TZID=America/Chicago:20261013T170000
+DTEND;TZID=America/Chicago:20261013T183000
+SUMMARY:Lightning U14 Practice
+LOCATION:Memorial Park\, Field 3\, 1200 Park Ave\, Naperville IL
+DESCRIPTION:Arrive 15 minutes early. Bring both jerseys\, shin guards and a
+  full water bottle. Coach Dana will run finishing drills\; parents please 
+ pick up by 6:40.
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+UID:practice-48213314@teamsnap.com
+DTSTAMP:20261005T141500Z
+DTSTART;TZID=America/Chicago:20261015T170000
+DTEND;TZID=America/Chicago:20261015T183000
+SUMMARY:Lightning U14 Practice
+LOCATION:Memorial Park\, Field 3\, 1200 Park Ave\, Naperville IL
+DESCRIPTION:Arrive 15 minutes early. Bring both jerseys\, shin guards and a
+  full water bottle. Coach Dana will run finishing drills\; parents please 
+ pick up by 6:40.
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+UID:practice-48213321@teamsnap.com
+DTSTAMP:20261005T141500Z
+DTSTART;TZID=America/Chicago:20261020T170000
+DTEND;TZID=America/Chicago:20261020T183000
+SUMMARY:Lightning U14 Practice
+LOCATION:Memorial Park\, Field 3\, 1200 Park Ave\, Naperville IL
+DESCRIPTION:Arrive 15 minutes early. Bring both jerseys\, shin guards and a
+  full water bottle. Coach Dana will run finishing drills\; parents please 
+ pick up by 6:40.
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+UID:practice-48213328@teamsnap.com
+DTSTAMP:20261005T141500Z
+DTSTART;TZID=America/Chicago:20261022T170000
+DTEND;TZID=America/Chicago:20261022T183000
+SUMMARY:Lightning U14 Practice
+LOCATION:Memorial Park\, Field 3\, 1200 Park Ave\, Naperville IL
+DESCRIPTION:Arrive 15 minutes early. Bring both jerseys\, shin guards and a
+  full water bottle. Coach Dana will run finishing drills\; parents please 
+ pick up by 6:40.
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+UID:practice-48213335@teamsnap.com
+DTSTAMP:20261005T141500Z
+DTSTART;TZID=America/Chicago:20261027T170000
+DTEND;TZID=America/Chicago:20261027T183000
+SUMMARY:Lightning U14 Practice
+LOCATION:Memorial Park\, Field 3\, 1200 Park Ave\, Naperville IL
+DESCRIPTION:Arrive 15 minutes early. Bring both jerseys\, shin guards and a
+  full water bottle. Coach Dana will run finishing drills\; parents please 
+ pick up by 6:40.
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+UID:practice-48213342@teamsnap.com
+DTSTAMP:20261005T141500Z
+DTSTART;TZID=America/Chicago:20261029T170000
+DTEND;TZID=America/Chicago:20261029T183000
+SUMMARY:Lightning U14 Practice
+LOCATION:Memorial Park\, Field 3\, 1200 Park Ave\, Naperville IL
+DESCRIPTION:Arrive 15 minutes early. Bring both jerseys\, shin guards and a
+  full water bottle. Coach Dana will run finishing drills\; parents please 
+ pick up by 6:40.
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+UID:practice-48213349@teamsnap.com
+DTSTAMP:20261005T141500Z
+DTSTART;TZID=America/Chicago:20261103T170000
+DTEND;TZID=America/Chicago:20261103T183000
+SUMMARY:Lightning U14 Practice
+LOCATION:Memorial Park\, Field 3\, 1200 Park Ave\, Naperville IL
+DESCRIPTION:Arrive 15 minutes early. Bring both jerseys\, shin guards and a
+  full water bottle. Coach Dana will run finishing drills\; parents please 
+ pick up by 6:40.
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+UID:practice-48213356@teamsnap.com
+DTSTAMP:20261005T141500Z
+DTSTART;TZID=America/Chicago:20261105T170000
+DTEND;TZID=America/Chicago:20261105T183000
+SUMMARY:Lightning U14 Practice
+LOCATION:Memorial Park\, Field 3\, 1200 Park Ave\, Naperville IL
+DESCRIPTION:Arrive 15 minutes early. Bring both jerseys\, shin guards and a
+  full water bottle. Coach Dana will run finishing drills\; parents please 
+ pick up by 6:40.
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+UID:practice-48213363@teamsnap.com
+DTSTAMP:20261005T141500Z
+DTSTART;TZID=America/Chicago:20261110T170000
+DTEND;TZID=America/Chicago:20261110T183000
+SUMMARY:Lightning U14 Practice
+LOCATION:Memorial Park\, Field 3\, 1200 Park Ave\, Naperville IL
+DESCRIPTION:Arrive 15 minutes early. Bring both jerseys\, shin guards and a
+  full water bottle. Coach Dana will run finishing drills\; parents please 
+ pick up by 6:40.
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+UID:practice-48213370@teamsnap.com
+DTSTAMP:20261005T141500Z
+DTSTART;TZID=America/Chicago:20261112T170000
+DTEND;TZID=America/Chicago:20261112T183000
+SUMMARY:Lightning U14 Practice
+LOCATION:Memorial Park\, Field 3\, 1200 Park Ave\, Naperville IL
+DESCRIPTION:Arrive 15 minutes early. Bring both jerseys\, shin guards and a
+  full water bottle. Coach Dana will run finishing drills\; parents please 
+ pick up by 6:40.
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+UID:game-48213377@teamsnap.com
+DTSTAMP:20261005T141500Z
+DTSTART;TZID=America/Chicago:20261017T100000
+DTEND;TZID=America/Chicago:20261017T113000
+SUMMARY:Lightning U14 vs. Hawks FC (Home)
+LOCATION:Memorial Park\, Field 3\, 1200 Park Ave\, Naperville IL
+DESCRIPTION:Arrival Time: 45 minutes early\nUniform: White
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+UID:event-48213384@teamsnap.com
+DTSTAMP:20261005T141500Z
+DTSTART;TZID=America/Chicago:20261018T180000
+DTEND;TZID=America/Chicago:20261018T190000
+SUMMARY:Team meeting
+LOCATION:Coach Dana's house
+DESCRIPTION:Season plan and carpool sign-up.
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+UID:event-48213391@teamsnap.com
+DTSTAMP:20261005T141500Z
+DTSTART;TZID=America/Chicago:20261019T163000
+DTEND;TZID=America/Chicago:20261019T170000
+SUMMARY:Team photos
+LOCATION:Naperville Central HS gym
+DESCRIPTION:Wear the white kit.
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+UID:game-48213398@teamsnap.com
+DTSTAMP:20261005T141500Z
+DTSTART;TZID=America/Chicago:20261024T130000
+DTEND;TZID=America/Chicago:20261024T143000
+SUMMARY:Lightning U14 at Rockets SC (Away)
+LOCATION:Rockets Sports Complex\, Aurora IL
+DESCRIPTION:Arrival Time: 1 hour early\nUniform: Blue
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+UID:game-48213405@teamsnap.com
+DTSTAMP:20261005T141500Z
+DTSTART;TZID=America/Chicago:20261025T140000
+DTEND;TZID=America/Chicago:20261025T153000
+SUMMARY:Scrimmage vs. Fire 2012G
+LOCATION:Memorial Park\, Field 1
+DESCRIPTION:Friendly match.
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+UID:game-48213412@teamsnap.com
+DTSTAMP:20261005T141500Z
+DTSTART;TZID=America/Chicago:20261031T090000
+DTEND;TZID=America/Chicago:20261031T103000
+SUMMARY:Lightning U14 vs. Strikers (Home)
+LOCATION:Memorial Park\, Field 3\, 1200 Park Ave\, Naperville IL
+DESCRIPTION:Arrival Time: 45 minutes early\nUniform: White
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+UID:practice-48213419@teamsnap.com
+DTSTAMP:20261005T141500Z
+DTSTART;TZID=America/Chicago:20261101T083000
+DTEND;TZID=America/Chicago:20261101T093000
+SUMMARY:Conditioning
+LOCATION:Memorial Park\, Field 3\, 1200 Park Ave\, Naperville IL
+DESCRIPTION:Daylight saving time ends today. Sunday morning fitness.
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+UID:game-48213426@teamsnap.com
+DTSTAMP:20261005T141500Z
+DTSTART;TZID=America/Chicago:20261107T110000
+DTEND;TZID=America/Chicago:20261107T123000
+SUMMARY:Lightning U14 at Galaxy United (Away)
+LOCATION:Galaxy Park\, Field 6\, Wheaton IL
+DESCRIPTION:Arrival Time: 1 hour early\nUniform: Blue
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+UID:game-48213433@teamsnap.com
+DTSTAMP:20261005T141500Z
+DTSTART;TZID=America/Chicago:20261114T103000
+DTEND;TZID=America/Chicago:20261114T120000
+SUMMARY:Lightning U14 vs. Thunder (Home)
+LOCATION:Memorial Park\, Field 3\, 1200 Park Ave\, Naperville IL
+DESCRIPTION:Arrival Time: 45 minutes early\nUniform: White
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+BEGIN:VEVENT
+UID:event-48213440@teamsnap.com
+DTSTAMP:20261005T141500Z
+DTSTART;TZID=America/Chicago:20261115T170000
+DTEND;TZID=America/Chicago:20261115T190000
+SUMMARY:End of season party
+LOCATION:Pizza Barn\, Naperville
+DESCRIPTION:Families welcome.
+STATUS:CONFIRMED
+TRANSP:OPAQUE
+END:VEVENT
+END:VCALENDAR
