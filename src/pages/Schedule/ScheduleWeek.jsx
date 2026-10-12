@@ -4,6 +4,7 @@ import {
   addDays,
   eventsForDate,
   getDateKey,
+  isRestDay,
   schoolOffReason,
 } from "../../domain/timing.js";
 import { EmptyState } from "../../components/ui/EmptyState.jsx";
@@ -28,6 +29,7 @@ function DayTitle({ dateKey, todayKey, id }) {
 
 export default function ScheduleWeek({
   events,
+  profile,
   schoolSchedule,
   todayKey,
   selectedKey,
@@ -50,7 +52,10 @@ export default function ScheduleWeek({
     key: getDateKey(date),
     events: getEventsForDay(date),
   }));
-  const weekEmpty = days.every((day) => !day.events.length);
+  // P2-03: a rest weekday with no practice or game reads "Rest day".
+  const restOn = (day) =>
+    isRestDay(profile, day.key) && !day.events.some((e) => e.type !== "school");
+  const weekEmpty = days.every((day) => !day.events.length && !restOn(day));
   const count = (test) =>
     weekDays.reduce(
       (total, day) =>
@@ -136,7 +141,13 @@ export default function ScheduleWeek({
                 return (
                   <li key={day.key}>
                     <DayTitle dateKey={day.key} todayKey={todayKey} />
-                    <span>{off ? OFF_LABEL[off] : "Nothing scheduled"}</span>
+                    <span>
+                      {off
+                        ? OFF_LABEL[off]
+                        : restOn(day)
+                          ? "Rest day"
+                          : "Nothing scheduled"}
+                    </span>
                     {addButton(day)}
                   </li>
                 );
@@ -160,6 +171,7 @@ export default function ScheduleWeek({
                     {addButton(day)}
                   </div>
                   {off && <p className="schedule-day-off">{OFF_LABEL[off]}</p>}
+                  {restOn(day) && <p className="schedule-day-off">Rest day</p>}
                   {day.events.map((event) => (
                     <ScheduleRow
                       key={event.occurrenceId || event.id}
