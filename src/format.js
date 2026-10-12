@@ -1,11 +1,11 @@
 const isClock = (value) => /^([01]\d|2[0-3]):[0-5]\d$/.test(value || "");
 
-export function formatDate(value, { year = false } = {}) {
+export function formatDate(value, { year = false, weekday = true } = {}) {
   if (!/^\d{4}-\d{2}-\d{2}/.test(value || "")) return value || "Date TBD";
   const date = new Date(`${value.slice(0, 10)}T12:00:00`);
   if (Number.isNaN(date.getTime())) return value;
   return new Intl.DateTimeFormat("en-US", {
-    weekday: "short",
+    ...(weekday ? { weekday: "short" } : {}),
     month: "short",
     day: "numeric",
     ...(year ? { year: "numeric" } : {}),

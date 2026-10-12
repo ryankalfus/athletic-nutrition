@@ -2,7 +2,8 @@ import { formatClock, timeToMinutes } from "../../domain/timing.js";
 import { formatPlanStatus } from "../../format.js";
 import { availabilityLabel, minutesClock } from "../../domain/dayRail.js";
 
-// States where the card times food; "Why this?" explains those only (6.3).
+// States where the card does not time food (no pick, no "More ideas").
+// "Why this?" shows in every state with that state's rule (P2-06).
 const NO_FOOD_TIMING = ["setup", "late", "rest", "evening", "no_sport"];
 
 export default function NowCard({
@@ -26,7 +27,11 @@ export default function NowCard({
   const showPick =
     idea && !packed && !["during", ...NO_FOOD_TIMING].includes(guidance.state);
   return (
-    <section className="now-card" aria-labelledby="now-title">
+    <section
+      className="now-card"
+      aria-labelledby="now-title"
+      data-state={guidance.state}
+    >
       {guidance.gameDay && (
         <span className="badge badge-game now-badge">Game day</span>
       )}
@@ -142,43 +147,38 @@ export default function NowCard({
           Add school day
         </button>
       )}
-      {(!NO_FOOD_TIMING.includes(guidance.state) ||
-        guidance.state === "rest") && (
-        <div className="today-text-row">
-          {showPick && !plan && (
-            <button
-              className="today-text"
-              onClick={() => onNavigate("food/ideas")}
-            >
-              More ideas
-            </button>
-          )}
-          {!NO_FOOD_TIMING.includes(guidance.state) && (
-            <button className="today-text" onClick={() => setWhy(true)}>
-              Why this?
-            </button>
-          )}
-          {guidance.state === "rest" && (
-            <button
-              className="today-text"
-              disabled={!!pending}
-              onClick={() =>
-                write(
-                  "rest",
-                  (d) => {
-                    d.profile.restDays = (d.profile.restDays || []).filter(
-                      (x) => x !== todayKey,
-                    );
-                  },
-                  "Rest day removed.",
-                )
-              }
-            >
-              Undo rest day
-            </button>
-          )}
-        </div>
-      )}
+      <div className="today-text-row">
+        {showPick && !plan && (
+          <button
+            className="today-text"
+            onClick={() => onNavigate("food/ideas")}
+          >
+            More ideas
+          </button>
+        )}
+        <button className="today-text" onClick={() => setWhy(true)}>
+          Why this?
+        </button>
+        {guidance.state === "rest" && (
+          <button
+            className="today-text"
+            disabled={!!pending}
+            onClick={() =>
+              write(
+                "rest",
+                (d) => {
+                  d.profile.restDays = (d.profile.restDays || []).filter(
+                    (x) => x !== todayKey,
+                  );
+                },
+                "Rest day removed.",
+              )
+            }
+          >
+            Undo rest day
+          </button>
+        )}
+      </div>
     </section>
   );
 }

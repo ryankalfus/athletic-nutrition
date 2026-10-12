@@ -692,3 +692,8 @@ Merged the shared UI and a11y branch into redesign/complete-p0-p1: Schedule verb
 Added HANDOFF.md (current state, owner decisions, next work, new-machine setup), pointed AGENTS.md to it, updated the tracker status block, and ignored output/. 2026.10.09
 Removed HANDOFF.md and its pointer in AGENTS.md at the owner's request. 2026.10.10
 Removed "Works while Nourally is open in your browser." from the Today reminder prompt at the owner's request; COPY-34 note updated. 2026.10.11
+Added src/domain/rules.js: one plain-words rule per Now card state (plus school window and game day) with https sources opened on Oct 11, 2026; cutoffs no source names (30/90/180 min, 75 min, 90 min recovery, 7:00 PM, 9:30 PM) are labelled as Nourally's own. 2026.10.11
+"Why this?" now shows in every Now card state with that state's rule, source links that open in a new tab (rel noopener) and "Source checked Oct 11, 2026"; the Now card carries data-state. 2026.10.11
+formatDate takes weekday: false so the checked date reads "Oct 11, 2026". 2026.10.11
+Added the P2-06 unit test (every getFuelingGuidance state has a rule with https sources and a valid checked date) and tests/browser-why.js (nine states via a fixed clock). 2026.10.11
+Ticked P2-06 and KEEP-01 (per-threshold sources) after npm run check and 19/19 browser checks passed. 2026.10.11
