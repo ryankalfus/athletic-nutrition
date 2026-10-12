@@ -15,6 +15,7 @@ import "./styles/you.css";
 import { Shell } from "./components/AppFrame.jsx";
 import Dashboard from "./pages/Today/TodayPage.jsx";
 import ScheduleCalendar from "./pages/Schedule/SchedulePage.jsx";
+import { useCalendarRefresh } from "./pages/Schedule/calendarSync.js";
 import FoodHub from "./components/FoodWorkspace.jsx";
 import { ToastProvider } from "./components/ui/Toast.jsx";
 import {
@@ -56,6 +57,8 @@ function App() {
   // publishes, so this can never be a stale "signed in" copy.
   const signedOut = useSignedOut();
   const onWelcome = signedOut || view === "welcome";
+  // P2-02: linked team calendars refresh when the app opens.
+  useCalendarRefresh(!onWelcome && step === "dashboard");
   useEffect(() => {
     let timer;
     const tick = () => {

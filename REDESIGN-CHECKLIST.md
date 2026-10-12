@@ -12,11 +12,11 @@ Owner Ryan Kalfus confirmed the recommended options previously presented for aud
 
 **Status 2026.10.09** (after an independent re-verification of every ticked P0/P1 item and the fixes that followed; `npm run check` and all 18 browser scripts pass):
 
-- Phases done: P0 12/12 · P1 9/13 · P2 2/8 · P3 0/5 (2026.10.11: P2-04 and P2-05 done).
-- Recommendations done: 281 of 304 (2026.10.11: ADD-14, WEEK-05, DLG-03).
+- Phases done: P0 12/12 · P1 9/13 · P2 6/8 · P3 0/5 (P2-01 to P2-06 done 2026.10.11).
+- Recommendation IDs done: 273 of 290.
 - Awaiting approval (allergy filtering built but switched off; `ALLERGY_TAGS_REVIEWED = false`): P1-09, P1-10, ADD-03, ONB-04, YOU-02, YOU-03. P1-11 waits on ONB-04.
 - Incomplete, skipped for now (will come back to): P1-09, P1-10 and P1-13 (manual screen-reader test and keyboard-only core journey not done).
-- Deferred to P2/P3: ADD-08 and SCH-10 (P2-01); ADD-13, MOVE-12 and STATE-10 (P2-03); ADD-16 (P3-01); ADD-15 (P3-02); KEEP-01 per-threshold sources (P2-06).
+- Not started: P2-07, P2-08; P3-01 to P3-05 (ADD-16 is P3-01, ADD-15 is P3-02).
 - Open work: COPY-38, KEEP-15, STATE-03, STATE-04, STATE-05, STATE-07, STATE-08, STATE-11, STATE-15, STATE-16, CMP-10.
 
 ### P0
@@ -52,9 +52,9 @@ Owner Ryan Kalfus confirmed the recommended options previously presented for aud
 
 ### P2
 
-- [ ] **P2-01**
-- [ ] **P2-02**
-- [ ] **P2-03**
+- [x] **P2-01** — Done 2026.10.11: Schedule › Team calendar › Import opens `ImportSheet` (file or link); `domain/ics.js` reads VEVENT, DTSTART/DTEND/DURATION in UTC, TZID (IANA, Windows, prefixed) and all-day, RRULE DAILY/WEEKLY with BYDAY, INTERVAL, COUNT and UNTIL, EXDATE, RECURRENCE-ID, CANCELLED, folded lines and escaped text; the preview guesses Practice/Game/Other and Home/Away and lets the athlete pick events; duplicates (UID key, or date + start + title) are flagged and skipped. The 20-event TeamSnap fixture (America/Chicago) imports with local times in Phoenix, New York and London across the Nov 1 and Oct 25 DST changes, and a second import adds nothing (`tests/calendar.test.js`, `tests/browser-calendar-import.js`).
+- [x] **P2-02** — Done 2026.10.11: `GET /api/calendar?url=` (server/calendarFetch.js) maps webcal to https and fetches only public http(s) hosts on ports 80/443: every DNS answer must be public unicast IPv4/IPv6 and the socket connects to the checked address (pinned lookup), IP literals in decimal/octal/hex/IPv4-mapped forms are refused, at most 3 redirects each re-checked, 10 s timeout, 1 MB limit, text/calendar or text/plain with a VCALENDAR body. Links are stored on the athlete (`calendarSubscriptions`) and refresh on app open and from Refresh; a refresh updates changed events, adds new ones and removes upcoming ones that left the feed, only for that link, never manual events, and does not re-add events left out or deleted (`tests/calendar-fetch.test.js`, `tests/calendar.test.js`, `tests/browser-calendar-import.js`).
+- [x] **P2-03** — Done 2026.10.11: Schedule › Rest days › Set opens weekday circles that store `profile.restWeekdays`; `isRestDay()` in timing.js (also used by Log › Week) makes those days REST on Today with no daily tap and marks them "Rest day" in Schedule; "Undo rest day" on the Now card changes only today (`restExceptions`) (`tests/rest-days.test.js`, `tests/browser-calendar-import.js`).
 - [x] **P2-04** — Done 2026.10.11: You › Food access › Water units (oz default, ml); water stays stored in oz. Today's buttons (+8/+16/+24 or +250/+500/+750), total, Custom field and toast, Log › Day and Log › Week switch units; no amount reads as a target (`tests/domain.test.js`, `tests/browser-units-week.js`).
 - [x] **P2-05** — Done 2026.10.11: on Mondays Today's prompt slot (after a reminder problem and a due backup, before the reminder offer) shows "Last week: 1 practice. It had no food plan." (counts only); "See last week" opens Log › Week for Mon–Sun; "Hide" keeps it away until next Monday and survives reload (`tests/domain.test.js` incl. DST and year boundaries, `tests/browser-units-week.js`).
 - [x] **P2-06** — Done 2026.10.11: `src/domain/rules.js` has one rule per Now card state (plus school window and game day), each with https sources and `checked: "2026-10-11"`; "Why this?" shows in every state with the rule, source links (new tab, rel noopener) and "Source checked Oct 11, 2026"; cutoffs no source names (30/90/180 min, 75 min, 90 min recovery, 7:00 PM, 9:30 PM) are labelled as Nourally's own (domain.test.js P2-06, browser-why.js).
@@ -207,7 +207,7 @@ Each ID is an individual checkbox. Implementation notes and blockers go on the m
 - [x] **SCH-07**
 - [x] **SCH-08**
 - [x] **SCH-09** — Fixed 2026.10.09: Schedule rows, row menus and scope dialogs use sport titles ("Soccer practice") (`tests/browser-schedule.js`, `tests/browser-today.js`).
-- [ ] **SCH-10** — Deferred: P2-01 (ADD-08).
+- [x] **SCH-10** — Done 2026.10.11: "Import team calendar" sits in the Schedule rows under School day (the phone layout hides the header tools, so it is not in a header menu); imported rows read "From team calendar" (`tests/browser-calendar-import.js`).
 
 ### ACT
 
@@ -341,7 +341,7 @@ Each ID is an individual checkbox. Implementation notes and blockers go on the m
 - [x] **MOVE-09**
 - [x] **MOVE-10**
 - [x] **MOVE-11**
-- [ ] **MOVE-12** — Deferred: P2-03 (the Now card REST state and Undo are built; the weekly rest-day pattern in Schedule is not).
+- [x] **MOVE-12** — Done 2026.10.11: the Now card REST state and Undo plus the weekly rest-day pattern in Schedule › Rest days (`tests/rest-days.test.js`, `tests/browser-calendar-import.js`).
 - [x] **MOVE-13**
 
 ### DEFER
@@ -373,12 +373,12 @@ Each ID is an individual checkbox. Implementation notes and blockers go on the m
 - [x] **ADD-05**
 - [x] **ADD-06**
 - [x] **ADD-07**
-- [ ] **ADD-08** — Deferred: P2-01.
+- [x] **ADD-08** — Done 2026.10.11: .ics file import with preview, type mapping and duplicate skip, plus subscription links through the server (P2-01, P2-02). Setup step 3 does not offer import yet; Schedule does.
 - [x] **ADD-09** — Fixed 2026.10.09: Schedule uses sport titles like Today (see SCH-09).
 - [x] **ADD-10**
 - [x] **ADD-11**
 - [x] **ADD-12**
-- [ ] **ADD-13** — Deferred: P2-03 (`restWeekdays` is read by timing and Log, but there is no weekday picker).
+- [x] **ADD-13** — Done 2026.10.11: weekday circles in Schedule › Rest days store `restWeekdays[]`; rest weekdays show REST with no daily tap (P2-03).
 - [x] **ADD-14** — Done 2026.10.11 in P2-04: `profile.units` (oz or ml) set in You › Food access; water buttons and labels follow it (`tests/browser-units-week.js`).
 - [ ] **ADD-15** — Deferred: P3-02.
 - [ ] **ADD-16** — Deferred: P3-01.
@@ -429,7 +429,7 @@ Each ID is an individual checkbox. Implementation notes and blockers go on the m
 - [ ] **STATE-07** — Open: `Skeleton` has no 300 ms minimum and uses role=status, not aria-busy on the region; Today, Ideas and Log have only the app-level load skeleton.
 - [ ] **STATE-08** — Open: the restore preview is built (DATA-04), but the result toast reads "Added from backup." with Undo, not "Added 1 athlete: Maya (from backup). Switch now?"
 - [x] **STATE-09** — ErrorBoundary shows "Something went wrong on this screen" / "Your data is safe." / Reload; storage failures keep Recovery via StoreGate.
-- [ ] **STATE-10** — Deferred: P2-03 ("Undo rest day" on the Now card is built; weekly rest days in Schedule are not).
+- [x] **STATE-10** — Done 2026.10.11: "Undo rest day" on the Now card also undoes a weekly rest day for today only; weekly rest days are editable in Schedule (`tests/rest-days.test.js`, `tests/browser-calendar-import.js`).
 - [ ] **STATE-11** — Open: Pack & prep is hidden when there are no tasks; the "Nothing to pack yet. Plan a snack to get a list." + "See ideas" empty state is not built.
 - [x] **STATE-12**
 - [x] **STATE-13** — 404: "We couldn't find that barcode. Add the food yourself."; 5xx/timeout: "Barcode lookup isn't working right now. Try again." (unit test).

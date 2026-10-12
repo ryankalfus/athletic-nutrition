@@ -7,6 +7,7 @@ import {
   getDateKey,
   addDays,
   eventsForDate,
+  isRestDay,
   isSchoolDay,
   sportEventTitle,
   withSportTitles,
@@ -16,6 +17,7 @@ import { useSchoolEditor } from "./useSchoolEditor.jsx";
 import ScheduleWeek from "./ScheduleWeek.jsx";
 import ScheduleRow from "./ScheduleRow.jsx";
 import MonthGrid from "./MonthGrid.jsx";
+import WeekSettings from "./WeekSettings.jsx";
 import { SegmentedControl } from "../../components/ui/SelectionControls.jsx";
 export default function ScheduleCalendar({
   events,
@@ -26,6 +28,7 @@ export default function ScheduleCalendar({
 }) {
   const { current } = useStore();
   const sport = current.data.profile.sport || "";
+  const profile = current.data.profile;
   const today = new Date(`${todayKey}T12:00:00`);
   const [selectedKey, setSelectedKey] = useState(todayKey);
   const [monthCursor, setMonthCursor] = useState(
@@ -263,6 +266,7 @@ export default function ScheduleCalendar({
         </div>
         {school.element}
       </section>
+      <WeekSettings events={events} todayKey={todayKey} />
       <div className="agenda-date-strip">
         <SegmentedControl
           label="Schedule view"
@@ -279,6 +283,7 @@ export default function ScheduleCalendar({
           {...{
             events,
             schoolSchedule,
+            profile,
             todayKey,
             selectedKey,
             selectedDate,
@@ -383,9 +388,15 @@ export default function ScheduleCalendar({
                 onDelete={deleteEvent}
               />
             ))}
-            {!selectedEvents.length && !selectedSchoolCanceled && (
-              <p className="schedule-day-empty">Nothing scheduled</p>
-            )}
+            {isRestDay(profile, selectedKey) &&
+              !selectedEvents.some((e) => e.type !== "school") && (
+                <p className="schedule-day-off">Rest day</p>
+              )}
+            {!selectedEvents.length &&
+              !selectedSchoolCanceled &&
+              !isRestDay(profile, selectedKey) && (
+                <p className="schedule-day-empty">Nothing scheduled</p>
+              )}
           </aside>
         </section>
       )}

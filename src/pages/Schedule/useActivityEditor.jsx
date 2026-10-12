@@ -2,6 +2,7 @@ import { useRef, useState } from "react";
 import { Dialog, DialogCancel, DialogError } from "../../components/Dialog.jsx";
 import { ConfirmDialog } from "../../components/ui/ConfirmDialog.jsx";
 import { uid } from "../../domain/storage.js";
+import { changeData } from "../../store.js";
 import { activityTitle, activityToast } from "../../domain/sport.js";
 import { formatDate, plural } from "../../format.js";
 import {
@@ -162,17 +163,37 @@ export function useActivityEditor({
       confirmLabel: "Delete",
       destructive: true,
       onConfirm: async () => {
-        if (
-          await setEvents(
-            (current) => current.filter((e) => e.id !== id),
-            activityToast(target.type, "deleted"),
-          )
-        ) {
+        if (await deleteOne(target, activityToast(target.type, "deleted"))) {
           if (editingId === id) close();
           setConfirmation(null);
         }
       },
     });
+  }
+
+  // A deleted team-calendar event stays deleted: its key joins the link's
+  // skipped list so a refresh does not add it back (P2-02).
+  function deleteOne(target, message) {
+    const feedId = target.source?.feedId;
+    if (!feedId)
+      return setEvents(
+        (current) => current.filter((e) => e.id !== target.id),
+        message,
+      );
+    return changeData((data) => {
+      data.schedule = data.schedule.filter((e) => e.id !== target.id);
+      data.calendarSubscriptions = (data.calendarSubscriptions || []).map(
+        (sub) =>
+          sub.id === feedId
+            ? {
+                ...sub,
+                skippedKeys: [
+                  ...new Set([...(sub.skippedKeys || []), target.source.key]),
+                ],
+              }
+            : sub,
+      );
+    }, message);
   }
 
   // STATE-01: Schedule toasts say what happened ("Day skipped.").
@@ -268,6 +289,9 @@ export function useActivityEditor({
       notes: notes.trim(),
     };
     const scheduled = {
+      // An imported one-day activity keeps its team-calendar link (P2-01).
+      ...(existing?.source &&
+        repeatMode !== "weekly" && { source: existing.source }),
       id: editingId || uid(),
       ...fields,
       ...(repeatMode === "weekly"

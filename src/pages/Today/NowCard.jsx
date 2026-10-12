@@ -1,4 +1,4 @@
-import { formatClock, timeToMinutes } from "../../domain/timing.js";
+import { formatClock, setRestDay, timeToMinutes } from "../../domain/timing.js";
 import { formatPlanStatus } from "../../format.js";
 import { availabilityLabel, minutesClock } from "../../domain/dayRail.js";
 
@@ -167,9 +167,8 @@ export default function NowCard({
               write(
                 "rest",
                 (d) => {
-                  d.profile.restDays = (d.profile.restDays || []).filter(
-                    (x) => x !== todayKey,
-                  );
+                  // STATE-10: also undoes a weekly rest day, for today only.
+                  d.profile = setRestDay(d.profile, todayKey, false);
                 },
                 "Rest day removed.",
               )

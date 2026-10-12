@@ -76,7 +76,11 @@ export default function ScheduleRow({
             onClick={() => onEdit(event, dateKey)}
           >
             <strong>{event.title}</strong>
-            <small>{activitySubLine(event)}</small>
+            <small>
+              {activitySubLine(event)}
+              {/* 6.9 states: imported events are flagged (P2-01). */}
+              {event.source && " · From team calendar"}
+            </small>
           </button>
         </>
       )}

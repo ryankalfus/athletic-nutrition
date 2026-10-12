@@ -1,7 +1,7 @@
 // Food › Log: Day timeline and Week summary (P1-08, LOG-01 to LOG-08,
 // WEEK-01 to WEEK-04, HIST-03). Pure functions; the pages format the output.
 import { ingredientId } from "./food.js";
-import { addDays, eventsForDate, getDateKey } from "./timing.js";
+import { addDays, eventsForDate, getDateKey, isRestDay } from "./timing.js";
 
 // LOG-04: entries added to a past day can use an approximate time.
 export const APPROX_TIMES = [
@@ -162,12 +162,6 @@ export function dayWater(log) {
 /** The last seven dates ending on endKey, newest first. */
 export const weekDates = (endKey) =>
   Array.from({ length: 7 }, (_, index) => shiftDate(endKey, -index));
-
-const isRestDay = (profile, dateKey) =>
-  Boolean(
-    profile?.restDays?.includes(dateKey) ||
-    profile?.restWeekdays?.includes(new Date(`${dateKey}T12:00:00`).getDay()),
-  );
 
 /**
  * The Week view rows and counts (WEEK-01, WEEK-04). No streaks, scores or

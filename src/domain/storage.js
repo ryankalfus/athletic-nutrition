@@ -11,6 +11,8 @@ export const emptyData = () => ({
   profile: normalizeYouProfile(structuredClone(DEFAULT_PROFILE)),
   schedule: [],
   schoolSchedule: null,
+  // P2-02: team calendar links refreshed on open ({ id, url, name, ... }).
+  calendarSubscriptions: [],
   dailyLogs: {},
   dayPlans: {},
   mealPlans: [],
@@ -35,6 +37,7 @@ export function validateData(data) {
   if (!object(data)) throw new Error("The profile data is not an object.");
   for (const field of [
     "schedule",
+    "calendarSubscriptions",
     "mealPlans",
     "favorites",
     "recentFoods",
@@ -101,6 +104,47 @@ export function validateData(data) {
     )
   )
     throw new Error("Invalid activity schedule.");
+  // P2-01: an imported activity carries { kind, key, feedId, feed }.
+  if (
+    data.schedule?.some(
+      (e) =>
+        e.source !== undefined &&
+        (!object(e.source) || typeof e.source.key !== "string"),
+    )
+  )
+    throw new Error("Invalid imported activity.");
+  if (
+    data.calendarSubscriptions?.some(
+      (sub) =>
+        !object(sub) ||
+        typeof sub.id !== "string" ||
+        typeof sub.url !== "string" ||
+        (sub.skippedKeys !== undefined &&
+          (!Array.isArray(sub.skippedKeys) ||
+            sub.skippedKeys.some((key) => typeof key !== "string"))) ||
+        !/^(https?|webcals?):\/\//i.test(sub.url),
+    )
+  )
+    throw new Error("Invalid team calendar link.");
+  // P2-03: weekly rest days (0 = Sunday) and one-day changes.
+  if (
+    data.profile?.restWeekdays !== undefined &&
+    (!Array.isArray(data.profile.restWeekdays) ||
+      data.profile.restWeekdays.some(
+        (day) => !Number.isInteger(day) || day < 0 || day > 6,
+      ))
+  )
+    throw new Error("Invalid rest days.");
+  for (const key of ["restDays", "restExceptions"])
+    if (
+      data.profile?.[key] !== undefined &&
+      (!Array.isArray(data.profile[key]) ||
+        data.profile[key].some(
+          (date) =>
+            typeof date !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(date),
+        ))
+    )
+      throw new Error("Invalid rest days.");
   if (
     data.schoolSchedule &&
     (!object(data.schoolSchedule) ||

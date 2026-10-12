@@ -10,6 +10,7 @@ import {
   namesQuery,
   rankFoods,
 } from "../src/domain/search.js";
+import { fetchCalendar } from "./calendarFetch.js";
 const cache = new Map();
 const rates = new Map();
 const TTL = 5 * 60 * 1000;
@@ -213,6 +214,11 @@ export async function api(req, res, next) {
         ...(await searchRemote(query, type, page, key)),
         mode: key === "DEMO_KEY" ? "limited-demo" : "server-key",
       });
+    }
+    // P2-02: a team calendar feed for a subscription link (SSRF-guarded).
+    if (url.pathname === "/api/calendar") {
+      const feed = await fetchCalendar(url.searchParams.get("url") || "");
+      return send(200, { ics: feed.text });
     }
     const detail = url.pathname.match(/^\/api\/foods\/(\d+)$/);
     if (detail)
