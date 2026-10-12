@@ -119,6 +119,9 @@ export function validateData(data) {
         !object(sub) ||
         typeof sub.id !== "string" ||
         typeof sub.url !== "string" ||
+        (sub.skippedKeys !== undefined &&
+          (!Array.isArray(sub.skippedKeys) ||
+            sub.skippedKeys.some((key) => typeof key !== "string"))) ||
         !/^(https?|webcals?):\/\//i.test(sub.url),
     )
   )

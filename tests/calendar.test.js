@@ -411,6 +411,23 @@ test("P2-02: refresh keeps an athlete's own time change until the feed changes t
   assert.equal(moved.events[0].startTime, "17:30");
 });
 
+test("P2-02: events left out of the import or deleted are not added back by a refresh", () => {
+  const options = { todayKey: today, timeZone: "America/Chicago" };
+  const rows = importPreview(TEAMSNAP, [], options).rows;
+  const photos = rows.find((row) => row.title === "Team photos");
+  const party = rows.find((row) => row.title === "End of season party");
+  const kept = rows
+    .filter((row) => row !== photos && row !== party)
+    .map((row) => toScheduleEvent(row, { id: makeId(), feedId: "f" }));
+  const result = mergeFeed(kept, "f", rows, {
+    todayKey: today,
+    makeId,
+    skipKeys: [photos.key, party.key],
+  });
+  assert.deepEqual([result.added, result.updated, result.removed], [0, 0, 0]);
+  assert.equal(result.events.length, 18);
+});
+
 test("P2-02: links and stored subscriptions are checked", () => {
   assert.equal(
     webcalToHttps("webcal://go.teamsnap.com/ics/abc"),

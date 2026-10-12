@@ -32,6 +32,96 @@
   line-height: var(--leading-small);
 }
 
+/* Rest days and team calendar rows (P2-01 to P2-03): the school row's look,
+ * one divider between them. */
+.schedule-settings-card {
+  display: grid;
+  gap: var(--space-4);
+  margin: calc(var(--rhythm-section) * -1 + var(--rhythm-card)) 0
+    var(--rhythm-section);
+}
+
+.schedule-settings-card > .school-schedule-summary + .school-schedule-summary {
+  padding-top: var(--space-4);
+  border-top: var(--border);
+}
+
+.calendar-links {
+  display: grid;
+  gap: var(--space-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.calendar-links li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.calendar-links li > span {
+  display: grid;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.calendar-links small {
+  color: var(--color-ink-muted);
+  font-size: var(--text-small);
+  line-height: var(--leading-small);
+}
+
+/* Import preview: one row per event, a check and the event, then its type
+ * and Home/Away when it is picked. */
+.import-summary {
+  display: grid;
+  gap: var(--space-1);
+  color: var(--color-ink-muted);
+  font-size: var(--text-small);
+  line-height: var(--leading-small);
+}
+
+.import-summary strong {
+  color: var(--color-ink);
+}
+
+.import-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-top: var(--border);
+}
+
+.import-row {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-2) 0 var(--space-3);
+  border-bottom: var(--border);
+}
+
+.import-row .check-row > span {
+  gap: 0;
+}
+
+.import-row small {
+  color: var(--color-ink-muted);
+  font-size: var(--text-small);
+  line-height: var(--leading-small);
+}
+
+.import-row.is-locked strong {
+  color: var(--color-ink-muted);
+  font-weight: 400;
+}
+
+.import-row-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-3);
+}
+
 /* View control row */
 .agenda-date-strip {
   display: flex;

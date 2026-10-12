@@ -588,12 +588,20 @@ const FEED_FIELDS = ["date", "startTime", "endTime", "title"];
  * - Upcoming events from this feed that left the feed are removed.
  * - Manual events, file imports and other feeds are never touched, and past
  *   days are kept as they were.
+ * - Occurrences the athlete left out of the import or deleted (skipKeys)
+ *   are not added back.
  * @param {any[]} events
  * @param {string} feedId
  * @param {any[]} rows importPreview().rows (all upcoming occurrences)
- * @param {{ todayKey: string, makeId: () => string }} options
+ * @param {{ todayKey: string, makeId: () => string, skipKeys?: string[] }} options
  */
-export function mergeFeed(events, feedId, rows, { todayKey, makeId }) {
+export function mergeFeed(
+  events,
+  feedId,
+  rows,
+  { todayKey, makeId, skipKeys = [] },
+) {
+  const skipped = new Set(skipKeys);
   const incoming = new Map();
   for (const row of rows) if (!row.allDay) incoming.set(row.key, row);
   const otherKeys = new Set(
@@ -630,7 +638,12 @@ export function mergeFeed(events, feedId, rows, { todayKey, makeId }) {
     });
   }
   for (const row of incoming.values()) {
-    if (owned.has(row.key) || otherKeys.has(row.key) || row.date < todayKey)
+    if (
+      owned.has(row.key) ||
+      otherKeys.has(row.key) ||
+      skipped.has(row.key) ||
+      row.date < todayKey
+    )
       continue;
     if (
       events.some(
