@@ -148,6 +148,7 @@ import {
   lastWeekSentence,
   weekSummary,
 } from "../src/domain/log.js";
+import { RULES, rulesFor } from "../src/domain/rules.js";
 const day = "2026-09-14";
 const profile = { ...DEFAULT_PROFILE, budget: "standard" };
 const idea = (id) => FOOD_IDEAS.find((i) => i.id === id);
@@ -2543,5 +2544,100 @@ test("P2-05: last week sentences without activities stay neutral", () => {
   assert.equal(
     lastWeekSentence(full),
     "Last week: 2 practices. You planned food for both.",
+  );
+});
+
+test("P2-06: every Now card state has a rule with https sources and a checked date", () => {
+  const practice = (over = {}) => ({
+    id: "p",
+    type: "practice",
+    title: "Practice",
+    date: day,
+    startTime: "16:00",
+    endTime: "17:30",
+    ...over,
+  });
+  const tomorrow = {
+    id: "t",
+    title: "Practice",
+    date: "2026-09-15",
+    startTime: "16:00",
+    endTime: "17:30",
+  };
+  const noSchool = { ...school, enabled: false };
+  const saturday = "2026-09-19";
+  const on = (dateKey, time, events, override = {}) =>
+    getFuelingGuidance({
+      now: new Date(`${dateKey}T${time}:00`),
+      todayKey: dateKey,
+      events,
+      schoolSchedule: school,
+      profile,
+      ...override,
+    });
+  const seen = new Map([
+    ["setup", guidance("10:00", [], { schoolSchedule: noSchool })],
+    ["late", on(saturday, "22:00", [])],
+    ["before_school", guidance("07:00", [practice()])],
+    ["plan_ahead", guidance("09:00", [practice()])],
+    ["meal_window", guidance("13:30", [practice()])],
+    ["pre", guidance("15:00", [practice()])],
+    ["quick", guidance("15:45", [practice()])],
+    ["during", guidance("16:30", [practice()])],
+    ["recovery", guidance("18:00", [practice()])],
+    ["no_sport", guidance("12:00", [tomorrow])],
+    [
+      "travel",
+      guidance("15:00", [
+        practice({ location: "away", travelMinutes: 45, startTime: "16:30" }),
+      ]),
+    ],
+    [
+      "rest",
+      guidance("12:00", [], { profile: { ...profile, restDays: [day] } }),
+    ],
+    ["evening", guidance("19:30", [tomorrow])],
+  ]);
+  for (const [expected, g] of seen) {
+    assert.equal(g.state, expected);
+    const list = rulesFor(g);
+    assert.equal(list[0].key, g.state);
+  }
+  // Every state the engine can return, plus the school-window and game-day
+  // add-ons, has a rule.
+  const school11 = guidance("11:45", [practice()]);
+  assert.ok(rulesFor(school11).some((r) => r.key === "school_window"));
+  const game = guidance("13:30", [practice({ type: "game" })]);
+  assert.ok(rulesFor(game).some((r) => r.key === "game"));
+  for (const key of [...seen.keys(), "school_window", "game"]) {
+    const rule = RULES[key];
+    assert.ok(rule, `${key} has a rule`);
+    assert.ok(rule.rule.length > 0 && rule.rule.length <= 220, key);
+    assert.ok(
+      rule.rule.split(/[.!?](\s|$)/).filter((s) => s.trim()).length <= 2,
+      key,
+    );
+    assert.doesNotMatch(
+      rule.rule,
+      /\bmust\b|\bsafe\b|calorie|\d+\s*(g|kcal|mL|oz)\b/i,
+    );
+    assert.ok(rule.sources.length >= 1, `${key} has a source`);
+    for (const source of rule.sources) {
+      assert.match(source.url, /^https:\/\/\S+$/);
+      assert.ok(source.title && source.publisher, key);
+      assert.doesNotMatch(`${source.title} ${source.publisher}`, /Foundation/);
+    }
+    assert.match(rule.checked, /^\d{4}-\d{2}-\d{2}$/);
+    const checked = new Date(`${rule.checked}T12:00:00`);
+    assert.ok(!Number.isNaN(checked.getTime()));
+    assert.equal(rule.checked, "2026-10-11");
+    assert.equal(
+      formatDate(rule.checked, { year: true, weekday: false }),
+      "Oct 11, 2026",
+    );
+  }
+  assert.deepEqual(
+    Object.keys(RULES).sort(),
+    [...seen.keys(), "school_window", "game"].sort(),
   );
 });

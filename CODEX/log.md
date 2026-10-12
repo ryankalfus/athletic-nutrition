@@ -697,3 +697,8 @@ Today's water row, Custom field, during-session button and toasts, Log › Day w
 Added the Monday "last week" card to Today's prompt slot (after a reminder problem and a due backup, before the reminder offer): counts-only sentence, "See last week" opens Log › Week for Mon–Sun, "Hide" stores profile.lastWeekHidden until next Monday; P2-05 and WEEK-05 ticked. 2026.10.11
 Today › Add water, Ideas › Log what you ate and Schedule's repeating-activity choice now show save errors above their buttons; DLG-03 ticked. 2026.10.11
 Added unit tests (conversion, rounding, Monday detection across DST and year boundaries, dismissal) and tests/browser-units-week.js; npm run check and 19/19 browser checks pass. 2026.10.11
+Added src/domain/rules.js: one plain-words rule per Now card state (plus school window and game day) with https sources opened on Oct 11, 2026; cutoffs no source names (30/90/180 min, 75 min, 90 min recovery, 7:00 PM, 9:30 PM) are labelled as Nourally's own. 2026.10.11
+"Why this?" now shows in every Now card state with that state's rule, source links that open in a new tab (rel noopener) and "Source checked Oct 11, 2026"; the Now card carries data-state. 2026.10.11
+formatDate takes weekday: false so the checked date reads "Oct 11, 2026". 2026.10.11
+Added the P2-06 unit test (every getFuelingGuidance state has a rule with https sources and a valid checked date) and tests/browser-why.js (nine states via a fixed clock). 2026.10.11
+Ticked P2-06 and KEEP-01 (per-threshold sources) after npm run check and 19/19 browser checks passed. 2026.10.11

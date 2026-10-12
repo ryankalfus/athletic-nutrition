@@ -57,7 +57,7 @@ Owner Ryan Kalfus confirmed the recommended options previously presented for aud
 - [ ] **P2-03**
 - [x] **P2-04** — Done 2026.10.11: You › Food access › Water units (oz default, ml); water stays stored in oz. Today's buttons (+8/+16/+24 or +250/+500/+750), total, Custom field and toast, Log › Day and Log › Week switch units; no amount reads as a target (`tests/domain.test.js`, `tests/browser-units-week.js`).
 - [x] **P2-05** — Done 2026.10.11: on Mondays Today's prompt slot (after a reminder problem and a due backup, before the reminder offer) shows "Last week: 1 practice. It had no food plan." (counts only); "See last week" opens Log › Week for Mon–Sun; "Hide" keeps it away until next Monday and survives reload (`tests/domain.test.js` incl. DST and year boundaries, `tests/browser-units-week.js`).
-- [ ] **P2-06**
+- [x] **P2-06** — Done 2026.10.11: `src/domain/rules.js` has one rule per Now card state (plus school window and game day), each with https sources and `checked: "2026-10-11"`; "Why this?" shows in every state with the rule, source links (new tab, rel noopener) and "Source checked Oct 11, 2026"; cutoffs no source names (30/90/180 min, 75 min, 90 min recovery, 7:00 PM, 9:30 PM) are labelled as Nourally's own (domain.test.js P2-06, browser-why.js).
 - [ ] **P2-07**
 - [ ] **P2-08**
 
@@ -312,7 +312,7 @@ Each ID is an individual checkbox. Implementation notes and blockers go on the m
 
 ### KEEP
 
-- [ ] **KEEP-01** — Re-verified 2026.10.09, not true: Timing thresholds have no per-threshold sources (deferred to P2-06).
+- [x] **KEEP-01** — Done 2026.10.11: each timing threshold now has its source or is labelled as Nourally's own cutoff with the ranges the sources give, in `src/domain/rules.js` and the "Why this?" sheet (P2-06).
 - [x] **KEEP-02**
 - [x] **KEEP-03**
 - [x] **KEEP-04**

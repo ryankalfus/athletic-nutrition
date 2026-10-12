@@ -28,6 +28,7 @@ import {
   intendedEatTime,
 } from "../../domain/plans.js";
 import { addWater, waterToast } from "../../domain/hydration.js";
+import { rulesFor } from "../../domain/rules.js";
 import { uid } from "../../domain/storage.js";
 import {
   formatActivityType,
@@ -378,11 +379,34 @@ export default function TodayPage({
         <Dialog title="Why this?" onClose={() => setWhy(false)}>
           <h3>Why it fits you</h3>
           <p>{guidance.explanation}</p>
-          <p>Your timing, food access, and food at home shape this pick.</p>
+          {guidance.ideas.length > 0 && (
+            <p>Your timing, food access, and food at home shape this pick.</p>
+          )}
           <h3>What the tip is based on</h3>
-          <a href="https://pubmed.ncbi.nlm.nih.gov/26920240/">
-            Nutrition and athletic performance position statement
-          </a>
+          {rulesFor(guidance).map((rule) => (
+            <div className="why-rule" key={rule.key}>
+              <p>{rule.rule}</p>
+              <ul className="why-sources" aria-label="Sources">
+                {rule.sources.map((source) => (
+                  <li key={source.url}>
+                    <a
+                      href={source.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      {source.title}
+                      <span className="sr-only"> (opens in a new tab)</span>
+                    </a>{" "}
+                    · {source.publisher}
+                  </li>
+                ))}
+              </ul>
+              <p className="why-checked">
+                {rule.sources.length === 1 ? "Source" : "Sources"} checked{" "}
+                {formatDate(rule.checked, { year: true, weekday: false })}
+              </p>
+            </div>
+          ))}
         </Dialog>
       )}
       {custom && (
