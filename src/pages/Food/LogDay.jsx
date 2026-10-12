@@ -9,7 +9,7 @@ import {
   undoConsumption,
 } from "../../domain/food.js";
 import { logPlanAsEaten } from "../../domain/plans.js";
-import { addHydration } from "../../domain/hydration.js";
+import { addWater, waterToast } from "../../domain/hydration.js";
 import {
   dayTimeline,
   dayWater,
@@ -28,7 +28,10 @@ import {
   formatAmount,
   formatDate,
   formatTime,
+  formatWater,
   plural,
+  WATER_STEPS,
+  waterUnit,
 } from "../../format.js";
 import { Dialog } from "../../components/Dialog.jsx";
 import { FoodSearch } from "../../components/FoodSearch.jsx";
@@ -94,6 +97,7 @@ export default function LogDay({ date, todayKey, now, onNavigate }) {
   const timeline = dayTimeline({ log, events: data.schedule, dateKey: date });
   const plans = unconfirmedPlans(data.mealPlans, date, todayKey);
   const water = dayWater(log);
+  const unit = waterUnit(data.profile);
   const go = (key) =>
     onNavigate(key === todayKey ? "food/log" : `food/log/${key}`);
 
@@ -405,17 +409,23 @@ export default function LogDay({ date, todayKey, now, onNavigate }) {
       <aside className="log-side" aria-label="This day at a glance">
         <section className="log-water" aria-labelledby="log-water-title">
           <h2 id="log-water-title">Water</h2>
-          <p>{water.logged ? `${water.ounces} oz` : "No water logged"}</p>
+          <p>
+            {water.logged ? formatWater(water.ounces, unit) : "No water logged"}
+          </p>
           <button
             disabled={!!pending}
             onClick={() =>
               run("water", () =>
-                changeData((d) => {
-                  d.dailyLogs[date] = addHydration(
-                    d.dailyLogs[date] || { entries: [], water: 0 },
-                    8,
-                  );
-                }, "Added 8 oz of water."),
+                changeData(
+                  (d) => {
+                    d.dailyLogs[date] = addWater(
+                      d.dailyLogs[date] || { entries: [], water: 0 },
+                      WATER_STEPS[unit][0],
+                      unit,
+                    );
+                  },
+                  waterToast(WATER_STEPS[unit][0], unit),
+                ),
               )
             }
           >

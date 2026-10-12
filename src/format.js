@@ -153,3 +153,29 @@ export function formatDateRange(startKey, endKey) {
     ? `${month(startKey)} ${day(startKey)} – ${day(endKey)}`
     : `${month(startKey)} ${day(startKey)} – ${month(endKey)} ${day(endKey)}`;
 }
+
+// Water units (ADD-14, P2-04). Water is stored in ounces; ml is for display
+// and entry only. ml reads as a whole number ("250 ml"); oz reads to one
+// decimal, so a 500 ml bottle reads "16.9 oz". No amount here is a target.
+export const ML_PER_OZ = 29.5735;
+export const WATER_UNITS = [
+  ["oz", "oz"],
+  ["ml", "ml"],
+];
+// Quick-add buttons: 8, 16 and 24 oz, or common bottle sizes in ml.
+export const WATER_STEPS = { oz: [8, 16, 24], ml: [250, 500, 750] };
+// The largest single entry hydration.js accepts (128 oz), in each unit.
+export const WATER_MAX = { oz: 128, ml: 3785 };
+export const waterUnit = (profile) => (profile?.units === "ml" ? "ml" : "oz");
+export const toOunces = (amount, unit = "oz") =>
+  unit === "ml" ? Number(amount) / ML_PER_OZ : Number(amount);
+/** Stored ounces as a rounded number in the athlete's unit. */
+export function waterAmount(ounces, unit = "oz") {
+  const value = Number(ounces) || 0;
+  return unit === "ml"
+    ? Math.round(value * ML_PER_OZ)
+    : Math.round(value * 10) / 10;
+}
+/** "24 oz" or "710 ml". */
+export const formatWater = (ounces, unit = "oz") =>
+  `${waterAmount(ounces, unit)} ${unit === "ml" ? "ml" : "oz"}`;

@@ -11,13 +11,17 @@ import { FieldError, Input } from "../../components/ui/FieldError.jsx";
 import { SettingsSheet, toggle } from "./SettingsSheet.jsx";
 import {
   ChipGroup,
+  SegmentedControl,
   SwitchRow,
 } from "../../components/ui/SelectionControls.jsx";
+import { WATER_UNITS, waterUnit } from "../../format.js";
 
 // You › Food access & budget (YOU-04). Price estimates default off (GROC-05).
+// Water units (ADD-14) live here too.
 export function AccessSheet({ data, onClose, onNavigate }) {
   const { profile, groceryState, schoolSchedule } = data;
   const initial = {
+    units: waterUnit(profile),
     foodSources: profile.foodSources || [],
     school: schoolSchedule?.foodAccess || {},
     familyPrep: Boolean(profile.familyPrep),
@@ -49,6 +53,7 @@ export function AccessSheet({ data, onClose, onNavigate }) {
           next.profile.familyPrep = draft.familyPrep;
           next.profile.lowCostIdeas = draft.lowCostIdeas;
           next.profile.budget = draft.lowCostIdeas ? "save" : "standard";
+          next.profile.units = draft.units;
           next.groceryState.showPrices = draft.showPrices;
           next.groceryState.budgetAmount = budget.amount;
           if (next.schoolSchedule)
@@ -130,6 +135,15 @@ export function AccessSheet({ data, onClose, onNavigate }) {
           Shown on Groceries when price estimates are on.
         </span>
       </div>
+      <fieldset className="choice-field">
+        <legend>Water units</legend>
+        <SegmentedControl
+          label="Water units"
+          options={WATER_UNITS}
+          value={draft.units}
+          onChange={(units) => set({ units })}
+        />
+      </fieldset>
     </SettingsSheet>
   );
 }
