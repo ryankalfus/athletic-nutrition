@@ -34,11 +34,14 @@
 
 /* Rest days and team calendar rows (P2-01 to P2-03): the school row's look,
  * one divider between them. */
+.school-schedule-card:has(+ .schedule-settings-card) {
+  margin-bottom: var(--rhythm-card);
+}
+
 .schedule-settings-card {
   display: grid;
   gap: var(--space-4);
-  margin: calc(var(--rhythm-section) * -1 + var(--rhythm-card)) 0
-    var(--rhythm-section);
+  margin-bottom: var(--rhythm-section);
 }
 
 .schedule-settings-card > .school-schedule-summary + .school-schedule-summary {
