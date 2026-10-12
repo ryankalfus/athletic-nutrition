@@ -33,7 +33,7 @@ import {
   formatPlanStatus,
   plural,
 } from "../../format.js";
-import { Dialog } from "../../components/Dialog.jsx";
+import { Dialog, DialogError } from "../../components/Dialog.jsx";
 import { LabelCheck } from "../../components/ui/LabelCheck.jsx";
 import { EmptyState } from "../../components/ui/EmptyState.jsx";
 import { Menu } from "../../components/ui/Menu.jsx";
@@ -375,6 +375,8 @@ export default function IdeasPage({ now, todayKey }) {
         <Dialog title="Log what you ate" onClose={() => setConfirm(null)}>
           <p>Did you eat {confirm.template.name} as planned?</p>
           <LabelCheck />
+          {/* DLG-03: a failed save shows above the buttons. */}
+          <DialogError />
           <button
             className="primary"
             disabled={!!pending}

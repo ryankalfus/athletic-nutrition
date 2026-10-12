@@ -1,4 +1,8 @@
 import { uid } from "./storage.js";
+import { formatWater, toOunces } from "../format.js";
+
+// Water is stored in ounces (`log.water`, `waterEntries[].amount`) whatever
+// the athlete's unit, so older logs stay valid (ADD-14, P2-04).
 export function addHydration(log, amount) {
   if (!Number.isFinite(amount) || amount <= 0 || amount > 128)
     throw new Error("Invalid water amount.");
@@ -11,6 +15,15 @@ export function addHydration(log, amount) {
     ],
   };
 }
+
+/** Add an amount given in the athlete's unit ("oz" or "ml"). */
+export const addWater = (log, amount, unit = "oz") =>
+  addHydration(log, toOunces(amount, unit));
+
+/** "Added 250 ml of water." in the unit the athlete tapped or typed. */
+export const waterToast = (amount, unit = "oz") =>
+  `Added ${formatWater(toOunces(amount, unit), unit)} of water.`;
+
 export function undoHydration(log) {
   const latest = [...(log.waterEntries || [])]
     .reverse()

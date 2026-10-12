@@ -692,3 +692,8 @@ Merged the shared UI and a11y branch into redesign/complete-p0-p1: Schedule verb
 Added HANDOFF.md (current state, owner decisions, next work, new-machine setup), pointed AGENTS.md to it, updated the tracker status block, and ignored output/. 2026.10.09
 Removed HANDOFF.md and its pointer in AGENTS.md at the owner's request. 2026.10.10
 Removed "Works while Nourally is open in your browser." from the Today reminder prompt at the owner's request; COPY-34 note updated. 2026.10.11
+Added a Water units setting (oz or ml, default oz) to You › Food access, stored as profile.units with additive validation; water stays stored in ounces. 2026.10.11
+Today's water row, Custom field, during-session button and toasts, Log › Day water and Log › Week rows now read in the chosen unit (+250/+500/+750 ml buttons; whole ml, oz to one decimal); P2-04 and ADD-14 ticked. 2026.10.11
+Added the Monday "last week" card to Today's prompt slot (after a reminder problem and a due backup, before the reminder offer): counts-only sentence, "See last week" opens Log › Week for Mon–Sun, "Hide" stores profile.lastWeekHidden until next Monday; P2-05 and WEEK-05 ticked. 2026.10.11
+Today › Add water, Ideas › Log what you ate and Schedule's repeating-activity choice now show save errors above their buttons; DLG-03 ticked. 2026.10.11
+Added unit tests (conversion, rounding, Monday detection across DST and year boundaries, dismissal) and tests/browser-units-week.js; npm run check and 19/19 browser checks pass. 2026.10.11

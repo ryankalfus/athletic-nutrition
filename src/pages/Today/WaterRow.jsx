@@ -1,3 +1,7 @@
+import { WATER_STEPS, formatWater, waterUnit } from "../../format.js";
+
+// TODAY-06: "Water today · 24 oz" plus three quick adds and Custom. The
+// unit follows You › Food access (ADD-14); the total is never a target.
 export default function WaterRow({
   data,
   todayKey,
@@ -5,16 +9,17 @@ export default function WaterRow({
   water,
   setCustom,
 }) {
+  const unit = waterUnit(data.profile);
   return (
     <section className="water-row" aria-labelledby="water-title">
       <h2 id="water-title">
         Water today ·{" "}
         <span className="numeral">
-          {data.dailyLogs[todayKey]?.water || 0} oz
+          {formatWater(data.dailyLogs[todayKey]?.water || 0, unit)}
         </span>
       </h2>
       <div>
-        {[8, 16, 24].map((n) => (
+        {WATER_STEPS[unit].map((n) => (
           <button key={n} disabled={!!pending} onClick={() => water(n)}>
             +{n}
           </button>

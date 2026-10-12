@@ -12,12 +12,12 @@ Owner Ryan Kalfus confirmed the recommended options previously presented for aud
 
 **Status 2026.10.09** (after an independent re-verification of every ticked P0/P1 item and the fixes that followed; `npm run check` and all 18 browser scripts pass):
 
-- Phases done: P0 12/12 · P1 9/13 · P2 0/8 · P3 0/5.
-- Recommendations done: 278 of 304.
+- Phases done: P0 12/12 · P1 9/13 · P2 2/8 · P3 0/5 (2026.10.11: P2-04 and P2-05 done).
+- Recommendations done: 281 of 304 (2026.10.11: ADD-14, WEEK-05, DLG-03).
 - Awaiting approval (allergy filtering built but switched off; `ALLERGY_TAGS_REVIEWED = false`): P1-09, P1-10, ADD-03, ONB-04, YOU-02, YOU-03. P1-11 waits on ONB-04.
 - Incomplete, skipped for now (will come back to): P1-09, P1-10 and P1-13 (manual screen-reader test and keyboard-only core journey not done).
-- Deferred to P2/P3: ADD-08 and SCH-10 (P2-01); ADD-13, MOVE-12 and STATE-10 (P2-03); ADD-14 (P2-04); WEEK-05 (P2-05); ADD-16 (P3-01); ADD-15 (P3-02); KEEP-01 per-threshold sources (P2-06).
-- Open work: DLG-03, COPY-38, KEEP-15, STATE-03, STATE-04, STATE-05, STATE-07, STATE-08, STATE-11, STATE-15, STATE-16, CMP-10.
+- Deferred to P2/P3: ADD-08 and SCH-10 (P2-01); ADD-13, MOVE-12 and STATE-10 (P2-03); ADD-16 (P3-01); ADD-15 (P3-02); KEEP-01 per-threshold sources (P2-06).
+- Open work: COPY-38, KEEP-15, STATE-03, STATE-04, STATE-05, STATE-07, STATE-08, STATE-11, STATE-15, STATE-16, CMP-10.
 
 ### P0
 
@@ -55,8 +55,8 @@ Owner Ryan Kalfus confirmed the recommended options previously presented for aud
 - [ ] **P2-01**
 - [ ] **P2-02**
 - [ ] **P2-03**
-- [ ] **P2-04**
-- [ ] **P2-05**
+- [x] **P2-04** — Done 2026.10.11: You › Food access › Water units (oz default, ml); water stays stored in oz. Today's buttons (+8/+16/+24 or +250/+500/+750), total, Custom field and toast, Log › Day and Log › Week switch units; no amount reads as a target (`tests/domain.test.js`, `tests/browser-units-week.js`).
+- [x] **P2-05** — Done 2026.10.11: on Mondays Today's prompt slot (after a reminder problem and a due backup, before the reminder offer) shows "Last week: 1 practice. It had no food plan." (counts only); "See last week" opens Log › Week for Mon–Sun; "Hide" keeps it away until next Monday and survives reload (`tests/domain.test.js` incl. DST and year boundaries, `tests/browser-units-week.js`).
 - [ ] **P2-06**
 - [ ] **P2-07**
 - [ ] **P2-08**
@@ -223,7 +223,7 @@ Each ID is an individual checkbox. Implementation notes and blockers go on the m
 - [x] **WEEK-02**
 - [x] **WEEK-03**
 - [x] **WEEK-04**
-- [ ] **WEEK-05** — Deferred: P2-05 (no Monday "Last week" card on Today).
+- [x] **WEEK-05** — Done 2026.10.11 in P2-05: the Monday "Last week" card on Today links to Log › Week (`tests/browser-units-week.js`).
 
 ### HIST
 
@@ -256,7 +256,7 @@ Each ID is an individual checkbox. Implementation notes and blockers go on the m
 
 - [x] **DLG-01** — Fixed 2026.10.09: when a step swaps the dialog content and the focused control leaves, Dialog moves focus to the new step's first field (browser-dialogs.js).
 - [x] **DLG-02** — Fixed 2026.10.09: "Add food for this week" and "Put these away?" report dirty state; Escape, × and Cancel ask "Discard changes?" (browser-dialogs.js).
-- [ ] **DLG-03** — Open: `Dialog` shows the save error under the sheet header, not above the footer, so on a long sheet it can sit out of view of Save.
+- [x] **DLG-03** — Fixed 2026.10.11: the STATE-02 fix already put sheet errors above the footer with "Try again" (browser-dialogs.js); the last three saving dialogs without a `DialogError` slot (Today › Add water, Ideas › Log what you ate, Schedule's repeating-activity choice) now show it above their buttons (`tests/browser-units-week.js` checks Add water: in view, above Add water, Try again saves once).
 - [x] **DLG-04**
 
 ### SRCH
@@ -379,7 +379,7 @@ Each ID is an individual checkbox. Implementation notes and blockers go on the m
 - [x] **ADD-11**
 - [x] **ADD-12**
 - [ ] **ADD-13** — Deferred: P2-03 (`restWeekdays` is read by timing and Log, but there is no weekday picker).
-- [ ] **ADD-14** — Deferred: P2-04.
+- [x] **ADD-14** — Done 2026.10.11 in P2-04: `profile.units` (oz or ml) set in You › Food access; water buttons and labels follow it (`tests/browser-units-week.js`).
 - [ ] **ADD-15** — Deferred: P3-02.
 - [ ] **ADD-16** — Deferred: P3-01.
 

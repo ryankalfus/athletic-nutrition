@@ -132,6 +132,22 @@ import {
   foodMomentLine,
 } from "../src/domain/dayRail.js";
 import { createSignedOutFlag } from "../src/session.js";
+import {
+  ML_PER_OZ,
+  WATER_MAX,
+  WATER_STEPS,
+  formatWater,
+  toOunces,
+  waterAmount,
+  waterUnit,
+} from "../src/format.js";
+import { addWater, waterToast } from "../src/domain/hydration.js";
+import {
+  isMonday,
+  lastWeekCard,
+  lastWeekSentence,
+  weekSummary,
+} from "../src/domain/log.js";
 const day = "2026-09-14";
 const profile = { ...DEFAULT_PROFILE, budget: "standard" };
 const idea = (id) => FOOD_IDEAS.find((i) => i.id === id);
@@ -2348,5 +2364,184 @@ test("A11Y-09: an empty activity date or time is the app's own field error", () 
   assert.equal(
     missingActivityField({ ...filled, endTime: "" }).field,
     "endTime",
+  );
+});
+
+// ADD-14 / P2-04: water units.
+test("P2-04: water converts between oz and ml and rounds for display", () => {
+  assert.equal(waterUnit({}), "oz");
+  assert.equal(waterUnit({ units: "ml" }), "ml");
+  assert.equal(waterUnit({ units: "cups" }), "oz");
+  assert.deepEqual(WATER_STEPS, { oz: [8, 16, 24], ml: [250, 500, 750] });
+  assert.equal(toOunces(8, "oz"), 8);
+  assert.ok(Math.abs(toOunces(250, "ml") - 250 / ML_PER_OZ) < 1e-9);
+  // Stored oz totals read as whole ml, and oz to one decimal.
+  assert.equal(formatWater(24, "oz"), "24 oz");
+  assert.equal(formatWater(24, "ml"), "710 ml");
+  assert.equal(formatWater(8, "ml"), "237 ml");
+  assert.equal(formatWater(toOunces(500, "ml"), "oz"), "16.9 oz");
+  assert.equal(formatWater(0, "ml"), "0 ml");
+  // ml entries round-trip exactly, even after many adds.
+  let total = 0;
+  for (let i = 0; i < 20; i++) total += toOunces(250, "ml");
+  assert.equal(waterAmount(total, "ml"), 5000);
+  // The per-entry limit is the same amount in both units (128 oz).
+  assert.ok(toOunces(WATER_MAX.ml, "ml") <= 128);
+  assert.ok(toOunces(WATER_MAX.ml + 1, "ml") > 128);
+});
+
+test("P2-04: ml water is stored as ounces, so oz logs stay valid", () => {
+  let log = { entries: [], water: 16 };
+  log = addWater(log, 250, "ml");
+  log = addWater(log, 500, "ml");
+  assert.equal(formatWater(log.water, "ml"), "1223 ml");
+  assert.ok(Math.abs(log.waterEntries[0].amount - 250 / ML_PER_OZ) < 1e-9);
+  assert.equal(undoHydration(log).waterEntries.at(-1).undone, true);
+  assert.equal(formatWater(undoHydration(log).water, "ml"), "723 ml");
+  assert.throws(() => addWater(log, 4000, "ml"));
+  assert.equal(waterToast(250, "ml"), "Added 250 ml of water.");
+  assert.equal(waterToast(8, "oz"), "Added 8 oz of water.");
+  // A day's water still validates and the profile unit defaults to oz.
+  const data = emptyData();
+  data.dailyLogs["2026-10-12"] = log;
+  assert.equal(validateData(data).profile.units, "oz");
+  assert.equal(
+    validateData({ ...data, profile: { units: "ml" } }).profile.units,
+    "ml",
+  );
+  assert.throws(
+    () => validateData({ ...data, profile: { units: "cups" } }),
+    /Invalid water units/,
+  );
+  assert.equal(
+    accessSummary({ foodSources: ["packed"], lowCostIdeas: true, units: "ml" }),
+    "Packed · Low-cost ideas on · Water in ml",
+  );
+});
+
+// WEEK-05 / P2-05: the Monday "last week" card.
+const lastWeekData = (extra = {}) => ({
+  schedule: [
+    {
+      id: "practice",
+      title: "Practice",
+      type: "practice",
+      startTime: "15:30",
+      recurrence: {
+        startDate: "2026-09-01",
+        endDate: "2027-06-01",
+        weekdays: [2, 4], // Tue, Thu
+        excludedDates: [],
+      },
+    },
+  ],
+  mealPlans: [],
+  dailyLogs: {},
+  profile: {},
+  ...extra,
+});
+
+test("P2-05: Monday detection holds across months, years and DST", () => {
+  const tz = process.env.TZ;
+  try {
+    for (const zone of ["America/New_York", "Australia/Sydney", "UTC"]) {
+      process.env.TZ = zone;
+      assert.equal(isMonday("2026-10-12"), true, zone);
+      assert.equal(isMonday("2026-10-11"), false, zone);
+      assert.equal(isMonday("2026-11-02"), true, zone); // US DST ended Sun Nov 1
+      assert.equal(isMonday("2026-03-09"), true, zone); // US DST began Sun Mar 8
+      assert.equal(isMonday("2026-10-05"), true, zone); // Sydney DST began Sun Oct 4
+      assert.equal(isMonday("2027-01-04"), true, zone);
+      assert.equal(isMonday("2026-11-03"), false, zone);
+      // Last week is the 7 days before Monday, even over a DST change.
+      const card = lastWeekCard({
+        todayKey: "2026-11-02",
+        data: lastWeekData(),
+      });
+      assert.equal(card.startKey, "2026-10-26", zone);
+      assert.equal(card.endKey, "2026-11-01", zone);
+      assert.equal(card.route, "food/log/week/2026-11-01", zone);
+      const sydney = lastWeekCard({
+        todayKey: "2026-10-05",
+        data: lastWeekData(),
+      });
+      assert.equal(sydney.startKey, "2026-09-28", zone);
+      assert.equal(sydney.endKey, "2026-10-04", zone);
+      const newYear = lastWeekCard({
+        todayKey: "2027-01-04",
+        data: lastWeekData(),
+      });
+      assert.equal(newYear.startKey, "2026-12-28", zone);
+      assert.equal(newYear.endKey, "2027-01-03", zone);
+    }
+  } finally {
+    if (tz === undefined) delete process.env.TZ;
+    else process.env.TZ = tz;
+  }
+  assert.equal(isMonday("not a date"), false);
+});
+
+test("P2-05: the card shows on Mondays only, counts only, until hidden", () => {
+  const data = lastWeekData({
+    mealPlans: [
+      { id: "p1", eventId: "practice", date: "2026-10-06", status: "eaten" },
+    ],
+    dailyLogs: { "2026-10-08": { entries: [{ id: "e1", name: "Banana" }] } },
+  });
+  const card = lastWeekCard({ todayKey: "2026-10-12", data });
+  assert.equal(
+    card.message,
+    "Last week: 2 practices. You planned food for 1 of them.",
+  );
+  assert.equal(card.weekKey, "2026-10-12");
+  assert.doesNotMatch(card.message, /%|streak|score|goal|target/i);
+  // Not on other days of the week.
+  for (const day of ["2026-10-11", "2026-10-13", "2026-10-17"])
+    assert.equal(lastWeekCard({ todayKey: day, data }), null, day);
+  // Hidden for this Monday only; the next Monday shows again.
+  const hidden = { ...data, profile: { lastWeekHidden: "2026-10-12" } };
+  assert.equal(lastWeekCard({ todayKey: "2026-10-12", data: hidden }), null);
+  assert.ok(lastWeekCard({ todayKey: "2026-10-19", data: hidden }));
+  // The hidden Monday survives validation (save and reload).
+  assert.equal(
+    validateData({ ...emptyData(), profile: { lastWeekHidden: "2026-10-12" } })
+      .profile.lastWeekHidden,
+    "2026-10-12",
+  );
+  // Nothing to describe: no card.
+  assert.equal(
+    lastWeekCard({ todayKey: "2026-10-12", data: { profile: {} } }),
+    null,
+  );
+});
+
+test("P2-05: last week sentences without activities stay neutral", () => {
+  const summary = (extra) => ({
+    activities: 0,
+    withPlan: 0,
+    byType: {},
+    foods: 0,
+    waterDays: 0,
+    ...extra,
+  });
+  assert.equal(
+    lastWeekSentence(summary({ foods: 3 })),
+    "Last week: no practices or games. You logged 3 foods.",
+  );
+  assert.equal(
+    lastWeekSentence(summary({ waterDays: 1 })),
+    "Last week: no practices or games. You logged water on 1 day.",
+  );
+  const full = weekSummary({
+    endKey: "2026-10-11",
+    events: lastWeekData().schedule,
+    mealPlans: [
+      { id: "a", eventId: "practice", date: "2026-10-06", status: "planned" },
+      { id: "b", eventId: "practice", date: "2026-10-08", status: "eaten" },
+    ],
+  });
+  assert.equal(
+    lastWeekSentence(full),
+    "Last week: 2 practices. You planned food for both.",
   );
 });

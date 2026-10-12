@@ -27,7 +27,7 @@ import {
   logPlanAsEaten,
   intendedEatTime,
 } from "../../domain/plans.js";
-import { addHydration } from "../../domain/hydration.js";
+import { addWater, waterToast } from "../../domain/hydration.js";
 import { uid } from "../../domain/storage.js";
 import {
   formatActivityType,
@@ -35,6 +35,9 @@ import {
   formatPlanStatus,
   formatShortTime,
   formatTime,
+  WATER_MAX,
+  WATER_STEPS,
+  waterUnit,
 } from "../../format.js";
 import {
   availabilityLabel,
@@ -123,16 +126,19 @@ export default function TodayPage({
     const event = events.find((e) => e.id === id);
     if (event) activity.edit(event, todayKey);
   };
+  // ADD-14: amounts are tapped and typed in the athlete's unit.
+  const unit = waterUnit(data.profile);
   const water = (n) =>
     write(
       "water",
       (d) => {
-        d.dailyLogs[todayKey] = addHydration(
+        d.dailyLogs[todayKey] = addWater(
           d.dailyLogs[todayKey] || { entries: [], water: 0 },
           n,
+          unit,
         );
       },
-      `Added ${n} oz water.`,
+      waterToast(n, unit),
     );
   const buildTomorrow = () =>
     write(
@@ -161,7 +167,7 @@ export default function TodayPage({
     );
   const primary = () => {
     if (guidance.state === "setup") return onNavigate("schedule?add=practice");
-    if (guidance.state === "during") return water(8);
+    if (guidance.state === "during") return water(WATER_STEPS[unit][0]);
     if (guidance.state === "evening")
       return tonight.built ? openTonight() : buildTomorrow();
     if (["no_sport", "rest"].includes(guidance.state))
@@ -206,7 +212,7 @@ export default function TodayPage({
     guidance.state === "setup"
       ? "Add practice"
       : guidance.state === "during"
-        ? "+8 oz water"
+        ? `+${WATER_STEPS[unit][0]} ${unit} water`
         : guidance.state === "evening"
           ? tonight.built
             ? "Open tomorrow’s list"
@@ -332,6 +338,7 @@ export default function TodayPage({
             write,
             onNavigate,
             now,
+            todayKey,
           }}
         />
       </div>
@@ -397,16 +404,17 @@ export default function TodayPage({
             }}
           >
             <label>
-              Ounces
+              {unit === "ml" ? "Milliliters" : "Ounces"}
               <input
                 type="number"
                 min="1"
-                max="128"
+                max={WATER_MAX[unit]}
                 required
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
               />
             </label>
+            <DialogError />
             <button className="primary" disabled={!!pending}>
               Add water
             </button>

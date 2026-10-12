@@ -6,13 +6,13 @@ import {
   formatActivityType,
   formatDate,
   formatDateRange,
+  formatWater,
   plural,
+  waterUnit,
 } from "../../format.js";
 
 const foodsLine = (count) =>
   count ? `${count} ${plural(count, "food")} logged` : "Nothing logged";
-const waterLine = (water) =>
-  water.logged ? `${water.ounces} oz` : "No water logged";
 
 // Food › Log › Week (6.11, WEEK-01 to WEEK-04): one sentence and seven day
 // rows. No tiles, charts, streaks or percentages.
@@ -20,6 +20,10 @@ export default function LogWeek({ endKey, todayKey, onNavigate }) {
   const { current } = useStore();
   const data = current.data;
   const caption = useRef(null);
+  // ADD-14: water reads in the athlete's unit.
+  const unit = waterUnit(data.profile);
+  const waterLine = (water) =>
+    water.logged ? formatWater(water.ounces, unit) : "No water logged";
   const summary = weekSummary({
     endKey,
     events: data.schedule,

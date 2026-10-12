@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import { Dialog, DialogCancel } from "../../components/Dialog.jsx";
+import { Dialog, DialogCancel, DialogError } from "../../components/Dialog.jsx";
 import { ConfirmDialog } from "../../components/ui/ConfirmDialog.jsx";
 import { uid } from "../../domain/storage.js";
 import { activityTitle, activityToast } from "../../domain/sport.js";
@@ -403,6 +403,8 @@ export function useActivityEditor({
             {titleOf(scopePrompt.event)} repeats. Choose which dates to{" "}
             {scopePrompt.kind === "edit" ? "change" : "delete"}.
           </p>
+          {/* DLG-03: a failed delete shows above the choices. */}
+          <DialogError />
           <div className="scope-options">
             {/* Deleting reads as destructive: "only" outlined in the error
                 colour, "all" filled; both 48 px, with Cancel (ACT-03). */}

@@ -91,6 +91,12 @@ export function normalizeYouProfile(profile = {}) {
       !Number.isNaN(Date.parse(profile.lastBackupAt))
         ? profile.lastBackupAt
         : null,
+    // ADD-14 (P2-04): water display and entry unit. Water is stored in oz.
+    units: profile.units === "ml" ? "ml" : "oz",
+    // WEEK-05 (P2-05): the Monday whose "last week" card was hidden.
+    lastWeekHidden: /^\d{4}-\d{2}-\d{2}$/.test(profile.lastWeekHidden || "")
+      ? profile.lastWeekHidden
+      : null,
   };
 }
 
@@ -118,6 +124,17 @@ export function validateYouProfile(profile) {
       Number.isNaN(Date.parse(profile.lastBackupAt)))
   )
     throw new Error("Invalid last backup date.");
+  if (
+    profile.units !== undefined &&
+    profile.units !== null &&
+    !["oz", "ml"].includes(profile.units)
+  )
+    throw new Error("Invalid water units.");
+  if (
+    profile.lastWeekHidden != null &&
+    typeof profile.lastWeekHidden !== "string"
+  )
+    throw new Error("Invalid last week card date.");
 }
 
 const label = (choices, id) => choices.find(([value]) => value === id)?.[1];
@@ -162,7 +179,8 @@ export function accessSummary(profile = {}, schoolSchedule = null) {
     (profile.lowCostIdeas ?? profile.budget === "save")
       ? "Low-cost ideas on"
       : "Low-cost ideas off";
-  return `${where} · ${lowCost}`;
+  // ADD-14: name the water unit only when it is not the default.
+  return `${where} · ${lowCost}${profile.units === "ml" ? " · Water in ml" : ""}`;
 }
 
 // "Not a fan of": an idea is hidden when it uses a disliked ingredient.
