@@ -711,3 +711,8 @@ Schedule has a Rest days row whose weekday circles store profile.restWeekdays; i
 "Undo rest day" on the Now card now also undoes a weekly rest day for today only (profile.restExceptions); STATE-10 ticked. 2026.10.11
 storage.js validates calendarSubscriptions, imported-event sources, restWeekdays, restDays and restExceptions (additive; older data gets an empty list). 2026.10.11
 Added tests/rest-days.test.js and tests/browser-calendar-import.js; npm run check and 19/19 browser checks pass. 2026.10.11
+Added tests/browser-journey.js: the core journey at 390 and 1440 px (setup, TeamSnap import and duplicate re-import, food needs with allergy filtering off, food at home, Today pick, plan, Ideas agreement, moved session prompt, groceries, put away, packed, log, Log › Day, no suitable food) with a fixed clock, mocked /api/* and a no-sideways-scroll check after every step. 2026.10.13
+Today's Now card no longer shows a disabled "Plan this" when no idea fits: it gives the same reason as Ideas (noIdeaReason in ranking.js, unit test) and an "Ideas for tomorrow" button. 2026.10.13
+scripts/run-browser-checks.mjs takes --exclude and skips the live USDA check (browser-provider.js) when no FDC_API_KEY is in the environment or .env (LIVE=1 forces it, LIVE=0 skips it). 2026.10.13
+.github/workflows/checks.yml has a browser job on ubuntu-latest: cached Playwright Chromium with system deps, the journey first, then every other browser script; the provider check runs only with the FDC_API_KEY secret. 2026.10.13
+Ticked P2-08 after npm run check and 22/22 browser scripts passed locally; the first CI run is pending until the branch is pushed. 2026.10.13

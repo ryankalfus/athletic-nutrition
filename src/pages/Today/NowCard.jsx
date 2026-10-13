@@ -10,6 +10,7 @@ export default function NowCard({
   guidance,
   plan,
   stale,
+  noIdeaText,
   pending,
   write,
   idea,
@@ -122,18 +123,13 @@ export default function NowCard({
           )}
         </div>
       )}
+      {noIdeaText && <p>{noIdeaText}</p>}
       {guidance.state !== "late" && (
         <button
           aria-busy={pending || undefined}
           className="primary today-primary"
-          disabled={
-            !!pending ||
-            early ||
-            (!idea &&
-              !["setup", "during", "evening", "rest", "no_sport"].includes(
-                guidance.state,
-              ))
-          }
+          // With no idea the button opens tomorrow's ideas (noIdeaText).
+          disabled={!!pending || early}
           onClick={primary}
         >
           {pending ? "Saving…" : action}
