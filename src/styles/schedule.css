@@ -234,9 +234,9 @@
   border-top: var(--border);
 }
 
-.schedule-week-time,
-.event-time strong {
+.schedule-week-time {
   display: inline-flex;
+  grid-column: 1 / -1;
   align-items: center;
   gap: var(--space-2);
   font-family: var(--font-numeral);
@@ -244,10 +244,6 @@
   line-height: var(--leading-numeral-m);
   font-weight: 600;
   font-variant-numeric: tabular-nums;
-}
-
-.schedule-week-time {
-  grid-column: 1 / -1;
 }
 
 /* School is one muted line in each weekday (SCH-03). */
@@ -273,7 +269,6 @@
 }
 
 .schedule-week-time::before,
-.agenda-event .event-time strong::before,
 .calendar-event-dot {
   flex: 0 0 auto;
   width: 8px;
@@ -283,26 +278,22 @@
   content: "";
 }
 
-:is(.schedule-week-row, .agenda-event).school
-  :is(.schedule-week-time, .event-time strong)::before,
+.schedule-week-row.school .schedule-week-time::before,
 .calendar-event-dot.school {
   background: var(--color-school);
 }
 
-:is(.schedule-week-row, .agenda-event).game
-  :is(.schedule-week-time, .event-time strong)::before,
+.schedule-week-row.game .schedule-week-time::before,
 .calendar-event-dot.game {
   background: var(--color-game);
 }
 
-:is(.schedule-week-row, .agenda-event).workout
-  :is(.schedule-week-time, .event-time strong)::before,
+.schedule-week-row.workout .schedule-week-time::before,
 .calendar-event-dot.workout {
   background: var(--color-workout);
 }
 
-:is(.schedule-week-row, .agenda-event).other
-  :is(.schedule-week-time, .event-time strong)::before,
+.schedule-week-row.other .schedule-week-time::before,
 .calendar-event-dot.other {
   background: var(--color-other);
 }
@@ -485,86 +476,6 @@
   color: var(--color-ink-muted);
   font-size: var(--text-caption);
   line-height: var(--leading-caption);
-}
-
-/* Day agenda beside the month grid */
-.agenda-head {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-3);
-  padding-bottom: var(--space-4);
-  border-bottom: var(--border);
-}
-
-.agenda-head > div {
-  display: grid;
-}
-
-.agenda-head span {
-  color: var(--color-ink-muted);
-  font-size: var(--text-caption);
-  line-height: var(--leading-caption);
-}
-
-.agenda-head strong {
-  font-size: var(--text-h2);
-  line-height: var(--leading-h2);
-}
-
-.agenda-events {
-  display: grid;
-}
-
-.agenda-event {
-  display: grid;
-  grid-template-columns: 80px minmax(0, 1fr);
-  gap: var(--space-1) var(--space-3);
-  padding: var(--rhythm-row) 0;
-  border-bottom: var(--border);
-}
-
-.event-time {
-  display: grid;
-  align-content: start;
-  gap: var(--space-1);
-}
-
-.event-time span,
-.event-details > span,
-.event-details p {
-  color: var(--color-ink-muted);
-  font-size: var(--text-caption);
-  line-height: var(--leading-caption);
-}
-
-.event-details {
-  min-width: 0;
-}
-
-.event-details h3,
-.event-details p {
-  margin: 0;
-}
-
-.event-actions {
-  display: flex;
-  flex-wrap: wrap;
-  grid-column: 2;
-  gap: var(--space-1) var(--space-3);
-}
-
-.event-actions button {
-  min-width: var(--target);
-  padding: var(--space-2) var(--space-1);
-  border: 0;
-  background: transparent;
-  color: var(--color-primary);
-}
-
-.event-actions .danger {
-  color: var(--color-error);
 }
 
 .school-canceled {

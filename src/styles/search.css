@@ -49,6 +49,7 @@
 .food-result-list {
   margin: 0;
   padding: 0;
+  border-top: var(--border);
   list-style: none;
 }
 

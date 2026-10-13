@@ -271,10 +271,6 @@
 }
 
 @media (min-width: 768px) {
-  .frame-brand {
-    display: flex;
-  }
-
   .frame-mobile-title,
   .frame-back,
   .frame-action {
@@ -300,11 +296,13 @@
   }
 
   .frame-brand {
+    display: flex;
     justify-self: start;
   }
 
   .frame-athlete {
     justify-self: end;
+    margin-left: 0;
   }
 
   /* Tablet top bar with four destinations. */
@@ -341,10 +339,6 @@
     bottom: 0;
     width: 28px;
     height: 4px;
-  }
-
-  .frame-athlete {
-    margin-left: 0;
   }
 
   .shell,

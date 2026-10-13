@@ -711,3 +711,7 @@ Schedule has a Rest days row whose weekday circles store profile.restWeekdays; i
 "Undo rest day" on the Now card now also undoes a weekly rest day for today only (profile.restExceptions); STATE-10 ticked. 2026.10.11
 storage.js validates calendarSubscriptions, imported-event sources, restWeekdays, restDays and restExceptions (additive; older data gets an empty list). 2026.10.11
 Added tests/rest-days.test.js and tests/browser-calendar-import.js; npm run check and 19/19 browser checks pass. 2026.10.11
+Added tests/css-usage.test.js: it parses every CSS file under src/ and fails on any class selector no className, classList call or class/variant map uses; composed avatar-size and event-type classes are allowlisted and checked against their source. 2026.10.13
+Deleted 14 dead CSS class names (agenda-*, event-*, moment-picker, stock-filters, section-toolbar, data-list, row-actions, schedule-error, reminder-permission, travel) from components, schedule, today and food CSS. 2026.10.13
+Folded 8 split rules into one each (today-section-header, segmented buttons, Food section links, food-result-list, schedule-week-time, reminder-honesty, tablet frame-brand and frame-athlete); CSS is 5,532 lines, down from 5,690. 2026.10.13
+51 screenshots of every route and key dialogs at 390 and 1280 px are pixel-identical before and after; P2-07 ticked; npm run check and 21/21 browser checks pass. 2026.10.13

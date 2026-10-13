@@ -173,8 +173,7 @@
   }
 }
 
-.button-row,
-.row-actions {
+.button-row {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -192,8 +191,6 @@
 /* ---------- Chips (DS-12, CMP-03): multi-select and filters ---------- */
 
 .chip-group,
-.stock-filters,
-.moment-picker,
 .quick-add > div,
 .school-weekdays,
 .today-alternates {
@@ -202,14 +199,7 @@
   gap: var(--space-2);
 }
 
-:is(
-    .chip-group,
-    .stock-filters,
-    .moment-picker,
-    .quick-add > div,
-    .school-weekdays
-  )
-  > button {
+:is(.chip-group, .quick-add > div, .school-weekdays) > button {
   position: relative;
   min-height: 36px;
   margin-block: var(--space-1);
@@ -221,27 +211,14 @@
 }
 
 /* 44px touch area around a 36px chip. */
-:is(
-    .chip-group,
-    .stock-filters,
-    .moment-picker,
-    .quick-add > div,
-    .school-weekdays
-  )
-  > button::after {
+:is(.chip-group, .quick-add > div, .school-weekdays) > button::after {
   position: absolute;
   inset: calc(var(--space-1) * -1) 0;
   content: "";
 }
 
 /* State and semantics are styled together (A11Y-08): fill, 2px border, check. */
-:is(
-    .chip-group,
-    .stock-filters,
-    .moment-picker,
-    .quick-add > div,
-    .school-weekdays
-  )
+:is(.chip-group, .quick-add > div, .school-weekdays)
   > button[aria-pressed="true"] {
   padding-left: var(--space-3);
   border-color: var(--color-primary);
@@ -250,25 +227,11 @@
   color: var(--color-primary-pressed);
 }
 
-:is(.chip-group, .stock-filters, .moment-picker, .quick-add > div)
-  > button[aria-pressed="true"]::before {
+:is(.chip-group, .quick-add > div) > button[aria-pressed="true"]::before {
   width: 16px;
   height: 16px;
   background: var(--icon-check-primary) center / 16px no-repeat;
   content: "";
-}
-
-/* Horizontal scrollers keep 4px inside so focus rings are never clipped (RWD-05). */
-.moment-picker {
-  flex-wrap: nowrap;
-  overflow-x: auto;
-  padding: var(--space-1);
-  scrollbar-width: thin;
-}
-
-.moment-picker > button {
-  flex: 0 0 auto;
-  white-space: nowrap;
 }
 
 /* ---------- Segmented control (DS-12, CMP-03): 2-4 single choices ---------- */
@@ -285,6 +248,7 @@
 /* Equal segments on one row; a long label wraps inside its segment rather
  * than stranding a segment on a second row. */
 .segmented > button {
+  position: relative;
   flex: 1 1 0;
   min-width: 0;
   min-height: 36px;
@@ -327,10 +291,6 @@
 }
 
 /* 44px touch area around a 36px segment, like chips (9.6). */
-.segmented > button {
-  position: relative;
-}
-
 .segmented > button::after {
   position: absolute;
   inset: calc(var(--space-1) * -1) 0;
@@ -362,24 +322,18 @@
 
 /* ---------- Section heads and rows ---------- */
 
-.section-toolbar,
+/* A Today section header keeps its title and one action on one row. */
 .today-section-header {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   align-items: center;
   justify-content: space-between;
-  gap: var(--space-3) var(--space-4);
+  gap: var(--space-3);
   margin-bottom: var(--space-4);
 }
 
-:is(.section-toolbar, .today-section-header) :is(h2, h3, p) {
+.today-section-header :is(h2, h3, p) {
   margin: 0;
-}
-
-/* A Today section header keeps its title and one action on one row. */
-.today-section-header {
-  flex-wrap: nowrap;
-  column-gap: var(--space-3);
 }
 
 .today-section-header > .share-button {
@@ -392,15 +346,6 @@
 
 .today-section-header > button {
   flex: 0 0 auto;
-}
-
-.section-toolbar h2:focus {
-  outline: none;
-}
-
-.data-list,
-.food-result-list {
-  border-top: var(--border);
 }
 
 .data-row,
@@ -670,7 +615,6 @@
 /* ---------- Inline messages ---------- */
 
 .inline-error,
-.schedule-error,
 .save-error {
   display: flex;
   flex-wrap: wrap;
@@ -687,7 +631,7 @@
 }
 
 /* The message takes the row next to its icon instead of wrapping under it. */
-:is(.inline-error, .schedule-error) > span {
+.inline-error > span {
   flex: 1 1 0;
   min-width: 0;
 }
@@ -721,7 +665,7 @@
 }
 
 /* Error icon (DS-13): Lucide circle-alert drawn in the text color. */
-:is(.inline-error, .schedule-error)::before {
+.inline-error::before {
   flex: 0 0 auto;
   width: 20px;
   height: 20px;

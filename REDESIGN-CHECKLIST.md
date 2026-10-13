@@ -12,11 +12,11 @@ Owner Ryan Kalfus confirmed the recommended options previously presented for aud
 
 **Status 2026.10.09** (after an independent re-verification of every ticked P0/P1 item and the fixes that followed; `npm run check` and all 18 browser scripts pass):
 
-- Phases done: P0 12/12 · P1 9/13 · P2 6/8 · P3 0/5 (P2-01 to P2-06 done 2026.10.11).
+- Phases done: P0 12/12 · P1 9/13 · P2 7/8 · P3 0/5 (P2-01 to P2-06 done 2026.10.11, P2-07 done 2026.10.13).
 - Recommendation IDs done: 273 of 290.
 - Awaiting approval (allergy filtering built but switched off; `ALLERGY_TAGS_REVIEWED = false`): P1-09, P1-10, ADD-03, ONB-04, YOU-02, YOU-03. P1-11 waits on ONB-04.
 - Incomplete, skipped for now (will come back to): P1-09, P1-10 and P1-13 (manual screen-reader test and keyboard-only core journey not done).
-- Not started: P2-07, P2-08; P3-01 to P3-05 (ADD-16 is P3-01, ADD-15 is P3-02).
+- Not started: P2-08; P3-01 to P3-05 (ADD-16 is P3-01, ADD-15 is P3-02).
 - Open work: COPY-38, KEEP-15, STATE-03, STATE-04, STATE-05, STATE-07, STATE-08, STATE-11, STATE-15, STATE-16, CMP-10.
 
 ### P0
@@ -58,7 +58,7 @@ Owner Ryan Kalfus confirmed the recommended options previously presented for aud
 - [x] **P2-04** — Done 2026.10.11: You › Food access › Water units (oz default, ml); water stays stored in oz. Today's buttons (+8/+16/+24 or +250/+500/+750), total, Custom field and toast, Log › Day and Log › Week switch units; no amount reads as a target (`tests/domain.test.js`, `tests/browser-units-week.js`).
 - [x] **P2-05** — Done 2026.10.11: on Mondays Today's prompt slot (after a reminder problem and a due backup, before the reminder offer) shows "Last week: 1 practice. It had no food plan." (counts only); "See last week" opens Log › Week for Mon–Sun; "Hide" keeps it away until next Monday and survives reload (`tests/domain.test.js` incl. DST and year boundaries, `tests/browser-units-week.js`).
 - [x] **P2-06** — Done 2026.10.11: `src/domain/rules.js` has one rule per Now card state (plus school window and game day), each with https sources and `checked: "2026-10-11"`; "Why this?" shows in every state with the rule, source links (new tab, rel noopener) and "Source checked Oct 11, 2026"; cutoffs no source names (30/90/180 min, 75 min, 90 min recovery, 7:00 PM, 9:30 PM) are labelled as Nourally's own (domain.test.js P2-06, browser-why.js).
-- [ ] **P2-07**
+- [x] **P2-07** — Done 2026.10.13: `tests/css-usage.test.js` parses every CSS file under `src/` and fails on any class selector that no `className`, `classList` call or class/variant map uses (composed `avatar-${size}` and event-type classes are allowlisted and checked against their source). It removed 14 dead class names (50 selector references: `.agenda-*`, `.event-*`, `.moment-picker`, `.stock-filters`, `.section-toolbar`, `.data-list`, `.row-actions`, `.schedule-error`, `.reminder-permission`, `.travel`) and folded 8 split rules into one each: 36 selectors and 24 rules gone (904 → 868 selectors, 785 → 761 rules), CSS 5,690 → 5,532 lines. `refinement.css` and `styles.css` were already deleted in the design-system pass and the test keeps it that way. 51 screenshots (14 routes, Month, Welcome, setup, 8 dialogs and the row menu at 390 and 1280 px) are pixel-identical before and after.
 - [ ] **P2-08**
 
 ### P3
