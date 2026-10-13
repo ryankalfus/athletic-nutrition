@@ -7,6 +7,12 @@ export const profileSignature = (profile) =>
     [...profile.dietaryNeeds].sort(),
     [...profile.foodSources].sort(),
   ]);
+// STATE (preferences changed after planning): an eaten plan is history and
+// never asks for review; a planned or packed plan warns. The warning never
+// blocks packing or logging.
+export const planNeedsReview = (plan, profile) =>
+  plan.status !== "eaten" &&
+  profileSignature(profile) !== plan.profileSignature;
 export function planMeal(
   data,
   idea,
@@ -67,7 +73,11 @@ export function planMeal(
       owners: (t.owners || []).filter((id) => id !== replaceId),
     }))
     .filter((t) => !old || t.foodId !== old.templateId || t.owners.length);
-  for (const task of planTasksForIdea(idea, guidance)) {
+  for (const task of planTasksForIdea(idea, {
+    ...guidance,
+    date,
+    now: guidance.now || new Date(),
+  })) {
     const existing = tasks.find((t) => t.label === task.label);
     if (existing) {
       if (!existing.owners?.length) existing.independent = true;

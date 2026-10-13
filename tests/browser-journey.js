@@ -270,6 +270,12 @@ async (page) => {
       .getByRole("heading", { name: `${snack} is planned` })
       .waitFor();
     await primary().getByText("Add 1 item to groceries").waitFor();
+    // Planned at 1:00 PM, after school started at 8:00: the 7:30 AM prep time
+    // had already passed, so nothing reads as missed.
+    const packPrep = p.getByRole("region", { name: "Pack & prep" });
+    await packPrep.getByText(`Pack ${snack}`).first().waitFor();
+    if (await packPrep.getByText(/Was due/).count())
+      throw new Error("A task planned after its due time shows as missed");
     await done("Today planned");
     await openIdeas();
     const planned = p.getByRole("region", { name: "Planned food" });
@@ -277,6 +283,7 @@ async (page) => {
     await done("Ideas planned");
     result.checks.push(
       `${width} px: Ideas ranks ${snack} first with the same at-home and to-buy items; Plan this on Today shows the plan in Ideas › Planned food.`,
+      `${width} px: planned at 1:00 PM, after school started, Pack & prep shows no "Was due" time.`,
     );
 
     // 9. The session moves: Today asks to update the snack time.
@@ -382,6 +389,15 @@ async (page) => {
     await done("access sheet");
     await access.getByRole("button", { name: "Save", exact: true }).click();
     await access.waitFor({ state: "hidden" });
+    // The eaten plan is history: new food needs do not ask to check it.
+    await openIdeas();
+    await p
+      .getByRole("region", { name: "Planned food" })
+      .getByText(/· Eaten$/)
+      .waitFor();
+    if (await p.getByText(/Your food needs changed/).count())
+      throw new Error("An eaten plan asks to check changed food needs");
+    await done("Ideas eaten plan after new food needs");
     // Thursday 1:00 PM, in school, with a 4:00 PM practice.
     await context.clock.setFixedTime(new Date("2026-10-15T13:00:00-05:00"));
     await openIdeas();
@@ -414,6 +430,7 @@ async (page) => {
     await ideaCards().first().waitFor();
     await done("Ideas for tomorrow");
     result.checks.push(
+      `${width} px: after changing food access, the eaten plan in Ideas › Planned food shows no "Your food needs changed".`,
       `${width} px: at school with no cafeteria and nothing packed, Ideas shows "Nothing is available at school right now", Today says the same with no pick, and its button opens Ideas for tomorrow.`,
       `${width} px: ${steps} steps, none scrolls sideways; no request left this host.`,
     );

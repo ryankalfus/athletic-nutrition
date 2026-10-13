@@ -305,6 +305,7 @@ export function planTasksForIdea(idea, options = {}) {
     schoolSchedule,
     event,
     date,
+    now,
   } = options;
   const verb = idea.portable ? "Pack" : "Plan";
   /** @type {Array<{label: string, kind: string, foodId?: string}>} */
@@ -328,6 +329,16 @@ export function planTasksForIdea(idea, options = {}) {
   if (event?.location === "away" && Number(event.travelMinutes) > 0)
     dueMinutes =
       timeToMinutes(event.startTime) - Number(event.travelMinutes) - 30;
+  // J7: a due time that had already passed when the plan was made is not a
+  // missed task (planning at 1 PM after school started is not "Was due
+  // 7:30 AM"). Leave the task without a due time instead.
+  if (
+    dueMinutes != null &&
+    now &&
+    date === getDateKey(now) &&
+    dueMinutes < now.getHours() * 60 + now.getMinutes()
+  )
+    dueMinutes = null;
   return tasks.map((task) => ({
     ...task,
     dueAt:

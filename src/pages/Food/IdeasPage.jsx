@@ -24,6 +24,7 @@ import {
   planMeal,
   markPlanPacked,
   logPlanAsEaten,
+  planNeedsReview,
   profileSignature,
   undoPlan,
 } from "../../domain/plans.js";
@@ -427,7 +428,7 @@ export function MealPlanCard({
     (plan.eatAt &&
       plan.eatAt >
         `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`);
-  const changed = profileSignature(data.profile) !== plan.profileSignature;
+  const changed = planNeedsReview(plan, data.profile);
   return (
     <article className="meal-plan-card">
       <div className="meal-plan-head">

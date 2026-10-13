@@ -56,6 +56,7 @@ import {
   markPlanLogged,
   markPlanPacked,
   planMeal,
+  planNeedsReview,
   syncPlanPreparation,
   undoPlan,
 } from "../src/domain/plans.js";
@@ -2668,4 +2669,87 @@ test("P2-08: Today names why no idea fits, in the words Ideas uses", () => {
     }),
     "No ideas fit these settings. Check your food needs and access.",
   );
+});
+
+test("J7: a prep due time already past when the plan is made is not a missed task", () => {
+  // 2026-09-14 is a Monday; school 8:00 AM, so food tasks are due 7:30 AM.
+  const school = {
+    enabled: true,
+    startDate: "2026-08-01",
+    endDate: "2027-06-01",
+    weekdays: [1, 2, 3, 4, 5],
+    startTime: "08:00",
+    endTime: "15:00",
+  };
+  const guidance = (now, event = { id: "p", startTime: "17:00" }) => ({
+    moment: "pre",
+    schoolSchedule: school,
+    event,
+    now,
+  });
+  const due = (data) => data.dayPlans[day].map((t) => t.dueAt);
+  // Planned before school: due 7:30 AM.
+  let data = emptyData();
+  planMeal(
+    data,
+    idea("banana-pretzels"),
+    day,
+    guidance(new Date(`${day}T06:45:00`)),
+  );
+  assert.ok(due(data).every((d) => d === "07:30"));
+  // Planned at 1 PM, after school started: no "Was due 7:30 AM".
+  data = emptyData();
+  planMeal(
+    data,
+    idea("banana-pretzels"),
+    day,
+    guidance(new Date(`${day}T13:00:00`)),
+  );
+  assert.ok(due(data).every((d) => d === null));
+  // Away session at 5:00 PM with 45 min travel: Leave by 4:15, due 3:45 PM.
+  const away = {
+    id: "a",
+    startTime: "17:00",
+    location: "away",
+    travelMinutes: 45,
+  };
+  data = emptyData();
+  planMeal(
+    data,
+    idea("banana-pretzels"),
+    day,
+    guidance(new Date(`${day}T13:00:00`), away),
+  );
+  assert.ok(due(data).every((d) => d === "15:45"));
+  // Past that too: no due time.
+  data = emptyData();
+  planMeal(
+    data,
+    idea("banana-pretzels"),
+    day,
+    guidance(new Date(`${day}T16:00:00`), away),
+  );
+  assert.ok(due(data).every((d) => d === null));
+  // Planning a later day keeps its due time, whatever the clock says now.
+  data = emptyData();
+  planMeal(
+    data,
+    idea("banana-pretzels"),
+    day,
+    guidance(new Date("2026-09-13T21:00:00")),
+  );
+  assert.ok(due(data).every((d) => d === "07:30"));
+});
+
+test("STATE: changed food needs prompt planned and packed plans, never eaten ones", () => {
+  const data = emptyData();
+  const plan = planMeal(data, idea("banana-pretzels"), day, {});
+  assert.equal(planNeedsReview(plan, data.profile), false);
+  data.profile = { ...data.profile, foodSources: ["home"] };
+  assert.equal(planNeedsReview(plan, data.profile), true);
+  markPlanPacked(data, plan.id);
+  assert.equal(planNeedsReview(plan, data.profile), true);
+  logPlanAsEaten(data, plan.id);
+  assert.equal(plan.status, "eaten");
+  assert.equal(planNeedsReview(plan, data.profile), false);
 });
