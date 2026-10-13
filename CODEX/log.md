@@ -716,3 +716,7 @@ Today's Now card no longer shows a disabled "Plan this" when no idea fits: it gi
 scripts/run-browser-checks.mjs takes --exclude and skips the live USDA check (browser-provider.js) when no FDC_API_KEY is in the environment or .env (LIVE=1 forces it, LIVE=0 skips it). 2026.10.13
 .github/workflows/checks.yml has a browser job on ubuntu-latest: cached Playwright Chromium with system deps, the journey first, then every other browser script; the provider check runs only with the FDC_API_KEY secret. 2026.10.13
 Ticked P2-08 after npm run check and 22/22 browser scripts passed locally; the first CI run is pending until the branch is pushed. 2026.10.13
+Added tests/css-usage.test.js: it parses every CSS file under src/ and fails on any class selector no className, classList call or class/variant map uses; composed avatar-size and event-type classes are allowlisted and checked against their source. 2026.10.13
+Deleted 14 dead CSS class names (agenda-*, event-*, moment-picker, stock-filters, section-toolbar, data-list, row-actions, schedule-error, reminder-permission, travel) from components, schedule, today and food CSS. 2026.10.13
+Folded 8 split rules into one each (today-section-header, segmented buttons, Food section links, food-result-list, schedule-week-time, reminder-honesty, tablet frame-brand and frame-athlete); CSS is 5,532 lines, down from 5,690. 2026.10.13
+51 screenshots of every route and key dialogs at 390 and 1280 px are pixel-identical before and after; P2-07 ticked; npm run check and 21/21 browser checks pass. 2026.10.13
