@@ -3,7 +3,7 @@ import WaterRow from "./WaterRow.jsx";
 import PackPrep from "./PackPrep.jsx";
 import DayRail from "./DayRail.jsx";
 import { useState } from "react";
-import { advanceCompletedMoment } from "../../domain/ranking.js";
+import { advanceCompletedMoment, noIdeaReason } from "../../domain/ranking.js";
 import NowCard from "./NowCard.jsx";
 import { Shell } from "../../components/AppFrame.jsx";
 import { Dialog, DialogError } from "../../components/Dialog.jsx";
@@ -94,6 +94,13 @@ export default function TodayPage({
     ? ingredientsForMeal(idea, data.groceryState.pantry, todayKey)
     : [];
   const missing = ingredients.filter((i) => !i.sufficient);
+  // Nothing fits (no access, or every idea filtered out): say why and point
+  // to tomorrow's ideas, like Food › Ideas, instead of a disabled "Plan this".
+  const noIdea =
+    !idea &&
+    !["setup", "during", "evening", "rest", "no_sport", "late"].includes(
+      guidance.state,
+    );
   // TODAY-01: what "Add to groceries" would still add. Items already on the
   // grocery list count as handled, so after adding them the card moves on.
   const toBuy = missingGroceries(missing, data.groceryState.items);
@@ -173,6 +180,7 @@ export default function TodayPage({
       return tonight.built ? openTonight() : buildTomorrow();
     if (["no_sport", "rest"].includes(guidance.state))
       return onNavigate(`food/ideas?moment=${next ? "tomorrow" : "now"}`);
+    if (noIdea) return onNavigate("food/ideas?moment=tomorrow");
     if (
       ["before_school", "travel"].includes(guidance.state) &&
       (!plan || !toBuy.length)
@@ -222,18 +230,20 @@ export default function TodayPage({
             ? next
               ? "Plan tomorrow"
               : "Choose a snack"
-            : ["before_school", "travel"].includes(guidance.state) &&
-                (!plan || !toBuy.length)
-              ? "Open packing list"
-              : !plan
-                ? "Plan this"
-                : plan.status === "packed"
-                  ? early
-                    ? `Eat around ${formatClock(plan.eatAt)}`
-                    : "Log it"
-                  : toBuy.length
-                    ? `Add ${toBuy.length} ${toBuy.length === 1 ? "item" : "items"} to groceries`
-                    : "Mark packed";
+            : noIdea
+              ? "Ideas for tomorrow"
+              : ["before_school", "travel"].includes(guidance.state) &&
+                  (!plan || !toBuy.length)
+                ? "Open packing list"
+                : !plan
+                  ? "Plan this"
+                  : plan.status === "packed"
+                    ? early
+                      ? `Eat around ${formatClock(plan.eatAt)}`
+                      : "Log it"
+                    : toBuy.length
+                      ? `Add ${toBuy.length} ${toBuy.length === 1 ? "item" : "items"} to groceries`
+                      : "Mark packed";
   const rows = buildRailRows({
     events,
     schoolSchedule: data.schoolSchedule,
@@ -284,6 +294,13 @@ export default function TodayPage({
             guidance,
             plan,
             stale,
+            noIdeaText: noIdea
+              ? noIdeaReason({
+                  guidance,
+                  profile: data.profile,
+                  schoolSchedule: data.schoolSchedule,
+                })
+              : null,
             pending,
             write,
             idea,

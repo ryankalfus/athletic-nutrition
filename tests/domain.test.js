@@ -62,6 +62,7 @@ import {
 import {
   ideasFor,
   lowCostHiddenCount,
+  noIdeaReason,
   rankIdeas,
   searchableFavorites,
 } from "../src/domain/ranking.js";
@@ -2639,5 +2640,32 @@ test("P2-06: every Now card state has a rule with https sources and a checked da
   assert.deepEqual(
     Object.keys(RULES).sort(),
     [...seen.keys(), "school_window", "game"].sort(),
+  );
+});
+
+test("P2-08: Today names why no idea fits, in the words Ideas uses", () => {
+  const school = { foodAccess: { cafeteria: false } };
+  assert.equal(
+    noIdeaReason({
+      guidance: { inSchool: true },
+      profile: { foodSources: ["home"] },
+      schoolSchedule: school,
+    }),
+    "Nothing is available at school right now. Pack a snack next time.",
+  );
+  assert.equal(
+    noIdeaReason({
+      guidance: { departed: true },
+      profile: { foodSources: ["home"] },
+    }),
+    "Nothing is available on the way right now. Pack a snack next time.",
+  );
+  assert.equal(
+    noIdeaReason({
+      guidance: { inSchool: true },
+      profile: { foodSources: ["home", "packed"] },
+      schoolSchedule: school,
+    }),
+    "No ideas fit these settings. Check your food needs and access.",
   );
 });

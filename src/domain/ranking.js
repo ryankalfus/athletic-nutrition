@@ -45,6 +45,23 @@ export function ideaAccess(options) {
   };
 }
 
+// Why no idea fits right now, in the words Ideas uses for its empty state, so
+// Today's Now card does not show a dead "Plan this" (P2-08 journey).
+/** @param {any} options */
+export function noIdeaReason(options) {
+  const { guidance = {}, profile = {}, schoolSchedule } = options;
+  const { access } = ideaAccess({
+    profile,
+    schoolSchedule,
+    inSchool: guidance.inSchool,
+    departed: guidance.departed,
+    event: guidance.event,
+  });
+  if (access.length)
+    return "No ideas fit these settings. Check your food needs and access.";
+  return `Nothing is available ${guidance.inSchool ? "at school" : "on the way"} right now. Pack a snack next time.`;
+}
+
 export function rankIdeas(ideas, options = {}) {
   /** @type {any} */
   const { pantry = [], favorites = [], hiddenIdeas = [], date } = options;

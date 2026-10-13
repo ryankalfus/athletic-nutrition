@@ -5,10 +5,18 @@
 //   npx playwright install chromium      # one-time setup
 //   npm run test:browser                 # start Vite on 5184 (or reuse one already there)
 //   npm run test:browser -- schedule     # only files whose name contains "schedule"
+//   npm run test:browser -- --exclude journey   # every file except those matching "journey"
 //   BASE_URL=http://127.0.0.1:5173/ npm run test:browser   # use an existing server
 //   HEADED=1 npm run test:browser        # watch it run
+//
+// Live checks (LIVE_CHECKS below) call the real USDA API; every other snippet
+// mocks /api/*. Live checks run only when a USDA key is available, from
+// FDC_API_KEY in the environment or in .env. Without one (CI without the
+// FDC_API_KEY secret, forks) they print SKIP and do not fail the run.
+// LIVE=1 forces them (the server falls back to the rate-limited DEMO_KEY);
+// LIVE=0 always skips them.
 import { spawn } from "node:child_process";
-import { mkdirSync, readdirSync, readFileSync } from "node:fs";
+import { existsSync, mkdirSync, readdirSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { chromium } from "playwright";
@@ -16,12 +24,30 @@ import { chromium } from "playwright";
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const port = Number(process.env.PORT || 5184);
 const base = (process.env.BASE_URL || `http://127.0.0.1:${port}/`).replace(/\/?$/, "/");
-const filters = process.argv.slice(2);
+const args = process.argv.slice(2);
+const excludes = args.filter((_, i) => args[i - 1] === "--exclude");
+const filters = args.filter(
+  (arg, i) => arg !== "--exclude" && args[i - 1] !== "--exclude",
+);
 const testsDir = path.join(root, "tests");
 const files = readdirSync(testsDir)
   .filter((name) => /^browser-.+\.js$/.test(name))
   .filter((name) => !filters.length || filters.some((f) => name.includes(f)))
+  .filter((name) => !excludes.some((f) => name.includes(f)))
   .sort();
+
+// Snippets that need the network and a USDA key.
+const LIVE_CHECKS = new Set(["browser-provider.js"]);
+const hasUsdaKey = () => {
+  if (process.env.FDC_API_KEY?.trim()) return true;
+  const env = path.join(root, ".env");
+  return (
+    existsSync(env) &&
+    /^\s*FDC_API_KEY\s*=\s*["']?[^\s"'#]/m.test(readFileSync(env, "utf8"))
+  );
+};
+const runLive =
+  process.env.LIVE === "1" || (process.env.LIVE !== "0" && hasUsdaKey());
 
 const reachable = async () => {
   try {
@@ -90,6 +116,11 @@ async function main() {
   const page = await browser.newPage();
   const summary = [];
   for (const file of files) {
+    if (LIVE_CHECKS.has(file) && !runLive) {
+      summary.push({ file, ok: true, skipped: true, checks: 0, seconds: "0.0" });
+      console.log(`\nSKIP ${file} (live USDA check: no FDC_API_KEY; LIVE=1 forces it)`);
+      continue;
+    }
     const started = Date.now();
     let result;
     let failure;
@@ -113,10 +144,15 @@ async function main() {
   }
   await browser.close();
   const failed = summary.filter((s) => !s.ok);
+  const skipped = summary.filter((s) => s.skipped);
+  const ran = summary.length - skipped.length;
   console.log("\nSummary");
   for (const s of summary)
-    console.log(`  ${s.ok ? "PASS" : "FAIL"}  ${s.file.padEnd(28)} ${String(s.checks).padStart(2)} checks  ${s.seconds}s`);
-  console.log(`${summary.length - failed.length}/${summary.length} scripts passed`);
+    console.log(`  ${s.skipped ? "SKIP" : s.ok ? "PASS" : "FAIL"}  ${s.file.padEnd(28)} ${String(s.checks).padStart(2)} checks  ${s.seconds}s`);
+  console.log(
+    `${ran - failed.length}/${ran} scripts passed` +
+      (skipped.length ? `, ${skipped.length} skipped (live USDA checks need FDC_API_KEY)` : ""),
+  );
   return failed.length ? 1 : 0;
 }
 

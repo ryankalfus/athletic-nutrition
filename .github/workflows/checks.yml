@@ -14,3 +14,49 @@ jobs:
       - run: npm run typecheck
       - run: npm test
       - run: npm run build
+
+  # Browser checks in headless Chromium against the Vite dev server, which
+  # scripts/run-browser-checks.mjs starts on 127.0.0.1:5184.
+  # - The core journey (tests/browser-journey.js) runs first, at 390 and
+  #   1440 px, and fails on any page-level horizontal overflow (P2-08). It
+  #   mocks /api/* and refuses other hosts, so it needs no key or network.
+  # - Every other tests/browser-*.js script runs next. The live USDA check
+  #   (tests/browser-provider.js) runs only when the FDC_API_KEY secret is
+  #   set; without it the runner prints SKIP for that file (forks, or no
+  #   secret configured). All other scripts mock /api/*.
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      FDC_API_KEY: ${{ secrets.FDC_API_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - name: Cache Playwright Chromium
+        id: playwright-cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+      - name: Install Playwright Chromium
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
+        run: npx playwright install --with-deps chromium
+      - name: Install Playwright system libraries (cached browser)
+        if: steps.playwright-cache.outputs.cache-hit == 'true'
+        run: npx playwright install-deps chromium
+      - name: Core journey at 390 and 1440 px
+        run: npm run test:browser -- journey
+      - name: Other browser checks
+        if: ${{ !cancelled() }}
+        run: npm run test:browser -- --exclude journey
+      - name: Upload screenshots
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-output
+          path: output/playwright/
+          if-no-files-found: ignore
