@@ -8,7 +8,9 @@ This repo is worked on by both OpenAI Codex and Claude Code. Both read this file
 1. Read the files in `CODEX/` (`CODEX/AGENTS.md`, `CODEX/log.md`, the one pager).
 2. Read the tail of `CODEX/log.md` to see what the other agent did last.
 3. For redesign work, read the item in `CLAUDE-REDESIGN-AUDIT.md` (source of truth)
-   and its line in `REDESIGN-CHECKLIST.md` (status tracker).
+   and its line in `REDESIGN-CHECKLIST.md` (status tracker). For UX/UI redesign work
+   (phases U0–U10, `UX-*` IDs), read the item in `UX-REDESIGN-PLAN.md` (source of truth)
+   and its line in `UX-REDESIGN-CHECKLIST.md` (status tracker).
 
 ## After each action
 

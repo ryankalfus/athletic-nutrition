@@ -93,7 +93,7 @@ color in `tokens.css` is kept.
 
 | Measure | Now | Target |
 |---|---|---|
-| Content elements with a border and a shadow (inside `main`, outside the hero) | 11 `--shadow-1` uses in 6 CSS files (10 outside tokens) | 0 |
+| Content elements with a border and a shadow (inside `main`, outside the hero) | 11 `--shadow-1` uses in 6 page and component CSS files, plus its definition in `tokens.css` | 0 |
 | Pill chips for status or meta inside `main` | dozens per route | 0 |
 | Selection idioms | 5 (pill chips, circle chips with badges, white-segment trays, left switches, checkboxes) | 3 (checklist rows, pitch-fill segmented, right switch rows) |
 | Exits per bottom sheet | 3 (grabber, X, Cancel) | 2 (grabber or scrim, plus Cancel only when there are edits) |
@@ -441,16 +441,16 @@ Each pattern lists its IDs. Page specs in section 6 use these patterns and do no
 - **UX-DS-08 — Spacing.** Gutters unchanged (16 / 24 / 32). Section gap 32 (40 at 1024+).
   Section title to first row 8. Row vertical padding 12. Flow screens: 24 between fields.
   Inset hairline from the text start to the right edge, `--color-line`.
-- **UX-DS-09 — Type scale.** Phone / 1024+:
+- **UX-DS-09 — Type scale.** Where two sizes are given, the first is phones and the second 1024 px and up:
 
   | Role | Face | Size / leading | Weight |
   |---|---|---|---|
-  | Display (Welcome, done) | DM Sans | 44/46 · 64/68 | 700, −0.025em |
-  | Large title (page, setup question) | DM Sans | 34/40 · 40/44 | 700, −0.02em |
-  | Hero instruction | Barlow Semi Condensed | 40/42 · 56/58 | 600 |
-  | H2 / section title | DM Sans | 20/26 · 22/28 | 650 |
-  | H3 / row title | DM Sans | 17/22 · 18/24 | 600 |
-  | Time column, amounts | Barlow Semi Condensed | 17/22 · 18/24 | 600, tabular |
+  | Display (Welcome, done) | DM Sans | 44/46, then 64/68 | 700, −0.025em |
+  | Large title (page, setup question) | DM Sans | 34/40, then 40/44 | 700, −0.02em |
+  | Hero instruction | Barlow Semi Condensed | 40/42, then 56/58 | 600 |
+  | H2 / section title | DM Sans | 20/26, then 22/28 | 650 |
+  | H3 / row title | DM Sans | 17/22, then 18/24 | 600 |
+  | Time column, amounts | Barlow Semi Condensed | 17/22, then 18/24 | 600, tabular |
   | Body | DM Sans | 16/24 | 400 |
   | Small (row meta, helper) | DM Sans | 14/20 | 400 |
   | Caption (metadata only, never instructions) | DM Sans | 13/18 | 400 |
