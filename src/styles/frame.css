@@ -181,8 +181,8 @@
 
 /* Frame footer: a contentinfo landmark after </main> (A11Y-03), on the same
  * column as the page. Main hands its bottom space to the footer. */
-.shell:has(+ .frame-footer),
-.app-frame.has-navigation .shell:has(+ .frame-footer) {
+.shell:has(~ .frame-footer),
+.app-frame.has-navigation .shell:has(~ .frame-footer) {
   padding-bottom: 0;
 }
 

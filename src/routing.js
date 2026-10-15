@@ -29,6 +29,7 @@ const redirects = {
   "food/meals": "food/ideas",
   food: "food/ideas",
 };
+const SHEETS = /^you\/(sport|needs|access|reminders)(?=\?|$)/;
 const read = () => window.location.hash.replace(/^#\/?/, "") || "today";
 const canonical = (raw) => {
   const [path, query] = raw.split("?", 2);
@@ -57,8 +58,14 @@ export function useRoute() {
         "",
         `${window.location.pathname}${window.location.search}#/${route}`,
       );
-    window.scrollTo({ top: 0, behavior: "instant" });
   }, [raw, route]);
+  // A new page starts at the top. A You sheet (#/you/sport, needs, access,
+  // reminders) opens over You, so opening or closing it keeps the page
+  // behind it where it was.
+  const scrollKey = route.replace(SHEETS, "you");
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "instant" });
+  }, [scrollKey]);
   const path = route.split("?")[0];
   const view =
     routes.has(path) || /^food\/log(\/week)?\/\d{4}-\d{2}-\d{2}$/.test(path)
@@ -86,9 +93,7 @@ const pageNames = {
 };
 export function pageOf(hash) {
   const path = canonical(hash.replace(/^#\/?/, "") || "today").split("?")[0];
-  const page = path
-    .replace(/\/\d{4}-\d{2}-\d{2}$/, "")
-    .replace(/^you\/(sport|needs|access|reminders)$/, "you");
+  const page = path.replace(/\/\d{4}-\d{2}-\d{2}$/, "").replace(SHEETS, "you");
   return pageNames[page] ? page : "notFound";
 }
 export function pageTitle(page) {
