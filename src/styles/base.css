@@ -210,18 +210,6 @@ input[type="search"]::-webkit-search-cancel-button {
   margin: 0;
 }
 
-/* A text box with suggestions (datalist) shows the select chevron, not the
- * browser's own black triangle. */
-.suggest-input {
-  padding-right: var(--space-10);
-  background: var(--color-surface) var(--icon-chevron) right var(--space-3)
-    center / 20px no-repeat;
-}
-
-.suggest-input::-webkit-calendar-picker-indicator {
-  opacity: 0;
-}
-
 :where(select) {
   appearance: none;
   padding-right: var(--space-10);

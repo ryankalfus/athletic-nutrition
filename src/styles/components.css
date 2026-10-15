@@ -423,18 +423,23 @@
   background: var(--color-surface-muted);
 }
 
+/* One floating panel look for row menus and combobox lists. */
+:is(.row-menu-items, .combobox-list) {
+  display: grid;
+  padding: var(--space-2);
+  border: var(--border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  color: var(--color-ink);
+  box-shadow: var(--shadow-3);
+}
+
 .row-menu-items {
   position: absolute;
   top: calc(100% + var(--space-1));
   right: 0;
   z-index: var(--z-menu);
-  display: grid;
   min-width: min(220px, calc(100vw - 2 * var(--gutter)));
-  padding: var(--space-2);
-  border: var(--border);
-  border-radius: var(--radius-md);
-  background: var(--color-surface);
-  box-shadow: var(--shadow-3);
 }
 
 .row-menu-items > [role="menuitem"] {
@@ -465,6 +470,90 @@
   margin-top: var(--space-1);
   border-top: var(--border);
   border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+}
+
+/* Combobox (Sport): a text box with the select chevron as a button that
+ * opens a suggestion list in the row-menu panel style. Options are 44px rows
+ * like menu items; the highlighted one is tinted, the current one checked. */
+.combobox {
+  position: relative;
+}
+
+.combobox > input {
+  width: 100%;
+  padding-right: calc(var(--target) + var(--space-1));
+}
+
+/* The 20px chevron sits where a select's does (centered 12 + 10px inside
+ * the 1px border): 1px + 44px / 2 from the right edge. */
+.combobox-toggle {
+  position: absolute;
+  top: 50%;
+  right: 1px;
+  width: var(--target);
+  min-width: var(--target);
+  height: var(--target);
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--color-ink);
+  transform: translateY(-50%);
+}
+
+.combobox-toggle svg {
+  transition: transform var(--motion-fast) var(--ease-out);
+}
+
+.combobox-toggle[aria-expanded="true"] svg {
+  transform: rotate(180deg);
+}
+
+/* A popover in the top layer, so a dialog's scroll box never clips it; the
+ * component sets top or bottom, left, width and max-height from the box. */
+.combobox-list {
+  position: fixed;
+  inset: auto;
+  max-height: calc(5.5 * var(--target) + 2 * var(--space-2));
+  margin: 0;
+  overflow-y: auto;
+  list-style: none;
+  overscroll-behavior: contain;
+}
+
+.combobox-list[hidden] {
+  display: none;
+}
+
+.combobox-list > [role="option"] {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  min-height: var(--target);
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-sm);
+  color: var(--color-ink);
+  font-size: var(--text-label);
+  line-height: var(--leading-label);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* The highlighted option: tinted under the mouse, with the focus ring when
+ * the arrow keys moved to it (the input keeps focus). */
+.combobox-list > .active {
+  background: var(--color-hover);
+}
+
+.combobox-list.keyboard > .active {
+  outline: 3px solid var(--color-focus);
+  outline-offset: -3px;
+}
+
+.combobox-list > [role="option"] svg {
+  flex: 0 0 auto;
+  color: var(--color-primary);
 }
 
 /* ---------- Badges (DS-12) ---------- */

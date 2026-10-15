@@ -2,7 +2,7 @@
 // opens. At 1280, 1440, 768, 390 and 320 px it opens each kind of overlay on
 // every tab (the rail's athlete sheet, Today sheets, You sheets, Schedule
 // sheets, Food sheets, Welcome sheets, a confirm, the nested "Discard
-// changes?", row menus and a toast) and compares the page H1, main, the frame
+// changes?", row menus, the Sport suggestions list and a toast) and compares the page H1, main, the frame
 // footer and the Welcome privacy line (page coordinates) and
 // the scroll position before, while open and after closing: all must be
 // identical. A <dialog> rendered between </main> and the footer used to break
@@ -102,7 +102,7 @@ async (page) => {
       await p.goto(base);
       await p.getByRole("button", { name: "Get started" }).click();
       await p.getByRole("textbox", { name: /First name/ }).fill("Shift test");
-      await p.locator('input[aria-describedby="sport-hint"]').fill("Soccer");
+      await p.getByRole("combobox", { name: /^Sport/ }).fill("Soccer");
       await p.getByRole("button", { name: "Next", exact: true }).click();
       await p.getByRole("heading", { name: "Your school day" }).waitFor();
       await p.getByRole("button", { name: "Skip setup" }).click();
@@ -261,6 +261,26 @@ async (page) => {
           },
         );
       }
+
+      // The Sport combobox list inside its sheet.
+      await go("you", "You");
+      await p.getByRole("link", { name: /^Sport/ }).click();
+      const sportSheet = dialog("Sport & season");
+      await sportSheet.waitFor();
+      await same(
+        `${width} you: Sport suggestions list`,
+        () =>
+          sportSheet.getByRole("button", { name: "Sport suggestions" }).click(),
+        () => p.getByRole("listbox", { name: "Sport suggestions" }).waitFor(),
+        async () => {
+          await p.keyboard.press("Escape");
+          await p
+            .getByRole("listbox", { name: "Sport suggestions" })
+            .waitFor({ state: "hidden" });
+        },
+      );
+      await p.keyboard.press("Escape");
+      await sportSheet.waitFor({ state: "hidden" });
 
       await go("you/device", "This device");
       await openDialog(
