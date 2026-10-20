@@ -1,5 +1,7 @@
 # Nourally audit implementation checklist
 
+> Reconciled 2026.10.20 (ROADMAP step 7): X01 to X05 are still open; they now live in UX-REDESIGN-CHECKLIST.md (UX-TEST-07 to UX-TEST-10, build item U10-02) and REDESIGN-CHECKLIST.md (P1-13, P3-01, P3-03). Do not track new work here.
+
 Source: [September 14 audit](Nourally-App-Audit-2026-09-14.md). Created September 14, 2026.
 
 Only `[x]` with strikethrough means implemented **and verified**. Unchecked items remain work, not a claim of completion. Evidence and any limitations are recorded below. The original audit remains an unchanged historical baseline.
@@ -122,11 +124,11 @@ Only `[x]` with strikethrough means implemented **and verified**. Unchecked item
 
 ## Explicitly deferred or externally dependent (do not silently mark complete)
 
-- [ ] X01 Physical camera success: permission/revocation, focus, poor lighting, real barcode, mobile keyboard, and cleanup on actual phones.
-- [ ] X02 Actual OS notification delivery, suspended/closed-app behavior, Safari/Firefox/device-specific testing.
-- [ ] X03 Full manual screen-reader and accessibility certification; specialist nutrition/template review.
-- [ ] X04 Production authenticated accounts/cloud sync/background notification service require a chosen deployment and credentials; local profiles are the selected implementation for now.
-- [ ] X05 Private USDA key and production hosting provisioning remain user-owned; demo mode/local indexed catalog must work without invented credentials.
+- [ ] X01 Physical camera success: permission/revocation, focus, poor lighting, real barcode, mobile keyboard, and cleanup on actual phones. — Open: moved to UX-TEST-07 (real-phone camera and barcode check, U10-02). Verified 2026.10.20 that no script covers it: the scanner is tested only with mocks and the manual field (`tests/browser-search.js`, `tests/browser-provider.js`).
+- [ ] X02 Actual OS notification delivery, suspended/closed-app behavior, Safari/Firefox/device-specific testing. — Open: moved to UX-TEST-08 (Safari, Firefox and real-device reminder checks, U10-02); delivery with the app closed is tracked as P3-01 (ADD-16). Reminders still work only while the app is open, and the app says so (D06).
+- [ ] X03 Full manual screen-reader and accessibility certification; specialist nutrition/template review. — Open: the manual screen-reader and keyboard-only run is tracked as P1-13 (skipped for now); the specialist nutrition and template review is moved to UX-TEST-09 (U10-02). The automated accessibility checks pass (`tests/browser-a11y.js`: axe, 70 scans, zero serious or critical).
+- [ ] X04 Production authenticated accounts/cloud sync/background notification service require a chosen deployment and credentials; local profiles are the selected implementation for now. — Open: tracked as P3-03 (real accounts and sync) and P3-01 (background notifications); owner Decision 3 keeps local profiles with backups for the MVP (ROADMAP steps 19 and 20).
+- [ ] X05 Private USDA key and production hosting provisioning remain user-owned; demo mode/local indexed catalog must work without invented credentials. — Open: moved to UX-TEST-10 (hosted build check with an owner-held USDA key, U10-02). The no-key path is done: without `FDC_API_KEY` the server uses the local USDA index or `DEMO_KEY` (`server/api.js`, `/api/foods/status`), and the browser suite skips the live USDA check when no key is set.
 
 The audit explicitly defers social feeds, leaderboards, body-weight targets, AI coaching, coach dashboards, retailer checkout, recipe-authoring expansion, and new photography. These are not implementation tasks and must not be added under this request.
 
