@@ -34,7 +34,7 @@ export default async function ({ browser, pass, cap }) {
     await p.getByRole("combobox", { name: /^Sport/ }).press("Escape");
     await dialog(p).getByRole("button", { name: "Save", exact: true }).click();
     await p.waitForTimeout(300);
-    await shot(p, "you", "sport-saved-empty", "After clearing Sport and pressing Save: sheet closed, toast Saved., You header reads No sport set (no validation error shown)");
+    await shot(p, "you", "sport-saved-empty", "After clearing Sport and pressing Save: sheet stays open with 'Enter your sport.'");
     await seed(p, lived(), "you");
     await p.keyboard.press("Escape");
     await p.waitForTimeout(400);

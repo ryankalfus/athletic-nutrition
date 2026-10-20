@@ -6,7 +6,7 @@ import {
   schoolDayProblem,
   schoolSheetProblem,
 } from "../src/domain/setup.js";
-import { manualFood, startingAmount } from "../src/domain/food.js";
+import { lowOrOut, manualFood, startingAmount } from "../src/domain/food.js";
 import {
   errorAfterBlur,
   errorAfterChange,
@@ -2914,5 +2914,80 @@ test("Add it yourself starts from the search or barcode with no amount", () => {
   assert.equal(
     startingAmount(typed, { portion: { amount: 28, unit: "g" } }, null),
     28,
+  );
+});
+
+// U1-05 (UX-BUG-20): a counted At home item at 0 is Out, and the "low or out"
+// summary counts it once.
+test("A counted At home item at 0 is Out and counts once in low or out", () => {
+  const zero = { id: "a", name: "Bananas", availability: "exact", quantity: 0 };
+  const legacyZero = { id: "b", name: "Apples", quantity: 0 };
+  const low = { id: "c", name: "Rice", availability: "low" };
+  const have = { id: "d", name: "Oats", availability: "exact", quantity: 4 };
+  const out = { id: "e", name: "Milk", availability: "out" };
+  assert.equal(stockStatus(zero), "out");
+  assert.equal(stockStatus(legacyZero), "out");
+  assert.equal(stockStatus({ ...zero, quantity: 1 }), "low");
+  assert.equal(stockStatus(have), "have");
+  assert.deepEqual(
+    lowOrOut([zero, low, have, out]).map((row) => row.id),
+    ["a", "c", "e"],
+  );
+  // Back in stock on a counted item that ran out gives "1 left", not 0.
+  assert.equal(toggleStockOut(zero, "2026-10-20").quantity, 1);
+  const marked = {
+    ...zero,
+    availability: "out",
+    previousAvailability: "exact",
+  };
+  const restocked = toggleStockOut(marked, "2026-10-20");
+  assert.equal(restocked.availability, "exact");
+  assert.equal(restocked.quantity, 1);
+  assert.equal(stockStatus(restocked), "low");
+});
+
+// U1-05 (KEEP-15): loading prunes undo-ledger entries older than 30 days.
+test("Loading keeps undo-ledger entries for 30 days only", () => {
+  const day = 86400000;
+  const at = (days) => new Date(Date.now() - days * day).toISOString();
+  const data = emptyData();
+  data.operations = [
+    {
+      id: "new",
+      type: "consume",
+      logId: "x",
+      deductions: [],
+      createdAt: at(29),
+    },
+    {
+      id: "old",
+      type: "consume",
+      logId: "y",
+      deductions: [],
+      createdAt: at(31),
+    },
+  ];
+  const doc = {
+    version: 3,
+    revision: 1,
+    defaultProfileId: "p",
+    profiles: { p: { id: "p", name: "Maya", data } },
+  };
+  const loaded = validateDocument(structuredClone(doc));
+  assert.deepEqual(
+    loaded.profiles.p.data.operations.map((op) => op.id),
+    ["new"],
+  );
+  // Older entries without a timestamp age from their date.
+  const dated = validateData({
+    ...emptyData(),
+    operations: [
+      { id: "a", type: "plan", planId: "1", date: at(40).slice(0, 10) },
+      { id: "b", type: "remove-log", date: at(2).slice(0, 10), entry: {} },
+    ],
+  });
+  assert.deepEqual(
+    dated.operations.map((op) => op.id),
+    ["b"],
   );
 });

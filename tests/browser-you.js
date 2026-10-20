@@ -48,7 +48,7 @@ async (page) => {
     await sportField.fill("Swimming");
     await sport.getByRole("button", { name: "Save", exact: true }).click();
     await sport.waitFor({ state: "hidden" });
-    await p.getByRole("status").getByText("Saved.").waitFor();
+    await p.locator(".app-toast").getByText("Sport & season saved.").waitFor();
     if (!p.url().endsWith("#/you"))
       throw new Error(`Saving a sheet did not return to #/you: ${p.url()}`);
     await p.getByRole("link", { name: /^Sport & season — Swimming/ }).waitFor();
@@ -176,7 +176,6 @@ async (page) => {
       };
     });
     if (
-      !dependents.switchOn ||
       !dependents.lead ||
       !dependents.segments ||
       !dependents.evening ||
@@ -191,6 +190,106 @@ async (page) => {
     await p.evaluate(() => localStorage.removeItem("test-permission"));
     result.checks.push(
       "With reminders on and notifications blocked, “How long before” and the evening reminder are disabled and dimmed (UX-BUG-15).",
+    );
+
+    // UX-BUG-22: each You sheet's save toasts "<Thing> saved." with an Undo
+    // that puts the previous values back; so does Rename on This device.
+    await p.evaluate(() => localStorage.setItem("test-permission", "granted"));
+    await p.reload();
+    const toastBox = p.locator(".app-toast");
+    const undoSave = async (open, sheetName, change, toastText) => {
+      await open();
+      const dialog = p.getByRole("dialog", { name: sheetName });
+      await dialog.waitFor();
+      await change(dialog);
+      await dialog.getByRole("button", { name: "Save", exact: true }).click();
+      await dialog.waitFor({ state: "hidden" });
+      await toastBox.getByText(toastText, { exact: true }).waitFor();
+      await toastBox.getByRole("button", { name: "Undo" }).click();
+      await toastBox.getByText("Undone.", { exact: true }).waitFor();
+    };
+    const fromYou = (name) => async () => {
+      await p.goto(`${base}#/you`);
+      await p.getByRole("link", { name }).click();
+    };
+    const reopen = async (name, sheetName) => {
+      await fromYou(name)();
+      const dialog = p.getByRole("dialog", { name: sheetName });
+      await dialog.waitFor();
+      return dialog;
+    };
+    const closeSheet = async (dialog) => {
+      await dialog.getByRole("button", { name: /^Close/ }).click();
+      await dialog.waitFor({ state: "hidden" });
+    };
+    await undoSave(
+      fromYou(/^Sport & season/),
+      "Sport & season",
+      (d) => d.getByRole("combobox", { name: /^Sport/ }).fill("Basketball"),
+      "Sport & season saved.",
+    );
+    await p.getByRole("link", { name: /^Sport & season — Swimming/ }).waitFor();
+    await undoSave(
+      fromYou(/^Food needs/),
+      "Food needs & allergies",
+      (d) => d.getByRole("button", { name: "Vegan" }).click(),
+      "Food needs saved.",
+    );
+    let again = await reopen(/^Food needs/, "Food needs & allergies");
+    if (
+      (await again
+        .getByRole("button", { name: "Vegan" })
+        .getAttribute("aria-pressed")) === "true"
+    )
+      throw new Error("Undo did not put Food needs back");
+    await closeSheet(again);
+    again = await reopen(/^Food access/, "Food access & budget");
+    const lowCost = again.getByRole("switch", { name: /Keep ideas low-cost/ });
+    const lowCostBefore = await lowCost.isChecked();
+    await closeSheet(again);
+    await undoSave(
+      fromYou(/^Food access/),
+      "Food access & budget",
+      (d) => d.getByRole("switch", { name: /Keep ideas low-cost/ }).click(),
+      "Food access saved.",
+    );
+    again = await reopen(/^Food access/, "Food access & budget");
+    if (
+      (await again
+        .getByRole("switch", { name: /Keep ideas low-cost/ })
+        .isChecked()) !== lowCostBefore
+    )
+      throw new Error("Undo did not put Food access back");
+    await closeSheet(again);
+    again = await reopen(/^Reminders/, "Reminders");
+    const remindersBefore = await again.getByRole("switch").isChecked();
+    await closeSheet(again);
+    await undoSave(
+      fromYou(/^Reminders/),
+      "Reminders",
+      (d) => d.getByRole("switch").setChecked(!remindersBefore),
+      "Reminders saved.",
+    );
+    again = await reopen(/^Reminders/, "Reminders");
+    if ((await again.getByRole("switch").isChecked()) !== remindersBefore)
+      throw new Error("Undo did not put Reminders back");
+    await closeSheet(again);
+    await p.goto(`${base}#/you/device`);
+    const renameButton = p.getByRole("button", { name: /^Rename / }).first();
+    const oldName = (await renameButton.getAttribute("aria-label")).replace(
+      /^Rename /,
+      "",
+    );
+    await undoSave(
+      () => renameButton.click(),
+      `Rename ${oldName}`,
+      (d) => d.getByRole("textbox", { name: "First name" }).fill("Renamed"),
+      "Name saved.",
+    );
+    await p.getByRole("button", { name: `Rename ${oldName}` }).waitFor();
+    await p.evaluate(() => localStorage.removeItem("test-permission"));
+    result.checks.push(
+      "Sport & season, Food needs, Food access, Reminders and Rename toast “<Thing> saved.” with Undo, and Undo puts the previous values back (UX-BUG-22).",
     );
     await p.goto(`${base}#/you/device`);
     await p.getByRole("heading", { name: "This device", level: 1 }).waitFor();

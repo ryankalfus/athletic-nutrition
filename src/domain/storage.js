@@ -33,6 +33,32 @@ export const emptyData = () => ({
 
 const object = (value) =>
   value && typeof value === "object" && !Array.isArray(value);
+
+// KEEP-15: undo needs the ledger only briefly (toasts time out in seconds), so
+// entries older than 30 days are dropped when the data loads. An entry ages
+// from createdAt, else from its date; one with neither is stamped now.
+export const LEDGER_DAYS = 30;
+/**
+ * @param {any[]} [operations]
+ * @param {number} [now]
+ */
+export function pruneOperations(operations = [], now = Date.now()) {
+  const cutoff = now - LEDGER_DAYS * 86400000;
+  return operations
+    .filter((op) => {
+      const stamp = op.createdAt
+        ? Date.parse(op.createdAt)
+        : /^\d{4}-\d{2}-\d{2}$/.test(op.date || "")
+          ? new Date(`${op.date}T12:00:00`).getTime()
+          : NaN;
+      return !Number.isFinite(stamp) || stamp >= cutoff;
+    })
+    .map((op) =>
+      op.createdAt || op.date
+        ? op
+        : { ...op, createdAt: new Date(now).toISOString() },
+    );
+}
 export function validateData(data) {
   if (!object(data)) throw new Error("The profile data is not an object.");
   for (const field of [
@@ -284,6 +310,7 @@ export function validateData(data) {
     ...data,
     mealPlans,
     dayPlans,
+    operations: pruneOperations(data.operations),
     setupStep: Math.min(Math.max(data.setupStep ?? 0, 0), 6),
     lastUsedAt: data.lastUsedAt ?? null,
     // The low-cost default must not mask a stored budget tier, so only the

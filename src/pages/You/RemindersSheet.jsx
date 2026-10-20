@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { changeData } from "../../store.js";
+import { changeDataUndoable } from "../../store.js";
 import {
   REMINDER_HONESTY_LINE,
   REMINDER_LEAD_OPTIONS,
@@ -45,14 +45,15 @@ export function RemindersSheet({ settings, onClose }) {
         ? "Reminders are off because this browser cannot show notifications."
         : "Reminders are off because this browser blocked notifications.";
     }
-    return changeData((data) => {
+    return changeDataUndoable((data) => {
       data.reminderSettings = { ...data.reminderSettings, ...next };
-    }, null);
+    });
   };
 
   return (
     <SettingsSheet
       title="Reminders"
+      savedToast="Reminders saved."
       dirty={dirty}
       onSave={save}
       onClose={onClose}

@@ -18,7 +18,7 @@ export function AthleteNameSheet({ athlete, onClose, onCreated }) {
             : "Add your name"
       }
       saveLabel={athlete ? "Save" : "Add athlete"}
-      savedToast={athlete ? "Saved." : null}
+      savedToast={athlete ? "Name saved." : null}
       dirty={name.trim() !== initial.trim()}
       onClose={onClose}
       onSave={async () => {

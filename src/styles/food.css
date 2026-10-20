@@ -394,6 +394,11 @@
   text-align: center;
 }
 
+/* None left reads as Out, in the error colour (UX-BUG-20). */
+.stock-amount > .stock-out {
+  color: var(--color-error);
+}
+
 .stock-amount button[aria-label] {
   width: var(--target);
   padding: 0;

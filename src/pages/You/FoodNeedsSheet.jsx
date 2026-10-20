@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { changeData } from "../../store.js";
+import { changeDataUndoable } from "../../store.js";
 import { SettingsSheet } from "./SettingsSheet.jsx";
 import { FoodNeedsFields } from "./FoodNeedsFields.jsx";
 
@@ -17,14 +17,15 @@ export function FoodNeedsSheet({ profile, onClose }) {
   return (
     <SettingsSheet
       title="Food needs & allergies"
+      savedToast="Food needs saved."
       dirty={dirty}
       onClose={onClose}
       onSave={() =>
-        changeData((data) => {
+        changeDataUndoable((data) => {
           data.profile.allergies = draft.allergies;
           data.profile.dietaryNeeds = draft.dietaryNeeds;
           data.profile.dislikes = draft.dislikes;
-        }, null)
+        })
       }
     >
       <FoodNeedsFields draft={draft} onChange={setDraft} />

@@ -17,7 +17,7 @@ Owner Ryan Kalfus confirmed the recommended options previously presented for aud
 - Awaiting approval (allergy filtering built but switched off; `ALLERGY_TAGS_REVIEWED = false`): P1-09, P1-10, ADD-03, ONB-04, YOU-02, YOU-03. P1-11 waits on ONB-04.
 - Incomplete, skipped for now (will come back to): P1-09, P1-10 and P1-13 (manual screen-reader test and keyboard-only core journey not done).
 - Not started: P3-01 to P3-05 (ADD-16 is P3-01, ADD-15 is P3-02).
-- Open work: COPY-38, KEEP-15, STATE-03, STATE-04, STATE-05, STATE-07, STATE-08, STATE-11, STATE-15, STATE-16, CMP-10.
+- Open work: COPY-38, STATE-03, STATE-04, STATE-05, STATE-07, STATE-08, STATE-11, STATE-15, STATE-16, CMP-10.
 
 ### P0
 
@@ -326,7 +326,7 @@ Each ID is an individual checkbox. Implementation notes and blockers go on the m
 - [x] **KEEP-12**
 - [x] **KEEP-13**
 - [x] **KEEP-14** — Crash screen split from data recovery in STATE-09.
-- [ ] **KEEP-15** — Open: the `operations` ledger and toast Undo work, but entries older than 30 days are never pruned.
+- [x] **KEEP-15** — Done 2026.10.20 (UX U1-05): loading drops `operations` ledger entries older than 30 days (`pruneOperations` in `src/domain/storage.js`, run by `validateData`; an entry ages from `createdAt`, else its date); `tests/domain.test.js` "Loading keeps undo-ledger entries for 30 days only" (29 days kept, 31 dropped).
 
 ### MOVE
 
@@ -473,14 +473,14 @@ These decisions are intentionally open. Dependent work may be prepared but canno
 
 ## MVP redesign complete (§13.8)
 
-Checked 2026.10.20 (ROADMAP step 7): 4 of 7 are ticked, including the allergen line ticked earlier. Each open line says what is still missing and where it is tracked.
+Checked 2026.10.20 (ROADMAP step 7): 4 of 7 are ticked, including the allergen line ticked earlier. Updated 2026.10.20 (UX U1-05): 5 of 7, with the Undo line reworded for the owner's At home exception and ticked. Each open line says what is still missing and where it is tracked.
 
 - [ ] All P0 and P1 items pass their acceptance criteria. — Open (checked 2026.10.20): P0 is 12/12 and P1 is 9/13; the four open P1 items are P1-09, P1-10 and P1-11 (allergy filtering and ONB-04, awaiting approval) and P1-13 (manual accessibility test, skipped for now). Nothing else is open.
 - [x] A new athlete completes setup in under 2 minutes and sees a Today action naming a real session and time. — Done (verified 2026.10.20): at 390 px setup takes 9 actions (Get started, sport, five Next, one practice day, Open Today) because school hours, lunch and practice times are pre-filled; scripted with a 5 s pause before every action it ran 45.5 s from Get started to Today. Today then reads "Soccer practice in 3 hr", "Eat a snack or small meal by 2:30 PM" and a Plan this button, and step 6 says "Soccer practice today at 4:00 PM". Measured with a scratch Playwright script (clock Tue 2026-10-13 1:00 PM); the same flow is in `tests/browser-setup.js` and `tests/browser-journey.js`. Typing other practice times adds a few actions, still well under 2 minutes.
 - [x] The full setup → plan → groceries → finish shopping → pack → log journey works at 390 and 1440 px with an automated CI test. — Done (verified 2026.10.20): `tests/browser-journey.js` passes at 390 and 1440 px (24 checks, 33 steps per width, no sideways scroll): setup → plan Banana + pretzels → add the missing pretzels to groceries → check off, Finish shopping, Add to At home → Mark packed → Log it → Log › Day. It runs first in the `browser` job of `.github/workflows/checks.yml`.
 - [x] No rendered database labels, ISO dates, bare 24-hour times, calorie rows, streaks, or implicit targets. — Done (verified 2026.10.20): `tests/browser-shared-ui.js` scans Welcome, 15 routes and Schedule Month at 320 and 1280 px for the 7.6 terms, "streak", ISO dates, bare 24-hour times and unpluralized counts and passes; log rows and product views show no kcal (`tests/browser-log.js`, `tests/browser-provider.js`, `tests/browser-search.js`); calories appear only under "Nutrition details (optional)"; Today's water row has no meter, fraction or goal (`src/pages/Today/WaterRow.jsx`, `tests/browser-units-week.js`).
 - [x] No unsupported allergen claims; every product view has a label line. Met by P0-06 and checked by `tests/browser-allergens.js` and `tests/browser-search.js`.
-- [ ] Every write gives feedback; every reversible write offers Undo; no native confirm remains. — Open: settings-sheet Undo moved to UX-BUG-22 (U1-05). Accepted exception (owner decision 2026.10.20): At home Have/Low/Out and count taps stay silent; tapping again is the undo. Verified 2026.10.20: no native `confirm()`, `alert()` or `prompt()` remains in `src/`, and `changeData()` in `src/store.js` gives every data write a verb-first toast with Undo, so the Today, Ideas, Groceries, Log and Schedule writes pass. Not met: the four You sheets (Sport & season, Food needs, Food access, Reminders) save with a plain "Saved." toast and no Undo, and At home Have/Low/Out and count changes show no toast at all (audit 6.5 chose that; this line says otherwise).
+- [x] Every write gives feedback; every reversible write offers Undo, except At home Have/Low/Out and count taps, which stay silent (owner decision 2026.10.20: the control shows the change and tapping again is the undo); no native confirm remains. — Done 2026.10.20 (UX U1-05, UX-BUG-22): no native `confirm()`, `alert()` or `prompt()` remains in `src/`; `changeData()` in `src/store.js` gives the Today, Ideas, Groceries, Log, Schedule and At home sheet writes a verb-first toast with Undo; the You sheets now toast "Sport & season saved.", "Food needs saved.", "Food access saved.", "Reminders saved." and Rename "Name saved." with an Undo that puts the previous values back (`changeDataUndoable`, `tests/browser-you.js`), and At home "Counts as?" toasts "Updated <food>." with Undo (`tests/browser-search.js`). A grocery check-off and an At home stock tap show the change in the control itself.
 - [ ] Section 9 accessibility criteria pass, including axe and keyboard-only core journey. — Open: waits on P1-13 (manual accessibility test, skipped for now). Verified 2026.10.20: the automated part passes (`tests/browser-a11y.js`: axe on 70 scans at 390 and 1280 px with zero serious or critical issues, 44 px targets, 3:1 borders and focus ring, forced colors, reduced motion; `tests/browser-responsive.js` at seven widths). Not done: the VoiceOver and NVDA smoke test and a keyboard-only run of the whole core journey.
 
 ## Full audit specification and acceptance criteria

@@ -9,10 +9,12 @@ import {
 import { showToast } from "../../components/ui/Toast.jsx";
 import { useAsyncAction } from "../../hooks/useAsyncAction.js";
 
-// One You settings sheet (YOU-06): Save closes it, shows "Saved", and stays
-// on You. Cancel with changes asks "Discard changes?". `onSave` resolves to
-// true on success, a message to show inline, { message, field } for an error
-// under one field, or false when the store already shows its own save error.
+// One You settings sheet (YOU-06): Save closes it, shows "<Thing> saved."
+// and stays on You. Cancel with changes asks "Discard changes?". `onSave`
+// resolves to true on success, or to the write's Undo (a function, from
+// changeDataUndoable or renameProfile) so the toast offers Undo (UX-BUG-22);
+// a message to show inline, { message, field } for an error under one field,
+// or false when the store already shows its own save error.
 // `values` (the sheet's draft) and `validate` keep an error in step with the
 // fields (UX-BUG-02).
 export function SettingsSheet({
@@ -43,12 +45,14 @@ export function SettingsSheet({
           cause?.message ||
           "Couldn't save on this device. Your changes are still on screen.";
       }
-      if (result === true) {
+      const undo = typeof result === "function" ? result : undefined;
+      if (result === true || undo) {
         onClose();
-        // Closing changes the route, which clears toasts; show "Saved" after.
-        if (savedToast) window.setTimeout(() => showToast(savedToast), 0);
+        // Closing changes the route, which clears toasts; show it after.
+        if (savedToast)
+          window.setTimeout(() => showToast(savedToast, undo), 0);
       } else if (result) setError(result);
-      return result === true;
+      return result === true || Boolean(undo);
     });
   };
   return (

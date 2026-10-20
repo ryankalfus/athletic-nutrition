@@ -123,11 +123,19 @@ export function makeFoodRecord(fields, { id = uid(), origin = "manual" } = {}) {
   };
 }
 export function toggleStockOut(item, date) {
+  // Counted down to 0 is already Out: "Back in stock" gives one (UX-BUG-20).
+  if (countedOut(item))
+    return { ...item, availability: "exact", quantity: 1, updatedDate: date };
   if (item.availability === "out") {
     const { previousAvailability, ...rest } = item;
+    const availability = previousAvailability || "have";
     return {
       ...rest,
-      availability: previousAvailability || "have",
+      availability,
+      // A counted item comes back with one, not the 0 it ran out at.
+      ...(availability === "exact" && !(Number(rest.quantity) > 0)
+        ? { quantity: 1 }
+        : {}),
       updatedDate: date,
     };
   }
@@ -921,12 +929,23 @@ export function removeLogEntry(data, date, entryId) {
   const removed = day?.entries.find((entry) => entry.id === entryId);
   if (!removed) throw new Error("This food entry was already removed.");
   undoConsumption(data, entryId);
-  data.operations.push({ id: uid(), type: "remove-log", date, entry: removed });
+  data.operations.push({
+    id: uid(),
+    type: "remove-log",
+    date,
+    entry: removed,
+    createdAt: new Date().toISOString(),
+  });
   day.entries = day.entries.filter((entry) => entry.id !== entryId);
 }
 
+/** An exact count (or a row with no availability) at 0: none left (UX-BUG-20). */
+export const countedOut = (item) =>
+  (!item.availability || item.availability === "exact") &&
+  item.quantity != null &&
+  Number(item.quantity) <= 0;
 export function stockStatus(item) {
-  if (item.availability === "out") return "out";
+  if (item.availability === "out" || countedOut(item)) return "out";
   if (
     item.availability === "low" ||
     ((!item.availability || item.availability === "exact") &&
@@ -935,6 +954,9 @@ export function stockStatus(item) {
     return "low";
   return "have";
 }
+/** The rows At home's "n low or out" counts, each once (UX-BUG-20). */
+export const lowOrOut = (rows) =>
+  rows.filter((row) => stockStatus(row) !== "have");
 export function setStockStatus(item, status, date) {
   if (status === "out")
     return item.availability === "out" ? item : toggleStockOut(item, date);

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { changeData } from "../../store.js";
+import { changeDataUndoable } from "../../store.js";
 import {
   FAMILY_PREP_LABEL,
   FOOD_SOURCES,
@@ -39,6 +39,7 @@ export function AccessSheet({ data, onClose, onNavigate }) {
   return (
     <SettingsSheet
       title="Food access & budget"
+      savedToast="Food access saved."
       dirty={dirty}
       onClose={onClose}
       onSave={async () => {
@@ -48,7 +49,7 @@ export function AccessSheet({ data, onClose, onNavigate }) {
             field: "foodSources",
           };
         if (budget.error) return { message: budget.error, field: "budget" };
-        return changeData((next) => {
+        return changeDataUndoable((next) => {
           next.profile.foodSources = draft.foodSources;
           next.profile.familyPrep = draft.familyPrep;
           next.profile.lowCostIdeas = draft.lowCostIdeas;
@@ -61,7 +62,7 @@ export function AccessSheet({ data, onClose, onNavigate }) {
               ...next.schoolSchedule.foodAccess,
               ...draft.school,
             };
-        }, null);
+        });
       }}
     >
       <ChipGroup

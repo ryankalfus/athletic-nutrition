@@ -139,7 +139,11 @@ export async function transaction(reducer) {
 export async function retryLastWrite() {
   return lastFailedWrite ? lastFailedWrite() : initializeStore();
 }
-export async function changeData(reducer, message = "Saved.", action) {
+// One write to the current athlete's data. Resolves to its Undo (restores the
+// data as it was, if nothing changed since) or false when it was not saved.
+// A settings sheet uses it directly: it closes first (a route change clears
+// toasts), then shows "<Thing> saved." with this Undo (UX-BUG-22).
+export async function changeDataUndoable(reducer) {
   let before;
   const profileId = currentId;
   const ok = await transaction((doc, id) => {
@@ -147,22 +151,25 @@ export async function changeData(reducer, message = "Saved.", action) {
     reducer(doc.profiles[id].data);
   });
   if (!ok) {
-    lastFailedWrite = () => changeData(reducer, message, action);
+    lastFailedWrite = () => changeData(reducer, null);
     return false;
   }
   const revision = snapshot.doc.revision;
-  if (message)
-    showToast(
-      message,
-      async () => {
-        if (currentId !== profileId || snapshot.doc.revision !== revision)
-          return false;
-        return transaction((doc) => {
-          doc.profiles[profileId].data = before;
-        });
-      },
-      action,
-    );
+  return async () => {
+    if (currentId !== profileId || snapshot.doc.revision !== revision)
+      return false;
+    return transaction((doc) => {
+      doc.profiles[profileId].data = before;
+    });
+  };
+}
+export async function changeData(reducer, message = "Saved.", action) {
+  const undo = await changeDataUndoable(reducer);
+  if (!undo) {
+    lastFailedWrite = () => changeData(reducer, message, action);
+    return false;
+  }
+  if (message) showToast(message, undo, action);
   return true;
 }
 export const setField = (field, update, message) =>
@@ -277,13 +284,33 @@ export async function exportBackup({ scope = "current", stamp = false } = {}) {
 export async function renameProfile(id, name) {
   const next = name.replace(/\s+/g, " ").trim().slice(0, 80);
   if (!next) return false;
-  return transaction((doc) => {
+  let before;
+  const ok = await transaction((doc) => {
     const profile = doc.profiles[id];
     if (!profile) throw new Error("This athlete is no longer on this device");
+    before = {
+      name: profile.name,
+      dataName: profile.data.profile.name,
+      fromBackup: profile.fromBackup,
+    };
     profile.name = next;
     profile.data.profile.name = next;
     delete profile.fromBackup;
   });
+  if (!ok) return false;
+  // The Undo that puts the old name back (UX-BUG-22).
+  const revision = snapshot.doc.revision;
+  return async () => {
+    if (snapshot.doc.revision !== revision) return false;
+    return transaction((doc) => {
+      const profile = doc.profiles[id];
+      if (!profile) throw new Error("This athlete is no longer on this device");
+      profile.name = before.name;
+      profile.data.profile.name = before.dataName;
+      if (before.fromBackup !== undefined)
+        profile.fromBackup = before.fromBackup;
+    });
+  };
 }
 export async function startRecoveryProfile() {
   if (!db) return false;

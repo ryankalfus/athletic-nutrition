@@ -99,6 +99,7 @@ export function planMeal(
     previous: old || null,
     previousTasks,
     date,
+    createdAt: new Date().toISOString(),
   });
   return plan;
 }

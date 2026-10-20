@@ -12,6 +12,8 @@ import {
   makeFoodRecord,
   sameProduct,
   stockStatus,
+  countedOut,
+  lowOrOut,
   setStockStatus,
   stepStockCount,
   stockToGroceries,
@@ -63,7 +65,7 @@ export default function HomePage({ todayKey }) {
   const [counts, setCounts] = useState({});
   const [countsAs, setCountsAs] = useState(null);
   const timers = useRef({});
-  const low = rows.filter((i) => stockStatus(i) !== "have");
+  const low = lowOrOut(rows);
   const write = (key, fn, message, action) =>
     run(key, () => changeData(fn, message, action));
   const quick = GROCERY_CATALOG.filter((i) =>
@@ -210,13 +212,15 @@ export default function HomePage({ todayKey }) {
                             </small>
                           )}
                         </div>
-                        {row.availability === "out" &&
-                        row.previousAvailability === "exact" &&
+                        {((row.availability === "out" &&
+                          row.previousAvailability === "exact") ||
+                          countedOut(row)) &&
                         counts[row.id] == null ? (
-                          // Out after an exact count: "Out" and one restock
-                          // step; "Back in stock" lives in the row menu.
+                          // Out after an exact count, or counted down to 0
+                          // (UX-BUG-20): "Out" in the error colour and one
+                          // restock step; "Back in stock" is in the row menu.
                           <div className="stock-amount">
-                            <span>Out</span>
+                            <span className="stock-out">Out</span>
                             <button
                               aria-label={`Increase ${row.name}`}
                               onClick={() => step(row, 1)}
@@ -284,7 +288,7 @@ export default function HomePage({ todayKey }) {
                           items={[
                             {
                               label:
-                                row.availability === "out"
+                                stockStatus(row) === "out"
                                   ? "Back in stock"
                                   : "Mark out",
                               disabled: !!pending,
@@ -479,7 +483,8 @@ export default function HomePage({ todayKey }) {
                 );
                 if (target) target.ingredientId = id;
               },
-              null,
+              // A sheet save, so it toasts with Undo (UX-BUG-22).
+              `Updated ${countsAs.name}.`,
             ).then((ok) => ok && setCountsAs(null))
           }
         />

@@ -261,10 +261,17 @@ async (page) => {
     const countsAs = p.getByRole("dialog", { name: "Counts as?" });
     await countsAs.getByText("Allergies: check every label.").waitFor();
     await countsAs.getByText("Allergens: check the package.").waitFor();
-    await countsAs.getByRole("button", { name: "Skip" }).click();
+    // UX-BUG-22: saving the sheet toasts with Undo.
+    await countsAs.getByRole("combobox").selectOption({ index: 1 });
+    await countsAs.getByRole("button", { name: "Save", exact: true }).click();
     await countsAs.waitFor({ state: "hidden" });
+    const countsToast = p.locator(".app-toast");
+    await countsToast
+      .getByText("Updated Mystery crunch bar.", { exact: true })
+      .waitFor();
+    await countsToast.getByRole("button", { name: "Undo" }).waitFor();
     result.checks.push(
-      "P0-06: At home “Counts as?” for a branded product shows the allergen and label lines.",
+      "P0-06: At home “Counts as?” for a branded product shows the allergen and label lines; saving it toasts “Updated Mystery crunch bar.” with Undo (UX-BUG-22).",
     );
 
     // API fallback mode: search waits for Enter, protecting the limited key.

@@ -341,6 +341,59 @@ async (page) => {
     result.checks.push(
       `CMP-13: ${groceryName} (groceries) and Bananas (At home) edit in the shared FoodDetailsSheet with their own fields and save.`,
     );
+
+    // UX-BUG-20: a count of 0 is Out (error colour), counted in "low or out",
+    // and the menu offers Back in stock (which gives 1 left).
+    const lowBar = () =>
+      p
+        .locator(".low-bar p")
+        .innerText()
+        .then((text) => Number.parseInt(text, 10) || 0);
+    const lowBefore = (await p.locator(".low-bar").count())
+      ? await lowBar()
+      : 0;
+    await homeRow("Bananas")
+      .getByRole("button", { name: "Bananas options" })
+      .click();
+    await homeRow("Bananas")
+      .getByRole("menuitem", { name: "Edit details" })
+      .click();
+    await homeForm.getByRole("spinbutton", { name: "Amount left" }).fill("0");
+    await homeForm.getByRole("button", { name: "Save details" }).click();
+    const outLabel = homeRow("Bananas").getByText("Out", { exact: true });
+    await outLabel.waitFor();
+    if (await homeRow("Bananas").getByText("0 left").count())
+      throw new Error("A count of 0 still reads 0 left");
+    const outColor = await outLabel.evaluate(
+      (node) => getComputedStyle(node).color,
+    );
+    const errorColor = await p.evaluate(() =>
+      getComputedStyle(document.documentElement)
+        .getPropertyValue("--color-error")
+        .trim(),
+    );
+    const rgb = await p.evaluate((hex) => {
+      const probe = document.createElement("span");
+      probe.style.color = hex;
+      document.body.append(probe);
+      const value = getComputedStyle(probe).color;
+      probe.remove();
+      return value;
+    }, errorColor);
+    if (outColor !== rgb)
+      throw new Error(`Out is ${outColor}, not the error colour ${rgb}`);
+    if ((await lowBar()) !== lowBefore + 1)
+      throw new Error(`low or out went from ${lowBefore} to ${await lowBar()}`);
+    await homeRow("Bananas")
+      .getByRole("button", { name: "Bananas options" })
+      .click();
+    await homeRow("Bananas")
+      .getByRole("menuitem", { name: "Back in stock" })
+      .click();
+    await homeRow("Bananas").getByText("1 left").waitFor();
+    result.checks.push(
+      "A count of 0 reads Out in the error colour, adds one to “low or out”, and Back in stock gives 1 left (UX-BUG-20).",
+    );
     return result;
   } catch (e) {
     return {

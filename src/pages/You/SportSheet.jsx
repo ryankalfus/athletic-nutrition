@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { changeData } from "../../store.js";
+import { changeDataUndoable } from "../../store.js";
 import { normalizeSport } from "../../domain/sport.js";
 import { saveSportSeason, sportStepProblem } from "../../domain/setup.js";
 import { SEASONS } from "../../domain/you.js";
@@ -18,15 +18,16 @@ export function SportSheet({ profile, onClose }) {
   return (
     <SettingsSheet
       title="Sport & season"
+      savedToast="Sport & season saved."
       dirty={dirty}
       onClose={onClose}
       values={draft}
       validate={sportStepProblem}
       onSave={() =>
         sportStepProblem(draft) ||
-        changeData((data) => {
+        changeDataUndoable((data) => {
           saveSportSeason(data.profile, draft);
-        }, null)
+        })
       }
     >
       <SportField

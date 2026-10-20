@@ -17,7 +17,11 @@ import {
   weekSentence,
   weekSummary,
 } from "../src/domain/log.js";
-import { makeLog, reviseLogEntry } from "../src/domain/food.js";
+import { makeLog, reviseLogEntry, startingAmount } from "../src/domain/food.js";
+import { portionHint } from "../src/domain/search.js";
+import { normalizeFdcFood } from "../src/usda.js";
+import { SEARCH_FIXTURES } from "./fixtures/food-search.js";
+import { formatAmount } from "../src/format.js";
 import { formatDateRange } from "../src/format.js";
 
 const today = "2026-09-28"; // a Monday
@@ -385,4 +389,25 @@ test("log routes: day, week, dates, and no future dates", () => {
 test("week ranges read 'Sep 22 – 28' and cross months", () => {
   assert.equal(formatDateRange("2026-09-22", "2026-09-28"), "Sep 22 – 28");
   assert.equal(formatDateRange("2026-09-29", "2026-10-05"), "Sep 29 – Oct 5");
+});
+
+// U1-05 (UX-BUG-19): the fixture banana chips' usual portion is 28 g, and
+// logging it stores and shows 28 g. The "1 g" in the U0 capture (p405) came
+// from the capture script, which typed 1 after the amount-0 error state.
+test("Logging the 28 g usual portion of banana chips reads back 28 g", () => {
+  const chips = normalizeFdcFood(
+    SEARCH_FIXTURES.banana.find((row) => row.description === "BANANA CHIPS"),
+  );
+  const hint = portionHint(chips);
+  assert.equal(hint.amount, 28);
+  assert.equal(hint.unit, "g");
+  const amount = startingAmount(chips, null, hint);
+  assert.equal(amount, 28);
+  const entry = makeLog(
+    chips,
+    { amount, unit: hint.unit, override: "" },
+    "2026-10-13",
+  );
+  assert.deepEqual(entry.portion, { amount: 28, unit: "g" });
+  assert.equal(formatAmount(entry.portion.amount, entry.portion.unit), "28 g");
 });

@@ -58,7 +58,7 @@ export default async function ({ browser, pass, cap }) {
     await p.getByRole("dialog").getByRole("button", { name: "Vegetarian" }).click();
     await p.getByRole("dialog").getByRole("button", { name: "Save", exact: true }).click();
     await p.locator(".app-toast").first().waitFor();
-    await shot(p, "global", "toast-without-undo", "Toast 'Saved.' without Undo after saving a You sheet", { kind: "fold", wait: 100 });
+    await shot(p, "global", "toast-without-undo", "Toast '<Thing> saved.' with Undo after saving a You sheet", { kind: "fold", wait: 100 });
     await clearToasts(p);
     await go(p, "you/needs");
     await p.getByRole("dialog").getByRole("button", { name: "Pasta" }).click();
