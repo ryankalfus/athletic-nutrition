@@ -11,11 +11,11 @@ tell the owner. Details live in the linked plan for each step.
 - [x] 4. Product redesign P2: calendar import and links, rest days, water units, Monday card, rule sources, CSS cleanup, journey tests in CI. 2026.10.13
 - [x] 5. UX/UI review U0: screenshots of every screen on computer and phone, three reviews (`docs/ux-review/`). 2026.10.15
 - [x] 6. UX/UI redesign plan written and approved, with decisions A (food art) and B (packed food goes to In my bag) (`UX-REDESIGN-PLAN.md`). 2026.10.20
+- [x] 7. Old lists combined into the trackers (`TODO/REMAINING-APP-CHANGES.md`, `AUDIT/IMPLEMENTATION-CHECKLIST.md`, the §13.8 MVP criteria in `REDESIGN-CHECKLIST.md`): done items ticked with evidence, open ones tracked or moved into the UX plan (UX-SET-08, UX-BUG-22, UX-TEST-07 to UX-TEST-10, build item U10-02). 2026.10.20
 
 ## Next, in order
 
-- [ ] 7. Combine the old lists into the trackers: `TODO/REMAINING-APP-CHANGES.md`, `AUDIT/IMPLEMENTATION-CHECKLIST.md`, the MVP "done" criteria (§13.8 in `REDESIGN-CHECKLIST.md`). Tick what is done with evidence; move what is open into the UX plan.
-- [ ] 8. UX U1: the 21 bugs from the review, guards and test tools.
+- [ ] 8. UX U1: the 22 bugs (21 from the review, plus UX-BUG-22: no Undo on settings saves and At home changes), guards and test tools.
 - [ ] 9. UX U2: design tokens and copy formatting.
 - [ ] 10. UX U3: app frame and the floating glass tab bar.
 - [ ] 11. UX U4: shared components (rows with food art, sections, buttons, fields, controls that replace pills, sheets). **Owner checkpoint: check the new direction before the screens are redone.**
