@@ -8,7 +8,7 @@ Source of truth: [UX-REDESIGN-PLAN.md](UX-REDESIGN-PLAN.md). Read the item there
 
 ## Phase tracker
 
-**Status 2026.10.20:** U0 done (1/1). U1–U10 not started (0/48). Recommendation IDs done: 0 of 225. The 225 are the 218 of the plan, UX-CMP-23 (decision A) and six added on 2026.10.20 when the old lists were reconciled: UX-SET-08, UX-BUG-22 and UX-TEST-07 to UX-TEST-10, with build item U10-02.
+**Status 2026.10.20:** U0 done (1/1). U1 in progress (1/6); U1–U10 1/48. Recommendation IDs done: 4 of 225. The 225 are the 218 of the plan, UX-CMP-23 (decision A) and six added on 2026.10.20 when the old lists were reconciled: UX-SET-08, UX-BUG-22 and UX-TEST-07 to UX-TEST-10, with build item U10-02.
 
 ### U0 — Full review (done 2026.10.15)
 
@@ -16,7 +16,7 @@ Source of truth: [UX-REDESIGN-PLAN.md](UX-REDESIGN-PLAN.md). Read the item there
 
 ### U1 — Bugs, guards and tooling (no visual redesign)
 
-- [ ] **U1-01** — Validation that clears and explains. Closes: UX-BUG-01, UX-BUG-02, UX-BUG-03, UX-BUG-06.
+- [x] **U1-01** — Validation that clears and explains. Closes: UX-BUG-01, UX-BUG-02, UX-BUG-03, UX-BUG-06. Done 2026.10.20: one shared hook (`useFieldValidation` in `FieldError.jsx`, rules in `src/domain/validation.js`) used by setup steps 1–3, the activity sheet, the School day sheet, You sheets and the portion sheet; checks (a) `browser-you.js`, (b)–(d) `browser-setup.js` and `browser-schedule.js`, (e) `browser-log.js` (Edit food and the portion step), (f) `domain.test.js` "Profile save rejects an empty sport"; each browser check failed on the old code. `npm run check` (197 unit tests) and 25/25 browser scripts pass.
 - [ ] **U1-02** — Safe areas on iPhone. Closes: UX-NAV-07, UX-BUG-04.
 - [ ] **U1-03** — Dead ends. Closes: UX-FLOW-05, UX-FLOW-06, UX-FLOW-07, UX-BUG-07, UX-BUG-13, UX-BUG-14, UX-BUG-18.
 - [ ] **U1-04** — Controls that tell the truth. Closes: UX-BUG-15, UX-BUG-16, UX-BUG-17.
@@ -333,12 +333,12 @@ One checkbox per ID. The note names the build item that closes it.
 
 ### Bugs (`UX-BUG`)
 
-- [ ] **UX-BUG-01** — You › Sport & season saves an empty sport. (closes in U1-01)
-- [ ] **UX-BUG-02** — Field errors stay after the value is fixed: setup step 1 Sport (`p007`), step 3 end time (`p012`), Schedule add/edit "End time must be later than start time" with 4:00–5:30 (`p228`, `p229`). (closes in U1-01)
-- [ ] **UX-BUG-03** — Setup step 2: lunch start and end turn red with no message. (closes in U1-01)
+- [x] **UX-BUG-01** — You › Sport & season saves an empty sport. (closes in U1-01) Done 2026.10.20 (U1-01): `browser-you.js`, `domain.test.js`.
+- [x] **UX-BUG-02** — Field errors stay after the value is fixed: setup step 1 Sport (`p007`), step 3 end time (`p012`), Schedule add/edit "End time must be later than start time" with 4:00–5:30 (`p228`, `p229`). (closes in U1-01) Done 2026.10.20 (U1-01): `browser-setup.js` (Sport, Ends), `browser-schedule.js` (Add sheet), `domain.test.js`.
+- [x] **UX-BUG-03** — Setup step 2: lunch start and end turn red with no message. (closes in U1-01) Done 2026.10.20 (U1-01): `browser-setup.js` (message above the Next bar, on both fields' aria-describedby), `browser-schedule.js` (School day sheet).
 - [ ] **UX-BUG-04** — `index.html` viewport meta lacks `viewport-fit=cover`, so every `env(safe-area-inset-*)` in `frame.css` is 0 on iPhones. (closes in U1-02)
 - [ ] **UX-BUG-05** — Plan details sheet offers only Close. (closes in U5-04)
-- [ ] **UX-BUG-06** — Log edit entry and portion step: amount 0 disables Save with no message. (closes in U1-01)
+- [x] **UX-BUG-06** — Log edit entry and portion step: amount 0 disables Save with no message. (closes in U1-01) Done 2026.10.20 (U1-01): `browser-log.js` (Edit food and the portion step), `domain.test.js`.
 - [ ] **UX-BUG-07** — Barcode not found says "Add the food yourself." with no button for it. (closes in U1-03)
 - [ ] **UX-BUG-08** — Travel time wraps between "5:15" and "PM". (closes in U2-02)
 - [ ] **UX-BUG-09** — At 320 px, a meta line wraps so that "· Lunch 11:30 AM" starts the second line with an orphan dot. (closes in U2-02)

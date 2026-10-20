@@ -14,9 +14,9 @@ import {
   getDateKey,
   skipOccurrence,
   sportEventTitle,
-  timeToMinutes,
   weekdayOf,
 } from "../../domain/timing.js";
+import { activityFormProblem } from "../../domain/setup.js";
 import { ActivitySheet } from "./ActivitySheet.jsx";
 
 const weekdayName = (dateKey) =>
@@ -216,38 +216,22 @@ export function useActivityEditor({
   async function saveEvent(event, approvedOverlap = false) {
     event.preventDefault();
     const weekly = editingScope === "weekday" || repeatMode === "weekly";
-    if (endTime <= startTime) {
-      setFormError({
-        message:
-          "End time must be later than start time on the same day. Overnight events are not supported.",
-        field: "endTime",
-      });
-      return;
-    }
-    if (
-      location === "away" &&
-      (!Number.isFinite(Number(travelMinutes)) ||
-        Number(travelMinutes) < 0 ||
-        Number(travelMinutes) > 360)
-    ) {
-      setFormError({
-        message: "Travel time must be between 0 and 360 minutes.",
-        field: "travel",
-      });
-      return;
-    }
-    if (editingScope !== "date" && weekly && !repeatWeekdays.length) {
-      setFormError({
-        message: "Choose at least one repeat day.",
-        field: "repeatDays",
-      });
-      return;
-    }
-    if (editingScope !== "date" && weekly && repeatEndDate < formDate) {
-      setFormError({
-        message: "The repeat end date must be on or after the first activity.",
-        field: "repeatEnd",
-      });
+    // The sheet checks the same rules first (activityFormProblem); this is
+    // the backstop for a save that skips the sheet's check.
+    const problem = activityFormProblem({
+      date: formDate,
+      startTime,
+      endTime,
+      repeatMode: weekly ? "weekly" : "once",
+      repeatEndDate,
+      repeatWeekdays,
+      oneDate: editingScope === "date",
+      firstDate: formDate,
+      location,
+      travelMinutes,
+    });
+    if (problem) {
+      setFormError(problem);
       return;
     }
     const overlap = eventsForDate(events, formDate).find(
@@ -263,17 +247,6 @@ export function useActivityEditor({
           if (await saveEvent({ preventDefault() {} }, true))
             setConfirmation(null);
         },
-      });
-      return;
-    }
-    if (
-      location === "away" &&
-      Number(travelMinutes) > timeToMinutes(startTime)
-    ) {
-      setFormError({
-        message:
-          "Travel cannot begin on the previous day. Adjust the start or travel time.",
-        field: "travel",
       });
       return;
     }
@@ -411,6 +384,7 @@ export function useActivityEditor({
             notes,
             setNotes,
             formError,
+            setFormError,
           }}
         />
       )}

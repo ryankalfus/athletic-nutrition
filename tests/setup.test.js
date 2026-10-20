@@ -69,7 +69,15 @@ test("Step 2: school validation matches Schedule and saves a full school schedul
   );
   assert.equal(
     schoolDayError({ ...DEFAULT_SCHOOL_DAY, lunchEndTime: "16:00" }),
-    "Lunch must fit inside the school day and end after it starts.",
+    "Lunch has to be during school (8:00 AM–3:00 PM).",
+  );
+  assert.equal(
+    schoolDayError({
+      ...DEFAULT_SCHOOL_DAY,
+      lunchStartTime: "12:00",
+      lunchEndTime: "11:30",
+    }),
+    "Lunch has to end after it starts.",
   );
   assert.deepEqual(defaultSchoolYear("2026-09-29"), {
     startDate: "2026-08-15",

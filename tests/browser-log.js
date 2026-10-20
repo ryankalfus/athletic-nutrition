@@ -114,6 +114,20 @@ async (page) => {
     await search.getByText("Usual portion: 1 medium, 118 g").waitFor();
     await search.getByText("Added by you").waitFor();
     await search.getByText("Nutrition details (optional)").waitFor();
+    // UX-BUG-06 on the portion step: Save stays enabled for amount 0.
+    const portionAmount = search.getByRole("spinbutton", {
+      name: "Amount eaten",
+    });
+    const portionSave = search.getByRole("button", {
+      name: "Save",
+      exact: true,
+    });
+    await portionAmount.fill("0");
+    if (await portionSave.isDisabled())
+      throw new Error("Portion Save is disabled for amount 0 (UX-BUG-06)");
+    await portionSave.click();
+    await search.getByText("Enter an amount above 0.").waitFor();
+    await portionAmount.fill("118");
     const time = await search.getByLabel("Time eaten").inputValue();
     if (!/^\d\d:\d\d$/.test(time))
       throw new Error(`No time for today: ${time}`);
@@ -149,7 +163,20 @@ async (page) => {
       .click();
     await row("Bananas").getByRole("menuitem", { name: "Edit" }).click();
     const edit = p.getByRole("dialog", { name: "Edit food" });
+    // UX-BUG-06: amount 0 keeps Save enabled and says why on Save.
+    const amount = edit.getByRole("spinbutton", { name: "Amount eaten" });
+    await amount.fill("0");
+    const editSave = edit.getByRole("button", { name: "Save", exact: true });
+    if (await editSave.isDisabled())
+      throw new Error("Save is disabled for amount 0 (UX-BUG-06)");
+    await editSave.click();
+    await edit.getByText("Enter an amount above 0.").waitFor();
+    if ((await amount.getAttribute("aria-invalid")) !== "true")
+      throw new Error("Amount is not marked invalid");
     await edit.getByRole("spinbutton", { name: "Amount eaten" }).fill("150");
+    await edit
+      .getByText("Enter an amount above 0.")
+      .waitFor({ state: "detached" });
     await edit.getByRole("button", { name: "Save", exact: true }).click();
     await edit.waitFor({ state: "hidden" });
     await row("Bananas").getByText("150 g").waitFor();
@@ -157,7 +184,7 @@ async (page) => {
       throw new Error("Editing changed the entry time");
     await p.getByRole("status").getByText("Updated Bananas.").waitFor();
     result.checks.push(
-      "Editing an entry keeps its time and shows Updated with Undo.",
+      "Edit food with amount 0 keeps Save enabled and shows “Enter an amount above 0.”, cleared by a valid amount (UX-BUG-06); editing keeps the entry's time and shows Updated with Undo.",
     );
 
     // Water: explicit amounts only.

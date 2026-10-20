@@ -3,7 +3,7 @@ import { useAsyncAction } from "../../hooks/useAsyncAction.js";
 import { Dialog, DialogCancel, DialogError } from "../../components/Dialog.jsx";
 import { formatDate, formatTime, plural } from "../../format.js";
 import { timeToMinutes } from "../../domain/timing.js";
-import { missingActivityField } from "../../domain/setup.js";
+import { activityFormProblem } from "../../domain/setup.js";
 import { SegmentedControl } from "../../components/ui/SelectionControls.jsx";
 import { TimeRange, WeekdayPicker } from "./ScheduleFields.jsx";
 import {
@@ -11,6 +11,7 @@ import {
   FieldErrors,
   FormError,
   Input,
+  useFieldValidation,
 } from "../../components/ui/FieldError.jsx";
 export function ActivitySheet({ model }) {
   const initialFocus = useRef(null);
@@ -47,6 +48,7 @@ export function ActivitySheet({ model }) {
     notes,
     setNotes,
     formError,
+    setFormError,
   } = model;
   const weekday = new Intl.DateTimeFormat("en-US", { weekday: "long" }).format(
     new Date(`${selectedKey}T12:00:00`),
@@ -55,7 +57,24 @@ export function ActivitySheet({ model }) {
   // page's selected day, and an empty date or time gets the app's own field
   // error instead of the browser's popup (A11Y-09).
   const [dateDraft, setDateDraft] = useState(selectedKey);
-  const [missing, setMissing] = useState(null);
+  // UX-BUG-02: one error state, checked on Save and kept in step with the
+  // values (an end time fixed after the error clears it at once).
+  const validation = useFieldValidation(
+    {
+      date: dateDraft,
+      startTime,
+      endTime,
+      repeatMode: editingScope === "weekday" ? "weekly" : repeatMode,
+      repeatEndDate,
+      repeatWeekdays,
+      oneDate: editingScope === "date",
+      firstDate: selectedKey,
+      location,
+      travelMinutes,
+    },
+    activityFormProblem,
+    [formError, setFormError],
+  );
   return (
     <Dialog
       title={editingId ? `Edit ${weekday} ${type}` : `Add ${type}`}
@@ -68,22 +87,14 @@ export function ActivitySheet({ model }) {
       <form
         className="schedule-form"
         noValidate
+        onBlur={validation.onBlur}
         onSubmit={(event) => {
           event.preventDefault();
-          const problem = missingActivityField({
-            date: dateDraft,
-            startTime,
-            endTime,
-            repeatMode: editingScope === "weekday" ? "weekly" : repeatMode,
-            repeatEndDate,
-            oneDate: editingScope === "date",
-          });
-          setMissing(problem);
-          if (!problem) run("activity", () => saveEvent(event));
+          if (validation.check()) run("activity", () => saveEvent(event));
         }}
       >
         <div className="schedule-form-scroll">
-          <FieldErrors error={missing || formError}>
+          <FieldErrors error={validation.error}>
             {/* One date of a repeating activity: say so first; its type
                 belongs to the series, so it is not asked again. */}
             {editingScope === "date" && (

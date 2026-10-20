@@ -774,8 +774,10 @@
   margin-left: auto;
 }
 
-/* A dialog's save error sits just above the sticky footer (STATE-02). */
-.app-dialog .inline-error {
+/* A dialog's save error, and a field's message when its field takes focus,
+   sit just above the sticky footer (STATE-02, UX-BUG-03). */
+.app-dialog .inline-error,
+.app-dialog .field-error {
   scroll-margin-bottom: calc(var(--control-height) + 2 * var(--space-4));
 }
 

@@ -319,6 +319,13 @@
   background: var(--color-paper);
 }
 
+/* A field's message scrolls into view above the pinned bar (UX-BUG-03). */
+.setup-step .field-error {
+  scroll-margin-bottom: calc(
+    52px + 2 * var(--space-3) + env(safe-area-inset-bottom) + var(--space-2)
+  );
+}
+
 /* Phones: "Next" is full width between the gutters on every step. */
 .setup-actions > .primary {
   flex: 1 1 auto;

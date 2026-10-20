@@ -1,15 +1,21 @@
 import { useState } from "react";
-import { portionCalories, validPortion } from "../../domain/food.js";
+import { portionCalories } from "../../domain/food.js";
+import { portionFormProblem } from "../../domain/validation.js";
 import { portionHint, sourceLine } from "../../domain/search.js";
 import { APPROX_TIMES, clockTime, entryClock } from "../../domain/log.js";
 import { LabelCheck } from "../../components/ui/LabelCheck.jsx";
-import { DialogCancel, useReportDirty, DialogError } from "../../components/Dialog.jsx";
+import {
+  DialogCancel,
+  useReportDirty,
+  DialogError,
+} from "../../components/Dialog.jsx";
 import {
   FieldError,
   FieldErrors,
   FormError,
   Input,
   useFieldInvalid,
+  useFieldValidation,
 } from "../../components/ui/FieldError.jsx";
 import { SegmentedControl } from "../../components/ui/SelectionControls.jsx";
 
@@ -89,7 +95,13 @@ export function PortionSheet({ food, entry, isToday, onSave, onDirty }) {
     entry && (entry.userAdjusted || !entry.food) ? (entry.calories ?? "") : "",
   );
   const when = useWhen({ entry, isToday });
-  const [error, setError] = useState(null);
+  // UX-BUG-06: Save stays enabled; an amount of 0 says why on Save, and the
+  // message clears as soon as the amount is fixed (UX-BUG-02).
+  const validation = useFieldValidation(
+    { name, amount, unit, override, whenMissing: when.missing },
+    portionFormProblem,
+  );
+  const { error, setError } = validation;
   const [busy, setBusy] = useState(false);
   const calories = portionCalories(food, amount, unit);
   useReportDirty(
@@ -98,26 +110,7 @@ export function PortionSheet({ food, entry, isToday, onSave, onDirty }) {
   );
   async function save(e) {
     e.preventDefault();
-    if (busy) return;
-    if (
-      !name.trim() ||
-      !validPortion(amount, unit) ||
-      (override !== "" &&
-        (!Number.isFinite(Number(override)) ||
-          Number(override) < 0 ||
-          Number(override) > 20000))
-    ) {
-      setError({
-        message:
-          "Check the name and amount. Amount must be above zero, up to 2000 g or ml, or 100 of anything else.",
-        field: name.trim() ? "amount" : "name",
-      });
-      return;
-    }
-    if (when.missing) {
-      setError({ message: "Choose about when you ate it.", field: "when" });
-      return;
-    }
+    if (busy || !validation.check()) return;
     setBusy(true);
     try {
       await onSave({
@@ -133,7 +126,12 @@ export function PortionSheet({ food, entry, isToday, onSave, onDirty }) {
     setBusy(false);
   }
   return (
-    <form className="portion-form" onSubmit={save}>
+    <form
+      className="portion-form"
+      onSubmit={save}
+      onBlur={validation.onBlur}
+      noValidate
+    >
       <FieldErrors error={error}>
         <label>
           Food name
@@ -183,7 +181,8 @@ export function PortionSheet({ food, entry, isToday, onSave, onDirty }) {
           </p>
           <label>
             Use your own calorie number (optional)
-            <input
+            <Input
+              field="override"
               type="number"
               min="0"
               max="20000"
@@ -191,6 +190,7 @@ export function PortionSheet({ food, entry, isToday, onSave, onDirty }) {
               onChange={(e) => setOverride(e.target.value)}
             />
           </label>
+          <FieldError field="override" />
         </details>
         <FormError />
       </FieldErrors>
@@ -200,7 +200,7 @@ export function PortionSheet({ food, entry, isToday, onSave, onDirty }) {
         <button
           aria-busy={busy || undefined}
           className="primary"
-          disabled={busy || !validPortion(amount, unit)}
+          disabled={busy}
         >
           {busy ? "Saving…" : "Save"}
         </button>

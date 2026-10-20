@@ -63,6 +63,7 @@ async (page) => {
     await p.getByRole("button", { name: "+ Add", exact: true }).first().click();
     const sheet = p.getByRole("dialog", { name: "Add practice" });
     await sheet.getByRole("textbox", { name: "Name" }).fill("Practice test");
+    await sheet.getByLabel("Starts").fill("16:00");
     await sheet.getByLabel("Ends").fill("15:00");
     await sheet
       .getByRole("button", { name: "Add practice", exact: true })
@@ -74,8 +75,15 @@ async (page) => {
       (await sheet.getByLabel("Ends").getAttribute("aria-invalid")) !== "true"
     )
       throw new Error("The Ends field is not marked invalid (A11Y-09)");
+    // UX-BUG-02: fixing the end time clears the error without pressing Save.
+    await sheet.getByLabel("Ends").fill("17:30");
+    await sheet
+      .getByText("Overnight events are not supported", { exact: false })
+      .waitFor({ state: "detached" });
+    if (await sheet.getByLabel("Ends").getAttribute("aria-invalid"))
+      throw new Error("Ends stays invalid after it was fixed");
     result.checks.push(
-      "An end time before the start is rejected with the overnight message.",
+      "An end time before the start (4:00 to 3:00 PM) is rejected with the overnight message, and changing Ends to 5:30 PM clears it before Save (UX-BUG-02).",
     );
 
     await sheet.getByLabel("Ends").fill("17:30");
@@ -175,6 +183,17 @@ async (page) => {
     const school = p.getByRole("dialog", { name: "School day" });
     await school.getByLabel("School year starts").fill(inYear(-30));
     await school.getByLabel("School year ends").fill(inYear(120));
+    // UX-BUG-03: the School day sheet uses setup's lunch rule and message.
+    await school.getByLabel("Lunch starts").fill("16:00");
+    await school.getByLabel("Lunch ends").fill("16:30");
+    await school.getByRole("button", { name: "Save school day" }).click();
+    const lunch = school.getByText(
+      "Lunch has to be during school (8:00 AM–3:00 PM).",
+    );
+    await lunch.waitFor();
+    await school.getByLabel("Lunch starts").fill("11:30");
+    await school.getByLabel("Lunch ends").fill("12:00");
+    await lunch.waitFor({ state: "detached" });
     const day = school.getByRole("button", { name: weekday, exact: true });
     if ((await day.getAttribute("aria-pressed")) !== "true") await day.click();
     await school.getByRole("button", { name: "Save school day" }).click();
@@ -196,7 +215,7 @@ async (page) => {
     await p.getByRole("radio", { name: "Week" }).click();
     await today().getByText("School day", { exact: true }).waitFor();
     result.checks.push(
-      `School day saves, today (${todayKey}) can be skipped to No school, and Month view restores it.`,
+      `School day says “Lunch has to be during school (8:00 AM–3:00 PM).” for a 4:00 PM lunch and clears it once lunch is fixed; it saves, today (${todayKey}) can be skipped to No school, and Month view restores it.`,
     );
 
     // ACT-02 / ACT-03 / SCH-09 on a Mon–Fri series next week (Oct 12–16).

@@ -1,5 +1,17 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import {
+  activityFormProblem,
+  saveSportSeason,
+  schoolDayProblem,
+  schoolSheetProblem,
+} from "../src/domain/setup.js";
+import {
+  errorAfterBlur,
+  errorAfterChange,
+  portionAmountProblem,
+  portionFormProblem,
+} from "../src/domain/validation.js";
 import { FOOD_IDEAS, DEFAULT_PROFILE } from "../src/domain/catalog.js";
 import {
   addDays,
@@ -2752,4 +2764,131 @@ test("STATE: changed food needs prompt planned and packed plans, never eaten one
   logPlanAsEaten(data, plan.id);
   assert.equal(plan.status, "eaten");
   assert.equal(planNeedsReview(plan, data.profile), false);
+});
+
+// U1-01 (UX-BUG-01): You › Sport & season uses setup's rule; an empty sport
+// is an error and the stored profile is not changed.
+test("Profile save rejects an empty sport and keeps the stored one", () => {
+  const profile = { sport: "Soccer", season: "in" };
+  assert.deepEqual(saveSportSeason(profile, { sport: "  ", season: "off" }), {
+    message: "Enter your sport.",
+    field: "sport",
+  });
+  assert.deepEqual(profile, { sport: "Soccer", season: "in" });
+  assert.equal(
+    saveSportSeason(profile, { sport: " Swimming ", season: "" }),
+    null,
+  );
+  assert.equal(profile.sport, "Swimming");
+  assert.equal(profile.season, "");
+});
+
+// U1-01 (UX-BUG-02): a field error clears on the first change that makes the
+// field valid; a form error clears on any change; blur re-checks.
+test("Field errors follow the values: clear when fixed, stay while invalid", () => {
+  const sportError = { message: "Enter your sport.", field: "sport" };
+  assert.equal(errorAfterChange(sportError, null), null);
+  assert.equal(errorAfterChange(sportError, sportError), sportError);
+  assert.equal(
+    errorAfterChange(sportError, { message: "Other.", field: "season" }),
+    null,
+  );
+  assert.deepEqual(
+    errorAfterChange(sportError, { message: "Too long.", field: "sport" }),
+    { message: "Too long.", field: "sport", quiet: true },
+  );
+  assert.equal(errorAfterChange("Couldn't save.", sportError), null);
+  assert.equal(errorAfterChange(null, sportError), null);
+  assert.equal(errorAfterBlur(sportError, null), null);
+  assert.equal(errorAfterBlur("Couldn't save.", null), "Couldn't save.");
+  assert.deepEqual(errorAfterBlur(null, sportError), {
+    ...sportError,
+    quiet: true,
+  });
+  const activity = {
+    date: "2026-10-13",
+    startTime: "16:00",
+    endTime: "15:00",
+    repeatMode: "once",
+    repeatEndDate: "2026-12-01",
+    location: "home",
+    travelMinutes: "0",
+  };
+  const ended = activityFormProblem(activity);
+  assert.equal(ended.field, "endTime");
+  assert.match(ended.message, /^End time must be later than start time/);
+  assert.equal(
+    errorAfterChange(
+      ended,
+      activityFormProblem({ ...activity, endTime: "17:30" }),
+    ),
+    null,
+  );
+  assert.equal(
+    activityFormProblem({
+      ...activity,
+      endTime: "17:30",
+      location: "away",
+      travelMinutes: "999",
+    }).field,
+    "travel",
+  );
+});
+
+// U1-01 (UX-BUG-03): the lunch message names the school hours, in setup step 2
+// and the School day sheet alike.
+test("Lunch outside school says when school is", () => {
+  const day = {
+    weekdays: [1, 2, 3, 4, 5],
+    startTime: "08:00",
+    endTime: "15:00",
+    lunchStartTime: "16:00",
+    lunchEndTime: "16:30",
+  };
+  const expected = {
+    message: "Lunch has to be during school (8:00 AM–3:00 PM).",
+    field: "lunch",
+  };
+  assert.deepEqual(schoolDayProblem(day), expected);
+  assert.deepEqual(
+    schoolSheetProblem({ ...day, commuteMinutes: "20", pauseSchool: false }),
+    expected,
+  );
+});
+
+// U1-01 (UX-BUG-06): an amount of 0 has a message, not a disabled Save.
+test("Portion amount above zero, with a message for each limit", () => {
+  assert.deepEqual(portionAmountProblem("0", "g"), {
+    message: "Enter an amount above 0.",
+    field: "amount",
+  });
+  assert.equal(
+    portionAmountProblem("", "g").message,
+    "Enter an amount above 0.",
+  );
+  assert.equal(
+    portionAmountProblem("-3", "piece").message,
+    "Enter an amount above 0.",
+  );
+  assert.equal(portionAmountProblem("28", "g"), null);
+  assert.equal(
+    portionAmountProblem("2500", "g").message,
+    "Enter an amount up to 2,000 g.",
+  );
+  assert.equal(
+    portionAmountProblem("101", "piece").message,
+    "Enter an amount up to 100 pieces.",
+  );
+  const valid = { name: "Bananas", amount: "118", unit: "g", override: "" };
+  assert.equal(portionFormProblem(valid), null);
+  assert.equal(portionFormProblem({ ...valid, amount: "0" }).field, "amount");
+  assert.equal(portionFormProblem({ ...valid, name: " " }).field, "name");
+  assert.equal(
+    portionFormProblem({ ...valid, override: "-1" }).field,
+    "override",
+  );
+  assert.equal(
+    portionFormProblem({ ...valid, whenMissing: true }).field,
+    "when",
+  );
 });

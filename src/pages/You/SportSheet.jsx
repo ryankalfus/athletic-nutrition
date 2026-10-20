@@ -1,12 +1,14 @@
 import { useState } from "react";
 import { changeData } from "../../store.js";
 import { normalizeSport } from "../../domain/sport.js";
+import { saveSportSeason, sportStepProblem } from "../../domain/setup.js";
 import { SEASONS } from "../../domain/you.js";
 import { SportField } from "./SportField.jsx";
 import { SettingsSheet } from "./SettingsSheet.jsx";
 import { SegmentedControl } from "../../components/ui/SelectionControls.jsx";
 
 // You › Sport & season (ADD-09). Names only; no sport-specific nutrition.
+// Sport is required, as in setup step 1 (UX-BUG-01).
 export function SportSheet({ profile, onClose }) {
   const initial = { sport: profile.sport || "", season: profile.season || "" };
   const [draft, setDraft] = useState(initial);
@@ -18,14 +20,17 @@ export function SportSheet({ profile, onClose }) {
       title="Sport & season"
       dirty={dirty}
       onClose={onClose}
+      values={draft}
+      validate={sportStepProblem}
       onSave={() =>
+        sportStepProblem(draft) ||
         changeData((data) => {
-          data.profile.sport = normalizeSport(draft.sport);
-          data.profile.season = draft.season;
+          saveSportSeason(data.profile, draft);
         }, null)
       }
     >
       <SportField
+        required
         value={draft.sport}
         onChange={(sport) => setDraft({ ...draft, sport })}
       />

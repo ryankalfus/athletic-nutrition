@@ -1,7 +1,11 @@
 import { useState } from "react";
 import { Dialog, DialogCancel, DialogError } from "../../components/Dialog.jsx";
 import { Button } from "../../components/ui/Button.jsx";
-import { FieldErrors, FormError } from "../../components/ui/FieldError.jsx";
+import {
+  FieldErrors,
+  FormError,
+  useFieldValidation,
+} from "../../components/ui/FieldError.jsx";
 import { showToast } from "../../components/ui/Toast.jsx";
 import { useAsyncAction } from "../../hooks/useAsyncAction.js";
 
@@ -9,6 +13,8 @@ import { useAsyncAction } from "../../hooks/useAsyncAction.js";
 // on You. Cancel with changes asks "Discard changes?". `onSave` resolves to
 // true on success, a message to show inline, { message, field } for an error
 // under one field, or false when the store already shows its own save error.
+// `values` (the sheet's draft) and `validate` keep an error in step with the
+// fields (UX-BUG-02).
 export function SettingsSheet({
   title,
   dirty,
@@ -19,8 +25,11 @@ export function SettingsSheet({
   savedToast = "Saved.",
   saveLabel = "Save",
   discardMessage = "Your changes to this section aren't saved yet.",
+  values,
+  validate,
 }) {
   const [error, setError] = useState(null);
+  const validation = useFieldValidation(values, validate, [error, setError]);
   const { pending, run } = useAsyncAction();
   const submit = (event) => {
     event.preventDefault();
@@ -50,7 +59,7 @@ export function SettingsSheet({
       discardMessage={discardMessage}
       className={`settings-sheet ${className}`.trim()}
     >
-      <form onSubmit={submit} noValidate>
+      <form onSubmit={submit} onBlur={validation.onBlur} noValidate>
         <FieldErrors error={error}>
           {children}
           <FormError />

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { schoolDayProblem } from "../../domain/setup.js";
+import { schoolSheetProblem } from "../../domain/setup.js";
 import { SchoolDayEditor } from "./SchoolDayEditor.jsx";
 
 const DEFAULT_ACCESS = {
@@ -76,51 +76,32 @@ export function useSchoolEditor({
       `${schoolYearStart + 1}-06-15`,
   );
 
+  // The values the sheet checks (schoolSheetProblem), also used to keep its
+  // error in step with the fields (UX-BUG-02).
+  const sheetValues = () => ({
+    startDate: schoolStartDate,
+    endDate: schoolEndDate,
+    startTime: schoolStartTime,
+    endTime: schoolEndTime,
+    weekdays: schoolWeekdays,
+    lunchStartTime,
+    lunchEndTime,
+    morningSnackTime,
+    afternoonSnackTime,
+    commuteMinutes,
+    pauseSchool,
+    pausedFrom,
+    pausedUntil,
+  });
+
   async function saveSchoolSchedule(event) {
     event.preventDefault();
-    const dayError = schoolDayProblem({
-      startDate: schoolStartDate,
-      endDate: schoolEndDate,
-      startTime: schoolStartTime,
-      endTime: schoolEndTime,
-      weekdays: schoolWeekdays,
-      lunchStartTime,
-      lunchEndTime,
-    });
-    if (dayError) {
-      setSchoolError(dayError);
-      return;
-    }
-    if (
-      [morningSnackTime, afternoonSnackTime].some(
-        (time) => time && (time < schoolStartTime || time > schoolEndTime),
-      )
-    ) {
-      setSchoolError({
-        message: "Optional snack times must fall inside the school day.",
-        field: "snacks",
-      });
+    const problem = schoolSheetProblem(sheetValues());
+    if (problem) {
+      setSchoolError(problem);
       return;
     }
     const parsedCommuteMinutes = Number(commuteMinutes);
-    if (
-      !Number.isFinite(parsedCommuteMinutes) ||
-      parsedCommuteMinutes < 0 ||
-      parsedCommuteMinutes > 180
-    ) {
-      setSchoolError({
-        message: "Commute time must be between 0 and 180 minutes.",
-        field: "commute",
-      });
-      return;
-    }
-    if (pauseSchool && pausedUntil < pausedFrom) {
-      setSchoolError({
-        message: "Pause end must be on or after its start.",
-        field: "pause",
-      });
-      return;
-    }
     const saved = await setSchoolSchedule(
       {
         enabled: true,
@@ -250,6 +231,8 @@ export function useSchoolEditor({
         pausedUntil,
         setPausedUntil,
         schoolError,
+        setSchoolError,
+        sheetValues,
       }}
     />
   ) : null;

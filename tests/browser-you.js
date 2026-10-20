@@ -46,6 +46,50 @@ async (page) => {
       "Sport from welcome names new activities (Soccer practice); the Sport sheet at #/you/sport saves, toasts Saved, and returns to You.",
     );
 
+    // UX-BUG-01: Sport is required here too; an empty Save keeps the sheet.
+    await p.getByRole("link", { name: /^Sport & season — Swimming/ }).click();
+    const required = p.getByRole("dialog", { name: "Sport & season" });
+    const requiredField = required.getByRole("combobox", { name: /^Sport/ });
+    if (/Optional/.test(await required.locator("label").first().innerText()))
+      throw new Error("Sport is labelled Optional in the You sheet");
+    await requiredField.fill("");
+    await requiredField.press("Tab");
+    await required.getByRole("button", { name: "Save", exact: true }).click();
+    await required.getByText("Enter your sport.").waitFor();
+    if (!(await required.isVisible()) || !p.url().endsWith("#/you/sport"))
+      throw new Error("An empty sport closed the sheet");
+    const stored = await p.evaluate(
+      () =>
+        new Promise((resolve, reject) => {
+          const open = indexedDB.open("nourally-v2");
+          open.onerror = () => reject(open.error);
+          open.onsuccess = () => {
+            const get = open.result
+              .transaction("documents")
+              .objectStore("documents")
+              .get("app");
+            get.onsuccess = () => {
+              const doc = get.result;
+              const id = sessionStorage.getItem("nourally-profile-id");
+              resolve(
+                doc.profiles[id || doc.defaultProfileId].data.profile.sport,
+              );
+            };
+          };
+        }),
+    );
+    if (stored !== "Swimming")
+      throw new Error(`The stored sport changed to "${stored}"`);
+    await requiredField.fill("Swimming");
+    await required
+      .getByText("Enter your sport.")
+      .waitFor({ state: "detached" });
+    await required.getByRole("button", { name: "Cancel" }).click();
+    await required.waitFor({ state: "hidden" });
+    result.checks.push(
+      "In #/you/sport an empty Sport shows “Enter your sport.”, keeps the sheet open and leaves the stored sport (Swimming); typing a sport clears it (UX-BUG-01, UX-BUG-02).",
+    );
+
     await p.getByRole("link", { name: /^Food needs & allergies/ }).click();
     const needs = p.getByRole("dialog", { name: "Food needs & allergies" });
     await needs.getByRole("button", { name: "Vegan" }).waitFor();

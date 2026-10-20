@@ -6,7 +6,9 @@ import {
   FieldErrors,
   FormError,
   Input,
+  useFieldValidation,
 } from "../../components/ui/FieldError.jsx";
+import { schoolSheetProblem } from "../../domain/setup.js";
 import { formatDate } from "../../format.js";
 import { ChipGroup } from "../../components/ui/SelectionControls.jsx";
 import { SCHOOL_ACCESS } from "../../domain/you.js";
@@ -62,7 +64,14 @@ export function SchoolDayEditor({ model }) {
     pausedUntil,
     setPausedUntil,
     schoolError,
+    setSchoolError,
+    sheetValues,
   } = model;
+  // UX-BUG-02: a fixed lunch, snack or pause clears its error at once.
+  const validation = useFieldValidation(sheetValues(), schoolSheetProblem, [
+    schoolError,
+    setSchoolError,
+  ]);
   return (
     <>
       <Dialog
@@ -74,6 +83,7 @@ export function SchoolDayEditor({ model }) {
       >
         <form
           className="school-form"
+          onBlur={validation.onBlur}
           onSubmit={(event) => {
             event.preventDefault();
             run("school", () => saveSchoolSchedule(event));

@@ -65,6 +65,53 @@ export function missingActivityField({
   return null;
 }
 
+/**
+ * Every rule the activity sheet checks before it saves (UX-BUG-02): the
+ * missing values first, then the times, travel and repeat days. Overlaps are
+ * a question, not an error, so they are not here.
+ * @param {{date: string, startTime: string, endTime: string, repeatMode: string,
+ *   repeatEndDate: string, repeatWeekdays?: number[], oneDate?: boolean,
+ *   firstDate?: string, location?: string, travelMinutes?: string | number}} fields
+ *   `firstDate` is the day the activity starts (the date field's saved day).
+ */
+export function activityFormProblem(fields) {
+  const missing = missingActivityField(fields);
+  if (missing) return missing;
+  const { startTime, endTime, location, travelMinutes, oneDate } = fields;
+  if (endTime <= startTime)
+    return {
+      message:
+        "End time must be later than start time on the same day. Overnight events are not supported.",
+      field: "endTime",
+    };
+  const travel = Number(travelMinutes);
+  if (
+    location === "away" &&
+    (!Number.isFinite(travel) || travel < 0 || travel > 360)
+  )
+    return {
+      message: "Travel time must be between 0 and 360 minutes.",
+      field: "travel",
+    };
+  const weekly = fields.repeatMode === "weekly";
+  if (!oneDate && weekly && !fields.repeatWeekdays?.length)
+    return { message: "Choose at least one repeat day.", field: "repeatDays" };
+  const first = fields.firstDate || fields.date;
+  if (!oneDate && weekly && first && fields.repeatEndDate < first)
+    return {
+      message: "The repeat end date must be on or after the first activity.",
+      field: "repeatEnd",
+    };
+  const [hours, minutes] = startTime.split(":").map(Number);
+  if (location === "away" && travel > hours * 60 + minutes)
+    return {
+      message:
+        "Travel cannot begin on the previous day. Adjust the start or travel time.",
+      field: "travel",
+    };
+  return null;
+}
+
 // Shared with Schedule's school editor: the same messages for the same rules.
 // The problem names the field so forms can mark and focus it (A11Y-09).
 export function schoolDayProblem(fields) {
@@ -84,16 +131,48 @@ export function schoolDayProblem(fields) {
     };
   if (!fields.weekdays?.length)
     return { message: "Choose at least one school day.", field: "weekdays" };
+  if (!fields.lunchStartTime || !fields.lunchEndTime)
+    return { message: "Choose when lunch starts and ends.", field: "lunch" };
+  // UX-BUG-03: say why, with the school hours it has to fit.
   if (
-    !fields.lunchStartTime ||
-    !fields.lunchEndTime ||
-    fields.lunchEndTime <= fields.lunchStartTime ||
     fields.lunchStartTime < fields.startTime ||
     fields.lunchEndTime > fields.endTime
   )
     return {
-      message: "Lunch must fit inside the school day and end after it starts.",
+      message: `Lunch has to be during school (${formatTime(fields.startTime)}–${formatTime(fields.endTime)}).`,
       field: "lunch",
+    };
+  if (fields.lunchEndTime <= fields.lunchStartTime)
+    return { message: "Lunch has to end after it starts.", field: "lunch" };
+  return null;
+}
+/**
+ * Every rule the School day sheet checks before it saves: the school day
+ * (as setup step 2), then snack times, commute and the pause.
+ * @param {any} fields
+ */
+export function schoolSheetProblem(fields) {
+  const day = schoolDayProblem(fields);
+  if (day) return day;
+  if (
+    [fields.morningSnackTime, fields.afternoonSnackTime].some(
+      (time) => time && (time < fields.startTime || time > fields.endTime),
+    )
+  )
+    return {
+      message: "Optional snack times must fall inside the school day.",
+      field: "snacks",
+    };
+  const commute = Number(fields.commuteMinutes);
+  if (!Number.isFinite(commute) || commute < 0 || commute > 180)
+    return {
+      message: "Commute time must be between 0 and 180 minutes.",
+      field: "commute",
+    };
+  if (fields.pauseSchool && fields.pausedUntil < fields.pausedFrom)
+    return {
+      message: "Pause end must be on or after its start.",
+      field: "pause",
     };
   return null;
 }
@@ -294,6 +373,20 @@ export function sportStepError(draft) {
 export function sportStepProblem(draft) {
   const message = sportStepError(draft);
   return message ? { message, field: "sport" } : null;
+}
+
+/**
+ * You › Sport & season saves with the same rule as setup step 1 (UX-BUG-01):
+ * an empty sport is an error and the profile is left as it was.
+ * @param {any} profile
+ * @param {{sport: string, season: string}} draft
+ */
+export function saveSportSeason(profile, draft) {
+  const problem = sportStepProblem(draft);
+  if (problem) return problem;
+  profile.sport = normalizeSport(draft.sport);
+  profile.season = draft.season;
+  return null;
 }
 
 // Step 6: "Here's your first plan: Soccer practice today at 4:00 PM. Plan a

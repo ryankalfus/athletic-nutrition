@@ -73,6 +73,10 @@ async (page) => {
       throw new Error("Sport error is not tied to the Sport field");
     await p.getByRole("textbox", { name: /First name/ }).fill("Maya");
     await p.getByRole("combobox", { name: /^Sport/ }).fill("Soccer");
+    // UX-BUG-02: the error goes on the first valid change, before Next.
+    await p.locator(".field-error").waitFor({ state: "detached" });
+    if ((await sport.getAttribute("aria-invalid")) === "true")
+      throw new Error("Sport stays invalid after typing Soccer");
     const season = p.getByRole("radiogroup", { name: "Season" });
     await season.getByRole("radio", { name: "In season" }).click();
     await next(p);
@@ -82,16 +86,55 @@ async (page) => {
       (await p.getByRole("progressbar").getAttribute("aria-valuenow")) !== "2"
     )
       throw new Error("Progress does not read step 2");
+    // UX-BUG-03: lunch outside school says why, under both lunch fields, and
+    // the message is not hidden under the pinned Next bar.
+    await p.getByLabel("Lunch starts").fill("16:00");
+    await p.getByLabel("Lunch ends").fill("16:30");
+    await next(p);
+    const lunchMessage = p.getByText(
+      "Lunch has to be during school (8:00 AM–3:00 PM).",
+    );
+    await lunchMessage.waitFor();
+    const lunchId = await lunchMessage.evaluate(
+      (node) => node.parentElement.id,
+    );
+    for (const name of ["Lunch starts", "Lunch ends"]) {
+      const described = await p
+        .getByLabel(name)
+        .getAttribute("aria-describedby");
+      if (!lunchId || !String(described).split(" ").includes(lunchId))
+        throw new Error(`${name} is not described by the lunch message`);
+    }
+    const covered = await lunchMessage.evaluate((node) => {
+      const box = node.getBoundingClientRect();
+      const bar = document
+        .querySelector(".setup-actions")
+        .getBoundingClientRect();
+      return box.bottom > bar.top || box.top < 0;
+    });
+    if (covered) throw new Error("The lunch message is under the Next bar");
+    await p.getByLabel("Lunch starts").fill("11:30");
+    await p.getByLabel("Lunch ends").fill("12:00");
+    await lunchMessage.waitFor({ state: "detached" });
     await next(p);
     await step(p, "Practices and games").waitFor();
     await fits(p, "Step 3");
     const days = p.getByRole("group", { name: "Practice days" });
     await days.getByRole("button", { name: "Tuesday" }).click();
+    // UX-BUG-02 on step 3: an end time fixed after the error clears it.
+    const ends = p.getByLabel("Ends", { exact: true });
+    await ends.fill("15:00");
+    await next(p);
+    const endError = p.getByText("End time must be after start time.");
+    await endError.waitFor();
+    await ends.fill("17:30");
+    await endError.waitFor({ state: "detached" });
     await next(p);
     await step(p, "Food at school").waitFor();
     await fits(p, "Step 4");
     result.checks.push(
       "Get started opens step 1; sport is required; steps 1–4 fit 390 × 844 without scrolling.",
+      "Setup errors clear on the first valid change (Sport on step 1, Ends on step 3) and step 2 says “Lunch has to be during school (8:00 AM–3:00 PM).” above the Next bar, described on both lunch fields (UX-BUG-02, UX-BUG-03).",
     );
 
     await p.reload();
@@ -145,12 +188,9 @@ async (page) => {
 
     await step(p, "Food needs").waitFor();
     await p
-      .getByText(
-        "Allergy filtering coming soon.",
-        {
-          exact: true,
-        },
-      )
+      .getByText("Allergy filtering coming soon.", {
+        exact: true,
+      })
       .waitFor();
     for (const chipName of ["Peanuts", "Milk", "Sesame"])
       if (await p.getByRole("button", { name: chipName, exact: true }).count())

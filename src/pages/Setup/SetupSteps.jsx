@@ -50,6 +50,8 @@ export function SportStep({ data, title, next }) {
     <StepForm
       title={title}
       helper="Nourally uses this to name your sessions and time your snacks."
+      values={draft}
+      validate={sportStepProblem}
       onNext={() => sportStepProblem(draft) || next(save)}
     >
       <label>
@@ -87,6 +89,8 @@ export function SchoolStep({ data, title, next, todayKey }) {
     <StepForm
       title={title}
       helper="Nourally times food around your classes and lunch."
+      values={draft}
+      validate={schoolDayProblem}
       onNext={() =>
         schoolDayProblem(draft) ||
         next((d) => {
@@ -142,6 +146,8 @@ export function PracticesStep({ data, title, next, todayKey }) {
     <StepForm
       title={title}
       helper="No set practices? Skip this. You can add sessions any time."
+      values={draft}
+      validate={activitiesProblem}
       onNext={() =>
         activitiesProblem(draft) ||
         next((d) => {
