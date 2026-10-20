@@ -1,7 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import { LabelCheck } from "./ui/LabelCheck.jsx";
 import { resultSubline } from "../domain/search.js";
-import { lookupBarcode as lookupFoodBarcode } from "../usda.js";
+import {
+  BARCODE_NOT_FOUND,
+  lookupBarcode as lookupFoodBarcode,
+} from "../usda.js";
+import { manualFood } from "../domain/food.js";
 export default function BarcodeScanner({ onAdd, onClose }) {
   const [barcode, setBarcode] = useState("");
   const [product, setProduct] = useState(null);
@@ -224,6 +228,7 @@ export default function BarcodeScanner({ onAdd, onClose }) {
               setLoading(false);
               setBarcode(e.target.value.replace(/\D/g, ""));
               setProduct(null);
+              setError("");
             }}
           />
         </label>
@@ -233,6 +238,21 @@ export default function BarcodeScanner({ onAdd, onClose }) {
         <p className="inline-error" role="alert">
           <span>{error}</span>
         </p>
+      )}
+      {/* UX-BUG-07: not found leads to the add form, with the barcode. */}
+      {error === BARCODE_NOT_FOUND && (
+        <div className="button-row">
+          <button
+            type="button"
+            className="primary"
+            onClick={() => {
+              stopCamera();
+              onAdd(manualFood({ barcode }));
+            }}
+          >
+            Add it yourself
+          </button>
+        </div>
       )}
       {loading && <p role="status">Looking up product…</p>}
       {product && (
@@ -256,6 +276,8 @@ export default function BarcodeScanner({ onAdd, onClose }) {
         is optional; no image is uploaded.
       </p>
       <button
+        type="button"
+        className="text-button"
         onClick={() => {
           stopCamera();
           onClose();

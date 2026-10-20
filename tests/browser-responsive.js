@@ -248,8 +248,7 @@ async (page) => {
     await p.goto(`${base}#/food/groceries`);
     await p.getByRole("button", { name: "Suggest for this week" }).click();
     const week = p.getByRole("dialog", { name: "Add food for this week" });
-    for (const box of await week.getByRole("checkbox").all()) await box.check();
-    await week.getByRole("button", { name: "Add selected" }).click();
+    await week.getByRole("button", { name: /^Add \d+ to list$/ }).click();
     await week.waitFor({ state: "hidden" });
     await p.goto(`${base}#/food/home`);
     await p.getByRole("button", { name: "Add Bananas", exact: true }).click();

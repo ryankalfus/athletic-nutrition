@@ -179,20 +179,14 @@ async (page) => {
     await sheet.waitFor({ state: "detached" });
     await done("import done");
     sheet = await importSheet();
-    await sheet.getByText("20 are already in your schedule.").waitFor();
-    if (
-      !(await sheet.getByRole("button", { name: "Choose events" }).isDisabled())
-    )
+    // UX-FLOW-05: nothing new ends with Done, which closes the sheet.
+    await sheet
+      .getByText("Everything in this calendar is already in your schedule.")
+      .waitFor();
+    if (await sheet.getByRole("button", { name: /^Import \d/ }).count())
       throw new Error("A duplicate re-import still offers to add events");
     await done("duplicate re-import preview");
-    await sheet
-      .getByRole("button", { name: "Close Import team calendar" })
-      .click();
-    const discard = p.getByRole("dialog", { name: "Discard changes?" });
-    if (await discard.isVisible().catch(() => false))
-      await discard
-        .getByRole("button", { name: "Discard", exact: true })
-        .click();
+    await sheet.getByRole("button", { name: "Done", exact: true }).click();
     await sheet.waitFor({ state: "detached" });
     const today = p.getByRole("region", { name: /Tue, Oct 13/ });
     if ((await today.getByText(practice).count()) !== 1)

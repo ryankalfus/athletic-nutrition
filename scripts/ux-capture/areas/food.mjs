@@ -172,10 +172,10 @@ export default async function ({ browser, pass, cap }) {
     await p.getByRole("button", { name: /Suggest for this week/ }).click();
     const s = p.getByRole("dialog", { name: "Add food for this week" });
     await s.waitFor();
-    await shot(p, "groceries", "week-suggestions-sheet", "Add food for this week sheet: suggestions with reasons, none selected");
+    await shot(p, "groceries", "week-suggestions-sheet", "Add food for this week sheet: suggestions with reasons, all selected (Add n to list)");
     const cb = s.getByRole("checkbox");
     for (let i = 0; i < 3; i++) await cb.nth(i).click();
-    await shot(p, "groceries", "week-suggestions-selected", "Suggestions sheet with 3 selected, Add selected enabled", { kind: "fold" });
+    await shot(p, "groceries", "week-suggestions-selected", "Suggestions sheet with 3 unchecked, the count follows", { kind: "fold" });
     await closeAll(p);
     ({ p } = await opener(opened)());
     await seed(p, lived(), "food/groceries");

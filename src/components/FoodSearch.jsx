@@ -4,7 +4,7 @@ import {
   searchFoodDataCentral,
   sentenceCaseFoodName,
 } from "../usda.js";
-import { uid } from "../domain/storage.js";
+import { manualFood } from "../domain/food.js";
 import { GROCERY_CATALOG } from "../domain/catalog.js";
 import { LabelCheck } from "./ui/LabelCheck.jsx";
 import { searchableFavorites } from "../domain/ranking.js";
@@ -320,15 +320,7 @@ export function FoodSearch({
       <div className="search-footer">
         <button
           className="text-button"
-          onClick={() =>
-            onChoose({
-              id: `manual-${uid()}`,
-              name: term || "Food",
-              source: "Manual",
-              nutrients: { calories: null },
-              nutrientBasis: "g",
-            })
-          }
+          onClick={() => onChoose(manualFood({ name: term }))}
         >
           Can’t find it? Add it yourself
         </button>

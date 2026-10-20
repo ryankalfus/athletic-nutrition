@@ -23,6 +23,17 @@ async (page) => {
   const p = await context.newPage();
   p.setDefaultTimeout(15000);
   const result = { checks: [], errors: [] };
+  // UX-FLOW-06: suggestions start checked; keep only the named ones.
+  const keepOnly = async (sheet, names) => {
+    for (const box of await sheet.getByRole("checkbox").all()) {
+      const label = await box.evaluate(
+        (node) => node.closest("label").innerText,
+      );
+      await box.setChecked(
+        names.some((name) => label.startsWith(`${name} · `)),
+      );
+    }
+  };
   p.on("pageerror", (e) => result.errors.push(e.message));
   const toast = (text) =>
     p.locator(".app-toast-region").getByText(text, { exact: true }).waitFor();
@@ -271,17 +282,16 @@ async (page) => {
     if (await ask.isVisible())
       throw new Error("A clean Add food for this week asked to discard");
     await p.getByRole("button", { name: "Suggest for this week" }).click();
-    await week.getByRole("checkbox", { name: /^Bananas · / }).check();
+    await week.getByRole("checkbox", { name: /^Bananas · / }).uncheck();
     await guarded("Add food for this week");
     await p.getByRole("button", { name: "Suggest for this week" }).click();
-    await week.getByRole("checkbox", { name: /^Bananas · / }).check();
-    await week.getByRole("checkbox", { name: /^Pretzels · / }).check();
+    await keepOnly(week, ["Bananas", "Pretzels"]);
     // STATE-02 in a Food sheet too: the error sits above its footer and Try
     // again adds the two items once and closes the sheet.
     await p.evaluate(() => {
       window.__failSaves = true;
     });
-    await week.getByRole("button", { name: "Add selected" }).click();
+    await week.getByRole("button", { name: "Add 2 to list" }).click();
     const weekError = week
       .locator(".inline-error")
       .filter({ hasText: "Not saved:" });
@@ -314,7 +324,7 @@ async (page) => {
       .selectOption({ label: "Bag" });
     await guarded("Put these away?");
     result.checks.push(
-      'Add food for this week and Put these away? close at once when clean, and ask "Discard changes?" on Escape, × and Cancel once changed (DLG-02); a failed Add selected shows its error above the footer and Try again adds the items once and closes the sheet (STATE-02).',
+      'Add food for this week and Put these away? close at once when clean, and ask "Discard changes?" on Escape, × and Cancel once changed (DLG-02); a failed Add 2 to list shows its error above the footer and Try again adds the items once and closes the sheet (STATE-02).',
     );
 
     // DS-11: Undo trip shows the spinner and aria-busy while it saves.

@@ -89,6 +89,10 @@ async (page) => {
       }),
     });
   });
+  // A barcode nobody knows (UX-BUG-07).
+  await context.route("**/api/barcode/**", (route) =>
+    route.fulfill({ status: 404, contentType: "application/json", body: "{}" }),
+  );
   const rows = (dialog) => dialog.locator(".food-results li.food-result-row");
   const openSearch = async () => {
     await p.goto(`${base}#/food/log`);
@@ -277,6 +281,59 @@ async (page) => {
       throw new Error("Enter did not search once");
     result.checks.push(
       "With the live USDA API, search runs on Enter only (one request).",
+    );
+
+    // UX-BUG-18: Add it yourself starts from the search, with no amount.
+    await dialog.getByRole("searchbox").fill("trail mix");
+    await dialog.getByRole("searchbox").press("Enter");
+    await dialog.getByText("No matching foods").waitFor();
+    await dialog.getByRole("button", { name: /Add it yourself/ }).click();
+    const manualName = await dialog
+      .getByRole("textbox", { name: "Food name" })
+      .inputValue();
+    const manualAmount = await dialog
+      .getByRole("spinbutton", { name: "Amount eaten" })
+      .inputValue();
+    if (manualName !== "trail mix" || manualAmount !== "")
+      throw new Error(
+        `Add it yourself pre-filled "${manualName}" and "${manualAmount}"`,
+      );
+    await p.keyboard.press("Escape");
+    const discardManual = p.getByRole("dialog", { name: "Discard changes?" });
+    if (await discardManual.isVisible().catch(() => false))
+      await discardManual
+        .getByRole("button", { name: "Discard", exact: true })
+        .click();
+    await dialog.waitFor({ state: "hidden" });
+    result.checks.push(
+      "“trail mix” with no results → Add it yourself shows name “trail mix” and an empty amount (UX-BUG-18).",
+    );
+
+    // UX-BUG-07: a barcode that is not found leads to the add form.
+    dialog = await openSearch();
+    await dialog.getByRole("button", { name: "Scan barcode" }).click();
+    await dialog.getByLabel("Barcode number").fill("0123456789012");
+    await dialog.getByRole("button", { name: "Look up product" }).click();
+    await dialog
+      .getByText("We couldn't find that barcode.", { exact: false })
+      .waitFor();
+    const addYourself = dialog.getByRole("button", {
+      name: "Add it yourself",
+      exact: true,
+    });
+    if (!(await addYourself.evaluate((n) => n.classList.contains("primary"))))
+      throw new Error("Add it yourself is not the primary after not found");
+    await addYourself.click();
+    if ((await dialog.getByLabel("Barcode").inputValue()) !== "0123456789012")
+      throw new Error("The add form does not carry the barcode");
+    if (
+      await dialog
+        .getByRole("spinbutton", { name: "Amount eaten" })
+        .inputValue()
+    )
+      throw new Error("The add form guessed an amount");
+    result.checks.push(
+      "A barcode that is not found offers a primary Add it yourself whose form has the barcode filled (UX-BUG-07).",
     );
     return result;
   } catch (e) {

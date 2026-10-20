@@ -6,6 +6,17 @@ async (page) => {
   const p = await context.newPage();
   p.setDefaultTimeout(15000);
   const result = { checks: [], errors: [] };
+  // UX-FLOW-06: suggestions start checked; keep only the named ones.
+  const keepOnly = async (sheet, names) => {
+    for (const box of await sheet.getByRole("checkbox").all()) {
+      const label = await box.evaluate(
+        (node) => node.closest("label").innerText,
+      );
+      await box.setChecked(
+        names.some((name) => label.startsWith(`${name} · `)),
+      );
+    }
+  };
   p.on("pageerror", (e) => result.errors.push(e.message));
   const main = () => p.getByRole("main");
   const stock = (name) => p.getByRole("radiogroup", { name: `${name} stock` });
@@ -26,13 +37,22 @@ async (page) => {
     await p.getByRole("heading", { name: "Your list is empty" }).waitFor();
     await p.getByRole("button", { name: "Suggest for this week" }).click();
     const week = p.getByRole("dialog", { name: "Add food for this week" });
-    if (
-      !(await week.getByRole("button", { name: "Add selected" }).isDisabled())
-    )
-      throw new Error("Weekly suggestions start pre-selected");
-    await week.getByRole("checkbox", { name: /^Bananas · / }).check();
-    await week.getByRole("checkbox", { name: /^Pretzels · / }).check();
-    await week.getByRole("button", { name: "Add selected" }).click();
+    // UX-FLOW-06 / UX-BUG-14: every suggestion starts checked and the
+    // primary counts them; unchecking one updates the count.
+    const boxes = week.getByRole("checkbox");
+    await boxes.first().waitFor();
+    const states = await boxes.evaluateAll((nodes) =>
+      nodes.map((n) => n.checked),
+    );
+    if (states.length !== 8 || states.includes(false))
+      throw new Error(`Suggestions do not start all checked: ${states}`);
+    const addCount = week.getByRole("button", { name: "Add 8 to list" });
+    if (await addCount.isDisabled())
+      throw new Error("Add 8 to list is disabled");
+    await boxes.first().uncheck();
+    await week.getByRole("button", { name: "Add 7 to list" }).waitFor();
+    await keepOnly(week, ["Bananas", "Pretzels"]);
+    await week.getByRole("button", { name: "Add 2 to list" }).click();
     await week.waitFor({ state: "hidden" });
     const thisWeek = p.getByRole("region", { name: "For this week" });
     await thisWeek.getByRole("checkbox", { name: "Got Bananas" }).waitFor();
@@ -40,7 +60,7 @@ async (page) => {
     if ((await main().innerText()).includes("$"))
       throw new Error("Groceries shows $ with price estimates off");
     result.checks.push(
-      "Add food for this week starts unchecked and adds the chosen staples; no $ with price estimates off.",
+      "Add food for this week opens with all 8 suggestions checked and “Add 8 to list”; unchecking one reads “Add 7 to list” (UX-BUG-14); it adds the chosen staples; no $ with price estimates off.",
     );
 
     await p.getByRole("checkbox", { name: "Got Bananas" }).click();

@@ -6,6 +6,17 @@ async (page) => {
   const base = globalThis.BASE_URL ?? "http://127.0.0.1:5173/";
   const browser = page.context().browser();
   const result = { checks: [], errors: [] };
+  // UX-FLOW-06: suggestions start checked; keep only the named ones.
+  const keepOnly = async (sheet, names) => {
+    for (const box of await sheet.getByRole("checkbox").all()) {
+      const label = await box.evaluate(
+        (node) => node.closest("label").innerText,
+      );
+      await box.setChecked(
+        names.some((name) => label.startsWith(`${name} · `)),
+      );
+    }
+  };
   const pad = (n) => String(n).padStart(2, "0");
   const key = (d) =>
     `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
@@ -202,9 +213,8 @@ async (page) => {
       throw new Error("Share list shows for an empty grocery list");
     await q.getByRole("button", { name: "Suggest for this week" }).click();
     const week = q.getByRole("dialog", { name: "Add food for this week" });
-    await week.getByRole("checkbox", { name: /^Bananas · / }).check();
-    await week.getByRole("checkbox", { name: /^Pretzels · / }).check();
-    await week.getByRole("button", { name: "Add selected" }).click();
+    await keepOnly(week, ["Bananas", "Pretzels"]);
+    await week.getByRole("button", { name: "Add 2 to list" }).click();
     await week.waitFor({ state: "hidden" });
     await q.getByRole("checkbox", { name: "Got Pretzels" }).click();
     await q.getByRole("button", { name: "Share list: Groceries" }).click();

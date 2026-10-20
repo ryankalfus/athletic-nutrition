@@ -122,16 +122,20 @@ async (page) => {
     await sheet.waitFor({ state: "detached" });
     sheet = await openImport();
     await sheet.getByLabel("Calendar file (.ics)").setInputFiles(teamsnap);
-    await sheet.getByText("20 are already in your schedule.").waitFor();
-    if (
-      !(await sheet.getByRole("button", { name: "Choose events" }).isDisabled())
-    )
-      throw new Error("A third import still offers to add events");
+    // UX-FLOW-05 / UX-BUG-13: nothing new says so and ends with an
+    // enabled Done that closes the sheet (no Back, no disabled button).
     await sheet
-      .getByRole("button", { name: "Close Import team calendar" })
-      .click();
-    const discard = p.getByRole("dialog", { name: "Discard changes?" });
-    await discard.getByRole("button", { name: "Discard", exact: true }).click();
+      .getByText("Everything in this calendar is already in your schedule.")
+      .waitFor();
+    const footer = sheet.locator(".schedule-form-footer");
+    if ((await footer.getByRole("button").allInnerTexts()).join() !== "Done")
+      throw new Error("A third import still offers more than Done");
+    const doneButton = footer.getByRole("button", {
+      name: "Done",
+      exact: true,
+    });
+    if (await doneButton.isDisabled()) throw new Error("Done is disabled");
+    await doneButton.click();
     await sheet.waitFor({ state: "detached" });
     await p.getByRole("button", { name: /^Next week/ }).click();
     if (
@@ -142,7 +146,7 @@ async (page) => {
     )
       throw new Error("Tue, Oct 20 has a duplicate practice");
     result.checks.push(
-      "A second import of the same file flags 19 duplicates and adds only the one left out; a third adds nothing.",
+      "A second import of the same file flags 19 duplicates and adds only the one left out; a third says “Everything in this calendar is already in your schedule.” and an enabled Done closes it (UX-BUG-13).",
     );
 
     // --- P2-02: subscription link through the server, refresh on open ---

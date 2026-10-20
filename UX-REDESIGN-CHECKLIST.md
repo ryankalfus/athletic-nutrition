@@ -8,7 +8,7 @@ Source of truth: [UX-REDESIGN-PLAN.md](UX-REDESIGN-PLAN.md). Read the item there
 
 ## Phase tracker
 
-**Status 2026.10.20:** U0 done (1/1). U1 in progress (2/6); U1–U10 2/48. Recommendation IDs done: 6 of 225. The 225 are the 218 of the plan, UX-CMP-23 (decision A) and six added on 2026.10.20 when the old lists were reconciled: UX-SET-08, UX-BUG-22 and UX-TEST-07 to UX-TEST-10, with build item U10-02.
+**Status 2026.10.20:** U0 done (1/1). U1 in progress (3/6); U1–U10 3/48. Recommendation IDs done: 13 of 225. The 225 are the 218 of the plan, UX-CMP-23 (decision A) and six added on 2026.10.20 when the old lists were reconciled: UX-SET-08, UX-BUG-22 and UX-TEST-07 to UX-TEST-10, with build item U10-02.
 
 ### U0 — Full review (done 2026.10.15)
 
@@ -18,7 +18,7 @@ Source of truth: [UX-REDESIGN-PLAN.md](UX-REDESIGN-PLAN.md). Read the item there
 
 - [x] **U1-01** — Validation that clears and explains. Closes: UX-BUG-01, UX-BUG-02, UX-BUG-03, UX-BUG-06. Done 2026.10.20: one shared hook (`useFieldValidation` in `FieldError.jsx`, rules in `src/domain/validation.js`) used by setup steps 1–3, the activity sheet, the School day sheet, You sheets and the portion sheet; checks (a) `browser-you.js`, (b)–(d) `browser-setup.js` and `browser-schedule.js`, (e) `browser-log.js` (Edit food and the portion step), (f) `domain.test.js` "Profile save rejects an empty sport"; each browser check failed on the old code. `npm run check` (197 unit tests) and 25/25 browser scripts pass.
 - [x] **U1-02** — Safe areas on iPhone. Closes: UX-NAV-07, UX-BUG-04. Done 2026.10.20: `index.html` viewport is `width=device-width, initial-scale=1, viewport-fit=cover`; the top bar, the desktop rail, the sticky setup header and the no-top-bar shell pad by `env(safe-area-inset-top)`, and sticky rows under the top bar (Food sections, Log day switcher, Schedule week switcher) move down by it. `tests/styles.test.js` "U1-02" (failed before the fix) checks the meta and every sticky or fixed top rule; `browser-shared-ui.js` checks the live meta and an unchanged 56 px bar. `npm run check` (198 unit tests) and 25/25 browser scripts pass.
-- [ ] **U1-03** — Dead ends. Closes: UX-FLOW-05, UX-FLOW-06, UX-FLOW-07, UX-BUG-07, UX-BUG-13, UX-BUG-14, UX-BUG-18.
+- [x] **U1-03** — Dead ends. Closes: UX-FLOW-05, UX-FLOW-06, UX-FLOW-07, UX-BUG-07, UX-BUG-13, UX-BUG-14, UX-BUG-18. Done 2026.10.20: (a) a not-found barcode shows a primary Add it yourself whose form carries the barcode (`browser-search.js`); (b) "trail mix" with no results → Add it yourself shows name "trail mix" and an empty amount (`browser-search.js`, `domain.test.js` `manualFood`/`startingAmount`); (c) a third import of the same `.ics` says "Everything in this calendar is already in your schedule." with an enabled Done that closes the sheet (`browser-calendar-import.js`, `browser-journey.js`); (d) the suggestions sheet opens with all 8 checked and "Add 8 to list", unchecking one reads "Add 7 to list" (`browser-food-workflow.js`). Each check failed on the old code. `npm run check` (199 unit tests) and 25/25 browser scripts pass.
 - [ ] **U1-04** — Controls that tell the truth. Closes: UX-BUG-15, UX-BUG-16, UX-BUG-17.
 - [ ] **U1-05** — Data correctness and the undo ledger. Closes: UX-BUG-19, UX-BUG-20, UX-BUG-22. Also closes (REDESIGN-CHECKLIST): KEEP-15 and the §13.8 line "Every write gives feedback; every reversible write offers Undo".
 - [ ] **U1-06** — Capture harness, seed names and the rules check. Closes: UX-TEST-01, UX-TEST-02, UX-TEST-03. Also closes (REDESIGN-CHECKLIST): COPY-38.
@@ -321,9 +321,9 @@ One checkbox per ID. The note names the build item that closes it.
 - [ ] **UX-FLOW-02** — The hero follows the plan. (closes in U5-01)
 - [ ] **UX-FLOW-03** — Evening checklist where the hero is. (closes in U5-03)
 - [ ] **UX-FLOW-04** — Schedule opens on the week. (closes in U6-01)
-- [ ] **UX-FLOW-05** — Re-import ends with Done. (closes in U1-03)
-- [ ] **UX-FLOW-06** — Suggestions start selected. (closes in U1-03)
-- [ ] **UX-FLOW-07** — Barcode not found leads somewhere. (closes in U1-03)
+- [x] **UX-FLOW-05** — Re-import ends with Done. (closes in U1-03) Done 2026.10.20 (U1-03): `browser-calendar-import.js`, `browser-journey.js`.
+- [x] **UX-FLOW-06** — Suggestions start selected. (closes in U1-03) Done 2026.10.20 (U1-03): `browser-food-workflow.js`.
+- [x] **UX-FLOW-07** — Barcode not found leads somewhere. (closes in U1-03) Done 2026.10.20 (U1-03): `browser-search.js`.
 - [ ] **UX-FLOW-08** — Empty Groceries leads with the suggestion. (closes in U7-04)
 - [ ] **UX-FLOW-09** — Setup has one way forward. (closes in U8-02)
 - [ ] **UX-FLOW-10** — No duplicate Schedule entry on Today. (closes in U5-02)
@@ -339,18 +339,18 @@ One checkbox per ID. The note names the build item that closes it.
 - [x] **UX-BUG-04** — `index.html` viewport meta lacks `viewport-fit=cover`, so every `env(safe-area-inset-*)` in `frame.css` is 0 on iPhones. (closes in U1-02) Done 2026.10.20 (U1-02): `tests/styles.test.js` "U1-02".
 - [ ] **UX-BUG-05** — Plan details sheet offers only Close. (closes in U5-04)
 - [x] **UX-BUG-06** — Log edit entry and portion step: amount 0 disables Save with no message. (closes in U1-01) Done 2026.10.20 (U1-01): `browser-log.js` (Edit food and the portion step), `domain.test.js`.
-- [ ] **UX-BUG-07** — Barcode not found says "Add the food yourself." with no button for it. (closes in U1-03)
+- [x] **UX-BUG-07** — Barcode not found says "Add the food yourself." with no button for it. (closes in U1-03) Done 2026.10.20 (U1-03): `browser-search.js`.
 - [ ] **UX-BUG-08** — Travel time wraps between "5:15" and "PM". (closes in U2-02)
 - [ ] **UX-BUG-09** — At 320 px, a meta line wraps so that "· Lunch 11:30 AM" starts the second line with an orphan dot. (closes in U2-02)
 - [ ] **UX-BUG-10** — Toasts cover content and actions: prompt buttons (`p126`, `p152`, `p531`), "Everything's checked" line (`p360`), the footer (`p318`). (closes in U3-04)
 - [ ] **UX-BUG-11** — The footer line is clipped behind the tab bar at the end of You. (closes in U3-01)
 - [ ] **UX-BUG-12** — Controls clip with no scroll cue: Ideas moment tray "To…" (`p301`), Quick add "Frozen b" (`p332`), 320 px tabs (`p709`). (closes in U7-01)
-- [ ] **UX-BUG-13** — Duplicate re-import ends on a disabled button with only Back. (closes in U1-03)
-- [ ] **UX-BUG-14** — Week suggestions open with nothing selected and the primary disabled. (closes in U1-03)
+- [x] **UX-BUG-13** — Duplicate re-import ends on a disabled button with only Back. (closes in U1-03) Done 2026.10.20 (U1-03): `browser-calendar-import.js`, `browser-journey.js`.
+- [x] **UX-BUG-14** — Week suggestions open with nothing selected and the primary disabled. (closes in U1-03) Done 2026.10.20 (U1-03): `browser-food-workflow.js`.
 - [ ] **UX-BUG-15** — Reminders: with permission denied or unsupported, the master switch is disabled but "How long before" and the evening checkbox look active. (closes in U1-04)
 - [ ] **UX-BUG-16** — Opening a sheet puts a visible focus ring on its X. (closes in U1-04)
 - [ ] **UX-BUG-17** — Delete-scope dialog makes "Delete all" the filled button and "only this day" outlined. (closes in U1-04)
-- [ ] **UX-BUG-18** — "Add it yourself" pre-fills the name "Food" and 100 g. (closes in U1-03)
+- [x] **UX-BUG-18** — "Add it yourself" pre-fills the name "Food" and 100 g. (closes in U1-03) Done 2026.10.20 (U1-03): `browser-search.js`, `domain.test.js`.
 - [ ] **UX-BUG-19** — After logging the 28 g usual portion of banana chips, the entry reads "1 g". (closes in U1-05)
 - [ ] **UX-BUG-20** — At home "0 left" rows are not treated as Out: the summary counts them, the row looks in stock. (closes in U1-05)
 - [ ] **UX-BUG-21** — Ideas shows the planned idea twice: in the planned card and again in the list with "Plan this". (closes in U7-02)

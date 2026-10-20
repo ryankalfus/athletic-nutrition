@@ -307,9 +307,7 @@ async (page) => {
       const week = p.getByRole("dialog", { name: "Add food for this week" });
       await week.waitFor();
       await scan("Add food for this week sheet", width);
-      for (const box of await week.getByRole("checkbox").all())
-        await box.check();
-      await week.getByRole("button", { name: "Add selected" }).click();
+      await week.getByRole("button", { name: /^Add \d+ to list$/ }).click();
       await week.waitFor({ state: "hidden" });
       await scan("Groceries", width);
     });

@@ -6,6 +6,7 @@ import {
   schoolDayProblem,
   schoolSheetProblem,
 } from "../src/domain/setup.js";
+import { manualFood, startingAmount } from "../src/domain/food.js";
 import {
   errorAfterBlur,
   errorAfterChange,
@@ -2890,5 +2891,28 @@ test("Portion amount above zero, with a message for each limit", () => {
   assert.equal(
     portionFormProblem({ ...valid, whenMissing: true }).field,
     "when",
+  );
+});
+
+// U1-03 (UX-BUG-07, UX-BUG-18): a hand-added food is named after the search,
+// carries a not-found barcode, and starts with no amount.
+test("Add it yourself starts from the search or barcode with no amount", () => {
+  const typed = manualFood({ name: " trail mix " });
+  assert.equal(typed.name, "trail mix");
+  assert.equal(typed.source, "Manual");
+  assert.equal("barcode" in typed, false);
+  assert.equal(startingAmount(typed, null, null), "");
+  const scanned = manualFood({ barcode: "0123456789012" });
+  assert.equal(scanned.name, "");
+  assert.equal(scanned.barcode, "0123456789012");
+  assert.equal(startingAmount(scanned, null, null), "");
+  assert.notEqual(typed.id, scanned.id);
+  // Search results and quick basics keep their usual portion or 100 g.
+  assert.equal(startingAmount({ name: "Rice" }, null, { amount: 45 }), 45);
+  assert.equal(startingAmount({ name: "Rice" }, null, null), 100);
+  // An edit keeps the logged amount.
+  assert.equal(
+    startingAmount(typed, { portion: { amount: 28, unit: "g" } }, null),
+    28,
   );
 });

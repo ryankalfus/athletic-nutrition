@@ -81,8 +81,9 @@ await step("week suggestions", async () => {
   await s.waitFor();
   console.log((await s.innerText()).slice(0, 1500));
   const cb = s.getByRole("checkbox");
-  for (let i = 0; i < Math.min(6, await cb.count()); i++) await cb.nth(i).click();
-  await s.getByRole("button", { name: /Add selected/ }).click();
+  // Suggestions start checked (UX-FLOW-06): keep the first 6.
+  for (let i = 6; i < (await cb.count()); i++) await cb.nth(i).uncheck();
+  await s.getByRole("button", { name: /^Add \d+ to list$/ }).click();
   await p.waitForTimeout(500);
   await clearToasts(p);
   console.log((await p.locator("main").innerText()).slice(0, 2000));

@@ -197,7 +197,7 @@ export default async function ({ browser, pass, cap }) {
     await sheet.getByLabel("Calendar file (.ics)").setInputFiles(fixturePath("teamsnap-lightning-u14.ics"));
     await sheet.getByText(/already in your schedule/).first().waitFor();
     await settle(p, 300);
-    await shot(p, "import-duplicates", "Re-import of the same file: 'are already in your schedule', Choose events disabled");
+    await shot(p, "import-duplicates", "Re-import of the same file: 'Everything in this calendar is already in your schedule.' with Done");
     await closeAll(p);
     sheet = await open();
     await sheet.getByRole("radio", { name: "Link" }).click();

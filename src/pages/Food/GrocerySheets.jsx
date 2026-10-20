@@ -84,11 +84,13 @@ export function PutAwaySheet({ items, pantry, pending, onDirty, onConfirm }) {
   );
 }
 
-/** "Add food for this week": suggestions start unchecked (J6 step 7). */
+/** "Add food for this week": every suggestion starts checked and the button
+ * counts them, "Add 8 to list" (UX-FLOW-06; replaces J6 step 7's unchecked
+ * start, which opened on a disabled button). */
 export function WeekIdeasSheet({ ideas, summary, pending, onDirty, onAdd }) {
-  const [selected, setSelected] = useState([]);
-  // A checked suggestion asks "Discard changes?" before closing (DLG-02).
-  useReportDirty(selected.length > 0 ? "dirty" : "", onDirty);
+  const [selected, setSelected] = useState(() => ideas.map((i) => i.id));
+  // An unchecked suggestion asks "Discard changes?" before closing (DLG-02).
+  useReportDirty(selected.length === ideas.length ? "" : "dirty", onDirty);
   return (
     <form
       className="grocery-sheet"
@@ -126,14 +128,24 @@ export function WeekIdeasSheet({ ideas, summary, pending, onDirty, onAdd }) {
       </ul>
       <DialogError />
       <div className="sheet-footer">
-        <DialogCancel disabled={pending} />
-        <button
-          aria-busy={pending || undefined}
-          className="primary"
-          disabled={!selected.length || pending}
-        >
-          {pending ? "Adding…" : "Add selected"}
-        </button>
+        {ideas.length ? (
+          <>
+            <DialogCancel disabled={pending} />
+            <button
+              aria-busy={pending || undefined}
+              className="primary"
+              disabled={!selected.length || pending}
+            >
+              {pending
+                ? "Adding…"
+                : selected.length
+                  ? `Add ${selected.length} to list`
+                  : "Add to list"}
+            </button>
+          </>
+        ) : (
+          <DialogCancel variant="primary">Done</DialogCancel>
+        )}
       </div>
     </form>
   );

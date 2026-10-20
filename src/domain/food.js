@@ -744,6 +744,40 @@ export function groceryTrips(purchases) {
   }
   return [...trips.values()];
 }
+/**
+ * A food the athlete adds by hand from search or a barcode that was not found
+ * (UX-BUG-07, UX-BUG-18): named after the search (or blank), carrying the
+ * barcode when there is one, and with no amount guessed for it.
+ * @param {{name?: string, barcode?: string}} [details]
+ */
+export function manualFood({ name = "", barcode = "" } = {}) {
+  return {
+    id: `manual-${uid()}`,
+    name: String(name).trim(),
+    source: "Manual",
+    manualEntry: true,
+    nutrients: { calories: null },
+    nutrientBasis: "g",
+    ...(barcode ? { barcode } : {}),
+  };
+}
+
+/**
+ * The amount the portion sheet starts with: the entry's, else the usual
+ * portion, else nothing for a hand-added food (UX-BUG-18), else 100 (per 100 g).
+ * @param {any} food
+ * @param {any} [entry]
+ * @param {{amount: number} | null} [hint]
+ */
+export function startingAmount(food, entry, hint) {
+  return (
+    entry?.portion?.amount ??
+    entry?.servingGrams ??
+    hint?.amount ??
+    (food?.manualEntry ? "" : 100)
+  );
+}
+
 export function validPortion(amount, unit = "g") {
   return (
     ["g", "ml", "portion", "package", "piece"].includes(unit) &&

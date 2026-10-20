@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { portionCalories } from "../../domain/food.js";
+import { portionCalories, startingAmount } from "../../domain/food.js";
 import { portionFormProblem } from "../../domain/validation.js";
 import { portionHint, sourceLine } from "../../domain/search.js";
 import { APPROX_TIMES, clockTime, entryClock } from "../../domain/log.js";
@@ -81,8 +81,8 @@ export function PortionSheet({ food, entry, isToday, onSave, onDirty }) {
   const [name, setName] = useState(
     entry?.name || food.displayName || food.name,
   );
-  const [amount, setAmount] = useState(
-    entry?.portion?.amount ?? entry?.servingGrams ?? hint?.amount ?? 100,
+  const [amount, setAmount] = useState(() =>
+    startingAmount(food, entry, hint),
   );
   const [unit, setUnit] = useState(
     entry?.portion?.unit ||
@@ -144,6 +144,13 @@ export function PortionSheet({ food, entry, isToday, onSave, onDirty }) {
           />
         </label>
         <FieldError field="name" />
+        {/* A barcode that was not found comes along (UX-BUG-07). */}
+        {food.manualEntry && food.barcode && (
+          <label>
+            Barcode
+            <input value={food.barcode} readOnly inputMode="numeric" />
+          </label>
+        )}
         {hint && <p className="muted">Usual portion: {hint.label}</p>}
         <div className="form-grid">
           <label>

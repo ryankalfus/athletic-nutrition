@@ -120,6 +120,9 @@ export function ImportSheet({ events, subscriptions = [], todayKey, onClose }) {
   const rows = preview?.rows || [];
   const chosen = rows.filter((row) => choices[row.key]?.selected);
   const duplicates = rows.filter((row) => row.duplicate).length;
+  // UX-FLOW-05: a file or link with nothing new ends with Done, not a
+  // disabled button.
+  const nothingNew = rows.length > 0 && duplicates === rows.length;
   const allDay = rows.filter((row) => row.allDay && !row.duplicate).length;
   const name =
     preview?.calendarName ||
@@ -285,11 +288,15 @@ export function ImportSheet({ events, subscriptions = [], todayKey, onClose }) {
                 </strong>{" "}
                 from {name}.
               </p>
-              {duplicates > 0 && (
-                <p>
-                  {duplicates} {duplicates === 1 ? "is" : "are"} already in your
-                  schedule.
-                </p>
+              {nothingNew ? (
+                <p>Everything in this calendar is already in your schedule.</p>
+              ) : (
+                duplicates > 0 && (
+                  <p>
+                    {duplicates} {duplicates === 1 ? "is" : "are"} already in
+                    your schedule.
+                  </p>
+                )
               )}
               {allDay > 0 && (
                 <p>
@@ -385,25 +392,33 @@ export function ImportSheet({ events, subscriptions = [], todayKey, onClose }) {
           </div>
           <DialogError />
           <div className="schedule-form-footer">
-            <Button
-              onClick={() => {
-                setPreview(null);
-                setSource(null);
-              }}
-            >
-              Back
-            </Button>
-            <Button
-              variant="primary"
-              type="submit"
-              disabled={!chosen.length}
-              busy={pending === "save"}
-              busyLabel="Importing…"
-            >
-              {chosen.length
-                ? `Import ${chosen.length} ${plural(chosen.length, "event")}`
-                : "Choose events"}
-            </Button>
+            {nothingNew ? (
+              <Button variant="primary" onClick={onClose}>
+                Done
+              </Button>
+            ) : (
+              <>
+                <Button
+                  onClick={() => {
+                    setPreview(null);
+                    setSource(null);
+                  }}
+                >
+                  Back
+                </Button>
+                <Button
+                  variant="primary"
+                  type="submit"
+                  disabled={!chosen.length}
+                  busy={pending === "save"}
+                  busyLabel="Importing…"
+                >
+                  {chosen.length
+                    ? `Import ${chosen.length} ${plural(chosen.length, "event")}`
+                    : "Choose events"}
+                </Button>
+              </>
+            )}
           </div>
         </form>
       )}
