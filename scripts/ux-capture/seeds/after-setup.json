@@ -1,0 +1,127 @@
+{
+ "version": 3,
+ "revision": 7,
+ "defaultProfileId": "acaa8402-60a1-4dac-ae1b-b65f1c9deba8",
+ "profiles": {
+  "acaa8402-60a1-4dac-ae1b-b65f1c9deba8": {
+   "id": "acaa8402-60a1-4dac-ae1b-b65f1c9deba8",
+   "name": "Athlete",
+   "email": "",
+   "data": {
+    "step": "dashboard",
+    "setupStep": 6,
+    "lastUsedAt": "2026-10-13T11:00:00.000Z",
+    "profile": {
+     "name": "Maya",
+     "budget": "standard",
+     "dietaryNeeds": [],
+     "foodSources": [
+      "packed",
+      "cafeteria",
+      "home"
+     ],
+     "familyPrep": true,
+     "sport": "Soccer",
+     "season": "in",
+     "dislikes": [],
+     "allergies": [],
+     "lowCostIdeas": false,
+     "lastBackupAt": null,
+     "units": "oz",
+     "lastWeekHidden": null
+    },
+    "schedule": [
+     {
+      "id": "7779db83-ec12-43c1-97d6-842b79e98713",
+      "type": "practice",
+      "title": "Soccer practice",
+      "startTime": "16:00",
+      "endTime": "17:30",
+      "location": "home",
+      "intensity": "medium",
+      "travelMinutes": 0,
+      "notes": "",
+      "setupSource": "practice",
+      "recurrence": {
+       "startDate": "2026-10-13",
+       "endDate": "2027-06-15",
+       "weekdays": [
+        1,
+        2,
+        3,
+        4
+       ],
+       "excludedDates": [],
+       "overrides": {}
+      }
+     },
+     {
+      "id": "33e6250b-a6fc-4cc0-8d2b-e0fca6ebdd53",
+      "type": "game",
+      "title": "Soccer game",
+      "date": "2026-10-17",
+      "startTime": "18:00",
+      "endTime": "19:30",
+      "location": "away",
+      "intensity": "medium",
+      "travelMinutes": 0,
+      "notes": "",
+      "setupSource": "game"
+     }
+    ],
+    "schoolSchedule": {
+     "enabled": true,
+     "name": "School",
+     "startDate": "2026-08-15",
+     "endDate": "2027-06-15",
+     "morningSnackTime": "",
+     "afternoonSnackTime": "",
+     "commuteMinutes": 20,
+     "foodAccess": {
+      "cafeteria": true,
+      "refrigerator": false,
+      "microwave": true,
+      "eatInClass": false
+     },
+     "excludedDates": [],
+     "excludedRanges": [],
+     "pausedFrom": "",
+     "pausedUntil": "",
+     "weekdays": [
+      1,
+      2,
+      3,
+      4,
+      5
+     ],
+     "startTime": "08:00",
+     "endTime": "15:00",
+     "lunchStartTime": "11:30",
+     "lunchEndTime": "12:00"
+    },
+    "calendarSubscriptions": [],
+    "dailyLogs": {},
+    "dayPlans": {},
+    "mealPlans": [],
+    "favorites": [],
+    "recentFoods": [],
+    "operations": [],
+    "reminderSettings": {
+     "enabled": false,
+     "leadMinutes": 60,
+     "eveningPrep": true
+    },
+    "groceryState": {
+     "budgetAmount": null,
+     "showPrices": false,
+     "goal": "school-week",
+     "lastShopDate": "",
+     "pantry": [],
+     "items": [],
+     "purchases": []
+    }
+   }
+  }
+ },
+ "legacyBackup": {}
+}

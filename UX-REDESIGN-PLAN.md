@@ -22,13 +22,13 @@ disagree on a product rule, the audit wins. If they disagree on looks, this plan
 
 | Label | Meaning |
 |---|---|
-| `p101` | Phone capture 101 at 390 × 844: `output/ux-review/phone/101-*-fold.png` (plus `-full.png` where it exists). |
+| `p101` | Phone capture 101 (regenerate with `npm run capture:ux`, see `docs/ux-review/README.md`) at 390 × 844: `output/ux-review/phone/101-*-fold.png` (plus `-full.png` where it exists). |
 | `p701`–`p718` | Phone captures at 320 × 740 (the w320 block). |
 | `d101` | Desktop capture 101 at 1440 × 900: `output/ux-review/desktop/101-*-fold.png`. |
 | `d641`–`d646` | Tablet captures at 768 × 1024. `d701`–`d718` are 1024 px captures. |
-| `TS T2`, `TS S4`, `TS D1` | Review note `output/ux-review/review/today-schedule.md`, section T2, S4, D1. |
-| `FD Ideas`, `FD Log` | Review note `output/ux-review/review/food.md`, named section. |
-| `SY A4`, `SY G1` | Review note `output/ux-review/review/setup-you-global.md`, section A4, G1. |
+| `TS T2`, `TS S4`, `TS D1` | Review note `docs/ux-review/today-schedule.md`, section T2, S4, D1. |
+| `FD Ideas`, `FD Log` | Review note `docs/ux-review/food.md`, named section. |
+| `SY A4`, `SY G1` | Review note `docs/ux-review/setup-you-global.md`, section A4, G1. |
 | `file.jsx:57` | Source in this repo (paths under `src/` unless shown). |
 
 `output/` is git-ignored, so the captures exist on the machine that made them. Build item
@@ -141,9 +141,9 @@ mocked `/api/*`.
 | Index by area and the states that could not be captured | `output/ux-review/INDEX.txt`, `not-captured.txt` | 10 uncaptured states, each with a reason |
 | Scenario failures | `output/ux-review/FAILURES.txt` | none |
 | Contact sheets used for the review | `output/ux-review/review/sheets/` | 56 sheets |
-| Review: Today and Schedule | `output/ux-review/review/today-schedule.md` | 352 lines |
-| Review: Food (Ideas, At home, Groceries, Log, search, barcode) | `output/ux-review/review/food.md` | 335 lines |
-| Review: Welcome, setup, You, device, About, Not found, global patterns | `output/ux-review/review/setup-you-global.md` | 451 lines |
+| Review: Today and Schedule | `docs/ux-review/today-schedule.md` | 352 lines |
+| Review: Food (Ideas, At home, Groceries, Log, search, barcode) | `docs/ux-review/food.md` | 335 lines |
+| Review: Welcome, setup, You, device, About, Not found, global patterns | `docs/ux-review/setup-you-global.md` | 451 lines |
 | Capture harness | `output/ux-review/run.mjs`, `lib.mjs`, `seeds.mjs`, `areas/*.mjs` | 7 area scripts |
 
 Capture numbering (from `INDEX.txt`): 0xx onboarding and Welcome, 1xx Today, 2xx Schedule,

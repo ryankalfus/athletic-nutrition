@@ -1,0 +1,60 @@
+Nourally UX review captures — index
+Generated 2026-10-20T16:35:29.767Z from CAPTURES.txt (one line per PNG).
+Clock fixed per scenario (week of Mon Oct 12 – Sun Oct 18 2026); /api/* mocked from tests/fixtures.
+Numbers are in journey order; each area has its own block (0 onboarding, 100 Today, 200 Schedule,
+300 Food: 300 Ideas / 330 At home / 350 Groceries / 380 Log / 400 Search / 420 Scanner, 500 You, 600 Global, 700 second size),
+so gaps between numbers are expected. -full = full page, -fold = viewport only.
+
+== desktop: 462 captures listed, 462 PNG files, 257 distinct states
+   by width: 768px 12, 1024px 36, 1440px 414
+   welcome      9 states   17 files
+   setup       16 states   29 files
+   today       55 states   94 files
+   schedule    38 states   74 files
+   ideas       18 states   31 files
+   home        14 states   25 files
+   groceries   14 states   26 files
+   log         12 states   23 files
+   search       9 states   18 files
+   scanner      4 states    8 files
+   you         13 states   24 files
+   device       7 states   13 files
+   about        1 states    2 files
+   notfound     1 states    2 files
+   global      22 states   28 files
+   tablet       6 states   12 files
+   w1024       18 states   36 files
+
+== phone: 450 captures listed, 450 PNG files, 251 distinct states
+   by width: 320px 36, 390px 414
+   welcome      9 states   17 files
+   setup       16 states   29 files
+   today       55 states   94 files
+   schedule    38 states   74 files
+   ideas       18 states   31 files
+   home        14 states   25 files
+   groceries   14 states   26 files
+   log         12 states   23 files
+   search       9 states   18 files
+   scanner      4 states    8 files
+   you         13 states   24 files
+   device       7 states   13 files
+   about        1 states    2 files
+   notfound     1 states    2 files
+   global      22 states   28 files
+   w320        18 states   36 files
+
+== Scenario steps that stopped early (see FAILURES.txt)
+none
+
+== States not captured, and why
+- Live camera barcode scanning: headless Chromium has no camera, so the scanner opens in manual "Barcode number" mode (captured as scanner/dialog-no-camera and its error/found states).
+- Turning reminders on with permission denied or unsupported: the switch is disabled in those states, so only the sheet itself is captured (you/reminders-sheet-denied, -unsupported). A real OS notification and the browser's own permission prompt are outside the page and were not captured.
+- Sport & season validation error: clearing Sport and pressing Save closes the sheet and saves "No sport set" (captured as you/sport-saved-empty); no error message exists to capture, so the "Discard changes?" step after it was not reached on that sheet (it is captured on Schedule and Food needs instead).
+- Setup step 3 second error: only one error shows at a time (practice end time); the "Choose the game date." message appears only after the first is fixed and was not captured separately.
+- "Not saved: …" write-failure banner (an IndexedDB write that fails mid-session): no safe way to force a failed write without editing app code.
+- Team calendar "refreshed on open" toast after a feed change: needs the subscription feed to change between two app opens; the link import, preview, subscription card and its menu are captured.
+- Stale-plan "Update"/"Keep" results, "Changed it" log flow and "Use food from home" amount sheet: the prompts are captured; the follow-up sheets after pressing them were not.
+- Loading skeletons: the local dev server answers too fast to catch the "Finding foods"/"Opening barcode tools" skeletons in a still.
+- Tablet top bar (768×1024) was captured in the desktop pass only (tablet/ files 641–646), not in the phone pass.
+- Search "Show more results" pagination: the fixture answers have hasMore=false.

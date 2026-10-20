@@ -1,0 +1,261 @@
+{
+ "version": 3,
+ "revision": 10,
+ "defaultProfileId": "acaa8402-60a1-4dac-ae1b-b65f1c9deba8",
+ "profiles": {
+  "acaa8402-60a1-4dac-ae1b-b65f1c9deba8": {
+   "id": "acaa8402-60a1-4dac-ae1b-b65f1c9deba8",
+   "name": "Athlete",
+   "email": "",
+   "data": {
+    "step": "dashboard",
+    "setupStep": 6,
+    "lastUsedAt": "2026-10-13T11:00:00.000Z",
+    "profile": {
+     "name": "Maya",
+     "budget": "standard",
+     "dietaryNeeds": [],
+     "foodSources": [
+      "packed",
+      "cafeteria",
+      "home"
+     ],
+     "familyPrep": true,
+     "sport": "Soccer",
+     "season": "in",
+     "dislikes": [],
+     "allergies": [],
+     "lowCostIdeas": false,
+     "lastBackupAt": null,
+     "units": "oz",
+     "lastWeekHidden": null
+    },
+    "schedule": [
+     {
+      "id": "7779db83-ec12-43c1-97d6-842b79e98713",
+      "type": "practice",
+      "title": "Soccer practice",
+      "startTime": "16:00",
+      "endTime": "17:30",
+      "location": "home",
+      "intensity": "medium",
+      "travelMinutes": 0,
+      "notes": "",
+      "setupSource": "practice",
+      "recurrence": {
+       "startDate": "2026-10-13",
+       "endDate": "2027-06-15",
+       "weekdays": [
+        1,
+        2,
+        3,
+        4
+       ],
+       "excludedDates": [],
+       "overrides": {}
+      }
+     },
+     {
+      "id": "33e6250b-a6fc-4cc0-8d2b-e0fca6ebdd53",
+      "type": "game",
+      "title": "Soccer game",
+      "date": "2026-10-17",
+      "startTime": "18:00",
+      "endTime": "19:30",
+      "location": "away",
+      "intensity": "medium",
+      "travelMinutes": 0,
+      "notes": "",
+      "setupSource": "game"
+     }
+    ],
+    "schoolSchedule": {
+     "enabled": true,
+     "name": "School",
+     "startDate": "2026-08-15",
+     "endDate": "2027-06-15",
+     "morningSnackTime": "",
+     "afternoonSnackTime": "",
+     "commuteMinutes": 20,
+     "foodAccess": {
+      "cafeteria": true,
+      "refrigerator": false,
+      "microwave": true,
+      "eatInClass": false
+     },
+     "excludedDates": [],
+     "excludedRanges": [],
+     "pausedFrom": "",
+     "pausedUntil": "",
+     "weekdays": [
+      1,
+      2,
+      3,
+      4,
+      5
+     ],
+     "startTime": "08:00",
+     "endTime": "15:00",
+     "lunchStartTime": "11:30",
+     "lunchEndTime": "12:00"
+    },
+    "calendarSubscriptions": [],
+    "dailyLogs": {},
+    "dayPlans": {
+     "2026-10-13": [
+      {
+       "label": "Pack Banana + pretzels",
+       "kind": "food",
+       "foodId": "banana-pretzels",
+       "dueAt": null,
+       "id": "9aa8a487-16d1-4bbc-963c-a87aa3303d56",
+       "planId": "79eb1dbc-97ae-43c4-975c-621ce55cfde4",
+       "owners": [
+        "79eb1dbc-97ae-43c4-975c-621ce55cfde4"
+       ],
+       "done": false
+      },
+      {
+       "label": "Put Banana + pretzels in your school bag",
+       "kind": "gear",
+       "dueAt": null,
+       "id": "fc8e6b08-c3a8-4f4c-b43a-6713793e7fae",
+       "planId": "79eb1dbc-97ae-43c4-975c-621ce55cfde4",
+       "owners": [
+        "79eb1dbc-97ae-43c4-975c-621ce55cfde4"
+       ],
+       "done": false
+      }
+     ]
+    },
+    "mealPlans": [
+     {
+      "id": "79eb1dbc-97ae-43c4-975c-621ce55cfde4",
+      "templateId": "banana-pretzels",
+      "templateVersion": 1,
+      "template": {
+       "id": "banana-pretzels",
+       "name": "Banana + pretzels",
+       "moments": [
+        "quick",
+        "pre",
+        "regular"
+       ],
+       "sources": [
+        "packed",
+        "cafeteria",
+        "store",
+        "home"
+       ],
+       "cost": "save",
+       "portable": true,
+       "vegan": true,
+       "vegetarian": true,
+       "dairyFree": true,
+       "glutenFree": false,
+       "note": "Simple, portable carbs with no prep."
+      },
+      "date": "2026-10-13",
+      "eventId": "7779db83-ec12-43c1-97d6-842b79e98713",
+      "intendedTime": "14:30",
+      "eatAt": "14:30",
+      "eventStartTime": "16:00",
+      "moment": "regular",
+      "packedAt": null,
+      "eatenAt": null,
+      "logEntryId": null,
+      "servings": 1,
+      "profileSignature": "[\"standard\",[],[\"cafeteria\",\"home\",\"packed\"]]",
+      "createdAt": "2026-10-13T17:00:00.000Z",
+      "status": "planned",
+      "context": {
+       "travelMode": false,
+       "inSchool": true
+      }
+     }
+    ],
+    "favorites": [],
+    "recentFoods": [],
+    "operations": [
+     {
+      "id": "3d793c9c-5987-4af6-9ec5-2c7fe835e75e",
+      "type": "plan",
+      "planId": "79eb1dbc-97ae-43c4-975c-621ce55cfde4",
+      "previous": null,
+      "previousTasks": [],
+      "date": "2026-10-13"
+     }
+    ],
+    "reminderSettings": {
+     "enabled": false,
+     "leadMinutes": 60,
+     "eveningPrep": true
+    },
+    "groceryState": {
+     "budgetAmount": null,
+     "showPrices": false,
+     "goal": "school-week",
+     "lastShopDate": "",
+     "pantry": [
+      {
+       "id": "40818330-602e-45ab-b359-b697cd11cb3b",
+       "name": "Bananas",
+       "food": {
+        "id": "bananas",
+        "name": "Bananas",
+        "category": "Produce",
+        "price": 2.25,
+        "goals": [
+         "school-week",
+         "practice-fuel",
+         "away-game",
+         "recovery-meals",
+         "restock-basics"
+        ],
+        "vegan": true,
+        "vegetarian": true,
+        "dairyFree": true,
+        "glutenFree": true,
+        "allergens": [],
+        "mayContain": [],
+        "source": "Quick basic",
+        "catalogId": "bananas"
+       },
+       "ingredientId": "bananas",
+       "catalogId": "bananas",
+       "quantity": 1,
+       "unit": "package",
+       "availability": "have",
+       "location": "pantry",
+       "price": null,
+       "origin": "manual"
+      }
+     ],
+     "items": [
+      {
+       "id": "97ef195a-6f37-40c1-a6b6-b19e4a703422",
+       "name": "Pretzels",
+       "ingredientId": "pretzels",
+       "catalogId": "pretzels",
+       "quantity": 1,
+       "unit": "bag",
+       "price": 3.25,
+       "priceKind": "estimate",
+       "category": "Packable",
+       "checked": false,
+       "reason": "For Banana + pretzels",
+       "requirement": {
+        "name": "Pretzels",
+        "amount": 30,
+        "unit": "g"
+       },
+       "origin": "meal"
+      }
+     ],
+     "purchases": []
+    }
+   }
+  }
+ },
+ "legacyBackup": {}
+}

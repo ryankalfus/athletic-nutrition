@@ -1,0 +1,879 @@
+{
+ "version": 3,
+ "revision": 28,
+ "defaultProfileId": "acaa8402-60a1-4dac-ae1b-b65f1c9deba8",
+ "profiles": {
+  "acaa8402-60a1-4dac-ae1b-b65f1c9deba8": {
+   "id": "acaa8402-60a1-4dac-ae1b-b65f1c9deba8",
+   "name": "Athlete",
+   "email": "",
+   "data": {
+    "step": "dashboard",
+    "setupStep": 6,
+    "lastUsedAt": "2026-10-13T11:00:00.000Z",
+    "profile": {
+     "name": "Maya",
+     "budget": "standard",
+     "dietaryNeeds": [],
+     "foodSources": [
+      "packed",
+      "cafeteria",
+      "home"
+     ],
+     "familyPrep": true,
+     "sport": "Soccer",
+     "season": "in",
+     "dislikes": [],
+     "allergies": [],
+     "lowCostIdeas": false,
+     "lastBackupAt": "2026-10-11T12:00:00.000Z",
+     "units": "oz",
+     "lastWeekHidden": null
+    },
+    "schedule": [
+     {
+      "id": "7779db83-ec12-43c1-97d6-842b79e98713",
+      "type": "practice",
+      "title": "Soccer practice",
+      "startTime": "16:00",
+      "endTime": "17:30",
+      "location": "home",
+      "intensity": "medium",
+      "travelMinutes": 0,
+      "notes": "",
+      "setupSource": "practice",
+      "recurrence": {
+       "startDate": "2026-10-13",
+       "endDate": "2027-06-15",
+       "weekdays": [
+        1,
+        2,
+        3,
+        4
+       ],
+       "excludedDates": [],
+       "overrides": {}
+      }
+     },
+     {
+      "id": "33e6250b-a6fc-4cc0-8d2b-e0fca6ebdd53",
+      "type": "game",
+      "title": "Soccer game",
+      "date": "2026-10-17",
+      "startTime": "18:00",
+      "endTime": "19:30",
+      "location": "away",
+      "intensity": "medium",
+      "travelMinutes": 45,
+      "notes": "",
+      "setupSource": "game"
+     }
+    ],
+    "schoolSchedule": {
+     "enabled": true,
+     "name": "School",
+     "startDate": "2026-08-15",
+     "endDate": "2027-06-15",
+     "morningSnackTime": "",
+     "afternoonSnackTime": "",
+     "commuteMinutes": 20,
+     "foodAccess": {
+      "cafeteria": true,
+      "refrigerator": false,
+      "microwave": true,
+      "eatInClass": false
+     },
+     "excludedDates": [],
+     "excludedRanges": [],
+     "pausedFrom": "",
+     "pausedUntil": "",
+     "weekdays": [
+      1,
+      2,
+      3,
+      4,
+      5
+     ],
+     "startTime": "08:00",
+     "endTime": "15:00",
+     "lunchStartTime": "11:30",
+     "lunchEndTime": "12:00"
+    },
+    "calendarSubscriptions": [],
+    "dailyLogs": {
+     "2026-10-08": {
+      "entries": [
+       {
+        "id": "0f5ac448-b89c-417c-bae0-f234a3dc0b1f",
+        "name": "Bananas",
+        "date": "2026-10-08",
+        "time": null,
+        "createdAt": "2026-10-13T17:30:00.000Z",
+        "food": {
+         "id": "basic-bananas",
+         "name": "Bananas",
+         "ingredientId": "bananas",
+         "source": "Manual",
+         "nutrientBasis": "g",
+         "nutrients": {
+          "calories": null
+         }
+        },
+        "portion": {
+         "amount": 118,
+         "unit": "g"
+        },
+        "calories": null,
+        "sourceCalories": null,
+        "userAdjusted": false,
+        "source": "Manual",
+        "approxTime": "morning"
+       },
+       {
+        "id": "3f7d7db8-4602-4432-b837-77a6d848746d",
+        "name": "Apples",
+        "date": "2026-10-08",
+        "time": null,
+        "createdAt": "2026-10-13T17:30:00.000Z",
+        "food": {
+         "id": "basic-apples",
+         "name": "Apples",
+         "ingredientId": "apples",
+         "source": "Manual",
+         "nutrientBasis": "g",
+         "nutrients": {
+          "calories": null
+         }
+        },
+        "portion": {
+         "amount": 182,
+         "unit": "g"
+        },
+        "calories": null,
+        "sourceCalories": null,
+        "userAdjusted": false,
+        "source": "Manual",
+        "approxTime": "morning"
+       }
+      ],
+      "water": 0
+     },
+     "2026-10-09": {
+      "entries": [
+       {
+        "id": "f2155b8b-cb9e-4828-8ed2-387d194c7259",
+        "name": "Whole-grain bread",
+        "date": "2026-10-09",
+        "time": null,
+        "createdAt": "2026-10-13T17:30:00.000Z",
+        "food": {
+         "id": "basic-bread",
+         "name": "Whole-grain bread",
+         "ingredientId": "bread",
+         "source": "Manual",
+         "nutrientBasis": "g",
+         "nutrients": {
+          "calories": null
+         }
+        },
+        "portion": {
+         "amount": 100,
+         "unit": "g"
+        },
+        "calories": null,
+        "sourceCalories": null,
+        "userAdjusted": false,
+        "source": "Manual",
+        "approxTime": "midday"
+       }
+      ],
+      "water": 0
+     },
+     "2026-10-10": {
+      "entries": [
+       {
+        "id": "9de40dec-e6ab-4571-8031-b375e96ede94",
+        "name": "Apples",
+        "date": "2026-10-10",
+        "time": null,
+        "createdAt": "2026-10-13T17:30:00.000Z",
+        "food": {
+         "id": "basic-apples",
+         "name": "Apples",
+         "ingredientId": "apples",
+         "source": "Manual",
+         "nutrientBasis": "g",
+         "nutrients": {
+          "calories": null
+         }
+        },
+        "portion": {
+         "amount": 182,
+         "unit": "g"
+        },
+        "calories": null,
+        "sourceCalories": null,
+        "userAdjusted": false,
+        "source": "Manual",
+        "approxTime": "afternoon"
+       }
+      ],
+      "water": 0
+     },
+     "2026-10-12": {
+      "entries": [
+       {
+        "id": "599c8e09-163a-4b15-8b74-2312aee308ba",
+        "name": "Bananas",
+        "date": "2026-10-12",
+        "time": null,
+        "createdAt": "2026-10-13T17:30:00.000Z",
+        "food": {
+         "id": "basic-bananas",
+         "name": "Bananas",
+         "ingredientId": "bananas",
+         "source": "Manual",
+         "nutrientBasis": "g",
+         "nutrients": {
+          "calories": null
+         }
+        },
+        "portion": {
+         "amount": 118,
+         "unit": "g"
+        },
+        "calories": null,
+        "sourceCalories": null,
+        "userAdjusted": false,
+        "source": "Manual",
+        "approxTime": "afternoon"
+       },
+       {
+        "id": "e7f0199b-026d-4f3d-bdb1-72f07db2ccdb",
+        "name": "Baby carrots",
+        "date": "2026-10-12",
+        "time": null,
+        "createdAt": "2026-10-13T17:30:00.000Z",
+        "food": {
+         "id": "basic-baby-carrots",
+         "name": "Baby carrots",
+         "ingredientId": "baby-carrots",
+         "source": "Manual",
+         "nutrientBasis": "g",
+         "nutrients": {
+          "calories": null
+         }
+        },
+        "portion": {
+         "amount": 100,
+         "unit": "g"
+        },
+        "calories": null,
+        "sourceCalories": null,
+        "userAdjusted": false,
+        "source": "Manual",
+        "approxTime": "afternoon"
+       }
+      ],
+      "water": 0
+     },
+     "2026-10-13": {
+      "entries": [
+       {
+        "id": "df8b506b-33bf-4535-afe5-b9ff00ad39c7",
+        "name": "Apples",
+        "date": "2026-10-13",
+        "time": "13:30",
+        "createdAt": "2026-10-13T17:30:00.000Z",
+        "food": {
+         "id": "basic-apples",
+         "name": "Apples",
+         "ingredientId": "apples",
+         "source": "Manual",
+         "nutrientBasis": "g",
+         "nutrients": {
+          "calories": null
+         }
+        },
+        "portion": {
+         "amount": 182,
+         "unit": "g"
+        },
+        "calories": null,
+        "sourceCalories": null,
+        "userAdjusted": false,
+        "source": "Manual",
+        "approxTime": null
+       }
+      ],
+      "water": 0
+     }
+    },
+    "dayPlans": {
+     "2026-10-13": [
+      {
+       "label": "Pack Sunflower-butter banana sandwich",
+       "kind": "food",
+       "foodId": "sunbutter-sandwich",
+       "dueAt": null,
+       "id": "58b23e1c-8203-4a68-b1a7-09174e29be7e",
+       "planId": "eb58cdf1-0906-452a-b060-bb292188b44a",
+       "owners": [
+        "eb58cdf1-0906-452a-b060-bb292188b44a"
+       ],
+       "done": false
+      },
+      {
+       "label": "Put Sunflower-butter banana sandwich in your school bag",
+       "kind": "gear",
+       "dueAt": null,
+       "id": "4437b35c-6072-437a-9cd6-1e5a4a75d809",
+       "planId": "eb58cdf1-0906-452a-b060-bb292188b44a",
+       "owners": [
+        "eb58cdf1-0906-452a-b060-bb292188b44a"
+       ],
+       "done": false
+      }
+     ]
+    },
+    "mealPlans": [
+     {
+      "id": "eb58cdf1-0906-452a-b060-bb292188b44a",
+      "templateId": "sunbutter-sandwich",
+      "templateVersion": 1,
+      "template": {
+       "id": "sunbutter-sandwich",
+       "name": "Sunflower-butter banana sandwich",
+       "moments": [
+        "pre",
+        "regular",
+        "recovery"
+       ],
+       "sources": [
+        "packed",
+        "home"
+       ],
+       "cost": "save",
+       "portable": true,
+       "vegan": true,
+       "vegetarian": true,
+       "dairyFree": true,
+       "glutenFree": false,
+       "note": "Packable fuel with carbs plus staying power."
+      },
+      "date": "2026-10-13",
+      "eventId": "7779db83-ec12-43c1-97d6-842b79e98713",
+      "intendedTime": "14:30",
+      "eatAt": "14:30",
+      "eventStartTime": "16:00",
+      "moment": "regular",
+      "packedAt": null,
+      "eatenAt": null,
+      "logEntryId": null,
+      "servings": 1,
+      "profileSignature": "[\"standard\",[],[\"cafeteria\",\"home\",\"packed\"]]",
+      "createdAt": "2026-10-13T17:30:00.000Z",
+      "status": "planned",
+      "context": {
+       "travelMode": false,
+       "inSchool": true
+      }
+     }
+    ],
+    "favorites": [],
+    "recentFoods": [
+     {
+      "id": "basic-apples",
+      "name": "Apples",
+      "ingredientId": "apples",
+      "source": "Manual",
+      "nutrientBasis": "g",
+      "nutrients": {
+       "calories": null
+      }
+     },
+     {
+      "id": "basic-baby-carrots",
+      "name": "Baby carrots",
+      "ingredientId": "baby-carrots",
+      "source": "Manual",
+      "nutrientBasis": "g",
+      "nutrients": {
+       "calories": null
+      }
+     },
+     {
+      "id": "basic-bananas",
+      "name": "Bananas",
+      "ingredientId": "bananas",
+      "source": "Manual",
+      "nutrientBasis": "g",
+      "nutrients": {
+       "calories": null
+      }
+     },
+     {
+      "id": "basic-bread",
+      "name": "Whole-grain bread",
+      "ingredientId": "bread",
+      "source": "Manual",
+      "nutrientBasis": "g",
+      "nutrients": {
+       "calories": null
+      }
+     }
+    ],
+    "operations": [
+     {
+      "id": "8f96c62f-8831-45e1-b916-e031810b398c",
+      "type": "plan",
+      "planId": "eb58cdf1-0906-452a-b060-bb292188b44a",
+      "previous": null,
+      "previousTasks": [],
+      "date": "2026-10-13"
+     }
+    ],
+    "reminderSettings": {
+     "enabled": false,
+     "leadMinutes": 60,
+     "eveningPrep": true
+    },
+    "groceryState": {
+     "budgetAmount": null,
+     "showPrices": false,
+     "goal": "school-week",
+     "lastShopDate": "2026-10-13",
+     "pantry": [
+      {
+       "id": "d3afc5ac-4147-4084-aabf-9b252af8a04f",
+       "name": "Bananas",
+       "food": {
+        "id": "bananas",
+        "name": "Bananas",
+        "category": "Produce",
+        "price": 2.25,
+        "goals": [
+         "school-week",
+         "practice-fuel",
+         "away-game",
+         "recovery-meals",
+         "restock-basics"
+        ],
+        "vegan": true,
+        "vegetarian": true,
+        "dairyFree": true,
+        "glutenFree": true,
+        "allergens": [],
+        "mayContain": [],
+        "source": "Quick basic",
+        "catalogId": "bananas"
+       },
+       "ingredientId": "bananas",
+       "catalogId": "bananas",
+       "quantity": 1,
+       "unit": "package",
+       "availability": "have",
+       "location": "pantry",
+       "price": null,
+       "origin": "manual"
+      },
+      {
+       "id": "fc84ae17-2924-40f0-a166-de561c7e5bdd",
+       "name": "Apples",
+       "food": {
+        "id": "apples",
+        "name": "Apples",
+        "category": "Produce",
+        "price": 4.5,
+        "goals": [
+         "school-week",
+         "away-game",
+         "restock-basics"
+        ],
+        "vegan": true,
+        "vegetarian": true,
+        "dairyFree": true,
+        "glutenFree": true,
+        "allergens": [],
+        "mayContain": [],
+        "source": "Quick basic",
+        "catalogId": "apples"
+       },
+       "ingredientId": "apples",
+       "catalogId": "apples",
+       "quantity": 1,
+       "unit": "package",
+       "availability": "low",
+       "location": "pantry",
+       "price": null,
+       "origin": "manual"
+      },
+      {
+       "id": "17cfcfb6-5b54-4be2-977d-8203e58ad886",
+       "name": "Baby carrots",
+       "food": {
+        "id": "baby-carrots",
+        "name": "Baby carrots",
+        "category": "Produce",
+        "price": 2.5,
+        "goals": [
+         "school-week",
+         "away-game",
+         "recovery-meals"
+        ],
+        "vegan": true,
+        "vegetarian": true,
+        "dairyFree": true,
+        "glutenFree": true,
+        "allergens": [],
+        "mayContain": [],
+        "source": "Quick basic",
+        "catalogId": "baby-carrots"
+       },
+       "ingredientId": "baby-carrots",
+       "catalogId": "baby-carrots",
+       "quantity": 1,
+       "unit": "package",
+       "availability": "have",
+       "location": "fridge",
+       "price": null,
+       "origin": "manual"
+      },
+      {
+       "id": "299eaa0e-0936-4b4e-b81d-cbcb298e22be",
+       "name": "Whole-grain bread",
+       "food": {
+        "id": "bread",
+        "name": "Whole-grain bread",
+        "category": "Grains",
+        "price": 3.5,
+        "goals": [
+         "school-week",
+         "practice-fuel",
+         "recovery-meals",
+         "restock-basics"
+        ],
+        "vegan": true,
+        "vegetarian": true,
+        "dairyFree": true,
+        "glutenFree": false,
+        "allergens": [
+         "wheat",
+         "soy"
+        ],
+        "mayContain": [
+         "milk",
+         "eggs",
+         "sesame"
+        ],
+        "source": "Quick basic",
+        "catalogId": "bread"
+       },
+       "ingredientId": "bread",
+       "catalogId": "bread",
+       "quantity": 6,
+       "unit": "slice",
+       "availability": "exact",
+       "location": "pantry",
+       "price": null,
+       "origin": "manual"
+      },
+      {
+       "id": "8bb2d2dc-f00e-484f-b714-b18b41876260",
+       "name": "Tortillas",
+       "food": {
+        "id": "tortillas",
+        "name": "Tortillas",
+        "category": "Grains",
+        "price": 3.25,
+        "goals": [
+         "school-week",
+         "away-game",
+         "recovery-meals",
+         "restock-basics"
+        ],
+        "vegan": true,
+        "vegetarian": true,
+        "dairyFree": true,
+        "glutenFree": false,
+        "allergens": [
+         "wheat"
+        ],
+        "mayContain": [
+         "soy",
+         "milk"
+        ],
+        "source": "Quick basic",
+        "catalogId": "tortillas"
+       },
+       "ingredientId": "tortillas",
+       "catalogId": "tortillas",
+       "quantity": 1,
+       "unit": "package",
+       "availability": "out",
+       "location": "pantry",
+       "price": null,
+       "origin": "manual",
+       "previousAvailability": "have"
+      },
+      {
+       "id": "fff4ffb8-afd5-4fad-b300-f74a27fc172c",
+       "name": "Frozen berries",
+       "food": {
+        "id": "frozen-berries",
+        "name": "Frozen berries",
+        "category": "Produce",
+        "price": 4.25,
+        "goals": [
+         "school-week",
+         "recovery-meals"
+        ],
+        "vegan": true,
+        "vegetarian": true,
+        "dairyFree": true,
+        "glutenFree": true,
+        "allergens": [],
+        "mayContain": [],
+        "source": "Quick basic",
+        "catalogId": "frozen-berries"
+       },
+       "ingredientId": "frozen-berries",
+       "catalogId": "frozen-berries",
+       "quantity": 1,
+       "unit": "package",
+       "availability": "have",
+       "location": "freezer",
+       "price": null,
+       "origin": "manual"
+      },
+      {
+       "id": "442c84b6-0c71-4211-b7ef-350769d3b645",
+       "name": "Sunflower-seed butter",
+       "ingredientId": "sunbutter",
+       "catalogId": "sunbutter",
+       "quantity": 1,
+       "unit": "jar",
+       "packageAmount": null,
+       "packageUnit": null,
+       "availability": "have",
+       "location": "pantry",
+       "origin": "groceries",
+       "updatedDate": "2026-10-13",
+       "purchasedDate": "2026-10-13"
+      },
+      {
+       "id": "c7489bcb-c01a-4d65-96c2-bffe5d87d230",
+       "name": "Oats",
+       "ingredientId": "oats",
+       "catalogId": "oats",
+       "quantity": 1,
+       "unit": "container",
+       "packageAmount": null,
+       "packageUnit": null,
+       "availability": "have",
+       "location": "pantry",
+       "origin": "groceries",
+       "updatedDate": "2026-10-13",
+       "purchasedDate": "2026-10-13"
+      },
+      {
+       "id": "5bf15173-bcbb-4377-ae07-74050dc57c99",
+       "name": "Pretzels",
+       "ingredientId": "pretzels",
+       "catalogId": "pretzels",
+       "quantity": 1,
+       "unit": "bag",
+       "packageAmount": null,
+       "packageUnit": null,
+       "availability": "have",
+       "location": "pantry",
+       "origin": "groceries",
+       "updatedDate": "2026-10-13",
+       "purchasedDate": "2026-10-13"
+      },
+      {
+       "id": "bag-granola-bar",
+       "name": "Granola bars",
+       "food": {
+        "id": "granola-bars",
+        "name": "Granola bars",
+        "category": "Produce",
+        "price": 2.25,
+        "goals": [
+         "school-week",
+         "practice-fuel",
+         "away-game",
+         "recovery-meals",
+         "restock-basics"
+        ],
+        "vegan": true,
+        "vegetarian": true,
+        "dairyFree": true,
+        "glutenFree": true,
+        "allergens": [],
+        "mayContain": [],
+        "source": "Quick basic",
+        "catalogId": "granola-bars"
+       },
+       "ingredientId": "granola-bars",
+       "catalogId": "granola-bars",
+       "quantity": 1,
+       "unit": "package",
+       "availability": "have",
+       "location": "bag",
+       "price": null,
+       "origin": "manual"
+      }
+     ],
+     "items": [
+      {
+       "id": "fef11dce-5dc2-471d-8864-ba7b3ec37017",
+       "name": "Rice",
+       "ingredientId": "rice",
+       "catalogId": "rice",
+       "quantity": 1,
+       "unit": "bag",
+       "price": 4.5,
+       "priceKind": "estimate",
+       "category": "Grains",
+       "checked": true,
+       "reason": "For Tue practice",
+       "requirement": null,
+       "origin": "generated"
+      },
+      {
+       "id": "799a70a0-9530-43af-a1f8-937e60d17ee2",
+       "name": "Crackers",
+       "ingredientId": "crackers",
+       "catalogId": "crackers",
+       "quantity": 1,
+       "unit": "box",
+       "price": 3.5,
+       "priceKind": "estimate",
+       "category": "Packable",
+       "checked": false,
+       "reason": "For Sat away game",
+       "requirement": null,
+       "origin": "generated"
+      },
+      {
+       "id": "8f4900ae-bcab-4d37-960e-e816a059264e",
+       "name": "Canned beans",
+       "ingredientId": "beans",
+       "catalogId": "beans",
+       "quantity": 2,
+       "unit": "can",
+       "price": 2.5,
+       "priceKind": "estimate",
+       "category": "Protein",
+       "checked": false,
+       "reason": "For Tue practice",
+       "requirement": null,
+       "origin": "generated"
+      },
+      {
+       "id": "87ac9f3a-96a1-43c5-a15a-fdab9d8de89c",
+       "name": "Eggs",
+       "ingredientId": "eggs",
+       "catalogId": "eggs",
+       "quantity": 1,
+       "unit": "carton",
+       "price": 4,
+       "priceKind": "estimate",
+       "category": "Protein",
+       "checked": false,
+       "reason": "For Tue practice",
+       "requirement": null,
+       "origin": "generated"
+      }
+     ],
+     "purchases": [
+      {
+       "id": "6ad6fa2a-c877-4043-8f00-2f7e20ea53c9",
+       "name": "Sunflower-seed butter",
+       "ingredientId": "sunbutter",
+       "catalogId": "sunbutter",
+       "quantity": 1,
+       "unit": "jar",
+       "price": 6.5,
+       "priceKind": "estimate",
+       "category": "Protein",
+       "checked": true,
+       "reason": "For Sunflower-butter banana sandwich",
+       "requirement": {
+        "name": "Sunflower-seed butter",
+        "amount": 30,
+        "unit": "g"
+       },
+       "origin": "meal",
+       "purchaseId": "8dea54b3-c7f4-40b8-9027-6c964fa2b972",
+       "transactionId": "73023626-ef77-49c8-bd58-da2140b079d2",
+       "pantryId": "442c84b6-0c71-4211-b7ef-350769d3b645",
+       "pantryCreated": true,
+       "pantryBefore": null,
+       "purchasedDate": "2026-10-13",
+       "previousShopDate": "",
+       "pantryAfter": {
+        "availability": "have",
+        "quantity": 1
+       }
+      },
+      {
+       "id": "5f051d8b-0da9-4992-9fa8-0c987e4f6716",
+       "name": "Oats",
+       "ingredientId": "oats",
+       "catalogId": "oats",
+       "quantity": 1,
+       "unit": "container",
+       "price": 4,
+       "priceKind": "estimate",
+       "category": "Grains",
+       "checked": true,
+       "reason": "For Tue practice",
+       "requirement": null,
+       "origin": "generated",
+       "purchaseId": "a3bbbe65-b6e4-41ee-8e05-fe0cf1b183b1",
+       "transactionId": "73023626-ef77-49c8-bd58-da2140b079d2",
+       "pantryId": "c7489bcb-c01a-4d65-96c2-bffe5d87d230",
+       "pantryCreated": true,
+       "pantryBefore": null,
+       "purchasedDate": "2026-10-13",
+       "previousShopDate": "",
+       "pantryAfter": {
+        "availability": "have",
+        "quantity": 1
+       }
+      },
+      {
+       "id": "fa0038a4-4e17-48f6-ace6-0d9825943fd4",
+       "name": "Pretzels",
+       "ingredientId": "pretzels",
+       "catalogId": "pretzels",
+       "quantity": 1,
+       "unit": "bag",
+       "price": 3.25,
+       "priceKind": "estimate",
+       "category": "Packable",
+       "checked": true,
+       "reason": "For Sat away game",
+       "requirement": null,
+       "origin": "generated",
+       "purchaseId": "4c03aa81-9b8d-4ab6-87d5-3700a803920f",
+       "transactionId": "73023626-ef77-49c8-bd58-da2140b079d2",
+       "pantryId": "5bf15173-bcbb-4377-ae07-74050dc57c99",
+       "pantryCreated": true,
+       "pantryBefore": null,
+       "purchasedDate": "2026-10-13",
+       "previousShopDate": "",
+       "pantryAfter": {
+        "availability": "have",
+        "quantity": 1
+       }
+      }
+     ]
+    }
+   }
+  }
+ },
+ "legacyBackup": {}
+}

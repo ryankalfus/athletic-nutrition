@@ -14,7 +14,8 @@
     "check": "npm run lint && npm run typecheck && npm test && npm run build",
     "format": "prettier --write src server tests vite.config.js",
     "index:usda": "python3 scripts/index-usda.py data/usda/FoodData_Central_csv_2026-04-30.zip data/usda/catalog.sqlite",
-    "test:browser": "node scripts/run-browser-checks.mjs"
+    "test:browser": "node scripts/run-browser-checks.mjs",
+    "capture:ux": "node scripts/ux-capture/run.mjs && node scripts/ux-capture/make-index.mjs"
   },
   "dependencies": {
     "@fontsource-variable/dm-sans": "^5.3.0",
