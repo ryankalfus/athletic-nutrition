@@ -15,7 +15,7 @@ tell the owner. Details live in the linked plan for each step.
 
 ## Next, in order
 
-- [ ] 8. UX U1: the 22 bugs (21 from the review, plus UX-BUG-22: no Undo on settings saves and At home changes), guards and test tools.
+- [ ] 8. UX U1: the 22 bugs (21 from the review, plus UX-BUG-22: Undo on settings saves; At home taps stay silent by owner decision), guards and test tools.
 - [ ] 9. UX U2: design tokens and copy formatting.
 - [ ] 10. UX U3: app frame and the floating glass tab bar.
 - [ ] 11. UX U4: shared components (rows with food art, sections, buttons, fields, controls that replace pills, sheets). **Owner checkpoint: check the new direction before the screens are redone.**

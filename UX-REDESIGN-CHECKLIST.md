@@ -354,7 +354,7 @@ One checkbox per ID. The note names the build item that closes it.
 - [ ] **UX-BUG-19** — After logging the 28 g usual portion of banana chips, the entry reads "1 g". (closes in U1-05)
 - [ ] **UX-BUG-20** — At home "0 left" rows are not treated as Out: the summary counts them, the row looks in stock. (closes in U1-05)
 - [ ] **UX-BUG-21** — Ideas shows the planned idea twice: in the planned card and again in the list with "Plan this". (closes in U7-02)
-- [ ] **UX-BUG-22** — Settings saves (four You sheets) toast "Saved." with no Undo, and At home Have/Low/Out and count changes toast nothing, so the §13.8 line on Undo fails. (closes in U1-05; found 2026.10.20)
+- [ ] **UX-BUG-22** — Settings saves (four You sheets) toast "Saved." with no Undo: add Undo. At home Have/Low/Out and count changes stay silent (owner decision 2026.10.20; tapping again is the undo; accepted exception to §13.8). (closes in U1-05; found 2026.10.20)
 
 ### Tablet and desktop (`UX-RWD`)
 

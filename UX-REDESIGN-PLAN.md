@@ -1538,7 +1538,7 @@ component, in which case the phase is named.
 | **UX-BUG-19** | After logging the 28 g usual portion of banana chips, the entry reads "1 g". | `p403`, `p405` | Reproduce with the fixture; if the stored amount or unit is wrong, fix and add a `tests/log.test.js` case; if it is a capture artifact, record that in the checklist note. | U1 |
 | **UX-BUG-20** | At home "0 left" rows are not treated as Out: the summary counts them, the row looks in stock. | `p332` | A counted item at 0 shows "Out" in error color and counts once in "low or out"; domain test. | U1 |
 | **UX-BUG-21** | Ideas shows the planned idea twice: in the planned card and again in the list with "Plan this". | `p308`, `p322`, `d643` | UX-IDEA-02. | U7 |
-| **UX-BUG-22** | "Every reversible write offers Undo" (REDESIGN-CHECKLIST §13.8) is not met: the four You sheets (Sport & season, Food needs, Food access, Reminders) toast a plain "Saved." with no Undo, and At home Have/Low/Out and count changes toast nothing. Found 2026.10.20 while reconciling the old lists. | `SettingsSheet.jsx:40`, `AccessSheet.jsx`, `HomePage.jsx` (stock `write(..., null)`), audit 6.5 | Sheet saves keep the previous values and toast "<Thing> saved." with Undo; stock changes toast "Updated <food>." with Undo once the change settles. If the owner keeps the audit 6.5 choice (no toast on stock changes), record it as an owner decision and reword the §13.8 line. | U1 |
+| **UX-BUG-22** | "Every reversible write offers Undo" (REDESIGN-CHECKLIST §13.8) is not met: the four You sheets (Sport & season, Food needs, Food access, Reminders) toast a plain "Saved." with no Undo, and At home Have/Low/Out and count changes toast nothing. Found 2026.10.20 while reconciling the old lists. | `SettingsSheet.jsx:40`, `AccessSheet.jsx`, `HomePage.jsx` (stock `write(..., null)`), audit 6.5 | Owner decision 2026.10.20: sheet saves keep the previous values and toast "<Thing> saved." with Undo. At home Have/Low/Out and count changes stay silent (audit 6.5): tapping the control again is the undo. This is an accepted exception to the §13.8 Undo line. | U1 |
 
 ## 9. Responsive adaptation
 
@@ -1727,7 +1727,7 @@ runs rules R1–R5 on route X at 390 and 1440 px and fails on any violation.
 **U1-05 — Data correctness and the undo ledger**
 - Change: Reproduce and fix the "1 g" log entry if real; treat counted At home items at 0 as
   Out everywhere; prune `operations` ledger entries older than 30 days on load; give settings
-  sheet saves and At home stock changes an Undo (UX-BUG-22).
+  sheet saves an Undo; At home stock changes stay silent by owner decision (UX-BUG-22).
 - Reason: `p405`; `p332`; KEEP-15 is open in REDESIGN-CHECKLIST.md; the section 13.8 line
   "every reversible write offers Undo" fails today (checked 2026.10.20).
 - Files: `src/pages/Food/PortionSheet.jsx`, `src/domain/food.js`, `src/domain/` (storage and
