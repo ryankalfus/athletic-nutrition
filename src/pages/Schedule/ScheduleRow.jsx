@@ -3,12 +3,13 @@ import { formatTime } from "../../format.js";
 import { timeToMinutes } from "../../domain/timing.js";
 import { minutesClock } from "../../domain/dayRail.js";
 
-// Sub-line for an activity row (SCH-03): "Home", or "Away · Leave by 3:35 PM".
+// Sub-line for an activity row (SCH-03), a short sentence (UX-COPY-01):
+// "Home", or "Away, leave by 3:35 PM".
 export function activitySubLine(event) {
   if (event.location !== "away") return "Home";
   const travel = Number(event.travelMinutes) || 0;
   return travel
-    ? `Away · Leave by ${formatTime(minutesClock(timeToMinutes(event.startTime) - travel))}`
+    ? `Away, leave by ${formatTime(minutesClock(timeToMinutes(event.startTime) - travel))}`
     : "Away";
 }
 
@@ -49,20 +50,19 @@ export default function ScheduleRow({
       className={`schedule-week-row ${event.type}${school ? " schedule-school-row" : ""}`}
     >
       {school ? (
-        // One muted line: "8:00 AM–3:00 PM · School · Lunch 11:30 AM".
+        // The time, then one muted sentence: "School day, lunch 11:30 AM".
         <button
           className="schedule-week-row-main"
           onClick={() => onEdit(event, dateKey)}
         >
-          <span className="schedule-week-time">{time}</span>
+          <span className="schedule-week-time">{time}</span>{" "}
           <span>
-            {" · "}
             <strong>{event.title}</strong>
             {schoolSchedule?.lunchStartTime && (
               <>
-                {" · "}
+                {", "}
                 <span className="nowrap">
-                  Lunch {formatTime(schoolSchedule.lunchStartTime)}
+                  lunch {formatTime(schoolSchedule.lunchStartTime)}
                 </span>
               </>
             )}
@@ -79,7 +79,7 @@ export default function ScheduleRow({
             <small>
               {activitySubLine(event)}
               {/* 6.9 states: imported events are flagged (P2-01). */}
-              {event.source && " · From team calendar"}
+              {event.source && ", from team calendar"}
             </small>
           </button>
         </>

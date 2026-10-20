@@ -289,3 +289,15 @@ test("U2-01: base elements use the UX-DS-09 roles", () => {
   assert.match(rule("label"), /font-size: var\(--text-label\)/);
   assert.match(rule("legend"), /font-size: var\(--text-label\)/);
 });
+
+// U2-02 (UX-COPY-03): no uppercase styling anywhere; labels are typed in
+// sentence case.
+test("U2-02: no stylesheet sets text-transform: uppercase", () => {
+  for (const file of readdirSync(stylesDir).filter((f) => f.endsWith(".css"))) {
+    const css = readFileSync(path.join(stylesDir, file), "utf8").replace(
+      /\/\*[\s\S]*?\*\//g,
+      "",
+    );
+    assert.doesNotMatch(css, /text-transform:\s*uppercase/, file);
+  }
+});

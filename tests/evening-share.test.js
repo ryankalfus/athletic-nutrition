@@ -33,6 +33,9 @@ import {
   firstUseDate,
 } from "../src/domain/backupNudge.js";
 import { buildRailRows } from "../src/domain/dayRail.js";
+// U2-02 (UX-COPY-04): formatTime joins a time and its AM/PM with a no-break
+// space; shared plain text turns it back into a space.
+const nb = (text) => text.replace(/(\d) ([AP]M)/g, "$1\u00a0$2");
 
 const at = (key, time) => new Date(`${key}T${time}:00`);
 const TODAY = "2026-09-29"; // a Tuesday
@@ -216,8 +219,9 @@ test("ADD-11: eveningPlan reads tomorrow and merges without duplicates", () => {
   assert.equal(plan.show, true);
   assert.equal(plan.tomorrowKey, TOMORROW);
   assert.equal(plan.gameDay, true);
+  // U2-02 (UX-COPY-01): one sentence, no dot-meta.
   assert.deepEqual(plan.lines, [
-    "Soccer game · 9:00–10:30 AM · Away · Leave by 8:30 AM",
+    nb("Soccer game 9:00–10:30 AM, away, leave by 8:30 AM"),
   ]);
   assert.equal(plan.built, false);
   assert.ok(plan.toAdd.length >= 5);
@@ -247,7 +251,7 @@ test("ADD-11: eveningPlan reads tomorrow and merges without duplicates", () => {
       endTime: "17:30",
       location: "home",
     }),
-    "Practice · 4:00–5:30 PM · Home",
+    nb("Practice 4:00–5:30 PM, home"),
   );
 });
 
@@ -264,20 +268,20 @@ test("ADD-06: shared lists are plain text, one task per line, no IDs", () => {
   ];
   assert.equal(
     checklistLine(tasks[0]),
-    "[ ] Pack Banana + pretzels · by 7:30 AM",
+    "[ ] Pack Banana + pretzels by 7:30 AM",
   );
   const text = formatChecklistText({
     title: "Pack & prep",
     subtitle: "Tue, Sep 29",
-    context: ["Soccer practice · 4:00–5:30 PM · Home"],
+    context: [nb("Soccer practice 4:00–5:30 PM, home")],
     tasks,
   });
   assert.equal(
     text,
     [
-      "Pack & prep · Tue, Sep 29",
-      "Soccer practice · 4:00–5:30 PM · Home",
-      "[ ] Pack Banana + pretzels · by 7:30 AM",
+      "Pack & prep for Tue, Sep 29",
+      "Soccer practice 4:00–5:30 PM, home",
+      "[ ] Pack Banana + pretzels by 7:30 AM",
       "[x] Fill a water bottle",
     ].join("\n"),
   );
@@ -300,9 +304,9 @@ test("ADD-06: shared lists are plain text, one task per line, no IDs", () => {
     ["g1", "g2"],
   );
   const groceries = formatGroceryText(items);
-  assert.equal(groceries.split("\n")[0], "Groceries · 2 items");
-  assert.match(groceries, /^\[ \] Bananas · 1 bunch$/m);
-  assert.match(groceries, /^\[ \] Pretzels · 2 packages$/m);
+  assert.equal(groceries.split("\n")[0], "Groceries, 2 items");
+  assert.match(groceries, /^\[ \] Bananas, 1 bunch$/m);
+  assert.match(groceries, /^\[ \] Pretzels, 2 packages$/m);
   assert.doesNotMatch(groceries, /Rice|g1|g2/);
 });
 

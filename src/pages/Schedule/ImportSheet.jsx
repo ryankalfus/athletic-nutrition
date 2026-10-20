@@ -19,7 +19,7 @@ import {
   toScheduleEvent,
   webcalToHttps,
 } from "../../domain/ics.js";
-import { formatDate, formatTime, plural } from "../../format.js";
+import { formatDate, formatTimeRange, plural } from "../../format.js";
 import { fetchFeed } from "./calendarSync.js";
 
 const TYPES = [
@@ -318,8 +318,8 @@ export function ImportSheet({ events, subscriptions = [], todayKey, onClose }) {
                   const choice = choices[row.key] || {};
                   const locked = row.duplicate || row.allDay;
                   const when = row.allDay
-                    ? `${formatDate(row.date)} · All day`
-                    : `${formatDate(row.date)} · ${formatTime(row.startTime)}–${formatTime(row.endTime)}`;
+                    ? `${formatDate(row.date)}, all day`
+                    : `${formatDate(row.date)}, ${formatTimeRange(row.startTime, row.endTime)}`;
                   const named = `${row.title}, ${formatDate(row.date)}`;
                   return (
                     <li

@@ -146,12 +146,12 @@ async (page) => {
         await pack.getByRole("checkbox", { checked: false }).first().click();
         await pack
           .getByText(
-            n === total ? `All packed · ${n} of ${n}` : `${n} of ${total} done`,
+            n === total ? `All ${n} packed` : `${n} of ${total} done`,
             { exact: true },
           )
           .waitFor();
       }
-      await pack.getByText(/^All packed · /).waitFor();
+      await pack.getByText(/^All \d+ packed$/).waitFor();
       const toggle = pack.getByRole("button", { name: /^(Show|Hide) list$/ });
       // Ticking the last task folds the list and moves focus to the toggle.
       expect(
@@ -195,9 +195,7 @@ async (page) => {
         `${width}: Show/Hide list shows while tasks are left`,
       );
       await pack.getByRole("checkbox", { checked: false }).click();
-      await pack
-        .getByText(`All packed · ${total} of ${total}`, { exact: true })
-        .waitFor();
+      await pack.getByText(`All ${total} packed`, { exact: true }).waitFor();
       result.checks.push(
         `${width}: Today › Pack & prep (all packed) Show list / Hide list opens and closes by click, Enter and Space (aria-expanded), stays as left across saves, and focus moves to it when the list folds.`,
       );

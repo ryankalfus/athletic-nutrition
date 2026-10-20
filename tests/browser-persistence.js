@@ -62,7 +62,9 @@ async (page) => {
     if (!p.url().endsWith("#/today"))
       throw new Error(`Choosing an athlete did not open Today: ${p.url()}`);
     await p.goto(`${base}#/you/device`);
-    const deleteData = p.getByRole("button", { name: /^Delete Riley.*'s data$/ });
+    const deleteData = p.getByRole("button", {
+      name: /^Delete Riley.*'s data$/,
+    });
     await deleteData.click();
     const confirm = p.getByRole("dialog", {
       name: /^Delete Riley.*data from this device\?$/,
@@ -108,7 +110,7 @@ async (page) => {
     await alert.getByRole("button", { name: "Save a backup file" }).waitFor();
     if (
       !(await p.getByRole("region", { name: "Water" }).innerText()).includes(
-        "Water today · 0 oz",
+        "Water today: 0 oz",
       )
     )
       throw new Error("Failed write changed the visible water total");

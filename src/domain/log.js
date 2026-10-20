@@ -226,7 +226,7 @@ export function weekSentence(summary) {
   if (!summary.activities)
     return summary.foods
       ? "No practices or games this week."
-      : "Nothing logged this week. That's fine — logging is optional.";
+      : "Nothing logged this week. That's fine. Logging is optional.";
   const counts = joinWords(
     ["practice", "game", "workout", "other"]
       .filter((type) => summary.byType[type])

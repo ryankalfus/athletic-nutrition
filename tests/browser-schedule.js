@@ -103,7 +103,7 @@ async (page) => {
     await sheet.waitFor({ state: "hidden" });
     await rows("Late practice").first().waitFor();
     await p.getByRole("heading", { name: / Today$/, level: 2 }).waitFor();
-    if (!(await today().innerText()).includes("Away · Leave by 3:35 PM"))
+    if (!(await today().innerText()).includes("Away, leave by 3:35\u00a0PM"))
       throw new Error("Away practice with travel time is not on today");
     result.checks.push(
       "A weekly away practice with 25 min travel shows on today with Leave by 3:35 PM.",
@@ -263,7 +263,9 @@ async (page) => {
           .locator("article.schedule-week-row")
           .filter({ hasText: "Soccer practice" });
         out[name] = (await row.count())
-          ? (await row.locator(".schedule-week-time").innerText()).trim()
+          ? (await row.locator(".schedule-week-time").innerText())
+              .replace(/\s+/g, " ")
+              .trim()
           : null;
       }
       return out;

@@ -2,7 +2,13 @@ import { Plus } from "lucide-react";
 import { useState } from "react";
 import { Shell } from "../../components/AppFrame.jsx";
 import { useStore } from "../../store.js";
-import { formatDate, formatTime, formatWeekdays } from "../../format.js";
+import {
+  formatDate,
+  formatDateRange,
+  formatTime,
+  formatTimeRange,
+  formatWeekdays,
+} from "../../format.js";
 import {
   getDateKey,
   addDays,
@@ -210,20 +216,24 @@ export default function ScheduleCalendar({
             <h2>School day</h2>
             {schoolSchedule ? (
               <>
+                {/* One short sentence (UX-COPY-01): "Mon–Fri, 8:00 AM–3:00 PM,
+                    lunch 11:30 AM". */}
                 <p>
                   <span className="nowrap">
                     {formatWeekdays(schoolSchedule.weekdays)}
                   </span>
-                  {" · "}
+                  {", "}
                   <span className="nowrap">
-                    {formatTime(schoolSchedule.startTime)}–
-                    {formatTime(schoolSchedule.endTime)}
+                    {formatTimeRange(
+                      schoolSchedule.startTime,
+                      schoolSchedule.endTime,
+                    )}
                   </span>
                   {schoolSchedule.lunchStartTime && (
                     <>
-                      {" · "}
+                      {", "}
                       <span className="nowrap">
-                        Lunch {formatTime(schoolSchedule.lunchStartTime)}
+                        lunch {formatTime(schoolSchedule.lunchStartTime)}
                       </span>
                     </>
                   )}
@@ -233,8 +243,11 @@ export default function ScheduleCalendar({
                   todayKey >= schoolSchedule.pausedFrom &&
                   todayKey <= schoolSchedule.pausedUntil && (
                     <p>
-                      Paused {formatDate(schoolSchedule.pausedFrom)} –{" "}
-                      {formatDate(schoolSchedule.pausedUntil)}
+                      Paused{" "}
+                      {formatDateRange(
+                        schoolSchedule.pausedFrom,
+                        schoolSchedule.pausedUntil,
+                      )}
                     </p>
                   )}
                 {schoolSchedule.excludedRanges?.length > 0 && (
@@ -243,8 +256,8 @@ export default function ScheduleCalendar({
                     {schoolSchedule.excludedRanges
                       .map((range) =>
                         range.startDate === range.endDate
-                          ? formatDate(range.startDate)
-                          : `${formatDate(range.startDate)} – ${formatDate(range.endDate)}`,
+                          ? formatDate(range.startDate, { weekday: false })
+                          : formatDateRange(range.startDate, range.endDate),
                       )
                       .join(", ")}
                   </p>
@@ -339,7 +352,7 @@ export default function ScheduleCalendar({
             </div>
             {skippedHere.map((e) => (
               <div className="school-canceled" key={e.id}>
-                <span>{sportEventTitle(e, sport)} · Skipped this day</span>
+                <span>{sportEventTitle(e, sport)}, skipped this day</span>
                 <button
                   onClick={() =>
                     setEvents(

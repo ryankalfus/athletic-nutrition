@@ -9,9 +9,10 @@ const clean = (value) =>
     .replace(/\s+/g, " ")
     .trim();
 
-// One task per line, no internal IDs (J7): "[ ] Pack Banana + pretzels · by 7:15 AM".
+// One task per line, no internal IDs (J7), no dot-meta (UX-COPY-01):
+// "[ ] Pack Banana + pretzels by 7:15 AM".
 export function checklistLine(task) {
-  const due = task.dueAt ? ` · by ${clean(formatTime(task.dueAt))}` : "";
+  const due = task.dueAt ? ` by ${clean(formatTime(task.dueAt))}` : "";
   return `${task.done ? "[x]" : "[ ]"} ${clean(task.label)}${due}`;
 }
 
@@ -19,7 +20,8 @@ export function checklistLine(task) {
  * @param {{title: string, subtitle?: string, context?: string[], tasks: any[]}} list
  */
 export function formatChecklistText({ title, subtitle, context = [], tasks }) {
-  const heading = [clean(title), clean(subtitle)].filter(Boolean).join(" · ");
+  // "Pack & prep for Tue, Sep 29"
+  const heading = [clean(title), clean(subtitle)].filter(Boolean).join(" for ");
   return [
     heading,
     ...context.map(clean).filter(Boolean),
@@ -35,8 +37,8 @@ export function groceryShareItems(items = []) {
 export function formatGroceryText(items = [], { title = "Groceries" } = {}) {
   const list = groceryShareItems(items);
   return [
-    `${title} · ${list.length} ${list.length === 1 ? "item" : "items"}`,
-    ...list.map((item) => `[ ] ${clean(item.name)} · ${shoppingAmount(item)}`),
+    `${title}, ${list.length} ${list.length === 1 ? "item" : "items"}`,
+    ...list.map((item) => `[ ] ${clean(item.name)}, ${shoppingAmount(item)}`),
   ].join("\n");
 }
 

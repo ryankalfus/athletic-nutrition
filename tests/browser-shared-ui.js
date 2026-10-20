@@ -1,6 +1,8 @@
 // Playwright snippet: shared layout, type and landmark rules on every route.
 // - 7.6 content scan: no technical terms, ISO dates or bare 24-hour times in the
-//   rendered text of any route (P0-07, P0-05).
+//   rendered text of any route (P0-07, P0-05); U2-02: no " · ", no spaced dash
+//   between words, no uppercase, no capital words but USDA, and no time that
+//   can wrap before its AM/PM (UX-COPY-01 to 04, UX-BUG-08, UX-BUG-09).
 // - The first Tab on a fresh load reaches the skip link, Food routes included (A11Y-01).
 // - Each page's H1 sits in a <header> (A11Y-03).
 // - A page shorter than the window does not scroll (P1-11: the sr-only announcer
@@ -56,7 +58,9 @@ async (page) => {
     "Ingredient relationship",
   ];
   const problems = [];
-  // 7.6: the listed terms (any case for "streak"), ISO dates, bare 24-hour times.
+  // 7.6: the listed terms (any case for "streak"), ISO dates, bare 24-hour
+  // times; U2-02: dot-meta, spaced dashes, uppercase, capitals and times that
+  // can wrap before AM/PM.
   const scan = async (route) => {
     const text = await p.evaluate(() => {
       const open = document.querySelector("dialog[open]");
@@ -73,6 +77,28 @@ async (page) => {
       /\b1 (minutes|hours|days|weeks|items|games|practices|athletes|servings)\b/,
     );
     if (count) problems.push(`${route}: unpluralized "${count[0]}"`);
+    // U2-02 (UX-COPY-01 to 03): no dot-meta, no spaced dash between words, no
+    // uppercase styling and no typed capitals (USDA is a name).
+    const dot = text.match(/.{0,24} · .{0,24}/);
+    if (dot) problems.push(`${route}: dot-meta "${dot[0]}"`);
+    const dash = text.match(/.{0,24}[^\s] [–—] [^\s].{0,24}/);
+    if (dash) problems.push(`${route}: spaced dash "${dash[0]}"`);
+    const caps = (text.match(/\b[A-Z]{4,}\b/g) || []).filter(
+      (word) => !["USDA"].includes(word),
+    );
+    if (caps.length) problems.push(`${route}: capitals ${caps.join(", ")}`);
+    // UX-COPY-04, UX-BUG-08: a time and its AM/PM are joined by U+00A0.
+    const loose = text.match(/.{0,24}\d:\d\d [AP]M/);
+    if (loose) problems.push(`${route}: breakable time "${loose[0]}"`);
+    const upper = await p.evaluate(() =>
+      [...document.querySelectorAll("body *")]
+        .filter((el) => getComputedStyle(el).textTransform === "uppercase")
+        .map((el) => el.className || el.tagName),
+    );
+    if (upper.length)
+      problems.push(
+        `${route}: text-transform uppercase on ${upper.join(", ")}`,
+      );
   };
   const headed = async (route) => {
     const inHeader = await p.evaluate(() => {
@@ -238,6 +264,7 @@ async (page) => {
     fail();
     result.checks.push(
       `No 7.6 term ("streak" included), ISO date or bare 24-hour time on Welcome and ${routes.length} routes at 320 and 1280 px, plus Schedule Month (P0-07, P0-05).`,
+      `No " · ", no spaced dash between words, no text-transform uppercase, no capital word over 3 letters but USDA, and every time joined to its AM/PM by U+00A0, on Welcome and ${routes.length} routes at 320 and 1280 px plus Schedule Month (U2-02: UX-COPY-01 to 04, UX-BUG-08, UX-BUG-09).`,
       "Every route's H1 sits inside a <header>: Welcome, Today, Schedule, Food, You, This device, About and Not found (A11Y-03).",
       "No route shorter than the window scrolls; the sr-only announcer adds no 1 px scroll (P1-11).",
     );

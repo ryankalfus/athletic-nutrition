@@ -53,10 +53,10 @@ function shortDayLabel(date, todayKey) {
   return formatDate(date);
 }
 
+// "Today, Tue Oct 13": a short sentence, no dot-meta (UX-COPY-01).
 export function dayLabel(date, todayKey) {
-  if (date === todayKey) return `Today · ${formatDate(date)}`;
-  if (date === shiftDate(todayKey, -1))
-    return `Yesterday · ${formatDate(date)}`;
+  if (date === todayKey) return `Today, ${shortDate(date)}`;
+  if (date === shiftDate(todayKey, -1)) return `Yesterday, ${shortDate(date)}`;
   return formatDate(date);
 }
 
@@ -333,7 +333,7 @@ export default function LogDay({ date, todayKey, now, onNavigate }) {
                       {item.event.title || formatActivityType(item.event.type)}
                       {item.event.endTime && (
                         <>
-                          {" · "}
+                          {", "}
                           <span className="nowrap">
                             until {formatTime(item.event.endTime)}
                           </span>

@@ -328,7 +328,7 @@ test("result lines: no database labels or kcal; brand, portion and allergen line
     }
   }
   const banana = normalizeFdcFood(SEARCH_FIXTURES.banana.at(-1));
-  assert.equal(resultSubline(banana), "Basic food · 1 medium, 118 g");
+  assert.equal(resultSubline(banana), "Basic food. 1 medium, 118 g");
   assert.deepEqual(portionHint(banana), {
     label: "1 medium, 118 g",
     amount: 118,
@@ -337,12 +337,12 @@ test("result lines: no database labels or kcal; brand, portion and allergen line
   const measured = normalizeFdcFood(
     SEARCH_FIXTURES.banana.find((food) => food.foodMeasures),
   );
-  assert.match(resultSubline(measured), /^Basic food · 1 medium .*118 g$/);
+  assert.match(resultSubline(measured), /^Basic food\. 1 medium .*118 g$/);
   const cereal = normalizeFdcFood(
     SEARCH_FIXTURES.cheerios.find((food) => food.brandName === "CHEERIOS"),
   );
   assert.equal(cereal.name, "Cheerios");
-  assert.equal(resultSubline(cereal), "Brand: Cheerios · 1 cup, 28 g");
+  assert.equal(resultSubline(cereal), "Brand: Cheerios. 1 cup, 28 g");
   assert.equal(portionHint({ name: "Mystery stew" }), null);
 });
 

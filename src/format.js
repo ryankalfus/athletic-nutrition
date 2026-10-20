@@ -12,13 +12,30 @@ export function formatDate(value, { year = false, weekday = true } = {}) {
   }).format(date);
 }
 
+// A no-break space (U+00A0) joins a time to its AM/PM, so "5:15 PM" never
+// wraps between the two (UX-COPY-04).
+export const NBSP = "\u00a0";
+
 export function formatTime(value) {
   if (!isClock(value)) return value || "Time TBD";
   const [hours, minutes] = value.split(":").map(Number);
   return new Intl.DateTimeFormat("en-US", {
     hour: "numeric",
     minute: "2-digit",
-  }).format(new Date(2000, 0, 1, hours, minutes));
+  })
+    .format(new Date(2000, 0, 1, hours, minutes))
+    .replace(/\s+(?=[AP]M$)/, NBSP);
+}
+
+// A time range with an unspaced en dash (UX-COPY-04): "4:00–5:30 PM", or
+// "11:00 AM–12:30 PM" when the half of the day changes.
+export function formatTimeRange(start, end) {
+  const a = formatTime(start);
+  const b = formatTime(end);
+  const half = /\s([AP]M)$/;
+  const [, ma] = a.match(half) || [];
+  const [, mb] = b.match(half) || [];
+  return ma && ma === mb ? `${a.replace(half, "")}–${b}` : `${a}–${b}`;
 }
 
 // Compact clock for day chips (6.3 "School 8–3", "Practice 4:00"): no AM/PM,
@@ -130,8 +147,8 @@ export const formatActivityType = (value) =>
 export const formatIntensity = (value) =>
   ({ low: "Light", medium: "Moderate", high: "Hard" })[value] || value;
 
-// School weekdays (6.9 "School · Mon–Fri"): a run of 3+ days reads as a
-// range, anything else as a list. weekdays are 0 (Sun) to 6 (Sat).
+// School weekdays (6.9 "Mon–Fri"): a run of 3+ days reads as a range,
+// anything else as a list. weekdays are 0 (Sun) to 6 (Sat).
 const WEEKDAY_SHORT = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 export function formatWeekdays(weekdays = []) {
   const days = [...new Set(weekdays)].sort((a, b) => a - b);
@@ -142,7 +159,8 @@ export function formatWeekdays(weekdays = []) {
     : days.map((day) => WEEKDAY_SHORT[day]).join(", ");
 }
 
-// "Sep 22 – 28", or "Sep 29 – Oct 5" across months (Log › Week).
+// "Oct 12–18", or "Sep 29–Oct 5" across months, with an unspaced en dash
+// (UX-COPY-04; Log › Week, Schedule's week).
 export function formatDateRange(startKey, endKey) {
   const month = (key) =>
     new Intl.DateTimeFormat("en-US", { month: "short" }).format(
@@ -150,8 +168,8 @@ export function formatDateRange(startKey, endKey) {
     );
   const day = (key) => Number(key.slice(8, 10));
   return month(startKey) === month(endKey)
-    ? `${month(startKey)} ${day(startKey)} – ${day(endKey)}`
-    : `${month(startKey)} ${day(startKey)} – ${month(endKey)} ${day(endKey)}`;
+    ? `${month(startKey)} ${day(startKey)}–${day(endKey)}`
+    : `${month(startKey)} ${day(startKey)}–${month(endKey)} ${day(endKey)}`;
 }
 
 // Water units (ADD-14, P2-04). Water is stored in ounces; ml is for display

@@ -234,7 +234,7 @@ test("week sentences stay counts, never scores", () => {
   const base = { byType: {}, activities: 0, withPlan: 0, foods: 0 };
   assert.equal(
     weekSentence(base),
-    "Nothing logged this week. That's fine — logging is optional.",
+    "Nothing logged this week. That's fine. Logging is optional.",
   );
   assert.equal(
     weekSentence({ ...base, foods: 2 }),
@@ -386,9 +386,9 @@ test("log routes: day, week, dates, and no future dates", () => {
   );
 });
 
-test("week ranges read 'Sep 22 – 28' and cross months", () => {
-  assert.equal(formatDateRange("2026-09-22", "2026-09-28"), "Sep 22 – 28");
-  assert.equal(formatDateRange("2026-09-29", "2026-10-05"), "Sep 29 – Oct 5");
+test("week ranges read 'Sep 22–28' and cross months (UX-COPY-04)", () => {
+  assert.equal(formatDateRange("2026-09-22", "2026-09-28"), "Sep 22–28");
+  assert.equal(formatDateRange("2026-09-29", "2026-10-05"), "Sep 29–Oct 5");
 });
 
 // U1-05 (UX-BUG-19): the fixture banana chips' usual portion is 28 g, and

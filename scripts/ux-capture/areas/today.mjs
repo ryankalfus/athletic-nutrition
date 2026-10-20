@@ -142,7 +142,7 @@ export default async function ({ browser, pass, cap }) {
     await seed(p, baseDoc(), "today");
     const water = p.getByRole("region", { name: /^Water today/ });
     await water.scrollIntoViewIfNeeded();
-    await shot(p, "water-oz-empty", "Water today · 0 oz with +8 +16 +24 Custom", { kind: "fold" });
+    await shot(p, "water-oz-empty", "Water today: 0 oz with +8 +16 +24 Custom", { kind: "fold" });
     await water.getByRole("button", { name: "+16" }).click();
     await p.waitForTimeout(250);
     await water.scrollIntoViewIfNeeded();
@@ -171,7 +171,7 @@ export default async function ({ browser, pass, cap }) {
     await seed(p, baseDoc(), "today");
     const tonight = p.getByRole("region", { name: "Tonight", exact: true });
     await tonight.scrollIntoViewIfNeeded();
-    await shot(p, "tonight-card-unbuilt", "Tonight card: Tomorrow · Wed, practice row, Build tomorrow's list", { kind: "fold" });
+    await shot(p, "tonight-card-unbuilt", "Tonight card: Tomorrow, Oct 14, practice row, Build tomorrow's list", { kind: "fold" });
     await primary(p).click();
     await p.waitForTimeout(400);
     await tonight.scrollIntoViewIfNeeded();

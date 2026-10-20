@@ -29,9 +29,7 @@ async (page) => {
       const label = await box.evaluate(
         (node) => node.closest("label").innerText,
       );
-      await box.setChecked(
-        names.some((name) => label.startsWith(`${name} · `)),
-      );
+      await box.setChecked(names.some((name) => label.startsWith(`${name}, `)));
     }
   };
   p.on("pageerror", (e) => result.errors.push(e.message));
@@ -329,7 +327,7 @@ async (page) => {
     if (await ask.isVisible())
       throw new Error("A clean Add food for this week asked to discard");
     await p.getByRole("button", { name: "Suggest for this week" }).click();
-    await week.getByRole("checkbox", { name: /^Bananas · / }).uncheck();
+    await week.getByRole("checkbox", { name: /^Bananas, / }).uncheck();
     await guarded("Add food for this week");
     await p.getByRole("button", { name: "Suggest for this week" }).click();
     await keepOnly(week, ["Bananas", "Pretzels"]);

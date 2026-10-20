@@ -80,7 +80,7 @@ export default async function ({ browser, pass, cap }) {
     await shot(p, "ideas", "no-activity-sunday", "Ideas on Sunday with no activity scheduled");
     ({ p } = await opener(opened)(D(2026, 10, 17, 16, 0)));
     await seed(p, baseDoc(), "food/ideas");
-    await shot(p, "ideas", "away-travel", "Ideas Sat 4:00 PM before the away game: 'Away activity — showing foods that travel well.'");
+    await shot(p, "ideas", "away-travel", "Ideas Sat 4:00 PM before the away game: 'Away activity. These foods travel well.'");
     ({ p } = await opener(opened)(D(2026, 10, 13, 15, 0)));
     await seed(p, lived(), "food/ideas");
     await shot(p, "ideas", "lived-planned", "Ideas with the lived-in data at 3:00 PM: planned card, home stock on cards");

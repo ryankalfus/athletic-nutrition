@@ -194,7 +194,7 @@ test("P1-09: status line depends on the gate", () => {
       { allergies: ["peanuts"], dietaryNeeds: ["vegetarian"] },
       true,
     ),
-    "Peanuts · Vegetarian",
+    "Peanuts, vegetarian",
   );
   assert.equal(
     needsSummary(

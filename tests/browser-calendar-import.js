@@ -66,11 +66,12 @@ async (page) => {
       throw new Error(`Preview lists ${await rows.count()} events, not 20`);
     const row = (title, date) =>
       rows.filter({ hasText: title }).filter({ hasText: date });
+    // U2-02 (UX-COPY-04): the row reads "Thu, Oct 29, 3:00–4:30 PM".
     await row("Lightning U14 Practice", "Thu, Oct 29")
-      .getByText("3:00 PM–4:30 PM")
+      .getByText("3:00–4:30 PM")
       .waitFor();
     await row("Lightning U14 Practice", "Tue, Nov 3")
-      .getByText("4:00 PM–5:30 PM")
+      .getByText("4:00–5:30 PM")
       .waitFor();
     const select = (label) => sheet.getByRole("combobox", { name: label });
     const hawks = "Lightning U14 vs. Hawks FC (Home), Sat, Oct 17";
@@ -217,13 +218,13 @@ async (page) => {
       .getByText("Rest day")
       .waitFor();
     await p.goto(`${base}#/today`);
-    await p.getByText("Rest day — keep regular meals").waitFor();
+    await p.getByText("Rest day. Keep regular meals.").waitFor();
     result.checks.push(
       "Rest days Sun: Schedule marks Sunday and Today shows the REST state with no daily tap.",
     );
     await p.getByRole("button", { name: "Undo rest day" }).click();
     await p.locator(".app-toast").getByText("Rest day removed.").waitFor();
-    if (await p.getByText("Rest day — keep regular meals").count())
+    if (await p.getByText("Rest day. Keep regular meals.").count())
       throw new Error("Undo rest day did not change today");
     // The weekly pattern itself is unchanged.
     await p.goto(`${base}#/schedule`);

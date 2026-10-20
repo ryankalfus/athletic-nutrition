@@ -24,6 +24,15 @@ export default function LogWeek({ endKey, todayKey, onNavigate }) {
   const unit = waterUnit(data.profile);
   const waterLine = (water) =>
     water.logged ? formatWater(water.ounces, unit) : "No water logged";
+  // A day row says what exists, never a negative (UX-COPY-06): "2 foods,
+  // 8 oz water", "8 oz water", or "Nothing logged" once.
+  const dayMeta = (day) =>
+    [
+      day.foods && `${day.foods} ${plural(day.foods, "food")}`,
+      day.water.logged && `${formatWater(day.water.ounces, unit)} water`,
+    ]
+      .filter(Boolean)
+      .join(", ") || "Nothing logged";
   const summary = weekSummary({
     endKey,
     events: data.schedule,
@@ -78,9 +87,7 @@ export default function LogWeek({ endKey, todayKey, onNavigate }) {
                     {day.rest && <span className="badge">Rest day</span>}
                   </span>
                 )}
-                <span className="week-day-meta">
-                  {foodsLine(day.foods)} · {waterLine(day.water)}
-                </span>
+                <span className="week-day-meta">{dayMeta(day)}</span>
               </span>
               <ChevronRight size={20} strokeWidth={1.75} aria-hidden="true" />
             </a>

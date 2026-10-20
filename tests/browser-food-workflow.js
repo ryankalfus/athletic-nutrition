@@ -12,9 +12,7 @@ async (page) => {
       const label = await box.evaluate(
         (node) => node.closest("label").innerText,
       );
-      await box.setChecked(
-        names.some((name) => label.startsWith(`${name} · `)),
-      );
+      await box.setChecked(names.some((name) => label.startsWith(`${name}, `)));
     }
   };
   p.on("pageerror", (e) => result.errors.push(e.message));
@@ -128,7 +126,7 @@ async (page) => {
     const card = p
       .locator("article.idea-card")
       .filter({ has: p.getByRole("heading", { name: "Banana + pretzels" }) });
-    await card.getByText("Ready — you have everything").waitFor();
+    await card.getByText("You have everything").waitFor();
     if ((await card.getByText(/^Buy: /).count()) !== 0)
       throw new Error("Ready idea still lists items to buy");
     const bananaLine = await card
@@ -141,7 +139,7 @@ async (page) => {
     await card.getByRole("button", { name: "Plan Banana + pretzels" }).click();
     const planned = p.getByRole("region", { name: "Planned food" });
     await planned.getByRole("button", { name: "Mark packed" }).click();
-    await planned.getByText(/· Packed$/).waitFor();
+    await planned.getByText(/Packed\.$/).waitFor();
     await planned.getByRole("button", { name: "Log it" }).click();
     const confirmLog = p.getByRole("dialog", { name: "Log what you ate" });
     await confirmLog.getByRole("button", { name: "Yes, as planned" }).click();
@@ -235,7 +233,7 @@ async (page) => {
     await entry.getByRole("button", { name: /options$/ }).click();
     await entry.getByRole("menuitem", { name: "Used from At home…" }).click();
     const use = p.getByRole("dialog", { name: "Use food from home" });
-    await use.getByRole("spinbutton", { name: /^Bananas — 3/ }).fill("1");
+    await use.getByRole("spinbutton", { name: /^Bananas, 3/ }).fill("1");
     await use.getByRole("button", { name: "Save" }).click();
     await use.waitFor({ state: "hidden" });
     await p.goto(`${base}#/food/home`);
@@ -288,8 +286,8 @@ async (page) => {
     await access.getByRole("button", { name: "Save", exact: true }).click();
     await access.waitFor({ state: "hidden" });
     await p.goto(`${base}#/food/groceries`);
-    await p.getByText(/^About \$\d+\.\d\d for 1 of 1 item$/).waitFor();
-    await p.getByText(/ · about \$\d+\.\d\d$/).waitFor();
+    await p.getByText(/^About \$\d+\.\d\d for 1 of 1 item\.$/).waitFor();
+    await p.getByText(/, about \$\d+\.\d\d$/).waitFor();
     result.checks.push(
       "Turning on price estimates in the Access sheet shows the row price and the About $ total.",
     );

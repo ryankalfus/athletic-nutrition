@@ -373,10 +373,7 @@ export default function TodayPage({
               schoolSchedule: data.schoolSchedule,
             })}
           </p>
-          <p>
-            Status: {formatPlanStatus(openPlan.status)}
-            {openPlan.eatAt ? ` · Eat about ${formatTime(openPlan.eatAt)}` : ""}
-          </p>
+          <p>Status: {formatPlanStatus(openPlan.status)}</p>
           {openPlanIngredients.length > 0 && (
             <ul className="today-availability" aria-label="What you need">
               {openPlanIngredients.map((i) => (
@@ -414,7 +411,7 @@ export default function TodayPage({
                       {source.title}
                       <span className="sr-only"> (opens in a new tab)</span>
                     </a>{" "}
-                    · {source.publisher}
+                    from {source.publisher}
                   </li>
                 ))}
               </ul>

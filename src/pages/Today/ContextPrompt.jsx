@@ -125,7 +125,7 @@ export default function ContextPrompt({
                       leadMinutes: 60,
                     };
                   },
-                  "Reminders on · 60 min before.",
+                  "Reminders on, 60 min before.",
                   openReminders,
                 );
               return changeData(

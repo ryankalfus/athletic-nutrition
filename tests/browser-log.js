@@ -72,7 +72,9 @@ async (page) => {
     // Day view: today, the practice as a context row, the Day/Week control.
     await p.goto(`${base}#/food/log`);
     await p
-      .getByRole("heading", { name: `Today · ${label(keys.today)}` })
+      .getByRole("heading", {
+        name: `Today, ${label(keys.today).replace(",", "")}`,
+      })
       .waitFor();
     await p
       .getByRole("radiogroup", { name: "Log view" })
@@ -148,7 +150,7 @@ async (page) => {
     const use = p.getByRole("dialog", { name: "Use food from home" });
     if ((await use.getByRole("spinbutton").count()) !== 1)
       throw new Error("Use from home lists rows that did not match");
-    await use.getByRole("spinbutton", { name: /^Bananas — 3/ }).fill("1");
+    await use.getByRole("spinbutton", { name: /^Bananas, 3/ }).fill("1");
     await use.getByRole("button", { name: "Save", exact: true }).click();
     await use.waitFor({ state: "hidden" });
     await row("Bananas").getByText("Used from At home").waitFor();
@@ -212,7 +214,9 @@ async (page) => {
       .click();
     await p.waitForURL(new RegExp(`#/food/log/${keys.yesterday}$`));
     await p
-      .getByRole("heading", { name: `Yesterday · ${label(keys.yesterday)}` })
+      .getByRole("heading", {
+        name: `Yesterday, ${label(keys.yesterday).replace(",", "")}`,
+      })
       .waitFor();
     await p.getByText(`Nothing logged on ${label(keys.yesterday)}.`).waitFor();
     await p.getByRole("button", { name: "Log food", exact: true }).click();
@@ -261,7 +265,7 @@ async (page) => {
     await p.goto(`${base}#/food/ideas`);
     await p
       .getByRole("region", { name: "Planned food" })
-      .getByText(/· Eaten$/)
+      .getByText(/Eaten\.$/)
       .waitFor();
     await p.goto(`${base}#/today`);
     const now = await p.locator("#now-title").innerText();
@@ -313,7 +317,7 @@ async (page) => {
       throw new Error(
         `Newest day is not first or not "Mon, Sep 21" format: ${first}`,
       );
-    if (!/3 foods logged/.test(first) || !/8 oz/.test(first))
+    if (!/3 foods, 8 oz water/.test(first))
       throw new Error(`Today row counts are wrong: ${first}`);
     const weekText = await week.innerText();
     if (
@@ -321,8 +325,13 @@ async (page) => {
       (await week.locator("svg rect, .bar-track, canvas").count())
     )
       throw new Error("Week shows a percentage, streak or chart");
-    if (!weekText.includes("No water logged"))
-      throw new Error("Days without water do not read No water logged");
+    // UX-COPY-06: day rows say what exists; no "No water logged" negative,
+    // and an empty day says "Nothing logged" once.
+    if (
+      weekText.includes("No water logged") ||
+      !weekText.includes("Nothing logged")
+    )
+      throw new Error("Week rows list a negative or skip Nothing logged");
     await p.setViewportSize({ width: 1280, height: 900 });
     await p.screenshot({
       path: "output/playwright/log-week-1280.png",

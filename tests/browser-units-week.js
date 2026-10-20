@@ -19,7 +19,7 @@ async (page) => {
   const waterRow = () => p.getByRole("region", { name: /^Water today/ });
   const total = (text) =>
     waterRow()
-      .getByRole("heading", { name: `Water today · ${text}`, exact: true })
+      .getByRole("heading", { name: `Water today: ${text}`, exact: true })
       .waitFor();
   const buttons = () =>
     waterRow()
@@ -102,7 +102,7 @@ async (page) => {
     await p.goto(`${base}#/food/log/week`);
     const firstRow = p.locator(".week-day-row").first();
     if (
-      !/· 1237 ml$/.test(
+      !/1237 ml water$/.test(
         (await firstRow.innerText()).replace(/\s+/g, " ").trim(),
       )
     )
@@ -110,7 +110,7 @@ async (page) => {
     await setUnits("oz");
     await p.goto(`${base}#/food/log/week`);
     if (
-      !/· 41\.8 oz$/.test(
+      !/41\.8 oz water$/.test(
         (await firstRow.innerText()).replace(/\s+/g, " ").trim(),
       )
     )
@@ -184,12 +184,12 @@ async (page) => {
       throw new Error(`Prompt slot: ${prompts} prompts, ${sections} sections`);
     await card.getByRole("button", { name: "See last week" }).click();
     await p.waitForURL(/#\/food\/log\/week\/2026-10-11$/);
-    await p.getByRole("heading", { name: "Oct 5 – 11" }).waitFor();
+    await p.getByRole("heading", { name: "Oct 5–11" }).waitFor();
     await p.getByText("1 practice. It had no food plan.").waitFor();
     await today();
     await card.waitFor();
     result.checks.push(
-      'Monday Oct 12: the prompt slot holds one "Last week: 1 practice. It had no food plan." card (at most six sections); See last week opens Log › Week for Oct 5 – 11 and the card stays until hidden.',
+      'Monday Oct 12: the prompt slot holds one "Last week: 1 practice. It had no food plan." card (at most six sections); See last week opens Log › Week for Oct 5–11 and the card stays until hidden.',
     );
     await card.getByRole("button", { name: "Hide" }).click();
     await card.waitFor({ state: "hidden" });

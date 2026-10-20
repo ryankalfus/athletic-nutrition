@@ -12,9 +12,7 @@ async (page) => {
       const label = await box.evaluate(
         (node) => node.closest("label").innerText,
       );
-      await box.setChecked(
-        names.some((name) => label.startsWith(`${name} · `)),
-      );
+      await box.setChecked(names.some((name) => label.startsWith(`${name}, `)));
     }
   };
   const pad = (n) => String(n).padStart(2, "0");
@@ -84,8 +82,8 @@ async (page) => {
     const row = tonight
       .getByRole("listitem")
       .filter({ hasText: "Soccer game" });
-    await row.getByText("Away · Leave by 3:15 PM", { exact: true }).waitFor();
-    if (!(await row.innerText()).includes("4:00 PM"))
+    await row.getByText("Away, leave by 3:15 PM", { exact: true }).waitFor();
+    if (!/4:00\sPM/.test(await row.innerText()))
       throw new Error(
         `Tonight row has no start time: ${await row.innerText()}`,
       );
@@ -101,7 +99,7 @@ async (page) => {
       name: /^Fill a water bottle/,
     });
     await water.waitFor();
-    if (!(await tonight.innerText()).includes("By 2:45 PM"))
+    if (!/By 2:45\sPM/.test(await tonight.innerText()))
       throw new Error(
         "Tomorrow's tasks have no due time 30 min before Leave by",
       );
@@ -126,12 +124,12 @@ async (page) => {
     const copied = await p.evaluate(() => navigator.clipboard.readText());
     // Windows clipboards hand text back with CRLF line ends.
     const lines = copied.split(/\r?\n/);
-    if (!/^Tomorrow’s list · \w{3}, \w{3} \d+$/.test(lines[0]))
+    if (!/^Tomorrow’s list for \w{3}, \w{3} \d+$/.test(lines[0]))
       throw new Error(`Copied list heading: ${lines[0]}`);
     for (const line of [
-      "Soccer game · 4:00–5:30 PM · Away · Leave by 3:15 PM",
-      "[x] Fill a water bottle · by 2:45 PM",
-      `[ ] ${extra} · by 2:45 PM`,
+      "Soccer game 4:00–5:30 PM, away, leave by 3:15 PM",
+      "[x] Fill a water bottle by 2:45 PM",
+      `[ ] ${extra} by 2:45 PM`,
     ])
       if (!lines.includes(line))
         throw new Error(`Copied list is missing "${line}":\n${copied}`);
@@ -187,9 +185,7 @@ async (page) => {
     await nudge.getByRole("button", { name: "Save backup" }).click();
     const file = await again;
     if (
-      !/^nourally-noah-\d{4}-\d{2}-\d{2}\.json$/.test(
-        file.suggestedFilename(),
-      )
+      !/^nourally-noah-\d{4}-\d{2}-\d{2}\.json$/.test(file.suggestedFilename())
     )
       throw new Error(`Backup filename: ${file.suggestedFilename()}`);
     await nudge.waitFor({ state: "hidden" });
@@ -222,7 +218,7 @@ async (page) => {
     const shared = await q.evaluate(() => window.__shared);
     if (shared?.title !== "Groceries") throw new Error("Share title missing");
     const text = shared.text.split("\n");
-    if (text[0] !== "Groceries · 1 item" || !/^\[ \] Bananas · /.test(text[1]))
+    if (text[0] !== "Groceries, 1 item" || !/^\[ \] Bananas, /.test(text[1]))
       throw new Error(`Shared grocery text:\n${shared.text}`);
     if (shared.text.includes("Pretzels"))
       throw new Error("Checked items were shared as still to buy");

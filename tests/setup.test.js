@@ -69,7 +69,7 @@ test("Step 2: school validation matches Schedule and saves a full school schedul
   );
   assert.equal(
     schoolDayError({ ...DEFAULT_SCHOOL_DAY, lunchEndTime: "16:00" }),
-    "Lunch has to be during school (8:00 AM–3:00 PM).",
+    "Lunch has to be during school (8:00\u00a0AM–3:00\u00a0PM).",
   );
   assert.equal(
     schoolDayError({
@@ -189,16 +189,16 @@ test("Step 6: the first plan names the next practice and a snack about 90 minute
   });
   assert.equal(
     firstPlanPreview(events, tuesday9am).text,
-    "Here's your first plan: Soccer practice today at 4:00 PM. Plan a snack for about 2:30.",
+    "Here's your first plan: Soccer practice today at 4:00\u00a0PM. Plan a snack for about 2:30.",
   );
   assert.equal(
     firstPlanPreview(events, new Date(2026, 8, 29, 18, 0)).text,
-    "Here's your first plan: Soccer practice next Tuesday at 4:00 PM. Plan a snack for about 2:30.",
+    "Here's your first plan: Soccer practice next Tuesday at 4:00\u00a0PM. Plan a snack for about 2:30.",
     "after today's practice, the next one is a week out",
   );
   assert.match(
     firstPlanPreview(events, new Date(2026, 8, 29, 15, 0)).text,
-    /today at 4:00 PM\.$/,
+    /today at 4:00\sPM\.$/,
     "no snack time in the past",
   );
   assert.equal(firstPlanPreview([], tuesday9am).event, null);

@@ -149,7 +149,7 @@ async (page) => {
     await edit.getByLabel("Ends").fill("17:00");
     await edit.getByRole("button", { name: "Save changes" }).click();
     await edit.waitFor({ state: "hidden" });
-    await rail.getByText("3:00 PM–5:00 PM", { exact: false }).waitFor();
+    await rail.getByText("Until 5:00 PM", { exact: false }).waitFor();
     result.checks.push(
       "Saving the activity sheet from the rail updates the rail.",
     );

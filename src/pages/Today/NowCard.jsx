@@ -102,7 +102,7 @@ export default function NowCard({
             <p>
               {missing.length
                 ? `${missing.length} ${missing.length === 1 ? "item" : "items"} to buy`
-                : "Ready — you have everything"}
+                : "You have everything"}
             </p>
           )}
           {!plan && (

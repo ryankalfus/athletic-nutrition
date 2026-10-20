@@ -44,7 +44,7 @@ export function describePermission(permission) {
 
 export function reminderSummary(settings, permission) {
   if (!settings?.enabled || permission !== "granted") return "Off";
-  return `On · ${Number(settings.leadMinutes || 60)} min before`;
+  return `On, ${Number(settings.leadMinutes || 60)} min before`;
 }
 
 export function normalizeReminderSettings(settings) {

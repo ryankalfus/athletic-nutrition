@@ -584,15 +584,14 @@
   color: var(--color-warning);
 }
 
-/* Badge (5.4): Barlow 12/16 600, uppercase +0.04em, the only uppercase style.
- * It never breaks inside itself. */
+/* Badge (5.4): Barlow 12/16 600 in sentence case, as typed: no uppercase
+ * and no tracking (UX-COPY-03). It never breaks inside itself. Badges are
+ * retired in U4 (UX-DS-07). */
 .badge {
   font-family: var(--font-numeral);
   font-size: var(--text-badge);
   line-height: var(--leading-badge);
   font-weight: 600;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
   white-space: nowrap;
 }
 

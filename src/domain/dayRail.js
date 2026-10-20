@@ -32,26 +32,27 @@ export function foodMomentTitle(plan, { events = [], schoolSchedule } = {}) {
   return "Snack";
 }
 
-// A plan's rail sub-line and status: "about 2:30 PM · Banana + pretzels", "Packed".
+// "about 2:30 PM" for a plan with a time, else "".
+const aboutTime = (plan) =>
+  plan.eatAt || plan.intendedTime
+    ? `about ${formatTime(plan.eatAt || plan.intendedTime)}`
+    : "";
+
+// A plan's rail sub-line and status, as a short sentence (UX-COPY-01):
+// "Banana + pretzels, about 2:30 PM", "Packed".
 function foodMomentParts(plan) {
   return {
-    detail: [
-      (plan.eatAt || plan.intendedTime) &&
-        `about ${formatTime(plan.eatAt || plan.intendedTime)}`,
-      plan.template?.name,
-    ]
-      .filter(Boolean)
-      .join(" · "),
+    detail: [plan.template?.name, aboutTime(plan)].filter(Boolean).join(", "),
     status: formatPlanStatus(plan.status) || "",
   };
 }
 
-// TODAY-02 food moment line: "Snack · about 2:30 PM · Banana + pretzels · packed".
+// TODAY-02 food moment line, under the food's name in its sheet:
+// "Pre-practice snack, about 2:30 PM".
 export function foodMomentLine(plan, context) {
-  const { detail, status } = foodMomentParts(plan);
-  return [foodMomentTitle(plan, context), detail, status.toLowerCase()]
+  return [foodMomentTitle(plan, context), aboutTime(plan)]
     .filter(Boolean)
-    .join(" · ");
+    .join(", ");
 }
 
 // TODAY-02: one row per item, sorted by time, with a "Now" marker.
@@ -81,7 +82,8 @@ export function buildRailRows({
         game: e.type === "game",
         time: e.startTime,
         title: e.title,
-        detail: `${formatTime(e.startTime)}–${formatTime(e.endTime)} · ${e.location === "away" ? "Away" : "Home"}`,
+        // A sentence meta (UX-COPY-01): "Until 5:30 PM, home".
+        detail: `Until ${formatTime(e.endTime)}, ${e.location === "away" ? "away" : "home"}`,
         // TODAY-02: the row opens the activity sheet for this activity.
         eventId: e.id,
       },
@@ -100,12 +102,13 @@ export function buildRailRows({
         kind: "recovery",
         time: e.endTime,
         title: "Recovery",
+        // "Milk + banana, until 7:00 PM" or "Until 7:00 PM".
         detail: [
-          `${formatTime(e.endTime)}–${formatTime(minutesClock(end + RECOVERY_MINUTES))}`,
           recovery?.template?.name,
+          `${recovery?.template?.name ? "until" : "Until"} ${formatTime(minutesClock(end + RECOVERY_MINUTES))}`,
         ]
           .filter(Boolean)
-          .join(" · "),
+          .join(", "),
         ...(recovery
           ? { planId: recovery.id, status: recoveryParts.status }
           : { route: "food/ideas?moment=after" }),
@@ -117,7 +120,8 @@ export function buildRailRows({
       kind: "school",
       time: schoolSchedule.startTime,
       title: "School",
-      detail: `${formatTime(schoolSchedule.startTime)}–${formatTime(schoolSchedule.endTime)}${schoolSchedule.lunchStartTime ? ` · Lunch ${formatTime(schoolSchedule.lunchStartTime)}` : ""}`,
+      // "Until 3:00 PM, lunch 11:30 AM" (UX-COPY-01).
+      detail: `Until ${formatTime(schoolSchedule.endTime)}${schoolSchedule.lunchStartTime ? `, lunch ${formatTime(schoolSchedule.lunchStartTime)}` : ""}`,
       // TODAY-02: the row opens the School day sheet.
       sheet: "school",
     });

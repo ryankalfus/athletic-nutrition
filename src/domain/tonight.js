@@ -10,7 +10,7 @@ import {
   withSportTitles,
 } from "./timing.js";
 import { minutesClock } from "./dayRail.js";
-import { formatTime } from "../format.js";
+import { formatTime, formatTimeRange } from "../format.js";
 
 // Audit 6.3: show Tonight after 7:00 PM when tomorrow has any activity, and
 // any time tomorrow starts before 10:00 AM.
@@ -30,40 +30,21 @@ export function leaveByMinutes(event) {
   return timeToMinutes(event.startTime) - travel;
 }
 
-const time = (value) => formatTime(value).replace(/\s+/g, " ");
-
-// "4:00–5:30 PM"; "11:00 AM–12:30 PM" when the half of the day changes.
-export function timeRange(start, end) {
-  const a = time(start);
-  const b = time(end);
-  const suffix = / (AM|PM)$/;
-  const [, ma] = a.match(suffix) || [];
-  const [, mb] = b.match(suffix) || [];
-  return ma && ma === mb ? `${a.replace(suffix, "")}–${b}` : `${a}–${b}`;
-}
-
-// "Soccer game · 8:00–9:30 AM · Away · Leave by 7:30 AM"
-// The Tonight row's sub-line: "Away · Leave by 8:15 AM" or "Home".
+// The Tonight row's sub-line, a short sentence (UX-COPY-01): "Away, leave by
+// 8:15 AM" or "Home".
 export function tomorrowEventDetail(event) {
   const leave = leaveByMinutes(event);
-  return [
-    event.location === "away" ? "Away" : "Home",
-    leave != null && `Leave by ${time(minutesClock(leave))}`,
-  ]
-    .filter(Boolean)
-    .join(" · ");
+  return leave != null
+    ? `Away, leave by ${formatTime(minutesClock(leave))}`
+    : event.location === "away"
+      ? "Away"
+      : "Home";
 }
 
+// The shared list's line: "Soccer game 8:00–9:30 AM, away, leave by 7:30 AM".
 export function tomorrowEventLine(event) {
-  const leave = leaveByMinutes(event);
-  return [
-    event.title,
-    timeRange(event.startTime, event.endTime),
-    event.location === "away" ? "Away" : "Home",
-    leave != null && `Leave by ${time(minutesClock(leave))}`,
-  ]
-    .filter(Boolean)
-    .join(" · ");
+  const detail = tomorrowEventDetail(event);
+  return `${event.title} ${formatTimeRange(event.startTime, event.endTime)}, ${detail.charAt(0).toLowerCase()}${detail.slice(1)}`;
 }
 
 /**

@@ -119,7 +119,7 @@ export function WeekIdeasSheet({ ideas, summary, pending, onDirty, onAdd }) {
                 }
               />
               <span>
-                {item.name} · {shoppingAmount(item)}
+                {item.name}, {shoppingAmount(item)}
                 <small className="reason-chip">{item.reason}</small>
               </span>
             </label>

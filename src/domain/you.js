@@ -139,12 +139,19 @@ export function validateYouProfile(profile) {
 
 const label = (choices, id) => choices.find(([value]) => value === id)?.[1];
 
+// Summary parts as one short sentence, not dot-meta (UX-COPY-01):
+// ["Soccer", "In season"] → "Soccer, in season".
+const sentence = (parts) =>
+  parts
+    .map((part, i) => (i ? part.charAt(0).toLowerCase() + part.slice(1) : part))
+    .join(", ");
+
 export function sportSummary(profile = {}) {
   const parts = [
     normalizeSport(profile.sport),
     label(SEASONS, profile.season),
   ].filter(Boolean);
-  return parts.length ? parts.join(" · ") : "Not set";
+  return parts.length ? sentence(parts) : "Not set";
 }
 
 export function needsSummary(profile = {}, reviewed = ALLERGY_TAGS_REVIEWED) {
@@ -164,7 +171,7 @@ export function needsSummary(profile = {}, reviewed = ALLERGY_TAGS_REVIEWED) {
         ? `Not a fan of ${label(DISLIKE_CHOICES, dislikes[0]).toLowerCase()}`
         : `Not a fan of ${dislikes.length} foods`,
     );
-  return parts.length ? parts.join(" · ") : "None set";
+  return parts.length ? sentence(parts) : "None set";
 }
 
 export function accessSummary(profile = {}, schoolSchedule = null) {
@@ -179,8 +186,9 @@ export function accessSummary(profile = {}, schoolSchedule = null) {
     (profile.lowCostIdeas ?? profile.budget === "save")
       ? "Low-cost ideas on"
       : "Low-cost ideas off";
-  // ADD-14: name the water unit only when it is not the default.
-  return `${where} · ${lowCost}${profile.units === "ml" ? " · Water in ml" : ""}`;
+  // ADD-14: name the water unit only when it is not the default. Short
+  // sentences, not dot-meta: "Cafeteria, fridge. Low-cost ideas off."
+  return `${where}. ${lowCost}.${profile.units === "ml" ? " Water in ml." : ""}`;
 }
 
 // "Not a fan of": an idea is hidden when it uses a disliked ingredient.

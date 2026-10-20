@@ -2,6 +2,7 @@ import { ideasFor, ideaAccess, DIET_FILTERS, lowCostOn } from "./ranking.js";
 import {
   formatCountdown,
   formatTime as formatClock,
+  formatTimeRange,
   plural,
 } from "../format.js";
 import { ideaUsesDislike } from "./you.js";
@@ -476,7 +477,7 @@ export function getFuelingGuidance({
     title = "Hydrate now; keep mid-session fuel familiar";
     explanation =
       "For a longer or harder session, a familiar easy-to-carry carb may help. Avoid trying a brand-new food during competition or practice.";
-    timing = `${formatClock(active.startTime)}–${formatClock(active.endTime)}`;
+    timing = formatTimeRange(active.startTime, active.endTime);
   } else if (recent) {
     focusEvent = recent;
     moment = "recovery";
@@ -484,9 +485,9 @@ export function getFuelingGuidance({
     title = "Refuel with carbs, protein, and fluids";
     explanation =
       "Choose a familiar option you can actually get now. A regular meal works; a snack can bridge the gap if dinner is later.";
-    timing = `Ended ${currentMinutes - recent.end} min ago`;
+    timing = `Ended ${currentMinutes - recent.end} min ago.`;
     if (next)
-      timing += ` · Next: ${next.title} at ${formatClock(next.startTime)}`;
+      timing += ` Next: ${next.title} at ${formatClock(next.startTime)}.`;
   } else if (next) {
     focusEvent = next;
     const minutesUntil = next.start - currentMinutes;
@@ -516,9 +517,11 @@ export function getFuelingGuidance({
       explanation =
         "Your activity is later today. Choose food you can get and pack it before the day gets busy.";
     }
-    timing = `${next.title} at ${formatClock(next.startTime)}${next.location === "away" ? " · away" : ""}${Number(next.travelMinutes) > 0 ? ` · ${next.travelMinutes} min travel` : ""}`;
+    // Sentences, not dot-meta (UX-COPY-01): "Soccer game at 6:00 PM, away."
+    // The drive time is said once, in the Leave by sentence below.
+    timing = `${next.title} at ${formatClock(next.startTime)}${next.location === "away" ? ", away" : ""}.`;
   }
-  if (next && schoolWindowTiming) timing = `${schoolWindowTiming} · ${timing}`;
+  if (next && schoolWindowTiming) timing = `${schoolWindowTiming} ${timing}`;
 
   const departure = next ? next.start - Number(next.travelMinutes || 0) : null;
   const departed =
@@ -527,7 +530,7 @@ export function getFuelingGuidance({
     departure == null || !Number(next.travelMinutes)
       ? ""
       : `Leave by ${formatClock(`${String(Math.floor(Math.max(departure, 0) / 60)).padStart(2, "0")}:${String(Math.max(departure, 0) % 60).padStart(2, "0")}`)} (${next.travelMinutes} min drive)`;
-  if (departureLabel) timing += ` · ${departureLabel}`;
+  if (departureLabel) timing += ` ${departureLabel}.`;
   const tomorrowKey = getDateKey(addDays(new Date(`${todayKey}T12:00:00`), 1));
   const noSchedule =
     !events.length && !schoolSchedule?.enabled && !isRestDay(profile, todayKey);
@@ -620,14 +623,14 @@ export function getFuelingGuidance({
     if (activeSchoolWindow && !active && !recent) {
       title =
         activeSchoolWindow.label === "Lunch"
-          ? "Lunch time — choose something familiar"
-          : "Snack time — choose something familiar";
+          ? "Lunch time. Choose something familiar."
+          : "Snack time. Choose something familiar.";
       explanation = "Use the eating time in your school schedule.";
     }
     if (markedRest && !active && !next) {
       state = "rest";
       label = "Rest day";
-      title = "Rest day — keep regular meals";
+      title = "Rest day. Keep regular meals.";
       explanation = "Keep regular meals and snacks that fit your day.";
     }
     if (

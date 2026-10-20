@@ -180,14 +180,15 @@ export default function GroceriesPage({ todayKey }) {
           }
         />
       </label>
-      {/* Two lines for every row: the name, then amount · price · reason. */}
+      {/* Two lines for every row: the name, then "amount, about $price" and
+          the reason. */}
       <div className="grocery-main">
         <strong>{item.name}</strong>
         <span className="grocery-meta">
           <span className="nowrap">{shoppingAmount(item)}</span>
           {showPrices && item.price != null && item.price !== "" && (
             <span className="nowrap">
-              {" · "}about{" "}
+              {", "}about{" "}
               {money(Number(item.price) * Number(item.quantity ?? 1))}
             </span>
           )}
@@ -308,13 +309,13 @@ export default function GroceriesPage({ todayKey }) {
           {showPrices && grocery.items.length > 0 && (
             <p className="grocery-estimate">
               {known
-                ? `About ${money(money$.subtotal)} for ${known} of ${items(grocery.items.length)}`
+                ? `About ${money(money$.subtotal)} for ${known} of ${items(grocery.items.length)}.`
                 : "No price estimates yet."}
               {grocery.budgetAmount != null && (
                 <>
-                  {" · "}
+                  {" "}
                   <span className="nowrap">
-                    Budget {money(Number(grocery.budgetAmount))}
+                    Budget {money(Number(grocery.budgetAmount))}.
                   </span>
                 </>
               )}
@@ -490,8 +491,8 @@ export default function GroceriesPage({ todayKey }) {
             {trips.map((trip, index) => (
               <li key={trip.id}>
                 <span>
-                  {formatDate(trip.date)} · {items(trip.count)}
-                  {trip.undone ? " · Undone" : ""}
+                  {items(trip.count)} on {formatDate(trip.date)}
+                  {trip.undone ? ". Undone." : ""}
                 </span>
                 {index === 0 && trip.undoable && !trip.undone && (
                   <Button

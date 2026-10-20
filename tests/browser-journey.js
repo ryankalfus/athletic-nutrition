@@ -341,7 +341,7 @@ async (page) => {
     await openIdeas();
     await p
       .getByRole("region", { name: "Planned food" })
-      .getByText(/· Packed$/)
+      .getByText(/Packed\.$/)
       .waitFor();
     await done("Ideas packed");
     await context.clock.setFixedTime(new Date("2026-10-13T16:00:00-05:00"));
@@ -387,7 +387,7 @@ async (page) => {
     await openIdeas();
     await p
       .getByRole("region", { name: "Planned food" })
-      .getByText(/· Eaten$/)
+      .getByText(/Eaten\.$/)
       .waitFor();
     if (await p.getByText(/Your food needs changed/).count())
       throw new Error("An eaten plan asks to check changed food needs");

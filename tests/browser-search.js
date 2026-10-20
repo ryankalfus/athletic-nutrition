@@ -130,13 +130,13 @@ async (page) => {
     );
 
     for (const [query, first, line] of [
-      ["banana", "Bananas, raw", "Basic food · 1 medium, 118 g"],
-      ["peanut butter", "Peanut butter", "Basic food · 2 tbsp, 32 g"],
-      ["cheerios", "Cheerios", "Brand: Cheerios · 1 cup, 28 g"],
+      ["banana", "Bananas, raw", "Basic food. 1 medium, 118 g"],
+      ["peanut butter", "Peanut butter", "Basic food. 2 tbsp, 32 g"],
+      ["cheerios", "Cheerios", "Brand: Cheerios. 1 cup, 28 g"],
       [
         "rice",
         "Rice, brown, long-grain, cooked",
-        "Basic food · 1 cup cooked, 158 g",
+        "Basic food. 1 cup cooked, 158 g",
       ],
     ]) {
       await box.fill(query);

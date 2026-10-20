@@ -1,6 +1,6 @@
 import { WATER_STEPS, formatWater, waterUnit } from "../../format.js";
 
-// TODAY-06: "Water today · 24 oz" plus three quick adds and Custom. The
+// TODAY-06: "Water today: 24 oz" plus three quick adds and Custom. The
 // unit follows You › Food access (ADD-14); the total is never a target.
 export default function WaterRow({
   data,
@@ -13,7 +13,7 @@ export default function WaterRow({
   return (
     <section className="water-row" aria-labelledby="water-title">
       <h2 id="water-title">
-        Water today ·{" "}
+        Water today:{" "}
         <span className="numeral">
           {formatWater(data.dailyLogs[todayKey]?.water || 0, unit)}
         </span>

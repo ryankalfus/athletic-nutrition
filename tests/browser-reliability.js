@@ -8,7 +8,7 @@ async (page) => {
   const water = (tab, oz) =>
     tab
       .getByRole("region", { name: "Water" })
-      .getByText(`Water today · ${oz} oz`, { exact: true })
+      .getByText(`Water today: ${oz} oz`, { exact: true })
       .waitFor();
   let a;
   try {

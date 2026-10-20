@@ -55,7 +55,7 @@ export default function YouPage({ subroute, onNavigate }) {
     [
       "device",
       "This device",
-      `${plural(athletes, "athlete")} · ${lastBackupText(profile.lastBackupAt).replace(/ \(.*\)$|\.$/g, "")}`,
+      `${plural(athletes, "athlete")}. ${lastBackupText(profile.lastBackupAt).replace(/ \(.*\)$|\.$/g, "")}`,
     ],
     ["about", "About Nourally's guidance", "What Nourally does and doesn't do"],
   ];

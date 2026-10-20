@@ -35,7 +35,9 @@ export default function TonightCard({
       </div>
       <div className="tonight-events">
         {gameDay && <span className="badge badge-game">Game day</span>}
-        <p className="tonight-when">Tomorrow · {formatDate(tomorrowKey)}</p>
+        <p className="tonight-when">
+          Tomorrow, {formatDate(tomorrowKey, { weekday: false })}
+        </p>
         {/* Each activity reads like a Day rail row: time, dot, title, sub-line. */}
         <ul className="rail-list">
           {events.map((event) => (

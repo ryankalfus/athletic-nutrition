@@ -450,7 +450,7 @@
   }
 }
 
-/* Below 1200px a compact "N low or out · Add to groceries" bar replaces the
+/* Below 1200px a compact "N low or out" bar with Add to groceries replaces the
  * summary card, so names are not listed twice. */
 .low-bar {
   display: flex;
@@ -708,7 +708,7 @@
   gap: var(--space-4);
 }
 
-/* Day · Week is the shared segmented control (DS-12), sized to its labels. */
+/* Day and Week is the shared segmented control (DS-12), sized to its labels. */
 .log-view-tabs .segmented {
   width: min(100%, 240px);
 }
@@ -736,7 +736,7 @@
   justify-self: start;
 }
 
-/* Day and week switcher: "‹ Today · Mon, Sep 28 ›" plus a date picker.
+/* Day and week switcher: "‹ Today, Mon Sep 28 ›" plus a date picker.
  * Sticks under the Food section control on phones (6.8). */
 .day-switcher {
   position: sticky;

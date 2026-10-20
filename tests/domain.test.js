@@ -132,6 +132,7 @@ import {
   formatDateRange,
   formatShortTime,
   formatTime,
+  formatTimeRange,
   formatWeekdays,
   plural,
 } from "../src/format.js";
@@ -164,6 +165,9 @@ import {
   weekSummary,
 } from "../src/domain/log.js";
 import { RULES, rulesFor } from "../src/domain/rules.js";
+// U2-02 (UX-COPY-04): formatTime joins a time and its AM/PM with a no-break
+// space, so expected text spells it the same way: nb("4:00 PM").
+const nb = (text) => text.replace(/(\d) ([AP]M)/g, "$1\u00a0$2");
 const day = "2026-09-14";
 const profile = { ...DEFAULT_PROFILE, budget: "standard" };
 const idea = (id) => FOOD_IDEAS.find((i) => i.id === id);
@@ -871,7 +875,7 @@ test("P0-10: 30, 90, and 180-minute practice boundaries keep their states", () =
   assert.equal(guidance("15:30", events).moment, "quick");
   assert.equal(guidance("14:30", events).moment, "pre");
   assert.equal(guidance("13:00", events).moment, "regular");
-  assert.match(guidance("12:59", events).label, /Practice at 4:00 PM/);
+  assert.match(guidance("12:59", events).label, /Practice at 4:00\sPM/);
 });
 test("P0-10: lunch at 11:45 remains visible before 4 PM practice", () => {
   const events = [
@@ -943,7 +947,7 @@ test("P0-11: away reminder fires before Leave by and uses singular minutes", () 
   );
   assert.equal(oneMinute.length, 1);
   assert.match(oneMinute[0].title, /Leave.*in 1 min/);
-  assert.match(oneMinute[0].title, /3:15 PM/);
+  assert.match(oneMinute[0].title, /3:15\sPM/);
   assert.equal(
     reminderCandidates([event], settings, new Date(`${day}T15:16:00`)).length,
     0,
@@ -1628,8 +1632,16 @@ test("P0-05: format helpers return human dates, times, durations, and counts", (
   assert.equal(formatDate("2026-09-21"), "Mon, Sep 21");
   assert.equal(formatDate("2026-09-21", { year: true }), "Mon, Sep 21, 2026");
   assert.equal(formatDate(""), "Date TBD");
-  assert.equal(formatTime("16:00"), "4:00 PM");
-  assert.equal(formatTime("09:05"), "9:05 AM");
+  assert.equal(formatTime("16:00"), nb("4:00 PM"));
+  assert.equal(formatTime("09:05"), nb("9:05 AM"));
+  // U2-02 (UX-COPY-04, UX-BUG-08): the time and its AM/PM never wrap apart,
+  // and ranges use an unspaced en dash.
+  assert.ok(formatTime("17:15").includes("\u00a0"));
+  assert.equal(formatTime("17:15"), "5:15\u00a0PM");
+  assert.equal(formatTimeRange("16:00", "17:30"), nb("4:00–5:30 PM"));
+  assert.equal(formatTimeRange("11:00", "12:30"), nb("11:00 AM–12:30 PM"));
+  assert.equal(formatDateRange("2026-10-12", "2026-10-18"), "Oct 12–18");
+  assert.equal(formatDateRange("2026-09-29", "2026-10-05"), "Sep 29–Oct 5");
   assert.equal(formatTime("25:00"), "25:00");
   assert.equal(formatTime(""), "Time TBD");
   assert.equal(formatDuration(90), "1 hr 30 min");
@@ -1718,7 +1730,7 @@ test("P0-11 DATA-06/DATA-09: Welcome and a closed athlete never deliver reminder
 test("IA-12 YOU-05: reminder settings summary, permission state, and lead options", () => {
   assert.equal(
     reminderSummary({ enabled: true, leadMinutes: 90 }, "granted"),
-    "On · 90 min before",
+    "On, 90 min before",
   );
   assert.equal(
     reminderSummary({ enabled: true, leadMinutes: 60 }, "denied"),
@@ -1766,13 +1778,11 @@ test("TODAY-02: Day rail rows use readable sub-lines and open plans", () => {
     status: "packed",
     template: { name: "Banana + pretzels" },
   };
-  assert.equal(
-    foodMomentLine(plan),
-    "Snack · about 2:30 PM · Banana + pretzels · packed",
-  );
+  // U2-02 (UX-COPY-01): sentences, not dot-meta.
+  assert.equal(foodMomentLine(plan), nb("Snack, about 2:30 PM"));
   assert.equal(
     foodMomentLine({ ...plan, moment: "recovery", status: "planned" }),
-    "Recovery snack · about 2:30 PM · Banana + pretzels · planned",
+    nb("Recovery snack, about 2:30 PM"),
   );
   const practice = {
     id: "p",
@@ -1795,7 +1805,7 @@ test("TODAY-02: Day rail rows use readable sub-lines and open plans", () => {
     rows.map((r) => r.kind),
     ["school", "now", "window", "food", "travel", "activity", "recovery"],
   );
-  assert.equal(rows[0].detail, "8:00 AM–3:00 PM · Lunch 11:30 AM");
+  assert.equal(rows[0].detail, nb("Until 3:00 PM, lunch 11:30 AM"));
   assert.equal(rows[0].past, true);
   // The time column shows 2:08 PM; the marker itself reads "Now".
   assert.equal(rows[1].title, "Now");
@@ -1804,21 +1814,21 @@ test("TODAY-02: Day rail rows use readable sub-lines and open plans", () => {
   assert.equal(foodRow.planId, "plan-1");
   assert.equal(foodRow.route, undefined, "food rows open plan details");
   // The status is its own badge, not the end of the sub-line.
-  assert.equal(foodRow.detail, "about 2:30 PM · Banana + pretzels");
+  assert.equal(foodRow.detail, nb("Banana + pretzels, about 2:30 PM"));
   assert.equal(foodRow.status, "Packed");
   assert.equal(
-    [foodRow.title, foodRow.detail, foodRow.status.toLowerCase()].join(" · "),
-    foodMomentLine(plan),
+    rows.find((r) => r.kind === "travel").title,
+    nb("Leave by 3:15 PM"),
   );
-  assert.equal(rows.find((r) => r.kind === "travel").title, "Leave by 3:15 PM");
   assert.equal(
     rows.find((r) => r.kind === "recovery").detail,
-    "5:30 PM–7:00 PM",
+    nb("Until 7:00 PM"),
   );
   assert.equal(
     rows.find((r) => r.kind === "activity").detail,
-    "4:00 PM–5:30 PM · Away",
+    nb("Until 5:30 PM, away"),
   );
+  for (const r of rows) assert.doesNotMatch(r.detail || "", / · /);
   for (const r of rows)
     assert.doesNotMatch(
       `${r.title} ${r.detail || ""}`,
@@ -1857,11 +1867,11 @@ test("TODAY-02: rail names moments and merges a recovery plan into its Recovery 
       plan("a", { eventId: "p", moment: "pre", eatAt: "14:30" }),
       context,
     ),
-    "Pre-practice snack · about 2:30 PM · a · planned",
+    nb("Pre-practice snack, about 2:30 PM"),
   );
   assert.equal(
     foodMomentLine(plan("b", { eatAt: "11:30", status: "eaten" }), context),
-    "Lunch · about 11:30 AM · b · eaten",
+    nb("Lunch, about 11:30 AM"),
   );
   const rows = buildRailRows({
     events: [practice],
@@ -1879,7 +1889,7 @@ test("TODAY-02: rail names moments and merges a recovery plan into its Recovery 
   });
   assert.equal(rows.filter((r) => /Recovery/.test(r.title)).length, 1);
   const recovery = rows.find((r) => r.kind === "recovery");
-  assert.equal(recovery.detail, "5:30 PM–7:00 PM · Milk + banana");
+  assert.equal(recovery.detail, nb("Milk + banana, until 7:00 PM"));
   assert.equal(recovery.status, "Planned");
   assert.ok(recovery.planId, "the merged Recovery row opens the plan");
   assert.equal(rows.find((r) => r.kind === "activity").type, "practice");
@@ -1919,7 +1929,7 @@ test("6.9: school weekdays and the week switcher read short", () => {
   assert.equal(formatWeekdays([5, 1, 3]), "Mon, Wed, Fri");
   assert.equal(formatWeekdays([2, 3]), "Tue, Wed");
   assert.equal(formatWeekdays([]), "");
-  assert.equal(formatDateRange("2026-09-28", "2026-10-04"), "Sep 28 – Oct 4");
+  assert.equal(formatDateRange("2026-09-28", "2026-10-04"), "Sep 28–Oct 4");
   assert.equal(plural(1, "game"), "game");
   assert.equal(plural(2, "away trip"), "away trips");
 });
@@ -2141,7 +2151,7 @@ test("YOU-01 to YOU-04: You settings migrate additively and validate", () => {
 test("YOU-01: row summaries match the settings list copy", () => {
   assert.equal(
     sportSummary({ sport: "Soccer", season: "in" }),
-    "Soccer · In season",
+    "Soccer, in season",
   );
   assert.equal(sportSummary({}), "Not set");
   assert.equal(
@@ -2154,7 +2164,7 @@ test("YOU-01: row summaries match the settings list copy", () => {
   );
   assert.equal(
     needsSummary({ dietaryNeeds: ["vegan"], dislikes: ["rice", "pasta"] }),
-    "Vegan · Not a fan of 2 foods",
+    "Vegan, not a fan of 2 foods",
   );
   assert.equal(needsSummary({}), "None set");
   assert.equal(
@@ -2162,11 +2172,11 @@ test("YOU-01: row summaries match the settings list copy", () => {
       { foodSources: ["cafeteria"], lowCostIdeas: false },
       { foodAccess: { refrigerator: true } },
     ),
-    "Cafeteria, fridge · Low-cost ideas off",
+    "Cafeteria, fridge. Low-cost ideas off.",
   );
   assert.equal(
     accessSummary({ foodSources: [], budget: "save" }),
-    "No food access set · Low-cost ideas on",
+    "No food access set. Low-cost ideas on.",
   );
 });
 
@@ -2431,7 +2441,7 @@ test("P2-04: ml water is stored as ounces, so oz logs stay valid", () => {
   );
   assert.equal(
     accessSummary({ foodSources: ["packed"], lowCostIdeas: true, units: "ml" }),
-    "Packed · Low-cost ideas on · Water in ml",
+    "Packed. Low-cost ideas on. Water in ml.",
   );
 });
 
@@ -2847,7 +2857,7 @@ test("Lunch outside school says when school is", () => {
     lunchEndTime: "16:30",
   };
   const expected = {
-    message: "Lunch has to be during school (8:00 AM–3:00 PM).",
+    message: nb("Lunch has to be during school (8:00 AM–3:00 PM)."),
     field: "lunch",
   };
   assert.deepEqual(schoolDayProblem(day), expected);

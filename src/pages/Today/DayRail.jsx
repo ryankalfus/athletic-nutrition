@@ -1,19 +1,23 @@
-import { Fragment } from "react";
 import { formatTime } from "../../format.js";
 
-// A sub-line part that is a time or time range never breaks inside itself.
-const TIME = /\d:\d\d/;
+// A time or time range ("about 2:30 PM", "until 5:30 PM", "4:00–5:30 PM")
+// never breaks inside itself; the sentence around it wraps freely.
+const TIME =
+  /((?:about |until )?\d{1,2}:\d\d(?:\s[AP]M)?(?:–\d{1,2}:\d\d(?:\s[AP]M)?)?)/i;
 
 function SubLine({ text }) {
-  const parts = String(text || "").split(" · ");
+  const parts = String(text || "").split(TIME);
   return (
     <span className="rail-sub">
-      {parts.map((part, i) => (
-        <Fragment key={i}>
-          {i > 0 && " · "}
-          <span className={TIME.test(part) ? "nowrap" : undefined}>{part}</span>
-        </Fragment>
-      ))}
+      {parts.map((part, i) =>
+        i % 2 ? (
+          <span key={i} className="nowrap">
+            {part}
+          </span>
+        ) : (
+          part
+        ),
+      )}
     </span>
   );
 }

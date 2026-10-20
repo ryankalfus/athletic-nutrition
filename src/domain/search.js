@@ -300,7 +300,8 @@ export function portionHint(food) {
     : null;
 }
 
-/** The one sub-line under a result: "Basic food · 1 medium, 118 g". */
+/** The one sub-line under a result, two short sentences with no dot-meta
+ * (UX-COPY-01): "Basic food. 1 medium, 118 g". */
 export function resultSubline(food) {
   const hint = portionHint(food);
   const kind = food.brand
@@ -308,7 +309,7 @@ export function resultSubline(food) {
     : isPackagedProduct(food)
       ? "Packaged food"
       : "Basic food";
-  return [kind, hint?.label].filter(Boolean).join(" · ");
+  return [kind, hint?.label].filter(Boolean).join(". ");
 }
 
 // Open Food Facts allergen tags ("en:milk") as plain names. Known tags get

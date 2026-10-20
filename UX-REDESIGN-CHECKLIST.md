@@ -8,7 +8,7 @@ Source of truth: [UX-REDESIGN-PLAN.md](UX-REDESIGN-PLAN.md). Read the item there
 
 ## Phase tracker
 
-**Status 2026.10.20:** U0 done (1/1). U1 done (6/6). U2 1/2; U1–U10 7/48. Recommendation IDs done: 26 of 225. The 225 are the 218 of the plan, UX-CMP-23 (decision A) and six added on 2026.10.20 when the old lists were reconciled: UX-SET-08, UX-BUG-22 and UX-TEST-07 to UX-TEST-10, with build item U10-02.
+**Status 2026.10.20:** U0 done (1/1). U1 done (6/6). U2 done (2/2); U1–U10 8/48. Recommendation IDs done: 33 of 225. The 225 are the 218 of the plan, UX-CMP-23 (decision A) and six added on 2026.10.20 when the old lists were reconciled: UX-SET-08, UX-BUG-22 and UX-TEST-07 to UX-TEST-10, with build item U10-02.
 
 ### U0 — Full review (done 2026.10.15)
 
@@ -26,7 +26,7 @@ Source of truth: [UX-REDESIGN-PLAN.md](UX-REDESIGN-PLAN.md). Read the item there
 ### U2 — Tokens and copy foundation
 
 - [x] **U2-01** — Token plan. Closes: UX-DS-01, UX-DS-03, UX-DS-06, UX-DS-08, UX-DS-09. Done 2026.10.20: `tokens.css` adds every 4.4 token (glass surfaces, `--color-hero` and `--color-hero-inset` as aliases, the radius ladder, `--elev-*`, `--control-height` 52, `--cta-height`, `--row-min`, `--tab-inset`, `--tab-bar-max`, `--top-bar-glass`, `--hero-track`, `--text-large-title`, `--text-hero`, `--text-time`, `--text-tab`) and the 1024 px overrides (large title 40/44, hero 56/58, time 18/24, h2 22/28, display 64/68, sections 40); renames `--text-h1` → `--text-large-title` and `--text-numeral-m` → `--text-time`; marks the retired tokens; no color value changed. Base elements use the scale: h1 large title, h2 650, `small` and field hints 14/20 (also the setup helper line, so step 2 still fits 390 × 844 with 52 px fields). `tests/styles.test.js`: "all 42 color values are pinned" (and any other `--color-*` must alias one), "tokens.css is the only stylesheet with literal colors", "the 4.4 token plan and the UX-DS-09 type scale", "base elements use the UX-DS-09 roles"; RWD-01 still passes. `tests/css-usage.test.js`: every `var()` reads a set token, and a retired token fails once unread. `browser-visual.js` measures 52 px inputs (replaces the 48 px check, UX-TEST-04); `browser-shared-ui.js` checks the water total at 17/18 px, titles 40/44 and 22/28 at 650 at 1280 px, 40 px You sections and a 52 px "+ Add". `npm run check` (208 unit tests) and 26/26 browser scripts pass.
-- [ ] **U2-02** — Formatters write sentences. Closes: UX-COPY-01, UX-COPY-02, UX-COPY-03, UX-COPY-04, UX-COPY-06, UX-BUG-08, UX-BUG-09.
+- [x] **U2-02** — Formatters write sentences. Closes: UX-COPY-01, UX-COPY-02, UX-COPY-03, UX-COPY-04, UX-COPY-06, UX-BUG-08, UX-BUG-09. Done 2026.10.20: `format.js` joins every time to its AM/PM with U+00A0, adds `formatTimeRange` ("4:00–5:30 PM") and `formatDateRange` writes "Oct 12–18" and "Sep 29–Oct 5" (the plan's `formatRange`); every " · " meta in `src` is a short sentence (Day rail "Until 3:00 PM, lunch 11:30 AM", "Until 5:30 PM, home", "Banana + pretzels, about 2:30 PM"; Schedule "Away, leave by 5:15 PM" and "Mon–Fri, 8:00 AM–3:00 PM, lunch 11:30 AM"; You "Soccer, in season"; Log "Today, Tue Oct 13"; the Now card timing, Tonight, Groceries, Ideas, search results and the shared plain-text lists); the spaced-dash headlines and lines are two sentences ("Rest day. Keep regular meals.", "Lunch time. Choose something familiar."); Log › Week rows read "2 foods, 8 oz water" or "Nothing logged" with no water negative; `.badge` lost `text-transform: uppercase` and its tracking, so badges read as typed ("Game day", "Planned", "You have everything"). `browser-shared-ui.js` scans Welcome and 15 routes at 320 and 1280 px plus Schedule Month: no " · ", no spaced dash between words, no uppercase transform, no capital word over 3 letters but USDA, no time that can wrap before AM/PM; `domain.test.js` "P0-05" checks `formatTime` contains U+00A0 and `formatDateRange` returns "Oct 12–18"; `tests/styles.test.js` "U2-02: no stylesheet sets text-transform: uppercase". The UX rules check R3 fell from 56 to 0 at 390 and 1440. Left as is: the browser tab title ("Today · Nourally") and the You rows' accessible names, which are not page text. `npm run check` (209 unit tests) and 26/26 browser scripts pass.
 
 ### U3 — App frame and the floating tab bar
 
@@ -160,12 +160,12 @@ One checkbox per ID. The note names the build item that closes it.
 
 ### Copy rules (`UX-COPY`)
 
-- [ ] **UX-COPY-01** — No dot-meta. (closes in U2-02)
-- [ ] **UX-COPY-02** — No spaced em dash. (closes in U2-02)
-- [ ] **UX-COPY-03** — No uppercase. (closes in U2-02)
-- [ ] **UX-COPY-04** — Times and ranges hold together. (closes in U2-02)
+- [x] **UX-COPY-01** — No dot-meta. (closes in U2-02) Done 2026.10.20 (U2-02): `browser-shared-ui.js`, `domain.test.js`.
+- [x] **UX-COPY-02** — No spaced em dash. (closes in U2-02) Done 2026.10.20 (U2-02): `browser-shared-ui.js`.
+- [x] **UX-COPY-03** — No uppercase. (closes in U2-02) Done 2026.10.20 (U2-02): `browser-shared-ui.js`, `tests/styles.test.js`.
+- [x] **UX-COPY-04** — Times and ranges hold together. (closes in U2-02) Done 2026.10.20 (U2-02): `domain.test.js`, `log.test.js`, `browser-shared-ui.js`.
 - [ ] **UX-COPY-05** — One-line helpers. (closes in U4-03)
-- [ ] **UX-COPY-06** — Meta without negatives. (closes in U2-02)
+- [x] **UX-COPY-06** — Meta without negatives. (closes in U2-02) Done 2026.10.20 (U2-02): `browser-log.js`, `browser-units-week.js`.
 
 ### Welcome (`UX-WEL`)
 
@@ -340,8 +340,8 @@ One checkbox per ID. The note names the build item that closes it.
 - [ ] **UX-BUG-05** — Plan details sheet offers only Close. (closes in U5-04)
 - [x] **UX-BUG-06** — Log edit entry and portion step: amount 0 disables Save with no message. (closes in U1-01) Done 2026.10.20 (U1-01): `browser-log.js` (Edit food and the portion step), `domain.test.js`.
 - [x] **UX-BUG-07** — Barcode not found says "Add the food yourself." with no button for it. (closes in U1-03) Done 2026.10.20 (U1-03): `browser-search.js`.
-- [ ] **UX-BUG-08** — Travel time wraps between "5:15" and "PM". (closes in U2-02)
-- [ ] **UX-BUG-09** — At 320 px, a meta line wraps so that "· Lunch 11:30 AM" starts the second line with an orphan dot. (closes in U2-02)
+- [x] **UX-BUG-08** — Travel time wraps between "5:15" and "PM". (closes in U2-02) Done 2026.10.20 (U2-02): `domain.test.js`, `browser-shared-ui.js`.
+- [x] **UX-BUG-09** — At 320 px, a meta line wraps so that "· Lunch 11:30 AM" starts the second line with an orphan dot. (closes in U2-02) Done 2026.10.20 (U2-02): `browser-shared-ui.js` (no " · " at 320 px).
 - [ ] **UX-BUG-10** — Toasts cover content and actions: prompt buttons (`p126`, `p152`, `p531`), "Everything's checked" line (`p360`), the footer (`p318`). (closes in U3-04)
 - [ ] **UX-BUG-11** — The footer line is clipped behind the tab bar at the end of You. (closes in U3-01)
 - [ ] **UX-BUG-12** — Controls clip with no scroll cue: Ideas moment tray "To…" (`p301`), Quick add "Frozen b" (`p332`), 320 px tabs (`p709`). (closes in U7-01)
@@ -378,7 +378,7 @@ One checkbox per ID. The note names the build item that closes it.
 - [ ] **UX-TEST-03** — The rules check. (built in U1-06; closes in U8-06) — Partial 2026.10.20: `tests/browser-ux-rules.js` built in U1-06 in report mode (STRICT empty, baseline recorded in U1-06); each screen phase adds its routes to STRICT and U8-06 makes every route strict.
 - [ ] **UX-TEST-04** — Retire assertions that encode the old look. (closes in U8-06) — Partial 2026.10.20: U2-01 replaced the 48 px input checks in `browser-visual.js` with 52 px; the other old-look checks are replaced in U3-02, U4-04, U4-05, U5-01, U6-01 and U7-01.
 - [ ] **UX-TEST-05** — Final re-review. (closes in U10-01)
-- [ ] **UX-TEST-06** — Stylesheet guards. (closes in U8-06) — Partial 2026.10.20: U2-01 pinned the 42 color values and added the literal-color, unset-token and retired-token guards (`tests/styles.test.js`, `tests/css-usage.test.js`); the shadow, uppercase, dashed-border and `--font-numeral` guards are still to come.
+- [ ] **UX-TEST-06** — Stylesheet guards. (closes in U8-06) — Partial 2026.10.20: U2-01 pinned the 42 color values and added the literal-color, unset-token and retired-token guards (`tests/styles.test.js`, `tests/css-usage.test.js`); U2-02 added the no-uppercase guard; the shadow, dashed-border and `--font-numeral` guards are still to come.
 - [ ] **UX-TEST-07** — Real-phone camera and barcode check. (closes in U10-02; moved from X01, 2026.10.20)
 - [ ] **UX-TEST-08** — Reminders and browser matrix (Safari, Firefox, real devices). (closes in U10-02; moved from X02, 2026.10.20; delivery with the app closed is P3-01)
 - [ ] **UX-TEST-09** — Nutrition specialist review of meal templates, timing cutoffs and portions. (closes in U10-02; moved from X03, 2026.10.20)

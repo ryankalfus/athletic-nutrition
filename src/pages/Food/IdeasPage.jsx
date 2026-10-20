@@ -139,11 +139,9 @@ export default function IdeasPage({ now, todayKey }) {
       <p>
         {moment === "now"
           ? guidance.label
-          : `${event ? `${event.title} at ${formatTime(event.startTime)}` : "No activity scheduled"} · ${formatDate(date)}`}
+          : `${event ? `${event.title} at ${formatTime(event.startTime)}` : "No activity"} on ${formatDate(date)}`}
       </p>
-      {guidance.travelMode && (
-        <p>Away activity — showing foods that travel well.</p>
-      )}
+      {guidance.travelMode && <p>Away activity. These foods travel well.</p>}
       {hiddenByLowCost > 0 && (
         <p className="idea-filter-note">
           Showing low-cost ideas.{" "}
@@ -206,7 +204,7 @@ export default function IdeasPage({ now, todayKey }) {
             </button>
           }
         >
-          Pack a snack next time — see ideas for tomorrow.
+          Pack a snack next time. See ideas for tomorrow.
         </EmptyState>
       )}
       {!ideas.length && inputs.access.length > 0 && (
@@ -323,7 +321,7 @@ export default function IdeasPage({ now, todayKey }) {
               >
                 {missing.length
                   ? `Buy ${missing.length} ${missing.length === 1 ? "item" : "items"}`
-                  : "Ready — you have everything"}
+                  : "You have everything"}
               </p>
               <ul className="idea-tags" aria-label="Good to know">
                 {ideaTags(idea).map((tag) => {
@@ -458,9 +456,9 @@ export function MealPlanCard({
       </div>
       <p>
         {plan.eatAt
-          ? `Eat around ${formatTime(plan.eatAt)}`
-          : "Eat when it fits your day"}{" "}
-        · {formatPlanStatus(plan.status)}
+          ? `Eat around ${formatTime(plan.eatAt)}.`
+          : "Eat when it fits your day."}{" "}
+        {formatPlanStatus(plan.status)}.
       </p>
       {changed && (
         <p>

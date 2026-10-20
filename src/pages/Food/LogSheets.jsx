@@ -79,7 +79,7 @@ export function UseFromHomeSheet({ entry, only, onDone, onDirty }) {
       )}
       {items.map((item) => (
         <label key={item.id}>
-          {item.name} — {item.quantity}{" "}
+          {item.name}, {item.quantity}{" "}
           {plural(item.quantity, item.unit || "package")} left
           <input
             type="number"

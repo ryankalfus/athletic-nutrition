@@ -51,7 +51,9 @@ export default function PackPrep({
       </div>
       <p>
         {allDone
-          ? `All packed · ${done} of ${tasks.length}`
+          ? tasks.length === 1
+            ? "Packed"
+            : `All ${tasks.length} packed`
           : `${done} of ${tasks.length} done`}
       </p>
       {allDone && (

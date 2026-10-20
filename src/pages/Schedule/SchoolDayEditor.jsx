@@ -244,7 +244,7 @@ export function SchoolDayEditor({ model }) {
                       <li key={`${range.startDate}-${range.endDate}`}>
                         {formatDate(range.startDate)}
                         {range.endDate !== range.startDate
-                          ? ` – ${formatDate(range.endDate)}`
+                          ? ` to ${formatDate(range.endDate)}`
                           : ""}
                         <button
                           type="button"

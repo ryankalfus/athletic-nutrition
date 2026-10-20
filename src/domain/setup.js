@@ -412,7 +412,7 @@ export function firstPlanPreview(events = [], now = new Date()) {
       `${String(Math.floor(m / 60)).padStart(2, "0")}:${String(m % 60).padStart(2, "0")}`;
     const snackText =
       snack >= 0 && (offset > 0 || snack > minutes)
-        ? ` Plan a snack for about ${formatTime(clock(snack)).replace(/ [AP]M$/, "")}.`
+        ? ` Plan a snack for about ${formatTime(clock(snack)).replace(/\s[AP]M$/, "")}.`
         : "";
     return {
       event: next,
