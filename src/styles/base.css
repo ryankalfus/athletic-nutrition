@@ -374,7 +374,7 @@ td {
 
 /* A page heading takes focus after a route change so screen readers start
  * there; it is not a control, so it draws no ring. */
-h1[tabindex="-1"]:focus {
+:is(h1, h2, h3)[tabindex="-1"]:focus {
   outline: none;
 }
 

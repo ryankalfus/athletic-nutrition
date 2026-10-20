@@ -21,8 +21,12 @@ export function RemindersSheet({ settings, onClose }) {
   const dirty = JSON.stringify(draft) !== JSON.stringify(initial);
   // A browser that blocks or cannot show notifications can't turn reminders
   // on; the switch stays usable only to turn them off.
-  const blocked =
-    (permission === "denied" || permission === "unsupported") && !draft.enabled;
+  const unavailable = permission === "denied" || permission === "unsupported";
+  const blocked = unavailable && !draft.enabled;
+  // The timing and evening options depend on reminders that can fire: they
+  // are disabled (and dimmed) while the switch is off or the browser blocks
+  // notifications, even if reminders were left on (UX-BUG-15, UX-CMP-08).
+  const dependentOff = !draft.enabled || unavailable;
 
   const save = async () => {
     const next = draft;
@@ -61,7 +65,7 @@ export function RemindersSheet({ settings, onClose }) {
         hint={describePermission(permission)}
         onChange={(enabled) => setDraft({ ...draft, enabled })}
       />
-      <fieldset className="choice-field" disabled={!draft.enabled}>
+      <fieldset className="choice-field" disabled={dependentOff}>
         <legend>How long before</legend>
         <SegmentedControl
           label="How long before"
@@ -77,7 +81,7 @@ export function RemindersSheet({ settings, onClose }) {
         <input
           type="checkbox"
           checked={draft.eveningPrep}
-          disabled={!draft.enabled}
+          disabled={dependentOff}
           onChange={(event) =>
             setDraft({ ...draft, eveningPrep: event.target.checked })
           }

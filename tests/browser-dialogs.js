@@ -98,6 +98,53 @@ async (page) => {
       'Week and Month name the calendar button "Go to today"; only the nav is named "Today" (A11Y-10).',
     );
 
+    // UX-BUG-16: a sheet opened by mouse starts on its title, so no focus
+    // ring shows on the X (a keyboard open starts on the first control:
+    // browser-a11y.js).
+    const titleFocus = async (where) => {
+      const state = await p.evaluate(() => {
+        const dialog = document.querySelector("dialog[open]");
+        const close = dialog.querySelector("header button");
+        return {
+          title: document.activeElement === dialog.querySelector("header h2"),
+          ring: close.matches(":focus-visible"),
+          active: document.activeElement?.tagName,
+        };
+      });
+      if (!state.title || state.ring)
+        throw new Error(`${where} opened by mouse: ${JSON.stringify(state)}`);
+    };
+    await p.getByRole("button", { name: "+ Add", exact: true }).first().click();
+    await p.getByRole("dialog", { name: "Add practice" }).waitFor();
+    await titleFocus("Add practice");
+    await p.keyboard.press("Escape");
+    await p
+      .getByRole("dialog", { name: "Add practice" })
+      .waitFor({ state: "hidden" });
+    await p.getByRole("button", { name: /^(Edit|Set up) school day$/ }).click();
+    await p.getByRole("dialog", { name: "School day" }).waitFor();
+    await titleFocus("School day");
+    await p.keyboard.press("Escape");
+    await p
+      .getByRole("dialog", { name: "School day" })
+      .waitFor({ state: "hidden" });
+    for (const [link, name] of [
+      [/^Sport & season/, "Sport & season"],
+      [/^Food access/, "Food access & budget"],
+      [/^Reminders/, "Reminders"],
+    ]) {
+      await p.goto(`${base}#/you`);
+      await p.getByRole("link", { name: link }).click();
+      await p.getByRole("dialog", { name }).waitFor();
+      await titleFocus(name);
+      await p.keyboard.press("Escape");
+      await p.getByRole("dialog", { name }).waitFor({ state: "hidden" });
+    }
+    result.checks.push(
+      "Add practice, School day, Sport & season, Food access & budget and Reminders opened by mouse focus the sheet title, with no focus ring on the X (UX-BUG-16).",
+    );
+    await p.goto(`${base}#/schedule`);
+
     // A11Y-09: empty date and start time are app errors on the field.
     await p.getByRole("button", { name: "+ Add", exact: true }).first().click();
     const add = p.getByRole("dialog", { name: "Add practice" });

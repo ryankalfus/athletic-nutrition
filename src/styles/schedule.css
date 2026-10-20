@@ -518,15 +518,11 @@
   min-height: var(--control-height);
 }
 
-.scope-options > .danger-outline {
-  border-color: var(--color-error);
+/* "Delete all …": the riskier choice reads as a text button in the error
+ * colour, under the filled "Delete only" (UX-BUG-17). */
+.scope-options > .danger-text {
+  justify-self: center;
   color: var(--color-error);
-}
-
-@media (hover: hover) {
-  .scope-options > .danger-outline:hover:not(:disabled) {
-    background: var(--color-error-tint);
-  }
 }
 
 /* A note about the sheet's scope, at the top of the form. */

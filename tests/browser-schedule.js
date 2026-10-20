@@ -168,6 +168,27 @@ async (page) => {
     await today().getByText("Practice test").waitFor();
     await actions("Practice test");
     await today().getByRole("menuitem", { name: "Delete…" }).click();
+    // UX-BUG-17: the safe choice is the primary. "Delete only" is the filled
+    // destructive button; "Delete all" is a text button.
+    const scopeStyles = await del.evaluate((dialog) =>
+      [...dialog.querySelectorAll(".scope-options > button")].map((b) => ({
+        text: b.textContent.trim(),
+        filled: getComputedStyle(b).backgroundColor,
+        text_button: b.classList.contains("text-button"),
+        danger: b.classList.contains("danger-button"),
+      })),
+    );
+    const deleteOnly = scopeStyles.find((b) =>
+      b.text.startsWith("Delete only"),
+    );
+    const deleteAll = scopeStyles.find((b) => b.text.startsWith("Delete all"));
+    if (
+      !deleteOnly?.danger ||
+      deleteOnly.filled === "rgba(0, 0, 0, 0)" ||
+      !deleteAll?.text_button ||
+      deleteAll.danger
+    )
+      throw new Error(`Delete scope styles: ${JSON.stringify(scopeStyles)}`);
     await del
       .getByRole("button", { name: `Delete all ${weekday} practices` })
       .click();
@@ -176,7 +197,7 @@ async (page) => {
     if (await rows("Practice test").count())
       throw new Error("Series delete left occurrences");
     result.checks.push(
-      `Deleting a repeating practice asks for scope and can be closed; on a ${weekday}-only series "Delete all ${weekday} practices" removes it.`,
+      `Deleting a repeating practice asks for scope and can be closed; "Delete only" is the filled destructive button and "Delete all" a text button (UX-BUG-17); on a ${weekday}-only series "Delete all ${weekday} practices" removes it.`,
     );
 
     await p.getByRole("button", { name: /^(Edit|Set up) school day$/ }).click();

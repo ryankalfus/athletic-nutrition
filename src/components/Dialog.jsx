@@ -16,7 +16,33 @@ import { Button, IconButton } from "./ui/Button.jsx";
 
 const DialogClose = createContext(null);
 const DialogErrorSlot = createContext(null);
-const FIELDS = "input:not([type=hidden]), select, textarea";
+const FIELDS =
+  "input:not([type=hidden]):not(:disabled), select:not(:disabled), textarea:not(:disabled)";
+// A sheet whose job is typing (Log food and Add to groceries search) keeps
+// its field focused however it was opened (P1-08).
+const TYPING = 'input[type="search"], input[type="text"], textarea';
+
+// How the athlete last used the page. A sheet opened by pointer or by route
+// starts on its title (tabindex -1, no ring: UX-BUG-16, UX-CMP-10); one opened
+// from the keyboard starts on its first control (A11Y-04).
+let lastInput = "pointer";
+if (typeof document !== "undefined") {
+  document.addEventListener(
+    "pointerdown",
+    () => {
+      lastInput = "pointer";
+    },
+    true,
+  );
+  document.addEventListener(
+    "keydown",
+    (event) => {
+      if (!event.metaKey && !event.ctrlKey && !event.altKey)
+        lastInput = "keyboard";
+    },
+    true,
+  );
+}
 const TABBABLE =
   'a[href], button:not(:disabled), input:not(:disabled):not([type="hidden"]), select:not(:disabled), textarea:not(:disabled), summary, [tabindex]:not([tabindex="-1"])';
 
@@ -120,10 +146,12 @@ export function Dialog({
     const node = ref.current;
     const previous = document.activeElement;
     node.showModal();
-    (
-      initialFocusRef?.current ||
-      node.querySelector(FIELDS) ||
-      node.querySelector("button:not([aria-label^='Close'])")
+    const preferred = initialFocusRef?.current;
+    (lastInput === "keyboard" || preferred?.matches(TYPING)
+      ? preferred ||
+        node.querySelector(FIELDS) ||
+        node.querySelector("button:not([aria-label^='Close'])")
+      : node.querySelector(":scope > header > h2")
     )?.focus();
     // When a step swaps the content (a search result opens the portion or
     // details step), the focused control leaves the page and focus would
@@ -195,7 +223,9 @@ export function Dialog({
       <DialogClose.Provider value={requestClose}>
         <DialogErrorSlot.Provider value={{ error, retry, register }}>
           <header>
-            <h2 id={titleId}>{title}</h2>
+            <h2 id={titleId} tabIndex={-1}>
+              {title}
+            </h2>
             <IconButton
               label={`Close ${title}`}
               icon={X}

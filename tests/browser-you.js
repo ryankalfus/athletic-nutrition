@@ -2,6 +2,16 @@
 async (page) => {
   const base = globalThis.BASE_URL ?? "http://127.0.0.1:5173/";
   const context = await page.context().browser().newContext();
+  // A permission the test can set (UX-BUG-15): localStorage "test-permission".
+  await context.addInitScript(() => {
+    const forced = () => localStorage.getItem("test-permission");
+    if (!forced() || typeof Notification === "undefined") return;
+    Object.defineProperty(Notification, "permission", {
+      get: forced,
+      configurable: true,
+    });
+    Notification.requestPermission = () => Promise.resolve(forced());
+  });
   const p = await context.newPage();
   p.setDefaultTimeout(15000);
   const result = { checks: [], errors: [] };
@@ -135,6 +145,52 @@ async (page) => {
       throw new Error(`#/reminders did not redirect: ${p.url()}`);
     result.checks.push(
       "Reminders opens at #/you/reminders (also from old #/reminders) with the honesty line, and closes to #/you.",
+    );
+
+    // UX-BUG-15: reminders left on, then the browser blocks notifications:
+    // "How long before" and the evening reminder are disabled and dimmed.
+    await p.evaluate(() => localStorage.setItem("test-permission", "granted"));
+    await p.reload();
+    await sheet.getByRole("switch").check();
+    await sheet.getByRole("button", { name: "Save", exact: true }).click();
+    await sheet.waitFor({ state: "hidden" });
+    await p.evaluate(() => localStorage.setItem("test-permission", "denied"));
+    await p.goto(`${base}#/you/reminders`);
+    await p.reload();
+    await sheet
+      .getByText("Notifications are blocked.", { exact: false })
+      .waitFor();
+    const dependents = await sheet.evaluate((dialog) => {
+      const lead = dialog.querySelector("fieldset");
+      const evening = dialog.querySelector("input[type=checkbox]:not([role])");
+      return {
+        switchOn: dialog.querySelector("[role=switch]").checked,
+        lead: lead.disabled,
+        segments: [...lead.querySelectorAll("button")].every((b) =>
+          b.matches(":disabled"),
+        ),
+        evening: evening.disabled,
+        legend: getComputedStyle(lead.querySelector("legend")).color,
+        eveningText: getComputedStyle(evening.closest("label")).color,
+        ink: getComputedStyle(dialog.querySelector("h2")).color,
+      };
+    });
+    if (
+      !dependents.switchOn ||
+      !dependents.lead ||
+      !dependents.segments ||
+      !dependents.evening ||
+      dependents.legend === dependents.ink ||
+      dependents.eveningText === dependents.ink
+    )
+      throw new Error(
+        `Blocked reminders leave options active: ${JSON.stringify(dependents)}`,
+      );
+    await sheet.getByRole("button", { name: /^Close/ }).click();
+    await sheet.waitFor({ state: "hidden" });
+    await p.evaluate(() => localStorage.removeItem("test-permission"));
+    result.checks.push(
+      "With reminders on and notifications blocked, “How long before” and the evening reminder are disabled and dimmed (UX-BUG-15).",
     );
     await p.goto(`${base}#/you/device`);
     await p.getByRole("heading", { name: "This device", level: 1 }).waitFor();

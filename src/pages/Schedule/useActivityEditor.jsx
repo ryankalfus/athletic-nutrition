@@ -404,11 +404,12 @@ export function useActivityEditor({
           {/* DLG-03: a failed delete shows above the choices. */}
           <DialogError />
           <div className="scope-options">
-            {/* Deleting reads as destructive: "only" outlined in the error
-                colour, "all" filled; both 48 px, with Cancel (ACT-03). */}
+            {/* The safe choice is the primary (UX-BUG-17): "Delete only"
+                is the filled destructive button, "Delete all" a text button
+                in the error colour; both 48 px, with Cancel (ACT-03). */}
             <button
               className={
-                scopePrompt.kind === "edit" ? "primary" : "danger-outline"
+                scopePrompt.kind === "edit" ? "primary" : "danger-button"
               }
               onClick={chooseOnly}
             >
@@ -417,7 +418,7 @@ export function useActivityEditor({
             </button>
             <button
               className={
-                scopePrompt.kind === "edit" ? undefined : "danger-button"
+                scopePrompt.kind === "edit" ? undefined : "text-button danger-text"
               }
               onClick={chooseAll}
             >
