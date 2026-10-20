@@ -9,7 +9,10 @@ export const HERE = path.dirname(fileURLToPath(import.meta.url));
 export const ROOT = path.resolve(HERE, "..", "..");
 export const OUT = path.join(ROOT, "output", "ux-review");
 mkdirSync(OUT, { recursive: true });
-export const BASE = process.env.BASE_URL || "http://localhost:5271/";
+export const BASE = (process.env.BASE_URL || "http://127.0.0.1:5271/").replace(
+  /\/?$/,
+  "/",
+);
 export const CAPTURES = path.join(OUT, "CAPTURES.txt");
 const { SEARCH_FIXTURES } = await import(
   pathToFileURL(path.join(ROOT, "tests/fixtures/food-search.js")).href

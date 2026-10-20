@@ -101,7 +101,7 @@ async (page) => {
     try {
       await p.goto(base);
       await p.getByRole("button", { name: "Get started" }).click();
-      await p.getByRole("textbox", { name: /First name/ }).fill("Shift test");
+      await p.getByRole("textbox", { name: /First name/ }).fill("Zoe");
       await p.getByRole("combobox", { name: /^Sport/ }).fill("Soccer");
       await p.getByRole("button", { name: "Next", exact: true }).click();
       await p.getByRole("heading", { name: "Your school day" }).waitFor();
@@ -285,8 +285,8 @@ async (page) => {
       await go("you/device", "This device");
       await openDialog(
         `${width} you/device: delete confirm`,
-        "Delete Shift test's data from this device?",
-        p.getByRole("button", { name: "Delete Shift test's data" }),
+        "Delete Zoe's data from this device?",
+        p.getByRole("button", { name: "Delete Zoe's data" }),
       );
 
       await go("today", "Today");
@@ -314,7 +314,7 @@ async (page) => {
         "Add athlete",
         p.getByRole("button", { name: "Add another athlete" }),
       );
-      const tileMenu = p.getByRole("button", { name: "Shift test options" });
+      const tileMenu = p.getByRole("button", { name: "Zoe options" });
       await center(tileMenu);
       await same(
         `${width} welcome: row menu`,
@@ -326,10 +326,10 @@ async (page) => {
         },
       );
       for (const [item, name] of [
-        ["Rename", "Rename Shift test"],
+        ["Rename", "Rename Zoe"],
         [
           "Remove from this device",
-          "Delete Shift test's data from this device?",
+          "Delete Zoe's data from this device?",
         ],
       ]) {
         await center(tileMenu);

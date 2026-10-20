@@ -36,7 +36,7 @@ async (page) => {
   try {
     await p.goto(base);
     await p.getByRole("button", { name: "Get started" }).click();
-    await p.getByRole("textbox", { name: /First name/ }).fill("Schedule test");
+    await p.getByRole("textbox", { name: /First name/ }).fill("Maya");
     await p.getByRole("combobox", { name: /^Sport/ }).fill("Soccer");
     await p.getByRole("button", { name: "Next", exact: true }).click();
     await p.getByRole("heading", { name: "Your school day" }).waitFor();
@@ -62,7 +62,7 @@ async (page) => {
 
     await p.getByRole("button", { name: "+ Add", exact: true }).first().click();
     const sheet = p.getByRole("dialog", { name: "Add practice" });
-    await sheet.getByRole("textbox", { name: "Name" }).fill("Practice test");
+    await sheet.getByRole("textbox", { name: "Name" }).fill("Late practice");
     await sheet.getByLabel("Starts").fill("16:00");
     await sheet.getByLabel("Ends").fill("15:00");
     await sheet
@@ -101,7 +101,7 @@ async (page) => {
       .getByRole("button", { name: "Add practice", exact: true })
       .click();
     await sheet.waitFor({ state: "hidden" });
-    await rows("Practice test").first().waitFor();
+    await rows("Late practice").first().waitFor();
     await p.getByRole("heading", { name: / Today$/, level: 2 }).waitFor();
     if (!(await today().innerText()).includes("Away · Leave by 3:35 PM"))
       throw new Error("Away practice with travel time is not on today");
@@ -109,7 +109,7 @@ async (page) => {
       "A weekly away practice with 25 min travel shows on today with Leave by 3:35 PM.",
     );
 
-    await actions("Practice test");
+    await actions("Late practice");
     // The open menu holds still: same place over six animation frames.
     const tops = await p.evaluate(
       () =>
@@ -148,25 +148,25 @@ async (page) => {
       "Editing a repeating practice asks for scope; 'only this date' edits one day.",
     );
 
-    await actions("Practice test");
+    await actions("Late practice");
     await today().getByRole("menuitem", { name: "Skip this day" }).click();
-    await today().getByText("Practice test").waitFor({ state: "hidden" });
+    await today().getByText("Late practice").waitFor({ state: "hidden" });
     await p.getByRole("radio", { name: "Month" }).click();
     await p.getByRole("button", { name: "Restore this day" }).click();
-    await rows("Practice test").first().waitFor();
+    await rows("Late practice").first().waitFor();
     await p.getByRole("radio", { name: "Week" }).click();
-    await today().getByText("Practice test").waitFor();
+    await today().getByText("Late practice").waitFor();
     result.checks.push(
       "Skip this day hides one occurrence; Month view restores it.",
     );
 
-    await actions("Practice test");
+    await actions("Late practice");
     await today().getByRole("menuitem", { name: "Delete…" }).click();
     const del = p.getByRole("dialog", { name: "Delete repeating activity" });
     await del.getByRole("button", { name: /^Close/ }).click();
     await del.waitFor({ state: "hidden" });
-    await today().getByText("Practice test").waitFor();
-    await actions("Practice test");
+    await today().getByText("Late practice").waitFor();
+    await actions("Late practice");
     await today().getByRole("menuitem", { name: "Delete…" }).click();
     // UX-BUG-17: the safe choice is the primary. "Delete only" is the filled
     // destructive button; "Delete all" is a text button.
@@ -193,8 +193,8 @@ async (page) => {
       .getByRole("button", { name: `Delete all ${weekday} practices` })
       .click();
     await del.waitFor({ state: "hidden" });
-    await today().getByText("Practice test").waitFor({ state: "hidden" });
-    if (await rows("Practice test").count())
+    await today().getByText("Late practice").waitFor({ state: "hidden" });
+    if (await rows("Late practice").count())
       throw new Error("Series delete left occurrences");
     result.checks.push(
       `Deleting a repeating practice asks for scope and can be closed; "Delete only" is the filled destructive button and "Delete all" a text button (UX-BUG-17); on a ${weekday}-only series "Delete all ${weekday} practices" removes it.`,

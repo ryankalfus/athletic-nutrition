@@ -25,7 +25,7 @@ disagree on a product rule, the audit wins. If they disagree on looks, this plan
 
 | Label | Meaning |
 |---|---|
-| `p101` | Phone capture 101 (regenerate with `npm run capture:ux`, see `docs/ux-review/README.md`) at 390 × 844: `output/ux-review/phone/101-*-fold.png` (plus `-full.png` where it exists). |
+| `p101` | Phone capture 101 (regenerate with `npm run ux:capture -- phone`, see `docs/ux-review/README.md`) at 390 × 844: `output/ux-review/phone/101-*-fold.png` (plus `-full.png` where it exists). |
 | `p701`–`p718` | Phone captures at 320 × 740 (the w320 block). |
 | `d101` | Desktop capture 101 at 1440 × 900: `output/ux-review/desktop/101-*-fold.png`. |
 | `d641`–`d646` | Tablet captures at 768 × 1024. `d701`–`d718` are 1024 px captures. |

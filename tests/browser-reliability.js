@@ -19,7 +19,7 @@ async (page) => {
       localStorage.setItem(
         "nourally-profile",
         JSON.stringify({
-          name: "Legacy test",
+          name: "Isaac",
           budget: "save",
           dietaryNeeds: [],
           foodSources: ["packed", "home"],
@@ -48,7 +48,7 @@ async (page) => {
     await water(a, 52);
     await b.goto(`${base}#/today`);
     await water(b, 52);
-    if (!(await a.getByRole("banner").innerText()).includes("Legacy test"))
+    if (!(await a.getByRole("banner").innerText()).includes("Isaac"))
       throw new Error("Legacy profile name was not migrated");
     result.checks.push("Legacy localStorage profile and 52 oz water migrate.");
 

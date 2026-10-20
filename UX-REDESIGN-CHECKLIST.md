@@ -8,7 +8,7 @@ Source of truth: [UX-REDESIGN-PLAN.md](UX-REDESIGN-PLAN.md). Read the item there
 
 ## Phase tracker
 
-**Status 2026.10.20:** U0 done (1/1). U1 in progress (5/6); U1–U10 5/48. Recommendation IDs done: 19 of 225. The 225 are the 218 of the plan, UX-CMP-23 (decision A) and six added on 2026.10.20 when the old lists were reconciled: UX-SET-08, UX-BUG-22 and UX-TEST-07 to UX-TEST-10, with build item U10-02.
+**Status 2026.10.20:** U0 done (1/1). U1 done (6/6); U1–U10 6/48. Recommendation IDs done: 21 of 225. The 225 are the 218 of the plan, UX-CMP-23 (decision A) and six added on 2026.10.20 when the old lists were reconciled: UX-SET-08, UX-BUG-22 and UX-TEST-07 to UX-TEST-10, with build item U10-02.
 
 ### U0 — Full review (done 2026.10.15)
 
@@ -21,7 +21,7 @@ Source of truth: [UX-REDESIGN-PLAN.md](UX-REDESIGN-PLAN.md). Read the item there
 - [x] **U1-03** — Dead ends. Closes: UX-FLOW-05, UX-FLOW-06, UX-FLOW-07, UX-BUG-07, UX-BUG-13, UX-BUG-14, UX-BUG-18. Done 2026.10.20: (a) a not-found barcode shows a primary Add it yourself whose form carries the barcode (`browser-search.js`); (b) "trail mix" with no results → Add it yourself shows name "trail mix" and an empty amount (`browser-search.js`, `domain.test.js` `manualFood`/`startingAmount`); (c) a third import of the same `.ics` says "Everything in this calendar is already in your schedule." with an enabled Done that closes the sheet (`browser-calendar-import.js`, `browser-journey.js`); (d) the suggestions sheet opens with all 8 checked and "Add 8 to list", unchecking one reads "Add 7 to list" (`browser-food-workflow.js`). Each check failed on the old code. `npm run check` (199 unit tests) and 25/25 browser scripts pass.
 - [x] **U1-04** — Controls that tell the truth. Closes: UX-BUG-15, UX-BUG-16, UX-BUG-17. Done 2026.10.20: (a) with reminders on and notifications denied, "How long before" and the evening reminder are `disabled` and dimmed (`browser-you.js`); (b) Add practice, School day, Sport & season, Food access & budget and Reminders opened by mouse focus the sheet title (`tabindex=-1`) with `:focus-visible` false on the X (`browser-dialogs.js`); a keyboard open still starts on the first control (`browser-a11y.js`), and the two search sheets (Log food, Add to groceries) keep their search field focused as P1-08 requires; (c) "Delete only" is the filled destructive button and "Delete all" a text button (`browser-schedule.js`). Each check failed on the old code. `npm run check` (199 unit tests) and 25/25 browser scripts pass.
 - [x] **U1-05** — Data correctness and the undo ledger. Closes: UX-BUG-19, UX-BUG-20, UX-BUG-22. Also closes (REDESIGN-CHECKLIST): KEEP-15 and the §13.8 line "Every write gives feedback; every reversible write offers Undo". Done 2026.10.20: (a) `tests/log.test.js` logs the fixture banana chips' 28 g usual portion and reads back 28 g; `p405`'s "1 g" was a capture artifact: `scripts/ux-capture/areas/food.mjs` typed 1 after the amount-0 error state, then saved; (b) `tests/domain.test.js` "A counted At home item at 0 is Out" (Out, counted once in low or out; Back in stock gives 1 left) and `browser-food-workflow.js` (the row reads Out in the error colour); (c) `tests/domain.test.js` "Loading keeps undo-ledger entries for 30 days only" (29 kept, 31 dropped); (d) `browser-you.js`: Sport & season, Food needs, Food access, Reminders and Rename toast "<Thing> saved." with an Undo that restores the previous values; Counts as? toasts with Undo too (`browser-search.js`); (e) the owner kept the silent At home taps: recorded under Owner decisions below and the §13.8 line in REDESIGN-CHECKLIST.md reworded and ticked. The new checks failed on the old code. `npm run check` (202 unit tests) and 25/25 browser scripts pass.
-- [ ] **U1-06** — Capture harness, seed names and the rules check. Closes: UX-TEST-01, UX-TEST-02, UX-TEST-03. Also closes (REDESIGN-CHECKLIST): COPY-38.
+- [x] **U1-06** — Capture harness, seed names and the rules check. Closes: UX-TEST-01, UX-TEST-02, UX-TEST-03. Also closes (REDESIGN-CHECKLIST): COPY-38. Done 2026.10.20: the harness stays in `scripts/ux-capture/` (moved there earlier on 2026.10.20; same files the plan lists for `scripts/ux-review/`) and runs as `npm run ux:capture -- <phone|desktop|both> [area]`: it starts Vite on 5271 when no `BASE_URL` server answers, rejects unknown areas and rewrites `INDEX.txt`; `npm run ux:capture -- phone today` wrote 87 Today PNGs and 87 `CAPTURES.txt` lines under `output/ux-review/` (the U0 baseline was put back after; the new set is in `output/u1-repro/u1-today-phone/`); test athletes are Maya, Jordan, Ava, Riley and other first names, the seed athlete is Maya, and the `git grep` for "Schedule test", "Log test", "You test", "Imported fixture" in `tests src` returns nothing; `tests/browser-ux-rules.js` (11.1, STRICT empty) prints R1–R13 per route at 390 and 1440 (R10 also at 320) and passes, baseline totals at 390: R1 51, R2 10, R3 56, R4 0, R5 8, R6 90, R7 1, R8 0, R9 0, R10 0, R11 8, R12 5, R13 73. `npm run check` (202 unit tests) and 26/26 browser scripts pass.
 
 ### U2 — Tokens and copy foundation
 
@@ -373,9 +373,9 @@ One checkbox per ID. The note names the build item that closes it.
 
 ### Tests and tooling (`UX-TEST`)
 
-- [ ] **UX-TEST-01** — Versioned capture harness. (closes in U1-06)
-- [ ] **UX-TEST-02** — Realistic seed names. (closes in U1-06)
-- [ ] **UX-TEST-03** — The rules check. (built in U1-06; closes in U8-06)
+- [x] **UX-TEST-01** — Versioned capture harness. (closes in U1-06) Done 2026.10.20 (U1-06): `npm run ux:capture`.
+- [x] **UX-TEST-02** — Realistic seed names. (closes in U1-06) Done 2026.10.20 (U1-06): realistic names in tests and seeds.
+- [ ] **UX-TEST-03** — The rules check. (built in U1-06; closes in U8-06) — Partial 2026.10.20: `tests/browser-ux-rules.js` built in U1-06 in report mode (STRICT empty, baseline recorded in U1-06); each screen phase adds its routes to STRICT and U8-06 makes every route strict.
 - [ ] **UX-TEST-04** — Retire assertions that encode the old look. (closes in U8-06)
 - [ ] **UX-TEST-05** — Final re-review. (closes in U10-01)
 - [ ] **UX-TEST-06** — Stylesheet guards. (closes in U8-06)
@@ -388,7 +388,7 @@ One checkbox per ID. The note names the build item that closes it.
 
 The 11 open items there are built in this plan (UX-REDESIGN-PLAN.md §10.12). Tick them here and in REDESIGN-CHECKLIST.md when the named item passes.
 
-- [ ] **COPY-38** — Test athletes get realistic names. (built in U1-06)
+- [x] **COPY-38** — Test athletes get realistic names. (built in U1-06) Done 2026.10.20 (U1-06): test athletes and the seed athlete have first names; ticked in REDESIGN-CHECKLIST.md too.
 - [x] **KEEP-15** — Prune undo-ledger entries older than 30 days. (built in U1-05) Done 2026.10.20: `pruneOperations` on load; `tests/domain.test.js` (29-day entry kept, 31-day dropped). Ticked in REDESIGN-CHECKLIST.md too.
 - [ ] **STATE-03** — App-frame offline line. (built in U3-04)
 - [ ] **STATE-04** — Moved-session prompt names the new time, on Today and Ideas. (built in U5-04, U7-02)

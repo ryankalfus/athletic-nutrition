@@ -20,7 +20,7 @@ async (page) => {
   const setup = async () => {
     await p.goto(base);
     await p.getByRole("button", { name: "Get started" }).click();
-    await p.getByRole("textbox", { name: /First name/ }).fill("Today test");
+    await p.getByRole("textbox", { name: /First name/ }).fill("Hannah");
     await p.getByRole("combobox", { name: /^Sport/ }).fill("Soccer");
     await p.getByRole("button", { name: "Next", exact: true }).click();
     await p.getByRole("heading", { name: "Your school day" }).waitFor();

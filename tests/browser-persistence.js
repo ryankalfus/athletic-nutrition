@@ -19,7 +19,7 @@ async (page) => {
   try {
     await p.goto(base);
     await p.getByRole("button", { name: "Get started" }).click();
-    await p.getByRole("textbox", { name: /First name/ }).fill("Persistence test");
+    await p.getByRole("textbox", { name: /First name/ }).fill("Aiden");
     await p.getByRole("combobox", { name: /^Sport/ }).fill("Soccer");
     await p.getByRole("button", { name: "Next", exact: true }).click();
     await p.getByRole("heading", { name: "Your school day" }).waitFor();
@@ -31,7 +31,7 @@ async (page) => {
       .getByLabel("Backup file")
       .setInputFiles("tests/fixtures/import-profile.json");
     const preview = p.getByRole("dialog", { name: "Add from this file?" });
-    await preview.getByText(/Imported fixture/).waitFor();
+    await preview.getByText(/Riley/).waitFor();
     await preview.getByRole("button", { name: "Add from file" }).click();
     await preview.waitFor({ state: "hidden" });
     await athletes().nth(1).waitFor();
@@ -39,11 +39,11 @@ async (page) => {
       throw new Error("Additive restore did not keep the existing athlete");
     if (!(await athletes().first().innerText()).includes("Open now"))
       throw new Error("Restore switched away from the open athlete");
-    await p.getByRole("button", { name: /^Open Imported fixture/ }).click();
-    await athlete().getByText("Imported fixture").waitFor();
+    await p.getByRole("button", { name: /^Open Riley/ }).click();
+    await athlete().getByText("Riley").waitFor();
     await p.goto(`${base}#/today`);
     await p.getByRole("heading", { name: "Today", exact: true }).waitFor();
-    if (!(await athlete().innerText()).includes("Imported fixture"))
+    if (!(await athlete().innerText()).includes("Riley"))
       throw new Error("Athlete switch did not survive navigation");
     await p.goto(`${base}#/you`);
     await p
@@ -51,21 +51,21 @@ async (page) => {
       .getByRole("button", { name: "Switch athlete" })
       .click();
     await p.getByRole("heading", { name: "Who's using Nourally?" }).waitFor();
-    await p.getByRole("button", { name: /^Imported fixture(?!.* options$)/ }).waitFor();
-    await p.getByRole("button", { name: /^Persistence test, Soccer/ }).waitFor();
+    await p.getByRole("button", { name: /^Riley(?!.* options$)/ }).waitFor();
+    await p.getByRole("button", { name: /^Aiden, Soccer/ }).waitFor();
     result.checks.push(
       "Restore previews the file and adds without replacing; opening the imported athlete sticks; the chooser lists both.",
     );
 
-    await p.getByRole("button", { name: /^Imported fixture(?!.* options$)/ }).click();
+    await p.getByRole("button", { name: /^Riley(?!.* options$)/ }).click();
     await p.getByRole("heading", { name: "Today", exact: true }).waitFor();
     if (!p.url().endsWith("#/today"))
       throw new Error(`Choosing an athlete did not open Today: ${p.url()}`);
     await p.goto(`${base}#/you/device`);
-    const deleteData = p.getByRole("button", { name: /^Delete Imported fixture.*'s data$/ });
+    const deleteData = p.getByRole("button", { name: /^Delete Riley.*'s data$/ });
     await deleteData.click();
     const confirm = p.getByRole("dialog", {
-      name: /^Delete Imported fixture.*data from this device\?$/,
+      name: /^Delete Riley.*data from this device\?$/,
     });
     const deleteButton = confirm.getByRole("button", { name: "Delete data" });
     if (!(await deleteButton.isDisabled()))
@@ -79,10 +79,10 @@ async (page) => {
     await deleteButton.click();
     // Deleting signs out to the athlete chooser on Welcome.
     await p.getByRole("heading", { name: "Who's using Nourally?" }).waitFor();
-    if (await p.getByRole("button", { name: /^Imported fixture(?!.* options$)/ }).count())
+    if (await p.getByRole("button", { name: /^Riley(?!.* options$)/ }).count())
       throw new Error("Deleted athlete is still listed");
-    await p.getByRole("button", { name: /^Persistence test, / }).click();
-    await athlete().getByText("Persistence test").waitFor();
+    await p.getByRole("button", { name: /^Aiden, / }).click();
+    await athlete().getByText("Aiden").waitFor();
     await p.goto(`${base}#/you/device`);
     await athletes().first().waitFor();
     if ((await athletes().count()) !== 1)

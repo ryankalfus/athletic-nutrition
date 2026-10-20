@@ -230,7 +230,7 @@ async (page) => {
 
     await p.setViewportSize({ width: 375, height: 812 });
     await p.goto(`${base}#/setup`);
-    await p.getByRole("textbox", { name: /First name/ }).fill("Layout test");
+    await p.getByRole("textbox", { name: /First name/ }).fill("Priya");
     await p.getByRole("combobox", { name: /^Sport/ }).fill("Cross country");
     await p.getByRole("button", { name: "Next", exact: true }).click();
     await p.getByRole("heading", { name: "Your school day" }).waitFor();

@@ -17,7 +17,7 @@ Owner Ryan Kalfus confirmed the recommended options previously presented for aud
 - Awaiting approval (allergy filtering built but switched off; `ALLERGY_TAGS_REVIEWED = false`): P1-09, P1-10, ADD-03, ONB-04, YOU-02, YOU-03. P1-11 waits on ONB-04.
 - Incomplete, skipped for now (will come back to): P1-09, P1-10 and P1-13 (manual screen-reader test and keyboard-only core journey not done).
 - Not started: P3-01 to P3-05 (ADD-16 is P3-01, ADD-15 is P3-02).
-- Open work: COPY-38, STATE-03, STATE-04, STATE-05, STATE-07, STATE-08, STATE-11, STATE-15, STATE-16, CMP-10.
+- Open work: STATE-03, STATE-04, STATE-05, STATE-07, STATE-08, STATE-11, STATE-15, STATE-16, CMP-10.
 
 ### P0
 
@@ -308,7 +308,7 @@ Each ID is an individual checkbox. Implementation notes and blockers go on the m
 - [x] **COPY-35**
 - [x] **COPY-36**
 - [x] **COPY-37**
-- [ ] **COPY-38** — Open: browser checks still name athletes "Schedule test", "Log test", "You test" and "Imported fixture" in their captures; use realistic seed names.
+- [x] **COPY-38** — Done 2026.10.20 (UX U1-06): the browser checks name their athletes Maya, Jordan, Ava, Riley, Sofia and other first names (the import fixture is Riley), the capture seeds name Maya, and `git grep -e "Schedule test" -e "Log test" -e "You test" -e "Imported fixture" -- tests src` returns nothing.
 
 ### KEEP
 

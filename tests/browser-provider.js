@@ -13,7 +13,7 @@ async (page) => {
   try {
     await p.goto(base);
     await p.getByRole("button", { name: "Get started" }).click();
-    await p.getByRole("textbox", { name: /First name/ }).fill("Provider test");
+    await p.getByRole("textbox", { name: /First name/ }).fill("Chloe");
     await p.getByRole("combobox", { name: /^Sport/ }).fill("Soccer");
     await p.getByRole("button", { name: "Next", exact: true }).click();
     await p.getByRole("heading", { name: "Your school day" }).waitFor();

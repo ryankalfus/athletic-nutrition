@@ -5,12 +5,12 @@
   "profiles": {
     "fixture-profile": {
       "id": "fixture-profile",
-      "name": "Imported fixture",
+      "name": "Riley",
       "email": "",
       "data": {
         "step": "dashboard",
         "profile": {
-          "name": "Imported fixture",
+          "name": "Riley",
           "budget": "standard",
           "dietaryNeeds": [],
           "foodSources": ["home"],

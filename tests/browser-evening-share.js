@@ -61,7 +61,7 @@ async (page) => {
     await context.grantPermissions(["clipboard-read", "clipboard-write"], {
       origin: new URL(base).origin,
     });
-    await setup(p, "Evening test");
+    await setup(p, "Noah");
 
     // An away game tomorrow at 4:00 PM, left unnamed.
     await p.goto(`${base}#/schedule`);
@@ -187,7 +187,7 @@ async (page) => {
     await nudge.getByRole("button", { name: "Save backup" }).click();
     const file = await again;
     if (
-      !/^nourally-evening-test-\d{4}-\d{2}-\d{2}\.json$/.test(
+      !/^nourally-noah-\d{4}-\d{2}-\d{2}\.json$/.test(
         file.suggestedFilename(),
       )
     )
@@ -206,7 +206,7 @@ async (page) => {
         },
       });
     });
-    await setup(q, "Share test");
+    await setup(q, "Emma");
     await q.goto(`${base}#/food/groceries`);
     await q.getByRole("heading", { name: "Your list is empty" }).waitFor();
     if (await q.getByRole("button", { name: /^Share list/ }).count())
