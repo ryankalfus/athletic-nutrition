@@ -12,10 +12,10 @@ tell the owner. Details live in the linked plan for each step.
 - [x] 5. UX/UI review U0: screenshots of every screen on computer and phone, three reviews (`docs/ux-review/`). 2026.10.15
 - [x] 6. UX/UI redesign plan written and approved, with decisions A (food art) and B (packed food goes to In my bag) (`UX-REDESIGN-PLAN.md`). 2026.10.20
 - [x] 7. Old lists combined into the trackers (`TODO/REMAINING-APP-CHANGES.md`, `AUDIT/IMPLEMENTATION-CHECKLIST.md`, the §13.8 MVP criteria in `REDESIGN-CHECKLIST.md`): done items ticked with evidence, open ones tracked or moved into the UX plan (UX-SET-08, UX-BUG-22, UX-TEST-07 to UX-TEST-10, build item U10-02). 2026.10.20
+- [x] 8. UX U1: bugs, guards and test tools (`UX-REDESIGN-CHECKLIST.md` U1-01 to U1-06). The 15 U1 bugs are fixed with tests (UX-BUG-01 to 04, 06, 07, 13 to 20, 22; UX-BUG-19 was a capture artifact, confirmed by a test); Undo on settings saves, At home taps silent by owner decision; KEEP-15 and COPY-38 closed; `npm run ux:capture` and the UX rules check (`tests/browser-ux-rules.js`, report mode) added. The other seven bugs belong to later phases (UX-BUG-05 U5, 08 and 09 U2, 10 and 11 U3, 12 and 21 U7). 2026.10.20
 
 ## Next, in order
 
-- [ ] 8. UX U1: the 22 bugs (21 from the review, plus UX-BUG-22: Undo on settings saves; At home taps stay silent by owner decision), guards and test tools.
 - [ ] 9. UX U2: design tokens and copy formatting.
 - [ ] 10. UX U3: app frame and the floating glass tab bar.
 - [ ] 11. UX U4: shared components (rows with food art, sections, buttons, fields, controls that replace pills, sheets). **Owner checkpoint: check the new direction before the screens are redone.**
