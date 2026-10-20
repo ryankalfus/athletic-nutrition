@@ -38,7 +38,7 @@ Source of truth: [UX-REDESIGN-PLAN.md](UX-REDESIGN-PLAN.md). Read the item there
 ### U4 — Shared components
 
 - [ ] **U4-01** — Buttons. Closes: UX-CMP-01, UX-RWD-10.
-- [ ] **U4-02** — Row and Section. Closes: UX-CMP-02, UX-CMP-03.
+- [ ] **U4-02** — Row and Section. Closes: UX-CMP-02, UX-CMP-03, UX-CMP-23.
 - [ ] **U4-03** — Fields, time and date. Closes: UX-CMP-04, UX-CMP-09, UX-COPY-05.
 - [ ] **U4-04** — Selection controls. Closes: UX-CMP-05, UX-CMP-06, UX-CMP-07, UX-CMP-08, UX-CMP-21, UX-CMP-22.
 - [ ] **U4-05** — Sheets, alerts and menus. Closes: UX-CMP-10, UX-CMP-11, UX-CMP-12, UX-CMP-18, UX-CMP-20, UX-RWD-09. Also closes (REDESIGN-CHECKLIST): STATE-15.
@@ -63,7 +63,7 @@ Source of truth: [UX-REDESIGN-PLAN.md](UX-REDESIGN-PLAN.md). Read the item there
 
 - [ ] **U7-01** — Food frame. Closes: UX-FOOD-01, UX-FOOD-02, UX-FOOD-03, UX-FOOD-04, UX-BUG-12.
 - [ ] **U7-02** — Ideas. Closes: UX-DS-11, UX-IDEA-01, UX-IDEA-02, UX-IDEA-03, UX-IDEA-04, UX-IDEA-05, UX-IDEA-06, UX-IDEA-07, UX-IDEA-08, UX-IDEA-09, UX-FLOW-12, UX-BUG-21. Also closes (REDESIGN-CHECKLIST): CMP-10, STATE-04.
-- [ ] **U7-03** — At home. Closes: UX-HOME-01, UX-HOME-02, UX-HOME-03, UX-HOME-04, UX-HOME-05, UX-HOME-06, UX-HOME-07, UX-HOME-08, UX-HOME-09.
+- [ ] **U7-03** — At home. Closes: UX-HOME-01, UX-HOME-02, UX-HOME-03, UX-HOME-04, UX-HOME-05, UX-HOME-06, UX-HOME-07, UX-HOME-08, UX-HOME-09., UX-FLOW-13
 - [ ] **U7-04** — Groceries. Closes: UX-GROC-01, UX-GROC-02, UX-GROC-03, UX-GROC-04, UX-GROC-05, UX-GROC-06, UX-GROC-07, UX-GROC-08, UX-FLOW-08.
 - [ ] **U7-05** — Log. Closes: UX-DS-11, UX-LOG-01, UX-LOG-02, UX-LOG-03, UX-LOG-04, UX-LOG-05, UX-LOG-06, UX-LOG-07, UX-LOG-08, UX-FLOW-11.
 - [ ] **U7-06** — Search, portion and barcode. Closes: UX-DS-16, UX-SRCH-01, UX-SRCH-02, UX-SRCH-03, UX-SRCH-04, UX-SRCH-05, UX-SRCH-06, UX-SRCH-07, UX-SRCH-08.
@@ -155,6 +155,7 @@ One checkbox per ID. The note names the build item that closes it.
 - [ ] **UX-CMP-20** — Changed elsewhere. (closes in U4-05)
 - [ ] **UX-CMP-21** — Quick-amount bar. (closes in U4-04)
 - [ ] **UX-CMP-22** — Tiles. (closes in U4-04)
+- [ ] **UX-CMP-23** — Food art in food rows (owner decision A). (closes in U4-02)
 
 ### Copy rules (`UX-COPY`)
 
@@ -326,7 +327,7 @@ One checkbox per ID. The note names the build item that closes it.
 - [ ] **UX-FLOW-10** — No duplicate Schedule entry on Today. (closes in U5-02)
 - [ ] **UX-FLOW-11** — From-home in one step. (closes in U7-05)
 - [ ] **UX-FLOW-12** — No-access Ideas offers logging. (closes in U7-02)
-- [ ] **UX-FLOW-13** — Packed food and In my bag (owner question). (Blocked — owner: decision, see Owner decisions)
+- [ ] **UX-FLOW-13** — Packed food goes to In my bag (owner decision B: yes). (closes in U7-03)
 
 ### Bugs (`UX-BUG`)
 
@@ -394,7 +395,9 @@ The 11 open items there are built in this plan (UX-REDESIGN-PLAN.md §10.12). Ti
 
 ## Owner decisions
 
-- [ ] **UX-FLOW-13 decision: packed food and In my bag.** Should marking a plan packed move its At home items to "In my bag"? Blocked — owner. If yes, add a build item to U7-03 before building it.
+- [x] **UX-FLOW-13 decision: packed food and In my bag.** Decided 2026.10.20: yes. Built in U7-03.
+- [x] **Decision A: food art in food rows.** Decided 2026.10.20: yes (UX-CMP-23, Fluent Emoji, MIT).
+- [x] **Plan approved by the owner** 2026.10.20.
 
 ## Owner brief accepted (U10-01)
 

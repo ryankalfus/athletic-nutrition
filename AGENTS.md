@@ -5,6 +5,7 @@ This repo is worked on by both OpenAI Codex and Claude Code. Both read this file
 
 ## Before each action
 
+0. Read `ROADMAP.md` to see which big step is next.
 1. Read the files in `CODEX/` (`CODEX/AGENTS.md`, `CODEX/log.md`, the one pager).
 2. Read the tail of `CODEX/log.md` to see what the other agent did last.
 3. For redesign work, read the item in `CLAUDE-REDESIGN-AUDIT.md` (source of truth)
@@ -14,6 +15,8 @@ This repo is worked on by both OpenAI Codex and Claude Code. Both read this file
 
 ## After each action
 
+- When a big step in `ROADMAP.md` is fully done and its checks pass, tick it with the
+  date and tell the owner. `ROADMAP.md` is the order of all big steps.
 - Append one line per change to `CODEX/log.md`: plain sentence, then the date as
   `yyyy.mm.dd`.
 - Tick a box in `REDESIGN-CHECKLIST.md` only when the item's "Done when"

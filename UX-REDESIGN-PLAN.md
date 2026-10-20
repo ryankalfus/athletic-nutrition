@@ -7,6 +7,9 @@ for short text, a floating translucent tab bar on phones, and a sleeker, more mo
 phone-first layout that still works at every width. Status lives in
 [UX-REDESIGN-CHECKLIST.md](UX-REDESIGN-CHECKLIST.md).
 
+**Approved by the owner on 2026.10.20**, with two decisions: (A) food rows show food art
+(UX-CMP-23) and (B) marking a plan packed moves its food to In my bag (UX-FLOW-13).
+
 This plan recommends changes. Apart from phase U0 (the review, done 2026.10.15) it does not
 claim that any change exists.
 
@@ -339,7 +342,8 @@ in the tab bar, in alerts and on the Not found page.
 2. **Space groups, titles name.** Sections are separated by 32 px and named by a plain
    sentence-case title. Boxes are never used to group.
 3. **The left column carries data.** Every list row starts with a time, a state glyph or a
-   check. No decorative leading art.
+   check. Food rows are the exception (owner decision A): they start with food art
+   (UX-CMP-23), the way Spotify rows start with album art.
 4. **Lime is the floodlight.** Lime appears only on the hero's primary, the active tab and the
    now marker (plus toast Undo). One lime action per screen.
 5. **Words, not stickers.** Status is a word in a color or a glyph, never a pill or an
@@ -572,6 +576,15 @@ Each pattern lists its IDs. Page specs in section 6 use these patterns and do no
 - **UX-CMP-03 — Section.** `Section` = sentence-case title (20/26 650) with an optional
   trailing text button, then its content. Replaces `.card`, `.today-section-header` and the
   grouped-card patterns. Never draws a box.
+- **UX-CMP-23 — Food art in food rows (owner decision A, 2026.10.20).** Rows that show a
+  food or an idea (Ideas, At home, Groceries, Log, search results, plan details) start with a
+  44 px rounded-square art tile (radius 10) instead of a time or glyph. Art source: Microsoft
+  Fluent Emoji, flat style, MIT license (github.com/microsoft/fluentui-emoji); keep the
+  license file with the assets and bundle only the SVGs used. Map every catalog ingredient
+  and idea to one image in `src/domain/foodArt.js` (an idea shows its first ingredient);
+  foods without a match (search results, custom foods) show a neutral tile with the food's
+  first letter in ink on paper-2. Art is decorative: `alt=""` and `aria-hidden`. Never on
+  non-food rows.
 
 ### 5.4 Buttons
 
@@ -1488,10 +1501,9 @@ Dead ends and extra taps found in the review. Each has one ID; page specs point 
 - **UX-FLOW-11 — From-home in one step.** UX-LOG-08.
 - **UX-FLOW-12 — No-access Ideas offers logging.** The empty no-access state adds "Log what you
   ate" (UX-IDEA-05, `p317`).
-- **UX-FLOW-13 — Packed food and In my bag (owner question).** Should marking a plan packed
-  move its At home items to "In my bag"? The review flags the gap (`FD FLOW REVIEW` step 5).
-  Blocked — owner: this is a decision, not a build item. Record it in the checklist's
-  decisions section; if the answer is yes, add a build item to U7-03 before building it.
+- **UX-FLOW-13 — Packed food goes to In my bag (owner decision B, 2026.10.20: yes).** Marking
+  a plan packed moves the plan's At home items to the "In my bag" place; un-packing or Undo
+  moves them back. Built in U7-03.
 
 ## 8. Bug list
 
@@ -1869,8 +1881,10 @@ runs rules R1–R5 on route X at 390 and 1440 px and fails on any violation.
 - Depends on: U2-01. Size: S. Risk: Low (new components, not yet used).
 - Done when: a fixture page (`?ui=rows`, dev only) renders each Row variant and the visual
   check confirms 56 px min height, inset hairline, no background, border or shadow, and a
-  44 px trailing target.
-- Closes: UX-CMP-02, UX-CMP-03.
+  44 px trailing target; the food Row variant shows a 44 px art tile, a unit test proves every
+  catalog ingredient and idea maps to an existing art file, and unknown foods get the letter
+  tile.
+- Closes: UX-CMP-02, UX-CMP-03, UX-CMP-23.
 
 **U4-03 — Fields, time and date**
 - Change: 52 px fields with focus and invalid borders (5.5); prefix and suffix; `TimeField`
@@ -2116,8 +2130,10 @@ runs rules R1–R5 on route X at 390 and 1440 px and fails on any violation.
 - Depends on: U7-01, U4-04. Size: M. Risk: Medium.
 - Done when: each stock row has exactly one interactive element besides its name; the status
   is a word at 320 and 1440; the empty state shows six tiles and adding one creates the item
-  with an Undo toast; Counts as? has no `select`; ux-rules strict on `#/food/home`.
-- Closes: UX-HOME-01 to UX-HOME-09.
+  with an Undo toast; Counts as? has no `select`; ux-rules strict on `#/food/home`; marking a
+  plan packed (Today or Ideas) moves its At home items to In my bag, un-packing or Undo moves
+  them back, and a unit test plus a browser step prove both (UX-FLOW-13).
+- Closes: UX-HOME-01 to UX-HOME-09, UX-FLOW-13.
 
 **U7-04 — Groceries**
 - Change: Week hero, reason groups, In cart group, floating finish bar with the total, inline
@@ -2434,7 +2450,7 @@ work (audit P3-01, owner decision 5), is not part of this plan.
 | **Total** | | | **218** |
 
 Build items that close each ID (an ID listed under two items closes with the later one;
-UX-FLOW-13 is an owner decision, not a build item):
+UX-FLOW-13 is built in U7-03):
 
 | ID | Closed by |
 |---|---|
@@ -2490,6 +2506,7 @@ UX-FLOW-13 is an owner decision, not a build item):
 | UX-CMP-20 | U4-05 |
 | UX-CMP-21 | U4-04 |
 | UX-CMP-22 | U4-04 |
+| UX-CMP-23 | U4-02 |
 | UX-COPY-01 | U2-02 |
 | UX-COPY-02 | U2-02 |
 | UX-COPY-03 | U2-02 |
@@ -2616,7 +2633,7 @@ UX-FLOW-13 is an owner decision, not a build item):
 | UX-FLOW-10 | U5-02 |
 | UX-FLOW-11 | U7-05 |
 | UX-FLOW-12 | U7-02 |
-| UX-FLOW-13 | Owner decision |
+| UX-FLOW-13 | U7-03 |
 | UX-BUG-01 | U1-01 |
 | UX-BUG-02 | U1-01 |
 | UX-BUG-03 | U1-01 |
