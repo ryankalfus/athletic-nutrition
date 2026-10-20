@@ -8,7 +8,7 @@ Source of truth: [UX-REDESIGN-PLAN.md](UX-REDESIGN-PLAN.md). Read the item there
 
 ## Phase tracker
 
-**Status 2026.10.20:** U0 done (1/1). U1 done (6/6); U1–U10 6/48. Recommendation IDs done: 21 of 225. The 225 are the 218 of the plan, UX-CMP-23 (decision A) and six added on 2026.10.20 when the old lists were reconciled: UX-SET-08, UX-BUG-22 and UX-TEST-07 to UX-TEST-10, with build item U10-02.
+**Status 2026.10.20:** U0 done (1/1). U1 done (6/6). U2 1/2; U1–U10 7/48. Recommendation IDs done: 26 of 225. The 225 are the 218 of the plan, UX-CMP-23 (decision A) and six added on 2026.10.20 when the old lists were reconciled: UX-SET-08, UX-BUG-22 and UX-TEST-07 to UX-TEST-10, with build item U10-02.
 
 ### U0 — Full review (done 2026.10.15)
 
@@ -25,7 +25,7 @@ Source of truth: [UX-REDESIGN-PLAN.md](UX-REDESIGN-PLAN.md). Read the item there
 
 ### U2 — Tokens and copy foundation
 
-- [ ] **U2-01** — Token plan. Closes: UX-DS-01, UX-DS-03, UX-DS-06, UX-DS-08, UX-DS-09.
+- [x] **U2-01** — Token plan. Closes: UX-DS-01, UX-DS-03, UX-DS-06, UX-DS-08, UX-DS-09. Done 2026.10.20: `tokens.css` adds every 4.4 token (glass surfaces, `--color-hero` and `--color-hero-inset` as aliases, the radius ladder, `--elev-*`, `--control-height` 52, `--cta-height`, `--row-min`, `--tab-inset`, `--tab-bar-max`, `--top-bar-glass`, `--hero-track`, `--text-large-title`, `--text-hero`, `--text-time`, `--text-tab`) and the 1024 px overrides (large title 40/44, hero 56/58, time 18/24, h2 22/28, display 64/68, sections 40); renames `--text-h1` → `--text-large-title` and `--text-numeral-m` → `--text-time`; marks the retired tokens; no color value changed. Base elements use the scale: h1 large title, h2 650, `small` and field hints 14/20 (also the setup helper line, so step 2 still fits 390 × 844 with 52 px fields). `tests/styles.test.js`: "all 42 color values are pinned" (and any other `--color-*` must alias one), "tokens.css is the only stylesheet with literal colors", "the 4.4 token plan and the UX-DS-09 type scale", "base elements use the UX-DS-09 roles"; RWD-01 still passes. `tests/css-usage.test.js`: every `var()` reads a set token, and a retired token fails once unread. `browser-visual.js` measures 52 px inputs (replaces the 48 px check, UX-TEST-04); `browser-shared-ui.js` checks the water total at 17/18 px, titles 40/44 and 22/28 at 650 at 1280 px, 40 px You sections and a 52 px "+ Add". `npm run check` (208 unit tests) and 26/26 browser scripts pass.
 - [ ] **U2-02** — Formatters write sentences. Closes: UX-COPY-01, UX-COPY-02, UX-COPY-03, UX-COPY-04, UX-COPY-06, UX-BUG-08, UX-BUG-09.
 
 ### U3 — App frame and the floating tab bar
@@ -98,15 +98,15 @@ One checkbox per ID. The note names the build item that closes it.
 
 ### Tokens and surfaces (`UX-DS`)
 
-- [ ] **UX-DS-01** — Keep every color. (closes in U2-01)
+- [x] **UX-DS-01** — Keep every color. (closes in U2-01) Done 2026.10.20 (U2-01): `tests/styles.test.js`.
 - [ ] **UX-DS-02** — Glass is for floating chrome only. (built in U3-01, U3-04; closes in U8-06)
-- [ ] **UX-DS-03** — Radius ladder. (closes in U2-01)
+- [x] **UX-DS-03** — Radius ladder. (closes in U2-01) Done 2026.10.20 (U2-01): tokens in `tokens.css`, `tests/styles.test.js`; components move onto them in U4.
 - [ ] **UX-DS-04** — Content is flat. (closes in U8-06)
 - [ ] **UX-DS-05** — Retire the card. (closes in U8-06)
-- [ ] **UX-DS-06** — Bigger, fewer controls. (closes in U2-01)
+- [x] **UX-DS-06** — Bigger, fewer controls. (closes in U2-01) Done 2026.10.20 (U2-01): `tests/styles.test.js`, `browser-visual.js`, `browser-shared-ui.js`.
 - [ ] **UX-DS-07** — No pills for short text. (closes in U8-06)
-- [ ] **UX-DS-08** — Spacing. (closes in U2-01)
-- [ ] **UX-DS-09** — Type scale. (closes in U2-01)
+- [x] **UX-DS-08** — Spacing. (closes in U2-01) Done 2026.10.20 (U2-01): `tests/styles.test.js`, `browser-shared-ui.js`.
+- [x] **UX-DS-09** — Type scale. (closes in U2-01) Done 2026.10.20 (U2-01): `tests/styles.test.js`, `browser-shared-ui.js`.
 - [ ] **UX-DS-10** — Scoreboard voice. (closes in U8-06)
 - [ ] **UX-DS-11** — Hero rule. (built in U5-01, U7-02, U7-05; closes in U8-06)
 - [ ] **UX-DS-12** — Pitch budget. (built in U5-01, U8-01, U8-02; closes in U8-06)
@@ -376,9 +376,9 @@ One checkbox per ID. The note names the build item that closes it.
 - [x] **UX-TEST-01** — Versioned capture harness. (closes in U1-06) Done 2026.10.20 (U1-06): `npm run ux:capture`.
 - [x] **UX-TEST-02** — Realistic seed names. (closes in U1-06) Done 2026.10.20 (U1-06): realistic names in tests and seeds.
 - [ ] **UX-TEST-03** — The rules check. (built in U1-06; closes in U8-06) — Partial 2026.10.20: `tests/browser-ux-rules.js` built in U1-06 in report mode (STRICT empty, baseline recorded in U1-06); each screen phase adds its routes to STRICT and U8-06 makes every route strict.
-- [ ] **UX-TEST-04** — Retire assertions that encode the old look. (closes in U8-06)
+- [ ] **UX-TEST-04** — Retire assertions that encode the old look. (closes in U8-06) — Partial 2026.10.20: U2-01 replaced the 48 px input checks in `browser-visual.js` with 52 px; the other old-look checks are replaced in U3-02, U4-04, U4-05, U5-01, U6-01 and U7-01.
 - [ ] **UX-TEST-05** — Final re-review. (closes in U10-01)
-- [ ] **UX-TEST-06** — Stylesheet guards. (closes in U8-06)
+- [ ] **UX-TEST-06** — Stylesheet guards. (closes in U8-06) — Partial 2026.10.20: U2-01 pinned the 42 color values and added the literal-color, unset-token and retired-token guards (`tests/styles.test.js`, `tests/css-usage.test.js`); the shadow, uppercase, dashed-border and `--font-numeral` guards are still to come.
 - [ ] **UX-TEST-07** — Real-phone camera and barcode check. (closes in U10-02; moved from X01, 2026.10.20)
 - [ ] **UX-TEST-08** — Reminders and browser matrix (Safari, Firefox, real devices). (closes in U10-02; moved from X02, 2026.10.20; delivery with the app closed is P3-01)
 - [ ] **UX-TEST-09** — Nutrition specialist review of meal templates, timing cutoffs and portions. (closes in U10-02; moved from X03, 2026.10.20)

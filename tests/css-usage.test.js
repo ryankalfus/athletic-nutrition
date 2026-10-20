@@ -273,3 +273,50 @@ test("P2-07: refinement.css and styles.css are gone", () => {
   assert.ok(!names.includes("refinement.css"));
   assert.ok(!names.includes("styles.css"));
 });
+
+// Custom properties: where each is set and where each is read, comments out.
+const noComments = (css) => css.replace(/\/\*[\s\S]*?\*\//g, "");
+const setIn = new Map();
+const readIn = new Map();
+for (const file of [...cssFiles, ...codeFiles]) {
+  const text = file.endsWith(".css") ? noComments(read(file)) : read(file);
+  for (const [, name] of text.matchAll(/(--[\w-]+)\s*:/g))
+    setIn.set(name, [...(setIn.get(name) ?? []), rel(file)]);
+  for (const [, name] of text.matchAll(/var\(\s*(--[\w-]+)/g))
+    readIn.set(name, [...(readIn.get(name) ?? []), rel(file)]);
+}
+
+// U2-01: renamed tokens (--text-h1, --text-numeral-m, …) leave no reader
+// behind; a var() of an unset token silently falls back to nothing.
+test("U2-01: every var() reads a token that is set", () => {
+  const unset = [...readIn]
+    .filter(([name]) => !setIn.has(name))
+    .map(([name, where]) => `${name} (${[...new Set(where)].join(", ")})`);
+  assert.deepEqual(unset, [], `var() of unset tokens:\n${unset.join("\n")}`);
+});
+
+// UX-REDESIGN-PLAN.md 4.4: retired tokens stay only while something still
+// reads them. Once the last reader is gone the token must be deleted from
+// tokens.css, so this fails on a retired token nobody reads.
+const RETIRED = [
+  "--shadow-1",
+  "--shadow-2",
+  "--rhythm-card",
+  "--card-padding",
+  "--text-badge",
+  "--leading-badge",
+  "--radius-lg",
+];
+test("U2-01: retired tokens are deleted once nothing reads them", (t) => {
+  for (const name of RETIRED) {
+    const readers = (readIn.get(name) ?? []).filter(
+      (file) => !file.endsWith("tokens.css"),
+    );
+    if (setIn.has(name))
+      assert.ok(
+        readers.length,
+        `${name} is retired and unread: delete it from tokens.css`,
+      );
+    t.diagnostic(`${name}: ${readers.length} readers left`);
+  }
+});

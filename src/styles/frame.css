@@ -80,8 +80,8 @@
   border-radius: 0;
   background: transparent;
   color: var(--color-ink-muted);
-  font-size: var(--text-badge);
-  line-height: var(--leading-badge);
+  font-size: var(--text-tab);
+  line-height: var(--leading-tab);
   font-weight: 600;
 }
 
@@ -361,8 +361,9 @@
     padding-bottom: var(--space-12);
   }
 
-  /* Every page title sits in the same 48px row, so switching tabs never
-   * moves it (a page with header buttons would otherwise center it lower). */
+  /* Every page title sits in the same control-height row, so switching tabs
+   * never moves it (a page with header buttons would otherwise center it
+   * lower). */
   .app-frame.has-navigation :is(.page-title, main h1) {
     position: static;
     display: flex;

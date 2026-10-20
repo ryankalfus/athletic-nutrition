@@ -295,8 +295,8 @@
 .rail-list time {
   padding-top: var(--space-2);
   font-family: var(--font-numeral);
-  font-size: var(--text-numeral-m);
-  line-height: var(--leading-numeral-m);
+  font-size: var(--text-time);
+  line-height: var(--leading-time);
   font-weight: 600;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
@@ -515,9 +515,9 @@ button.rail-body {
   margin: 0;
 }
 
-/* The water total is a total: Numeral M, 16 / 17px (DS-03). */
+/* The water total is an amount: the time size, 17 / 18px (UX-DS-09). */
 .water-row h2 .numeral {
-  font-size: var(--text-numeral-m);
+  font-size: var(--text-time);
 }
 
 .water-row div {
@@ -592,8 +592,11 @@ button.rail-body {
 }
 
 @media (min-width: 1200px) {
+  /* Sections sit 40 apart from 1024px (UX-DS-08); the main column and the
+   * aside stay 32 apart, like Schedule. */
   .today-layout {
     grid-template-columns: minmax(0, 1fr) var(--width-aside);
+    column-gap: var(--space-8);
     align-items: start;
   }
 

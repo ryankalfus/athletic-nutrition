@@ -6,10 +6,12 @@
 // - A page shorter than the window does not scroll (P1-11: the sr-only announcer
 //   added a 1 px scroll).
 // - Setup steps 2 and 3 stack time fields one per row at 320 px (RWD-06).
-// - Numeral XL countdown and Numeral M water total (DS-03); Log in the 720 px
-//   reading column (DS-08); 32 px between You and About sections (DS-09); the
-//   phone top-bar "+ Add" is a 48 px primary (DS-11); Log Day/Week is the shared
-//   segmented control and selected weekdays show a check (DS-12).
+// - Numeral XL countdown and the water total at the time size (DS-03,
+//   UX-DS-09); Log in the 720 px reading column (DS-08); You and About sections
+//   40 px apart from 1024 px (UX-DS-08); the large title and section titles on
+//   the UX-DS-09 scale; the phone top-bar "+ Add" is a 52 px primary (DS-11,
+//   UX-DS-06); Log Day/Week is the shared segmented control and selected
+//   weekdays show a check (DS-12).
 // The clock is fixed to Sunday 2026-10-11 10:00 with a 4:00 PM practice today.
 async (page) => {
   const base = globalThis.BASE_URL ?? "http://127.0.0.1:5173/";
@@ -275,14 +277,14 @@ async (page) => {
     };
     if (phone.countdown !== "32/36")
       problems.push(`Countdown at 390 px is ${phone.countdown}, not 32/36`);
-    if (!phone.water.startsWith("16/"))
-      problems.push(`Water total at 390 px is ${phone.water}, not 16 px`);
+    if (!phone.water.startsWith("17/"))
+      problems.push(`Water total at 390 px is ${phone.water}, not 17 px`);
     await p.goto(`${base}#/schedule`);
     const action = await p
       .locator(".frame-action")
       .evaluate((node) => node.getBoundingClientRect().height);
-    if (action < 48)
-      problems.push(`Top-bar "+ Add" is ${action}px tall, not 48`);
+    if (action < 52)
+      problems.push(`Top-bar "+ Add" is ${action}px tall, not 52`);
     await p.goto(`${base}#/food/log`);
     const control = await p
       .locator(".log-view-tabs .segmented")
@@ -318,8 +320,24 @@ async (page) => {
     };
     if (desk.countdown !== "40/44")
       problems.push(`Countdown at 1280 px is ${desk.countdown}, not 40/44`);
-    if (!desk.water.startsWith("17/"))
-      problems.push(`Water total at 1280 px is ${desk.water}, not 17 px`);
+    if (!desk.water.startsWith("18/"))
+      problems.push(`Water total at 1280 px is ${desk.water}, not 18 px`);
+    // UX-DS-09 from 1024 px: the page title is the large title 40/44 and a
+    // section title is 22/28 at 650.
+    const titles = {
+      h1: await size("main h1"),
+      h2: await size("#day-title"),
+      weight: await p
+        .locator("#day-title")
+        .first()
+        .evaluate((node) => getComputedStyle(node).fontWeight),
+    };
+    if (
+      titles.h1 !== "40/44" ||
+      titles.h2 !== "22/28" ||
+      titles.weight !== "650"
+    )
+      problems.push(`Titles at 1280 px are ${JSON.stringify(titles)}`);
     for (const route of ["you", "you/about", "you/device"]) {
       await p.goto(`${base}#/${route}`);
       await p.locator(".you-page").waitFor();
@@ -341,8 +359,8 @@ async (page) => {
             ),
           );
       });
-      if (!gaps.length || gaps.some((gap) => gap !== 32))
-        problems.push(`${route} section gaps ${gaps.join(", ")} (want 32)`);
+      if (!gaps.length || gaps.some((gap) => gap !== 40))
+        problems.push(`${route} section gaps ${gaps.join(", ")} (want 40)`);
     }
     await p.setViewportSize({ width: 1440, height: 900 });
     for (const route of ["food/log", "food/log/week"]) {
@@ -356,9 +374,9 @@ async (page) => {
     }
     fail();
     result.checks.push(
-      "The Now card countdown is Numeral XL 32/36 at 390 px and 40/44 at 1280 px; the water total is Numeral M 16/17 px (DS-03).",
-      'The phone top-bar "+ Add" is 48 px tall (DS-11); Log Day/Week is the shared segmented control: muted track, white selected segment with a shadow (DS-12).',
-      "You, About and This device sections are 32 px apart (DS-09); Log Day and Week read in a 720 px column at 1440 px (DS-08).",
+      "The Now card countdown is Numeral XL 32/36 at 390 px and 40/44 at 1280 px; the water total is the time size, 17 then 18 px (DS-03, UX-DS-09); at 1280 px the page title is 40/44 and a section title 22/28 at 650 (UX-DS-09).",
+      'The phone top-bar "+ Add" is 52 px tall (DS-11, UX-DS-06); Log Day/Week is the shared segmented control: muted track, white selected segment with a shadow (DS-12).',
+      "You, About and This device sections are 40 px apart at 1280 px (UX-DS-08); Log Day and Week read in a 720 px column at 1440 px (DS-08).",
     );
     return result;
   } catch (error) {

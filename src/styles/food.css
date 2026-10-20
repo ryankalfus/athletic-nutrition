@@ -388,7 +388,7 @@
   flex: 1 1 auto;
   min-width: 0;
   font-family: var(--font-numeral);
-  font-size: var(--text-numeral-m);
+  font-size: var(--text-time);
   font-weight: 600;
   font-variant-numeric: tabular-nums;
   text-align: center;
@@ -979,8 +979,8 @@
 
 .week-strip strong {
   font-family: var(--font-numeral);
-  font-size: var(--text-numeral-m);
-  line-height: var(--leading-numeral-m);
+  font-size: var(--text-time);
+  line-height: var(--leading-time);
   font-variant-numeric: tabular-nums;
 }
 
@@ -1132,6 +1132,13 @@
   .log-layout,
   .groceries-layout {
     grid-template-columns: minmax(0, 1fr) var(--width-aside);
+  }
+
+  /* Sections sit 40 apart from 1024px (UX-DS-08); the main column and the
+   * aside stay 32 apart, so Log keeps its 720px reading column. */
+  .home-layout,
+  .log-layout {
+    column-gap: var(--space-8);
   }
 
   .groceries-layout > .week-ideas-prompt {

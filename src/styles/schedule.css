@@ -165,8 +165,8 @@
   flex: 1;
   min-width: 0;
   font-family: var(--font-numeral);
-  font-size: var(--text-numeral-m);
-  line-height: var(--leading-numeral-m);
+  font-size: var(--text-time);
+  line-height: var(--leading-time);
   font-variant-numeric: tabular-nums;
   text-align: center;
   white-space: nowrap;
@@ -240,8 +240,8 @@
   align-items: center;
   gap: var(--space-2);
   font-family: var(--font-numeral);
-  font-size: var(--text-numeral-m);
-  line-height: var(--leading-numeral-m);
+  font-size: var(--text-time);
+  line-height: var(--leading-time);
   font-weight: 600;
   font-variant-numeric: tabular-nums;
 }
@@ -453,8 +453,8 @@
   height: 28px;
   border-radius: var(--radius-full);
   font-family: var(--font-numeral);
-  font-size: var(--text-numeral-m);
-  line-height: var(--leading-numeral-m);
+  font-size: var(--text-time);
+  line-height: var(--leading-time);
   font-weight: 600;
 }
 
@@ -742,5 +742,5 @@ div.school-weekdays > button {
 }
 
 .glance-counts .numeral {
-  font-size: var(--text-numeral-m);
+  font-size: var(--text-time);
 }

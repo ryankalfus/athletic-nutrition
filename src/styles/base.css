@@ -1,4 +1,5 @@
-/* Element defaults: type scale (5.4), inputs (DS-13), focus (5.10), motion (DS-19). */
+/* Element defaults: type scale (UX-DS-09), inputs (DS-13), focus (5.10),
+ * motion (DS-19). */
 *,
 *::before,
 *::after {
@@ -34,10 +35,10 @@ figure {
 
 h1 {
   margin-bottom: 0;
-  font-size: var(--text-h1);
-  line-height: var(--leading-h1);
+  font-size: var(--text-large-title);
+  line-height: var(--leading-large-title);
   font-weight: 700;
-  letter-spacing: -0.02em;
+  letter-spacing: var(--tracking-title);
   overflow-wrap: anywhere;
 }
 
@@ -45,7 +46,7 @@ h2 {
   margin-bottom: var(--space-2);
   font-size: var(--text-h2);
   line-height: var(--leading-h2);
-  font-weight: 600;
+  font-weight: var(--weight-h2);
 }
 
 h3 {
@@ -65,9 +66,11 @@ p:not([class]) {
   max-width: 70ch;
 }
 
+/* Row meta and helper text: Small 14/20 (UX-DS-09). Caption 13/18 is for
+ * metadata only and is set where it is used. */
 small {
-  font-size: var(--text-caption);
-  line-height: var(--leading-caption);
+  font-size: var(--text-small);
+  line-height: var(--leading-small);
 }
 
 em {
@@ -163,7 +166,8 @@ legend {
   input:not([type="checkbox"], [type="radio"], [type="file"], [type="range"]),
   select
 ) {
-  /* 48px like every control (DS-13); date and time inputs otherwise grow to 52. */
+  /* --control-height like every control (UX-DS-06); date and time inputs
+   * would otherwise grow past it. */
   height: var(--control-height);
   padding-block: 0;
 }
@@ -406,11 +410,12 @@ body > .sr-only {
   color: var(--color-ink-muted);
 }
 
+/* Helper text is 14px, not 13px (UX-DS-09). */
 .field-hint {
   display: block;
   color: var(--color-ink-muted);
-  font-size: var(--text-caption);
-  line-height: var(--leading-caption);
+  font-size: var(--text-small);
+  line-height: var(--leading-small);
   font-weight: 400;
 }
 

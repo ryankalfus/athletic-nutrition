@@ -2,7 +2,7 @@
 // and Food reports, 2026.09.29) so they cannot regress. Each check measures
 // geometry or computed style: one-row segmented controls, a Discard confirm
 // that is its own sheet or centered dialog, 700 as the heaviest weight, one
-// title edge and row across tabs, 48 px inputs, 64 px sheet headers, equal
+// title edge and row across tabs, 52 px inputs (U2-01), 64 px sheet headers, equal
 // footer buttons, round weekday circles, a centered tablet tab group, one rail
 // edge, a Now card above the tab bar, a Day rail whose times fit, and the
 // Schedule week switcher, day headers, top-bar add and month headers.
@@ -124,10 +124,10 @@ async (page) => {
     const inputs = await p
       .locator(".setup-fields input[type=time]")
       .evaluateAll((all) => all.map((i) => i.getBoundingClientRect().height));
-    if (inputs.some((h) => !near(h, 48)))
-      fail(`Time inputs are ${inputs.join("/")}px, not 48`);
+    if (inputs.some((h) => !near(h, 52)))
+      fail(`Time inputs are ${inputs.join("/")}px, not 52`);
     result.checks.push(
-      "320: setup segments stay on one row, Sport reads e.g. Soccer with field → error → hint, step 2's header is one row, weekday circles are round and time inputs are 48 px.",
+      "320: setup segments stay on one row, Sport reads e.g. Soccer with field → error → hint, step 2's header is one row, weekday circles are round and time inputs are 52 px (U2-01, UX-DS-06).",
     );
     await context.close();
 
@@ -175,7 +175,7 @@ async (page) => {
     );
     if (docWidth > 390) fail(`Today scrolls sideways at 390 (${docWidth}px)`);
 
-    // You sheet: 64 px header, 48 px inputs, equal footer buttons, Discard.
+    // You sheet: 64 px header, 52 px inputs, equal footer buttons, Discard.
     await p.goto(`${base}#/you/sport`);
     const sheet = p.getByRole("dialog", { name: "Sport & season" });
     await sheet.waitFor();
@@ -183,7 +183,7 @@ async (page) => {
     const head = await box(sheet.locator("header"));
     if (!near(head.h, 64)) fail(`Sheet header is ${head.h}px, not 64`);
     const field = await box(sheet.getByRole("combobox", { name: /^Sport/ }));
-    if (!near(field.h, 48)) fail(`Sheet text input is ${field.h}px, not 48`);
+    if (!near(field.h, 52)) fail(`Sheet text input is ${field.h}px, not 52`);
     const footer = await sheet
       .locator(".dialog-actions > button")
       .evaluateAll((all) =>
@@ -270,7 +270,7 @@ async (page) => {
     if (gap < 15)
       fail(`"Activity date" sits ${Math.round(gap)}px under Date or days`);
     result.checks.push(
-      "390: the Now card and the top of the Day rail fit above the tab bar, chips take one row, rail times fit and the marker reads Now, water buttons are equal; sheets have 64 px headers, 48 px inputs and equal footers; Discard is its own bottom sheet on <body>; no text is heavier than 700; Schedule's + Add is in the top bar, the week label and day headings stay on one row, and the activity sheet keeps 16 px between groups.",
+      "390: the Now card and the top of the Day rail fit above the tab bar, chips take one row, rail times fit and the marker reads Now, water buttons are equal; sheets have 64 px headers, 52 px inputs and equal footers; Discard is its own bottom sheet on <body>; no text is heavier than 700; Schedule's + Add is in the top bar, the week label and day headings stay on one row, and the activity sheet keeps 16 px between groups.",
     );
     await context.close();
 

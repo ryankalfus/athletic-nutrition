@@ -46,6 +46,7 @@
 .welcome h1 {
   font-size: var(--text-display);
   line-height: var(--leading-display);
+  letter-spacing: var(--tracking-display);
   font-style: normal;
   text-wrap: balance;
 }
@@ -231,17 +232,20 @@
 
 .setup-step > h1 {
   margin: 0;
-  font-size: var(--text-h1);
-  line-height: var(--leading-h1);
+  font-size: var(--text-large-title);
+  line-height: var(--leading-large-title);
 }
 
 .setup-step > h1:focus {
   outline: none;
 }
 
+/* The line under the question is helper text: Small 14/20 (UX-DS-09). */
 .setup-helper {
   margin: 0;
   color: var(--color-ink-muted);
+  font-size: var(--text-small);
+  line-height: var(--leading-small);
 }
 
 .setup-fields {
@@ -302,8 +306,8 @@
 .setup-preview .setup-preview-label {
   color: var(--color-lime);
   font-family: var(--font-numeral);
-  font-size: var(--text-numeral-m);
-  line-height: var(--leading-numeral-m);
+  font-size: var(--text-time);
+  line-height: var(--leading-time);
 }
 
 /* Mobile: "Next" pinned to the bottom with safe-area padding. */

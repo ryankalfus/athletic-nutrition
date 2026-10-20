@@ -1,6 +1,11 @@
 /*
- * Nourally design tokens ("Game-day calm", audit section 5).
- * The only file with literal colors, sizes and durations. Everything else uses these.
+ * Nourally design tokens ("Under the lights", UX-REDESIGN-PLAN.md 4.4; colors
+ * from "Game-day calm", audit section 5). The only file with literal colors,
+ * sizes and durations. Everything else uses these.
+ *
+ * Every --color-* value is pinned by tests/styles.test.js (UX-DS-01): roles
+ * change, hex values do not. Tokens marked "Retired" are removed once their
+ * last user is gone (tests/css-usage.test.js lists the users left).
  *
  * Breakpoints (mobile first, min-width only; custom media is not supported yet):
  *   360px  At home rows show stock words, not only icons (6.5)
@@ -57,35 +62,58 @@
   --color-food-moment: #3f7d20;
   --color-other: #52656b;
 
-  /* Typography (DS-02, DS-03, DS-05). Mobile values; desktop overrides below. */
+  /* Surfaces (UX-DS-02). Glass is for floating chrome only: the phone tab
+   * bar, the tablet nav capsule and the collapsed top bar; toasts use the dark
+   * glass. Content, sheets and the hero never blur. */
+  --surface-glass: rgb(247 246 242 / 0.82); /* paper at 82 % */
+  --surface-glass-solid: rgb(247 246 242 / 0.97); /* without backdrop-filter */
+  --surface-glass-dark: rgb(20 51 60 / 0.92); /* ink at 92 %: toasts */
+  --blur-glass: blur(20px) saturate(180%);
+  --color-hero: var(--color-pitch); /* flat; the one lit field per screen */
+  --color-hero-inset: var(--color-pitch-end); /* the food row inside the hero */
+
+  /* Typography (UX-DS-09). Mobile values; 1024px overrides below.
+   * DM Sans is the coach's voice; Barlow Semi Condensed 600 (--font-numeral)
+   * is the scoreboard voice: the hero instruction, clock times, durations,
+   * counts and amounts (UX-DS-10). No uppercase anywhere. */
   --font-ui: "DM Sans Variable", "DM Sans", system-ui, sans-serif;
   --font-numeral: "Barlow Semi Condensed", var(--font-ui);
-  --text-display: 36px;
-  --leading-display: 40px;
-  --text-h1: 28px;
-  --leading-h1: 32px;
+  --text-display: 44px; /* Welcome, setup done */
+  --leading-display: 46px;
+  --tracking-display: -0.025em;
+  --text-large-title: 34px; /* page title, setup question (h1) */
+  --leading-large-title: 40px;
+  --tracking-title: -0.02em;
+  --text-hero: 40px; /* hero instruction, Barlow 600 */
+  --leading-hero: 42px;
   --text-now: 24px;
   --leading-now: 28px;
-  --text-h2: 20px;
+  --text-h2: 20px; /* section title */
   --leading-h2: 26px;
-  --text-h3: 17px;
+  --weight-h2: 650;
+  --text-h3: 17px; /* row title */
   --leading-h3: 22px;
   --text-body: 16px;
   --leading-body: 24px;
-  --text-small: 14px;
+  --text-small: 14px; /* row meta, helper text */
   --leading-small: 20px;
   --text-label: 15px;
   --leading-label: 20px;
-  --text-caption: 13px;
+  --text-caption: 13px; /* metadata only, never instructions */
   --leading-caption: 18px;
+  --text-time: 17px; /* Barlow 600 tabular: time column, amounts */
+  --leading-time: 22px;
   --text-numeral-xl: 32px;
   --leading-numeral-xl: 36px;
-  --text-numeral-m: 16px;
-  --leading-numeral-m: 20px;
-  --text-badge: 12px; /* the only size below 13px: badges and tab-bar labels */
-  --leading-badge: 16px;
+  --text-tab: 12px; /* tab-bar labels: the only size below 13px */
+  --leading-tab: 16px;
+  --text-badge: 12px; /* Retired (4.4): badges go in U4 (UX-DS-07) */
+  --leading-badge: 16px; /* Retired (4.4) */
 
-  /* Spacing (DS-06), gutters (DS-07), widths (DS-08), rhythm (DS-09) */
+  /* Spacing (DS-06), gutters (DS-07), widths (DS-08), rhythm (UX-DS-08):
+   * gutters 16 / 24 / 32; sections 32 apart (40 from 1024px), a section
+   * title 8 above its first row, rows 12 top and bottom, flow fields 24
+   * apart. */
   --space-1: 4px;
   --space-2: 8px;
   --space-3: 12px;
@@ -103,29 +131,53 @@
   --width-rail: 232px;
   --width-page: 1280px;
   --rhythm-section: var(--space-8);
-  --rhythm-card: var(--space-4);
+  --rhythm-title: var(--space-2);
   --rhythm-row: var(--space-3);
-  --card-padding: var(--space-5);
+  --rhythm-field: var(--space-6);
+  --rhythm-card: var(--space-4); /* Retired (4.4): cards go (UX-DS-05) */
+  --card-padding: var(--space-5); /* Retired (4.4) */
   --now-card-padding: var(--space-5); /* DS-14: 20px phones, 28px desktop */
   --now-card-min: 240px; /* 6.3 desktop layout */
   --top-bar: 56px;
   --dialog-header: 64px;
   --sticky-offset: 72px; /* below a sticky section control */
+  --top-bar-glass: 52px; /* collapsed glass top bar (U3) */
+
+  /* Sizes (UX-DS-06): bigger, fewer controls; tap targets stay 44px+. */
+  --control-height: 52px;
+  --cta-height: 56px; /* the primary at the bottom of a flow, the hero primary */
+  --row-min: 56px;
   --tab-bar: 64px;
-  --control-height: 48px;
+  --tab-inset: 12px; /* floating tab bar to the screen edges */
+  --tab-bar-max: 440px;
+  --hero-track: 4px; /* the hero's run-up line */
   --target: 44px;
   --stock-control: 144px; /* At home control column; 168px in a 328px page */
 
-  /* Shape (5.6) */
+  /* Radius ladder (UX-DS-03): the radius encodes containment, so a thing
+   * inside another always has the smaller radius. Full radius only for
+   * avatars, switches, the nav pill and dots. */
+  --radius-segment: 10px; /* a segment inside a segmented control */
+  --radius-control: 14px; /* fields, buttons, the segmented track, tiles */
+  --radius-toast: 16px;
+  --radius-float: 24px; /* tab bar, alerts, menus, desktop dialogs */
+  --radius-sheet: 28px; /* sheet top corners */
+  --radius-hero: 28px; /* hero bottom corners (top corners 12px) */
+  --radius-full: 999px;
   --radius-sm: 6px;
   --radius-md: 10px;
-  --radius-lg: 16px;
+  --radius-lg: 16px; /* Retired (4.4) as a card radius */
   --radius-xl: 24px;
-  --radius-full: 999px;
   --border: 1px solid var(--color-line);
   --border-control: 1px solid var(--color-line-strong);
-  --shadow-1: 0 1px 2px rgb(20 51 60 / 0.06);
-  --shadow-2: 0 -1px 0 var(--color-line), 0 -8px 24px rgb(20 51 60 / 0.08);
+
+  /* Elevation (UX-DS-04): content is flat; only floating layers cast
+   * shadows. */
+  --elev-float: 0 0 0 1px rgb(20 51 60 / 0.06), 0 8px 32px rgb(15 44 56 / 0.16);
+  --elev-sheet: 0 -8px 40px rgb(15 44 56 / 0.2);
+  --elev-menu: 0 0 0 1px rgb(20 51 60 / 0.08), 0 12px 32px rgb(15 44 56 / 0.18);
+  --shadow-1: 0 1px 2px rgb(20 51 60 / 0.06); /* Retired (4.4): content shadow */
+  --shadow-2: 0 -1px 0 var(--color-line), 0 -8px 24px rgb(20 51 60 / 0.08); /* Retired (4.4): docked tab bar */
   --shadow-3: 0 24px 64px rgb(15 44 56 / 0.24);
 
   /* Inline icons (Lucide paths, stroke 1.75-3) for CSS-only controls */
@@ -163,19 +215,24 @@
 @media (min-width: 1024px) {
   :root {
     --gutter: var(--space-8);
+    --rhythm-section: var(--space-10);
     --card-padding: var(--space-6);
     --now-card-padding: calc(var(--space-6) + var(--space-1));
-    --text-display: 44px;
-    --leading-display: 48px;
-    --text-h1: 32px;
-    --leading-h1: 36px;
+    --text-display: 64px;
+    --leading-display: 68px;
+    --text-large-title: 40px;
+    --leading-large-title: 44px;
+    --text-hero: 56px;
+    --leading-hero: 58px;
     --text-now: 28px;
     --leading-now: 32px;
+    --text-h2: 22px;
+    --leading-h2: 28px;
     --text-h3: 18px;
     --leading-h3: 24px;
+    --text-time: 18px;
+    --leading-time: 24px;
     --text-numeral-xl: 40px;
     --leading-numeral-xl: 44px;
-    --text-numeral-m: 17px;
-    --leading-numeral-m: 22px;
   }
 }

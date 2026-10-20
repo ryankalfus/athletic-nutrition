@@ -4,7 +4,7 @@
 .you-page {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  gap: var(--space-8);
+  gap: var(--rhythm-section);
 }
 
 /* The page header (A11Y-03): back link and H1. On phones the top bar names
