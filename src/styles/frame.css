@@ -6,14 +6,17 @@
   background: var(--color-paper);
 }
 
+/* UX-NAV-07: the bar grows by the status-bar inset (0 outside iPhones), so its
+ * content never sits under the notch. */
 .frame-header {
   position: sticky;
   top: 0;
   z-index: var(--z-rail);
   display: flex;
   align-items: center;
-  height: var(--top-bar);
+  height: calc(var(--top-bar) + env(safe-area-inset-top));
   padding: 0 var(--gutter);
+  padding-top: env(safe-area-inset-top);
   background: var(--color-paper);
   border-bottom: var(--border);
 }
@@ -165,6 +168,13 @@
   max-width: var(--layout-max);
   margin-inline: auto;
   padding: var(--space-4) var(--gutter) var(--space-8);
+}
+
+/* Welcome, setup and recovery have no top bar: the page itself clears the
+ * status bar (UX-NAV-07). */
+.app-frame:not(.has-navigation) > .shell,
+#root > .shell {
+  padding-top: calc(var(--space-4) + env(safe-area-inset-top));
 }
 
 .app-frame.has-navigation .shell {
@@ -392,6 +402,7 @@
     width: var(--width-rail);
     height: 100dvh;
     padding: var(--space-6) var(--space-4);
+    padding-top: calc(var(--space-6) + env(safe-area-inset-top));
     border-right: var(--border);
     border-bottom: 0;
   }

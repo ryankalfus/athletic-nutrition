@@ -8,7 +8,7 @@ Source of truth: [UX-REDESIGN-PLAN.md](UX-REDESIGN-PLAN.md). Read the item there
 
 ## Phase tracker
 
-**Status 2026.10.20:** U0 done (1/1). U1 in progress (1/6); U1–U10 1/48. Recommendation IDs done: 4 of 225. The 225 are the 218 of the plan, UX-CMP-23 (decision A) and six added on 2026.10.20 when the old lists were reconciled: UX-SET-08, UX-BUG-22 and UX-TEST-07 to UX-TEST-10, with build item U10-02.
+**Status 2026.10.20:** U0 done (1/1). U1 in progress (2/6); U1–U10 2/48. Recommendation IDs done: 6 of 225. The 225 are the 218 of the plan, UX-CMP-23 (decision A) and six added on 2026.10.20 when the old lists were reconciled: UX-SET-08, UX-BUG-22 and UX-TEST-07 to UX-TEST-10, with build item U10-02.
 
 ### U0 — Full review (done 2026.10.15)
 
@@ -17,7 +17,7 @@ Source of truth: [UX-REDESIGN-PLAN.md](UX-REDESIGN-PLAN.md). Read the item there
 ### U1 — Bugs, guards and tooling (no visual redesign)
 
 - [x] **U1-01** — Validation that clears and explains. Closes: UX-BUG-01, UX-BUG-02, UX-BUG-03, UX-BUG-06. Done 2026.10.20: one shared hook (`useFieldValidation` in `FieldError.jsx`, rules in `src/domain/validation.js`) used by setup steps 1–3, the activity sheet, the School day sheet, You sheets and the portion sheet; checks (a) `browser-you.js`, (b)–(d) `browser-setup.js` and `browser-schedule.js`, (e) `browser-log.js` (Edit food and the portion step), (f) `domain.test.js` "Profile save rejects an empty sport"; each browser check failed on the old code. `npm run check` (197 unit tests) and 25/25 browser scripts pass.
-- [ ] **U1-02** — Safe areas on iPhone. Closes: UX-NAV-07, UX-BUG-04.
+- [x] **U1-02** — Safe areas on iPhone. Closes: UX-NAV-07, UX-BUG-04. Done 2026.10.20: `index.html` viewport is `width=device-width, initial-scale=1, viewport-fit=cover`; the top bar, the desktop rail, the sticky setup header and the no-top-bar shell pad by `env(safe-area-inset-top)`, and sticky rows under the top bar (Food sections, Log day switcher, Schedule week switcher) move down by it. `tests/styles.test.js` "U1-02" (failed before the fix) checks the meta and every sticky or fixed top rule; `browser-shared-ui.js` checks the live meta and an unchanged 56 px bar. `npm run check` (198 unit tests) and 25/25 browser scripts pass.
 - [ ] **U1-03** — Dead ends. Closes: UX-FLOW-05, UX-FLOW-06, UX-FLOW-07, UX-BUG-07, UX-BUG-13, UX-BUG-14, UX-BUG-18.
 - [ ] **U1-04** — Controls that tell the truth. Closes: UX-BUG-15, UX-BUG-16, UX-BUG-17.
 - [ ] **U1-05** — Data correctness and the undo ledger. Closes: UX-BUG-19, UX-BUG-20, UX-BUG-22. Also closes (REDESIGN-CHECKLIST): KEEP-15 and the §13.8 line "Every write gives feedback; every reversible write offers Undo".
@@ -124,7 +124,7 @@ One checkbox per ID. The note names the build item that closes it.
 - [ ] **UX-NAV-04** — Content clearance. (closes in U3-01)
 - [ ] **UX-NAV-05** — Keyboard. (closes in U3-01)
 - [ ] **UX-NAV-06** — Stacking above the bar. (closes in U3-04)
-- [ ] **UX-NAV-07** — Safe areas. (closes in U1-02)
+- [x] **UX-NAV-07** — Safe areas. (closes in U1-02) Done 2026.10.20 (U1-02): `tests/styles.test.js`, `browser-shared-ui.js`.
 - [ ] **UX-NAV-08** — Stable bar. (closes in U3-01)
 - [ ] **UX-NAV-09** — Floating top capsule. (closes in U3-02)
 - [ ] **UX-NAV-10** — Quiet rail. (closes in U3-02)
@@ -336,7 +336,7 @@ One checkbox per ID. The note names the build item that closes it.
 - [x] **UX-BUG-01** — You › Sport & season saves an empty sport. (closes in U1-01) Done 2026.10.20 (U1-01): `browser-you.js`, `domain.test.js`.
 - [x] **UX-BUG-02** — Field errors stay after the value is fixed: setup step 1 Sport (`p007`), step 3 end time (`p012`), Schedule add/edit "End time must be later than start time" with 4:00–5:30 (`p228`, `p229`). (closes in U1-01) Done 2026.10.20 (U1-01): `browser-setup.js` (Sport, Ends), `browser-schedule.js` (Add sheet), `domain.test.js`.
 - [x] **UX-BUG-03** — Setup step 2: lunch start and end turn red with no message. (closes in U1-01) Done 2026.10.20 (U1-01): `browser-setup.js` (message above the Next bar, on both fields' aria-describedby), `browser-schedule.js` (School day sheet).
-- [ ] **UX-BUG-04** — `index.html` viewport meta lacks `viewport-fit=cover`, so every `env(safe-area-inset-*)` in `frame.css` is 0 on iPhones. (closes in U1-02)
+- [x] **UX-BUG-04** — `index.html` viewport meta lacks `viewport-fit=cover`, so every `env(safe-area-inset-*)` in `frame.css` is 0 on iPhones. (closes in U1-02) Done 2026.10.20 (U1-02): `tests/styles.test.js` "U1-02".
 - [ ] **UX-BUG-05** — Plan details sheet offers only Close. (closes in U5-04)
 - [x] **UX-BUG-06** — Log edit entry and portion step: amount 0 disables Save with no message. (closes in U1-01) Done 2026.10.20 (U1-01): `browser-log.js` (Edit food and the portion step), `domain.test.js`.
 - [ ] **UX-BUG-07** — Barcode not found says "Add the food yourself." with no button for it. (closes in U1-03)

@@ -186,6 +186,26 @@ async (page) => {
       "Setup steps 2 and 3 stack their time fields one per row at 320 px (RWD-06); a selected weekday has the selected tint, primary border and a check (DS-12).",
     );
 
+    // U1-02 (UX-BUG-04, UX-NAV-07): the page asks for safe-area insets, and
+    // where the inset is 0 (here) the top bar keeps its 56 px.
+    const safe = await p.evaluate(() => {
+      const header = document.querySelector(".frame-header");
+      return {
+        viewport: document.querySelector('meta[name="viewport"]').content,
+        height: header.getBoundingClientRect().height,
+        padding: getComputedStyle(header).paddingTop,
+      };
+    });
+    if (!/viewport-fit=cover/.test(safe.viewport))
+      throw new Error(
+        `Viewport meta lacks viewport-fit=cover: ${safe.viewport}`,
+      );
+    if (safe.height !== 56 || safe.padding !== "0px")
+      throw new Error(`Top bar changed with no inset: ${JSON.stringify(safe)}`);
+    result.checks.push(
+      "The viewport meta has viewport-fit=cover, and with no inset the top bar stays 56 px with no top padding (UX-BUG-04, UX-NAV-07).",
+    );
+
     // A practice later today, so Today has a countdown.
     await p.goto(`${base}#/schedule`);
     await p.getByRole("button", { name: "+ Add", exact: true }).first().click();

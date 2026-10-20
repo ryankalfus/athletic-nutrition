@@ -6,7 +6,7 @@
  * equal segments that fit at 320px. */
 .food-sections-bar {
   position: sticky;
-  top: var(--top-bar);
+  top: calc(var(--top-bar) + env(safe-area-inset-top));
   z-index: var(--z-sticky);
   margin-bottom: var(--space-2);
   padding-block: var(--space-1);
@@ -735,7 +735,7 @@
  * Sticks under the Food section control on phones (6.8). */
 .day-switcher {
   position: sticky;
-  top: calc(var(--top-bar) + var(--space-16));
+  top: calc(var(--top-bar) + var(--space-16) + env(safe-area-inset-top));
   z-index: var(--z-sticky);
   display: grid;
   grid-template-columns: var(--target) minmax(0, 1fr) var(--target) auto;

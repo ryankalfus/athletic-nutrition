@@ -33,3 +33,48 @@ test("RWD-01: media queries use only the 480/768/1024/1200 px breakpoints", () =
   }
   assert.ok(found.includes(480) && found.includes(768) && found.includes(1024));
 });
+
+// U1-02 (UX-BUG-04, UX-NAV-07): iPhones report safe-area insets only with
+// viewport-fit=cover. Every sticky or fixed element pinned to the top of the
+// window pads its content below the status bar, and every sticky element that
+// sits under the top bar moves down by the same inset. A dialog's own header
+// is sticky inside the sheet, which never reaches the top (max 92dvh).
+test("U1-02: viewport-fit=cover and safe-area top padding on top bars", () => {
+  const html = readFileSync(
+    path.join(stylesDir, "..", "..", "index.html"),
+    "utf8",
+  );
+  const viewport = html.match(/<meta\s+name="viewport"\s+content="([^"]+)"/);
+  assert.ok(viewport, "index.html has no viewport meta");
+  assert.match(viewport[1], /(^|,\s*)viewport-fit=cover(\s*,|$)/);
+  const insideSheet = /^\.app-dialog\b/;
+  const pinned = [];
+  for (const file of readdirSync(stylesDir).filter((f) => f.endsWith(".css"))) {
+    const css = readFileSync(path.join(stylesDir, file), "utf8").replace(
+      /\/\*[\s\S]*?\*\//g,
+      "",
+    );
+    for (const [, rawSelector, body] of css.matchAll(/([^{}]+)\{([^{}]*)\}/g)) {
+      const selector = rawSelector.trim().replace(/\s+/g, " ");
+      if (!/position:\s*(sticky|fixed)/.test(body)) continue;
+      const top = body.match(/(?:^|;)\s*top:\s*([^;]+)/)?.[1].trim();
+      const inset = body.match(/(?:^|;)\s*inset:\s*([^;]+)/)?.[1].trim();
+      const atTop = top === "0" || (inset && inset.split(/\s+/)[0] === "0");
+      if (atTop && !insideSheet.test(selector)) {
+        pinned.push(selector);
+        assert.match(
+          body.match(/padding-top:\s*([^;]+)/)?.[1] || "",
+          /env\(safe-area-inset-top\)/,
+          `${file}: ${selector} is pinned to the top without safe-area padding`,
+        );
+      }
+      if (top && /--top-bar/.test(top))
+        assert.match(
+          top,
+          /env\(safe-area-inset-top\)/,
+          `${file}: ${selector} sticks under the top bar but ignores its safe-area inset`,
+        );
+    }
+  }
+  assert.ok(pinned.includes(".frame-header"), "the top bar was not checked");
+});

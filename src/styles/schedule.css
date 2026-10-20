@@ -151,7 +151,7 @@
 
 .schedule-week-switcher {
   position: sticky;
-  top: var(--top-bar);
+  top: calc(var(--top-bar) + env(safe-area-inset-top));
   z-index: var(--z-sticky);
   display: flex;
   align-items: center;
