@@ -841,6 +841,11 @@ Evidence: `p003`–`p017`, `p031`, `p032`, `p702`–`p704`, `d003`–`d017`; `SY
   type, then on the panel: "Today" label and the first plan in Barlow ("Soccer practice 4:00 PM",
   "Snack around 2:30 PM"). On paper: "Change any of this in You." and the primary "Open
   Today". No Back (`p017`).
+- **UX-SET-08 — Import a team calendar from setup (moved from TODO/REMAINING-APP-CHANGES §1,
+  2026.10.20).** Step 3 gets one plain row under the practice fields, "Import a team calendar",
+  with a chevron. It opens the same `ImportSheet` as Schedule (file or link, preview, duplicates
+  skipped). After an import the row reads "20 events added" and no practice has to be typed;
+  Next stays the only primary and "Skip for now" still works.
 - Desktop: UX-RWD-08 (split screen: steps listed on the field panel, question on paper).
 
 ### 6.3 Today
@@ -1533,6 +1538,7 @@ component, in which case the phase is named.
 | **UX-BUG-19** | After logging the 28 g usual portion of banana chips, the entry reads "1 g". | `p403`, `p405` | Reproduce with the fixture; if the stored amount or unit is wrong, fix and add a `tests/log.test.js` case; if it is a capture artifact, record that in the checklist note. | U1 |
 | **UX-BUG-20** | At home "0 left" rows are not treated as Out: the summary counts them, the row looks in stock. | `p332` | A counted item at 0 shows "Out" in error color and counts once in "low or out"; domain test. | U1 |
 | **UX-BUG-21** | Ideas shows the planned idea twice: in the planned card and again in the list with "Plan this". | `p308`, `p322`, `d643` | UX-IDEA-02. | U7 |
+| **UX-BUG-22** | "Every reversible write offers Undo" (REDESIGN-CHECKLIST §13.8) is not met: the four You sheets (Sport & season, Food needs, Food access, Reminders) toast a plain "Saved." with no Undo, and At home Have/Low/Out and count changes toast nothing. Found 2026.10.20 while reconciling the old lists. | `SettingsSheet.jsx:40`, `AccessSheet.jsx`, `HomePage.jsx` (stock `write(..., null)`), audit 6.5 | Sheet saves keep the previous values and toast "<Thing> saved." with Undo; stock changes toast "Updated <food>." with Undo once the change settles. If the owner keeps the audit 6.5 choice (no toast on stock changes), record it as an owner decision and reword the §13.8 line. | U1 |
 
 ## 9. Responsive adaptation
 
@@ -1720,17 +1726,27 @@ runs rules R1–R5 on route X at 390 and 1440 px and fails on any violation.
 
 **U1-05 — Data correctness and the undo ledger**
 - Change: Reproduce and fix the "1 g" log entry if real; treat counted At home items at 0 as
-  Out everywhere; prune `operations` ledger entries older than 30 days on load.
-- Reason: `p405`; `p332`; KEEP-15 is open in REDESIGN-CHECKLIST.md.
+  Out everywhere; prune `operations` ledger entries older than 30 days on load; give settings
+  sheet saves and At home stock changes an Undo (UX-BUG-22).
+- Reason: `p405`; `p332`; KEEP-15 is open in REDESIGN-CHECKLIST.md; the section 13.8 line
+  "every reversible write offers Undo" fails today (checked 2026.10.20).
 - Files: `src/pages/Food/PortionSheet.jsx`, `src/domain/food.js`, `src/domain/` (storage and
-  ledger), `tests/log.test.js`, `tests/domain.test.js`.
-- Depends on: none. Size: S. Risk: Medium (stored data).
+  ledger), `src/pages/You/SettingsSheet.jsx`, `src/pages/Food/HomePage.jsx`,
+  `tests/log.test.js`, `tests/domain.test.js`, `tests/browser-you.js`,
+  `tests/browser-food-workflow.js`.
+- Depends on: none. Size: M. Risk: Medium (stored data).
 - Done when: (a) a unit test logs the 28 g usual portion of the fixture banana chips and reads
   back 28 g (or the checklist records that `p405` was a capture artifact, with the reason);
   (b) a unit test shows a counted item at 0 has status Out and is counted once in "low or out";
   (c) a unit test seeds ledger entries at 29 and 31 days old and only the 29-day entry remains
-  after load.
-- Closes: UX-BUG-19, UX-BUG-20; REDESIGN-CHECKLIST KEEP-15.
+  after load; (d) after saving Sport & season, Food needs, Food access or Reminders in You, the
+  "Saved." toast has an Undo that restores the previous values (`browser-you.js`); (e) changing
+  an At home Have/Low/Out or count shows one toast with Undo per settled change and Undo
+  restores it (`browser-food-workflow.js`), unless the owner keeps the audit 6.5 choice of no
+  toast there, in which case that exception is recorded under Owner decisions in
+  UX-REDESIGN-CHECKLIST.md and the section 13.8 line in REDESIGN-CHECKLIST.md is reworded.
+- Closes: UX-BUG-19, UX-BUG-20, UX-BUG-22; REDESIGN-CHECKLIST KEEP-15 and its section 13.8
+  line "Every write gives feedback; every reversible write offers Undo".
 
 **U1-06 — Capture harness, seed names and the rules check**
 - Change: Move the capture harness from `output/ux-review/*.mjs` to `scripts/ux-review/` (PNGs
@@ -2192,20 +2208,25 @@ runs rules R1–R5 on route X at 390 and 1440 px and fails on any violation.
 - Closes: UX-WEL-01, UX-WEL-02, UX-WEL-03, UX-WEL-04, UX-DS-12 (Welcome).
 
 **U8-02 — Setup**
-- Change: One way forward and out, dash progress, the step layouts in 6.2, done screen.
+- Change: One way forward and out, dash progress, the step layouts in 6.2, done screen, and
+  the "Import a team calendar" row on step 3.
 - Reason: Four exits (`p008`); chips and badges (`p008`, `p013`, `p015`); flat done screen
-  (`p017`).
+  (`p017`); setup has no import entry (old TODO list §1, ADD-08 note).
 - Files: `src/pages/Setup/SetupFlow.jsx`, `SetupSteps.jsx`, `StepForm.jsx`,
-  `src/pages/You/FoodNeedsFields.jsx`, `src/styles/welcome.css`, `tests/browser-setup.js`,
+  `src/pages/Schedule/ImportSheet.jsx`, `src/pages/You/FoodNeedsFields.jsx`,
+  `src/styles/welcome.css`, `tests/browser-setup.js`, `tests/browser-calendar-import.js`,
   `tests/setup.test.js`.
-- Depends on: U8-01, U6-03 (shared time and weekday controls). Size: L. Risk: Medium.
+- Depends on: U8-01, U6-03 (shared time and weekday controls), U6-04 (import sheet). Size: L.
+  Risk: Medium.
 - Done when: every step shows at most one primary and at most one text exit; step 1 shows
   "Set up later" and no back; steps 2–5 show "Skip for now"; no pill chips render on any step
   (R2); no allergy, Gluten-free, Nut-free or Dairy-free control renders while
   `ALLERGY_TAGS_REVIEWED` is false (`browser-allergens.js`); the done screen has no Back and its
   primary is "Open Today"; a new athlete still completes setup and sees a Today hero naming the
-  practice and a time (audit criterion).
-- Closes: UX-SET-01 to UX-SET-07, UX-FLOW-09, UX-DS-12 (setup).
+  practice and a time (audit criterion); on step 3, "Import a team calendar" opens the import
+  sheet, importing the TeamSnap fixture adds its events, the row then reads "20 events added" and
+  Next works without a typed practice (`browser-setup.js`, `browser-calendar-import.js`).
+- Closes: UX-SET-01 to UX-SET-08, UX-FLOW-09, UX-DS-12 (setup).
 
 **U8-03 — You and its sheets**
 - Change: Profile as type, row groups with values right, honest row name, Sport sheet,
@@ -2350,6 +2371,31 @@ runs rules R1–R5 on route X at 390 and 1440 px and fails on any violation.
   card stack.
 - Closes: UX-TEST-05.
 
+**U10-02 — Checks that need devices, specialists or hosting**
+- Change: Run the checks no script can and write each result, with its date, on its checklist
+  line: the barcode camera on real phones, reminders and the browser matrix on real devices, a
+  nutrition specialist's review of the meal templates and timing cutoffs, and a hosted build
+  with the owner's USDA key.
+- Reason: AUDIT/IMPLEMENTATION-CHECKLIST X01, X02, X03 (specialist review) and X05 were left
+  open as external and are tracked nowhere else (moved here 2026.10.20; X03's manual
+  accessibility test stays P1-13, X04 stays P3-03 and P3-01).
+- Files: none to change; results in `UX-REDESIGN-CHECKLIST.md` and a short note under `docs/`.
+- Depends on: U9 for the camera and browser checks; P3-01 for delivery with the app closed;
+  the platform decision (ROADMAP step 18): if the app becomes native, repeat on that platform.
+  Size: M. Risk: Low.
+- Done when: (a) on a real iPhone and a real Android phone the camera reads a real barcode,
+  denied and revoked permission both fall back to the manual field, and the camera light is off
+  after close (UX-TEST-07); (b) on Safari (iOS and macOS), Firefox and Chrome with the app open,
+  a reminder arrives once at the set time and turning reminders off stops it, and with the app
+  closed the page still says reminders need the app open until P3-01 ships (UX-TEST-08); (c) a
+  registered dietitian or sports nutrition specialist has reviewed the meal templates, the
+  cutoffs in `src/domain/rules.js` and the example portions, and each change they ask for is
+  made or declined in writing (UX-TEST-09); (d) the hosted build starts with an owner-held
+  `FDC_API_KEY` and a search for "banana" returns USDA foods with `/api/foods/status`
+  reporting `server-key` (or `local-snapshot` when the local index is provisioned); with no key
+  it reports `limited-demo` and search still answers within the DEMO_KEY limits (UX-TEST-10).
+- Closes: UX-TEST-07, UX-TEST-08, UX-TEST-09, UX-TEST-10.
+
 ### 10.12 Open items from REDESIGN-CHECKLIST.md
 
 | Item | What is open | Built in | Tick in both trackers when |
@@ -2409,6 +2455,11 @@ empty `STRICT`; each screen phase adds its routes; U8-06 makes every route stric
 - **UX-TEST-06 — Stylesheet guards.** `tests/styles.test.js` gains: color values pinned
   (U2-01); `box-shadow` only on allowlisted floating selectors; no `text-transform:
   uppercase`; no dashed borders; `--font-numeral` only on allowlisted selectors. Closes in U8-06.
+- **UX-TEST-07 — Real-phone camera and barcode check.** U10-02 (moved from X01).
+- **UX-TEST-08 — Reminders and browser matrix on real devices.** U10-02 (moved from X02).
+- **UX-TEST-09 — Nutrition specialist review of templates, cutoffs and portions.** U10-02
+  (moved from X03).
+- **UX-TEST-10 — Hosted build with an owner-held USDA key.** U10-02 (moved from X05).
 - Every item keeps the existing suites green: `npm run check` (lint, typecheck, unit tests,
   build) and `npm run test:browser` (25 snippets today, plus `browser-ux-rules.js` and
   `browser-ux-nav.js`).
@@ -2428,10 +2479,10 @@ work (audit P3-01, owner decision 5), is not part of this plan.
 |---|---|---|---|
 | Tokens and surfaces | `UX-DS` | 01–17 | 17 |
 | Navigation and page frame | `UX-NAV` | 01–13 | 13 |
-| Shared components | `UX-CMP` | 01–22 | 22 |
+| Shared components | `UX-CMP` | 01–23 | 23 |
 | Copy rules | `UX-COPY` | 01–06 | 6 |
 | Welcome | `UX-WEL` | 01–04 | 4 |
-| Setup | `UX-SET` | 01–07 | 7 |
+| Setup | `UX-SET` | 01–08 | 8 |
 | Today | `UX-TODAY` | 01–15 | 15 |
 | Schedule | `UX-SCH` | 01–18 | 18 |
 | Food frame | `UX-FOOD` | 01–04 | 4 |
@@ -2444,10 +2495,10 @@ work (audit P3-01, owner decision 5), is not part of this plan.
 | This device and recovery | `UX-DEV` | 01–06 | 6 |
 | About, Not found, footer | `UX-MISC` | 01–03 | 3 |
 | Flow fixes | `UX-FLOW` | 01–13 | 13 |
-| Bugs | `UX-BUG` | 01–21 | 21 |
+| Bugs | `UX-BUG` | 01–22 | 22 |
 | Tablet and desktop | `UX-RWD` | 01–12 | 12 |
-| Tests and tooling | `UX-TEST` | 01–06 | 6 |
-| **Total** | | | **218** |
+| Tests and tooling | `UX-TEST` | 01–10 | 10 |
+| **Total** | | | **225** |
 
 Build items that close each ID (an ID listed under two items closes with the later one;
 UX-FLOW-13 is built in U7-03):
@@ -2524,6 +2575,7 @@ UX-FLOW-13 is built in U7-03):
 | UX-SET-05 | U8-02 |
 | UX-SET-06 | U8-02 |
 | UX-SET-07 | U8-02 |
+| UX-SET-08 | U8-02 |
 | UX-TODAY-01 | U5-02 |
 | UX-TODAY-02 | U5-01 |
 | UX-TODAY-03 | U5-01 |
@@ -2655,6 +2707,7 @@ UX-FLOW-13 is built in U7-03):
 | UX-BUG-19 | U1-05 |
 | UX-BUG-20 | U1-05 |
 | UX-BUG-21 | U7-02 |
+| UX-BUG-22 | U1-05 |
 | UX-RWD-01 | U9-01 |
 | UX-RWD-02 | U9-01 |
 | UX-RWD-03 | U9-02 |
@@ -2673,3 +2726,7 @@ UX-FLOW-13 is built in U7-03):
 | UX-TEST-04 | U8-06 |
 | UX-TEST-05 | U10-01 |
 | UX-TEST-06 | U8-06 |
+| UX-TEST-07 | U10-02 |
+| UX-TEST-08 | U10-02 |
+| UX-TEST-09 | U10-02 |
+| UX-TEST-10 | U10-02 |

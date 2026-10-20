@@ -373,7 +373,7 @@ Each ID is an individual checkbox. Implementation notes and blockers go on the m
 - [x] **ADD-05**
 - [x] **ADD-06**
 - [x] **ADD-07**
-- [x] **ADD-08** — Done 2026.10.11: .ics file import with preview, type mapping and duplicate skip, plus subscription links through the server (P2-01, P2-02). Setup step 3 does not offer import yet; Schedule does.
+- [x] **ADD-08** — Done 2026.10.11: .ics file import with preview, type mapping and duplicate skip, plus subscription links through the server (P2-01, P2-02). Setup step 3 does not offer import yet; Schedule does. The setup entry is tracked as UX-SET-08 in UX-REDESIGN-CHECKLIST.md.
 - [x] **ADD-09** — Fixed 2026.10.09: Schedule uses sport titles like Today (see SCH-09).
 - [x] **ADD-10**
 - [x] **ADD-11**

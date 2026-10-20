@@ -8,7 +8,7 @@ Source of truth: [UX-REDESIGN-PLAN.md](UX-REDESIGN-PLAN.md). Read the item there
 
 ## Phase tracker
 
-**Status 2026.10.15:** U0 done (1/1). U1–U10 not started (0/47). Recommendation IDs done: 0 of 218.
+**Status 2026.10.20:** U0 done (1/1). U1–U10 not started (0/48). Recommendation IDs done: 0 of 225. The 225 are the 218 of the plan, UX-CMP-23 (decision A) and six added on 2026.10.20 when the old lists were reconciled: UX-SET-08, UX-BUG-22 and UX-TEST-07 to UX-TEST-10, with build item U10-02.
 
 ### U0 — Full review (done 2026.10.15)
 
@@ -20,7 +20,7 @@ Source of truth: [UX-REDESIGN-PLAN.md](UX-REDESIGN-PLAN.md). Read the item there
 - [ ] **U1-02** — Safe areas on iPhone. Closes: UX-NAV-07, UX-BUG-04.
 - [ ] **U1-03** — Dead ends. Closes: UX-FLOW-05, UX-FLOW-06, UX-FLOW-07, UX-BUG-07, UX-BUG-13, UX-BUG-14, UX-BUG-18.
 - [ ] **U1-04** — Controls that tell the truth. Closes: UX-BUG-15, UX-BUG-16, UX-BUG-17.
-- [ ] **U1-05** — Data correctness and the undo ledger. Closes: UX-BUG-19, UX-BUG-20. Also closes (REDESIGN-CHECKLIST): KEEP-15.
+- [ ] **U1-05** — Data correctness and the undo ledger. Closes: UX-BUG-19, UX-BUG-20, UX-BUG-22. Also closes (REDESIGN-CHECKLIST): KEEP-15 and the §13.8 line "Every write gives feedback; every reversible write offers Undo".
 - [ ] **U1-06** — Capture harness, seed names and the rules check. Closes: UX-TEST-01, UX-TEST-02, UX-TEST-03. Also closes (REDESIGN-CHECKLIST): COPY-38.
 
 ### U2 — Tokens and copy foundation
@@ -71,7 +71,7 @@ Source of truth: [UX-REDESIGN-PLAN.md](UX-REDESIGN-PLAN.md). Read the item there
 ### U8 — Welcome, setup, You, This device, About
 
 - [ ] **U8-01** — Welcome and athletes. Closes: UX-DS-12, UX-WEL-01, UX-WEL-02, UX-WEL-03, UX-WEL-04.
-- [ ] **U8-02** — Setup. Closes: UX-DS-12, UX-SET-01, UX-SET-02, UX-SET-03, UX-SET-04, UX-SET-05, UX-SET-06, UX-SET-07, UX-FLOW-09.
+- [ ] **U8-02** — Setup. Closes: UX-DS-12, UX-SET-01, UX-SET-02, UX-SET-03, UX-SET-04, UX-SET-05, UX-SET-06, UX-SET-07, UX-SET-08, UX-FLOW-09.
 - [ ] **U8-03** — You and its sheets. Closes: UX-YOU-01, UX-YOU-02, UX-YOU-03, UX-YOU-04, UX-YOU-05, UX-YOU-06, UX-YOU-07, UX-YOU-08, UX-YOU-09. Also closes (REDESIGN-CHECKLIST): STATE-05.
 - [ ] **U8-04** — This device and recovery. Closes: UX-DEV-01, UX-DEV-02, UX-DEV-03, UX-DEV-04, UX-DEV-05, UX-DEV-06. Also closes (REDESIGN-CHECKLIST): STATE-08.
 - [ ] **U8-05** — About and Not found. Closes: UX-MISC-02, UX-MISC-03.
@@ -90,6 +90,7 @@ Source of truth: [UX-REDESIGN-PLAN.md](UX-REDESIGN-PLAN.md). Read the item there
 ### U10 — Final re-review
 
 - [ ] **U10-01** — Re-capture and re-review against the brief. Closes: UX-TEST-05.
+- [ ] **U10-02** — Checks that need devices, specialists or hosting. Closes: UX-TEST-07, UX-TEST-08, UX-TEST-09, UX-TEST-10. (Moved from AUDIT/IMPLEMENTATION-CHECKLIST X01, X02, X03, X05, 2026.10.20.)
 
 ## Recommendation tracker
 
@@ -182,6 +183,7 @@ One checkbox per ID. The note names the build item that closes it.
 - [ ] **UX-SET-05** — Step 4 food at school. (closes in U8-02)
 - [ ] **UX-SET-06** — Step 5 food needs. (closes in U8-02)
 - [ ] **UX-SET-07** — Step 6 done. (closes in U8-02)
+- [ ] **UX-SET-08** — Import a team calendar from setup. (closes in U8-02; moved from TODO/REMAINING-APP-CHANGES §1, 2026.10.20)
 
 ### Today (`UX-TODAY`)
 
@@ -352,6 +354,7 @@ One checkbox per ID. The note names the build item that closes it.
 - [ ] **UX-BUG-19** — After logging the 28 g usual portion of banana chips, the entry reads "1 g". (closes in U1-05)
 - [ ] **UX-BUG-20** — At home "0 left" rows are not treated as Out: the summary counts them, the row looks in stock. (closes in U1-05)
 - [ ] **UX-BUG-21** — Ideas shows the planned idea twice: in the planned card and again in the list with "Plan this". (closes in U7-02)
+- [ ] **UX-BUG-22** — Settings saves (four You sheets) toast "Saved." with no Undo, and At home Have/Low/Out and count changes toast nothing, so the §13.8 line on Undo fails. (closes in U1-05; found 2026.10.20)
 
 ### Tablet and desktop (`UX-RWD`)
 
@@ -376,6 +379,10 @@ One checkbox per ID. The note names the build item that closes it.
 - [ ] **UX-TEST-04** — Retire assertions that encode the old look. (closes in U8-06)
 - [ ] **UX-TEST-05** — Final re-review. (closes in U10-01)
 - [ ] **UX-TEST-06** — Stylesheet guards. (closes in U8-06)
+- [ ] **UX-TEST-07** — Real-phone camera and barcode check. (closes in U10-02; moved from X01, 2026.10.20)
+- [ ] **UX-TEST-08** — Reminders and browser matrix (Safari, Firefox, real devices). (closes in U10-02; moved from X02, 2026.10.20; delivery with the app closed is P3-01)
+- [ ] **UX-TEST-09** — Nutrition specialist review of meal templates, timing cutoffs and portions. (closes in U10-02; moved from X03, 2026.10.20)
+- [ ] **UX-TEST-10** — Hosted build with an owner-held USDA key. (closes in U10-02; moved from X05, 2026.10.20)
 
 ## Carried over from REDESIGN-CHECKLIST.md
 
