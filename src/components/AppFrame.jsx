@@ -5,7 +5,7 @@ import {
   CircleUserRound,
   Sunrise,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   useStore,
   exportBackup,
@@ -26,8 +26,52 @@ const destinations = [
 
 export function AppNavigation({ active, onNavigate }) {
   const current = active === "weekly" || active === "history" ? "food" : active;
+  const activeIndex = destinations.findIndex(({ id }) => id === current);
+  const [keyboardOpen, setKeyboardOpen] = useState(false);
+
+  useEffect(() => {
+    let focusViewportHeight = null;
+    const updateKeyboardState = () => {
+      const target = document.activeElement;
+      const textEntry = target?.matches(
+        'input:not([type="button"]):not([type="submit"]):not([type="reset"]):not([type="hidden"]):not([type="checkbox"]):not([type="radio"]), textarea, [contenteditable="true"]',
+      );
+      const viewportHeight =
+        window.visualViewport?.height ?? window.innerHeight;
+
+      if (!textEntry) {
+        focusViewportHeight = null;
+        setKeyboardOpen(false);
+        return;
+      }
+
+      if (focusViewportHeight === null) focusViewportHeight = viewportHeight;
+      setKeyboardOpen(viewportHeight < focusViewportHeight * 0.75);
+    };
+    const updateAfterFocusChange = () =>
+      window.requestAnimationFrame(updateKeyboardState);
+
+    document.addEventListener("focusin", updateKeyboardState);
+    document.addEventListener("focusout", updateAfterFocusChange);
+    window.addEventListener("resize", updateKeyboardState);
+    window.visualViewport?.addEventListener("resize", updateKeyboardState);
+    updateKeyboardState();
+
+    return () => {
+      document.removeEventListener("focusin", updateKeyboardState);
+      document.removeEventListener("focusout", updateAfterFocusChange);
+      window.removeEventListener("resize", updateKeyboardState);
+      window.visualViewport?.removeEventListener("resize", updateKeyboardState);
+    };
+  }, []);
+
   return (
-    <nav className="frame-nav" aria-label="Main navigation">
+    <nav
+      className="frame-nav"
+      aria-label="Main navigation"
+      hidden={keyboardOpen}
+      style={{ "--tab-active-offset": String(activeIndex * 100) + "%" }}
+    >
       {destinations.map(({ id, label, path, Icon }) => (
         <button
           key={id}
