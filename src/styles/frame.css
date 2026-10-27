@@ -53,33 +53,53 @@
   white-space: nowrap;
 }
 
-/* Mobile tab bar (DS-17): 24px icon, 12px label, lime dot above the active icon. */
+/* Phone navigation: one floating glass capsule with a single sliding active pill. */
 .frame-nav {
   position: fixed;
-  inset: auto 0 0;
+  inset:
+    auto max(var(--tab-inset), calc(env(safe-area-inset-right) + var(--tab-inset)))
+    max(var(--tab-inset), calc(env(safe-area-inset-bottom) - var(--space-2)))
+    max(var(--tab-inset), calc(env(safe-area-inset-left) + var(--tab-inset)));
   z-index: var(--z-rail);
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  height: calc(var(--tab-bar) + env(safe-area-inset-bottom));
-  padding: 0 0 env(safe-area-inset-bottom);
-  background: var(--color-surface);
-  box-shadow: var(--shadow-2);
+  height: var(--tab-bar);
+  max-width: var(--tab-bar-max);
+  margin-inline: auto;
+  padding: var(--space-1);
+  overflow: hidden;
+  border: 0;
+  border-radius: var(--radius-float);
+  background: var(--surface-glass-solid);
+  box-shadow: var(--elev-tab-bar);
+}
+
+.frame-nav::before {
+  position: absolute;
+  inset: var(--space-1) auto var(--space-1) var(--space-1);
+  width: calc((100% - var(--space-2)) / 4);
+  border-radius: 20px;
+  background: var(--color-pitch);
+  content: "";
+  transform: translateX(var(--tab-active-offset));
+  transition: transform var(--motion-standard) var(--ease-out);
 }
 
 .frame-nav .frame-nav-item {
   position: relative;
+  z-index: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: var(--space-1);
-  min-width: 0;
-  min-height: var(--tab-bar);
-  padding: var(--space-2) var(--space-1);
+  min-width: var(--target);
+  min-height: var(--row-min);
+  padding: var(--space-1);
   border: 0;
-  border-radius: 0;
+  border-radius: 20px;
   background: transparent;
-  color: var(--color-ink-muted);
+  color: var(--color-ink);
   font-size: var(--text-tab);
   line-height: var(--leading-tab);
   font-weight: 600;
@@ -92,25 +112,39 @@
 
 /* The ring sits inside the item so the screen edge never cuts it. */
 .frame-nav .frame-nav-item:focus-visible {
-  border-radius: var(--radius-md);
   outline-offset: calc(var(--space-1) * -1);
 }
 
 .frame-nav .frame-nav-item[aria-current="page"] {
-  color: var(--color-primary);
+  color: var(--color-on-dark);
 }
 
-/* Lime marks the active item (DS-17); a 1px primary edge gives it 3:1
- * against the white bar, which lime alone does not (WCAG 1.4.11). */
-.frame-nav .frame-nav-item[aria-current="page"]::before {
-  position: absolute;
-  top: var(--space-1);
-  width: 6px;
-  height: 6px;
-  border-radius: var(--radius-full);
-  background: var(--color-lime);
-  box-shadow: 0 0 0 1px var(--color-primary);
-  content: "";
+.frame-nav .frame-nav-item[aria-current="page"] svg {
+  color: var(--color-lime);
+}
+
+@supports (backdrop-filter: blur(1px)) {
+  .frame-nav {
+    background: var(--surface-glass);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+  }
+}
+
+@supports (-webkit-backdrop-filter: blur(1px)) {
+  .frame-nav {
+    background: var(--surface-glass);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+  }
+}
+
+@media (prefers-reduced-transparency: reduce), (prefers-contrast: more) {
+  .frame-nav {
+    border: var(--border-control);
+    background: var(--color-paper);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
 }
 
 .frame-athlete {
@@ -179,7 +213,9 @@
 
 .app-frame.has-navigation .shell {
   padding-bottom: calc(
-    var(--tab-bar) + var(--space-8) + env(safe-area-inset-bottom)
+    var(--tab-bar) +
+      max(var(--tab-inset), calc(env(safe-area-inset-bottom) - var(--space-2))) +
+      var(--space-6)
   );
 }
 
@@ -344,6 +380,31 @@
     height: 20px;
   }
 
+  /* Keep the current tablet and rail treatment until U3-02; the glass capsule
+   * and sliding pitch pill are phone-only in U3-01. */
+  .frame-nav::before {
+    content: none;
+  }
+
+  .frame-nav .frame-nav-item[aria-current="page"] {
+    color: var(--color-primary);
+  }
+
+  .frame-nav .frame-nav-item[aria-current="page"] svg {
+    color: currentColor;
+  }
+
+  .frame-nav .frame-nav-item[aria-current="page"]::before {
+    position: absolute;
+    top: var(--space-1);
+    width: 6px;
+    height: 6px;
+    border-radius: var(--radius-full);
+    background: var(--color-lime);
+    box-shadow: 0 0 0 1px var(--color-primary);
+    content: "";
+  }
+
   .frame-nav .frame-nav-item[aria-current="page"]::before {
     top: auto;
     bottom: 0;
@@ -413,6 +474,8 @@
     flex-direction: column;
     align-items: stretch;
     height: auto;
+    max-width: none;
+    margin-inline: 0;
     margin-top: var(--space-8);
   }
 
@@ -477,4 +540,8 @@
       var(--width-reading) + var(--space-8) + var(--width-aside)
     );
   }
+}
+
+.frame-nav[hidden] {
+  display: none;
 }

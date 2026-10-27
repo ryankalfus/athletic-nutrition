@@ -136,11 +136,12 @@ async (page) => {
     await setup();
     const now = await box(p.locator(".now-card"));
     const rail = await box(p.locator(".day-rail"));
-    if (now.bottom > 844 - 64)
+    const nav = await box(p.locator(".frame-nav"));
+    if (now.bottom > nav.y - 8)
       fail(
         `Now card ends at ${Math.round(now.bottom)}px, under the 64px tab bar`,
       );
-    if (rail.y > 844 - 64)
+    if (rail.y > nav.y)
       fail(`Day rail starts below the fold (${Math.round(rail.y)}px)`);
     const chips = await p
       .locator(".today-chips > span")
@@ -425,7 +426,8 @@ async (page) => {
     if (tops.includes(null) || new Set(tops).size !== 1)
       fail(`A row menu near the tab bar moves or closes (${tops})`);
     const menu = await box(p.locator(".row-menu-items"));
-    if (menu.bottom > 844 - 64 + 1)
+    const mobileNav = await box(p.locator(".frame-nav"));
+    if (menu.bottom > mobileNav.y - 8)
       fail(`A row menu runs under the tab bar (${Math.round(menu.bottom)}px)`);
     await p.keyboard.press("Escape");
     await p.goto(`${base}#/food/log`);
@@ -449,10 +451,10 @@ async (page) => {
     // ---------- 768: tablet tabs centered on the bar ----------
     await open(768, 1024);
     await setup();
-    const nav = await box(p.locator(".frame-nav"));
-    if (!near(nav.x + nav.w / 2, 384, 2))
+    const tabletNav = await box(p.locator(".frame-nav"));
+    if (!near(tabletNav.x + tabletNav.w / 2, 384, 2))
       fail(
-        `Tablet tabs center at ${Math.round(nav.x + nav.w / 2)} px, not 384`,
+        `Tablet tabs center at ${Math.round(tabletNav.x + tabletNav.w / 2)} px, not 384`,
       );
     result.checks.push("768: the tablet tab group is centered on the bar.");
 

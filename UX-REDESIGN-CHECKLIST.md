@@ -30,7 +30,7 @@ Source of truth: [UX-REDESIGN-PLAN.md](UX-REDESIGN-PLAN.md). Read the item there
 
 ### U3 — App frame and the floating tab bar
 
-- [ ] **U3-01** — Phone floating tab bar. Closes: UX-DS-02, UX-NAV-01, UX-NAV-02, UX-NAV-03, UX-NAV-04, UX-NAV-05, UX-NAV-08, UX-BUG-11.
+- [x] **U3-01** — Phone floating tab bar. Closes: UX-NAV-01, UX-NAV-02, UX-NAV-03, UX-NAV-04, UX-NAV-05, UX-NAV-08, UX-BUG-11; contributes to UX-DS-02. Done 2026.10.27: `browser-ux-nav.js` passes 39 checks across 15 phone routes, covering capsule geometry, glass and fallbacks, active state and contrast, axe, clearance, keyboard behavior and scroll stability; real tab clicks and alternating short/long pages also keep the bar, buttons, icons and labels fixed at 320, 390, 768, 1024 and 1440 px with classic scrollbars enabled.
 - [ ] **U3-02** — Tablet capsule and desktop rail. Closes: UX-NAV-09, UX-NAV-10.
 - [ ] **U3-03** — Page headers and the footer. Closes: UX-NAV-11, UX-NAV-12, UX-NAV-13, UX-SCH-18, UX-MISC-01.
 - [ ] **U3-04** — Toasts, the floating action slot and the offline line. Closes: UX-DS-02, UX-NAV-06, UX-CMP-13, UX-CMP-16, UX-BUG-10, UX-RWD-11. Also closes (REDESIGN-CHECKLIST): STATE-03.
@@ -118,14 +118,14 @@ One checkbox per ID. The note names the build item that closes it.
 
 ### Navigation and page frame (`UX-NAV`)
 
-- [ ] **UX-NAV-01** — Geometry. (closes in U3-01)
-- [ ] **UX-NAV-02** — Material and fallbacks. (closes in U3-01)
-- [ ] **UX-NAV-03** — Items and active state. (closes in U3-01)
-- [ ] **UX-NAV-04** — Content clearance. (closes in U3-01)
-- [ ] **UX-NAV-05** — Keyboard. (closes in U3-01)
+- [x] **UX-NAV-01** — Geometry. (closes in U3-01) Done 2026.10.27: `browser-ux-nav.js` measures the 64 px capsule, 24 px radius, ≤440 px width and 12 px safe insets at both phone sizes.
+- [x] **UX-NAV-02** — Material and fallbacks. (closes in U3-01) Done 2026.10.27: glass is 0.82 alpha with 20 px blur; reduced transparency, increased contrast and forced colors use solid system or paper surfaces.
+- [x] **UX-NAV-03** — Items and active state. (closes in U3-01) Done 2026.10.27: `aria-current`, the sliding pitch pill, lime icon, white label and inactive-label contrast pass on every phone route.
+- [x] **UX-NAV-04** — Content clearance. (closes in U3-01) Done 2026.10.27: every route clears the nav by at least 8 px at both phone sizes; You footer text also clears it.
+- [x] **UX-NAV-05** — Keyboard. (closes in U3-01) Done 2026.10.27: the nav hides for a focused text field at a simulated 50% viewport height and returns on blur.
 - [ ] **UX-NAV-06** — Stacking above the bar. (closes in U3-04)
 - [x] **UX-NAV-07** — Safe areas. (closes in U1-02) Done 2026.10.20 (U1-02): `tests/styles.test.js`, `browser-shared-ui.js`.
-- [ ] **UX-NAV-08** — Stable bar. (closes in U3-01)
+- [x] **UX-NAV-08** — Stable bar. (closes in U3-01) Done 2026.10.27: scrolling 600 px leaves the nav rect unchanged.
 - [ ] **UX-NAV-09** — Floating top capsule. (closes in U3-02)
 - [ ] **UX-NAV-10** — Quiet rail. (closes in U3-02)
 - [ ] **UX-NAV-11** — Large titles that collapse. (closes in U3-03)
@@ -343,7 +343,7 @@ One checkbox per ID. The note names the build item that closes it.
 - [x] **UX-BUG-08** — Travel time wraps between "5:15" and "PM". (closes in U2-02) Done 2026.10.20 (U2-02): `domain.test.js`, `browser-shared-ui.js`.
 - [x] **UX-BUG-09** — At 320 px, a meta line wraps so that "· Lunch 11:30 AM" starts the second line with an orphan dot. (closes in U2-02) Done 2026.10.20 (U2-02): `browser-shared-ui.js` (no " · " at 320 px).
 - [ ] **UX-BUG-10** — Toasts cover content and actions: prompt buttons (`p126`, `p152`, `p531`), "Everything's checked" line (`p360`), the footer (`p318`). (closes in U3-04)
-- [ ] **UX-BUG-11** — The footer line is clipped behind the tab bar at the end of You. (closes in U3-01)
+- [x] **UX-BUG-11** — The footer line is clipped behind the tab bar at the end of You. (closes in U3-01) Done 2026.10.27: the footer text clears the floating nav by at least 8 px at 390 px and 320 px.
 - [ ] **UX-BUG-12** — Controls clip with no scroll cue: Ideas moment tray "To…" (`p301`), Quick add "Frozen b" (`p332`), 320 px tabs (`p709`). (closes in U7-01)
 - [x] **UX-BUG-13** — Duplicate re-import ends on a disabled button with only Back. (closes in U1-03) Done 2026.10.20 (U1-03): `browser-calendar-import.js`, `browser-journey.js`.
 - [x] **UX-BUG-14** — Week suggestions open with nothing selected and the primary disabled. (closes in U1-03) Done 2026.10.20 (U1-03): `browser-food-workflow.js`.

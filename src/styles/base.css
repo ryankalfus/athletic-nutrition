@@ -7,6 +7,9 @@
 }
 
 html {
+  /* Keep the classic scrollbar track on short routes too, so tab changes and
+   * sheets never recenter the frame. Overlay scrollbars keep the full width. */
+  overflow-y: scroll;
   font-family: var(--font-ui);
   color: var(--color-ink);
   background: var(--color-paper);
@@ -453,5 +456,25 @@ body > .sr-only {
   ):not(:focus-visible) {
     outline: 2px solid Highlight;
     outline-offset: -2px;
+  }
+
+  .app-frame .frame-nav {
+    border: 1px solid CanvasText;
+    background: Canvas;
+    box-shadow: none;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+
+  .app-frame .frame-nav::before {
+    background: Highlight;
+  }
+
+  .app-frame .frame-nav .frame-nav-item[aria-current="page"] {
+    color: HighlightText;
+  }
+
+  .app-frame .frame-nav .frame-nav-item[aria-current="page"] svg {
+    color: HighlightText;
   }
 }

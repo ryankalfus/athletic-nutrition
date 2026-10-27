@@ -150,6 +150,7 @@
   --tab-bar: 64px;
   --tab-inset: 12px; /* floating tab bar to the screen edges */
   --tab-bar-max: 440px;
+  --tab-active-offset: 0%; /* position of the phone nav's sliding pitch pill */
   --hero-track: 4px; /* the hero's run-up line */
   --target: 44px;
   --stock-control: 144px; /* At home control column; 168px in a 328px page */
@@ -174,10 +175,10 @@
   /* Elevation (UX-DS-04): content is flat; only floating layers cast
    * shadows. */
   --elev-float: 0 0 0 1px rgb(20 51 60 / 0.06), 0 8px 32px rgb(15 44 56 / 0.16);
+  --elev-tab-bar: var(--elev-float), inset 0 0 0 1px rgb(255 255 255 / 0.5);
   --elev-sheet: 0 -8px 40px rgb(15 44 56 / 0.2);
   --elev-menu: 0 0 0 1px rgb(20 51 60 / 0.08), 0 12px 32px rgb(15 44 56 / 0.18);
   --shadow-1: 0 1px 2px rgb(20 51 60 / 0.06); /* Retired (4.4): content shadow */
-  --shadow-2: 0 -1px 0 var(--color-line), 0 -8px 24px rgb(20 51 60 / 0.08); /* Retired (4.4): docked tab bar */
   --shadow-3: 0 24px 64px rgb(15 44 56 / 0.24);
 
   /* Inline icons (Lucide paths, stroke 1.75-3) for CSS-only controls */
