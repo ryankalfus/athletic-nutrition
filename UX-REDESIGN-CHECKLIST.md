@@ -30,7 +30,7 @@ Source of truth: [UX-REDESIGN-PLAN.md](UX-REDESIGN-PLAN.md). Read the item there
 
 ### U3 — App frame and the floating tab bar
 
-- [x] **U3-01** — Phone floating tab bar. Closes: UX-NAV-01, UX-NAV-02, UX-NAV-03, UX-NAV-04, UX-NAV-05, UX-NAV-08, UX-BUG-11; contributes to UX-DS-02. Done 2026.10.27: `browser-ux-nav.js` passes 34 checks across 15 routes at 390 × 844 and 320 × 740, covering capsule geometry, glass and fallbacks, active state and contrast, axe, content and footer clearance, keyboard behavior and scroll stability.
+- [x] **U3-01** — Phone floating tab bar. Closes: UX-NAV-01, UX-NAV-02, UX-NAV-03, UX-NAV-04, UX-NAV-05, UX-NAV-08, UX-BUG-11; contributes to UX-DS-02. Done 2026.10.27: `browser-ux-nav.js` passes 39 checks across 15 phone routes, covering capsule geometry, glass and fallbacks, active state and contrast, axe, clearance, keyboard behavior and scroll stability; real tab clicks and alternating short/long pages also keep the bar, buttons, icons and labels fixed at 320, 390, 768, 1024 and 1440 px with classic scrollbars enabled.
 - [ ] **U3-02** — Tablet capsule and desktop rail. Closes: UX-NAV-09, UX-NAV-10.
 - [ ] **U3-03** — Page headers and the footer. Closes: UX-NAV-11, UX-NAV-12, UX-NAV-13, UX-SCH-18, UX-MISC-01.
 - [ ] **U3-04** — Toasts, the floating action slot and the offline line. Closes: UX-DS-02, UX-NAV-06, UX-CMP-13, UX-CMP-16, UX-BUG-10, UX-RWD-11. Also closes (REDESIGN-CHECKLIST): STATE-03.

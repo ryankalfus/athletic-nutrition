@@ -7,6 +7,9 @@
 }
 
 html {
+  /* Keep the classic scrollbar track on short routes too, so tab changes and
+   * sheets never recenter the frame. Overlay scrollbars keep the full width. */
+  overflow-y: scroll;
   font-family: var(--font-ui);
   color: var(--color-ink);
   background: var(--color-paper);

@@ -26,6 +26,7 @@ async (page) => {
   const result = { checks: [], errors: [] };
   const contexts = [];
   let p;
+  let stabilityBrowser;
 
   const parseColor = (value) => {
     const hex = value.trim().match(/^#([\da-f]{6})$/i);
@@ -71,8 +72,8 @@ async (page) => {
     Math.abs(a.g - b.g) < 1 &&
     Math.abs(a.b - b.b) < 1;
 
-  const start = async (width, height) => {
-    const context = await browser.newContext({ viewport: { width, height } });
+  const start = async (width, height, targetBrowser = browser) => {
+    const context = await targetBrowser.newContext({ viewport: { width, height } });
     contexts.push(context);
     const currentPage = await context.newPage();
     currentPage.setDefaultTimeout(15000);
@@ -423,6 +424,66 @@ async (page) => {
 
       await p.context().close();
     }
+    // Route content can add/remove a classic scrollbar. The navigation and
+    // every icon/label must retain their geometry, including during real clicks.
+    // Chromium normally hides scrollbars in headless mode, masking this bug.
+    stabilityBrowser = await browser.browserType().launch({
+      headless: true,
+      ignoreDefaultArgs: ["--hide-scrollbars"],
+      args: ["--disable-features=OverlayScrollbar"],
+    });
+    for (const width of [320, 390, 768, 1024, 1440]) {
+      p = await start(width, 1100, stabilityBrowser);
+      const geometry = () =>
+        p.evaluate(() =>
+          [
+            ...document.querySelectorAll(
+              ".frame-nav, .frame-nav-item, .frame-nav-item svg, .frame-nav-item span",
+            ),
+          ].map((element) => {
+            const { x, y, width, height } = element.getBoundingClientRect();
+            return [x, y, width, height];
+          }),
+        );
+      await p.addStyleTag({
+        content:
+          "main { height: 1px !important; min-height: 0 !important; overflow: hidden !important; padding-block: 0 !important; } .frame-footer { display: none !important; }",
+      });
+      await waitFrame();
+      const baseline = await geometry();
+      const tall = await p.addStyleTag({ content: "/* short page */" });
+      for (const label of ["Schedule", "Food", "You", "Today"]) {
+        await p.locator(".frame-nav-item", { hasText: label }).click();
+        await p.waitForFunction(
+          (name) =>
+            document
+              .querySelector('.frame-nav [aria-current="page"]')
+              ?.textContent.trim() === name,
+          label,
+        );
+        for (const overflowing of [true, false]) {
+          await tall.evaluate((style, enabled) => {
+            style.textContent = enabled
+              ? "main { min-height: 200vh !important; }"
+              : "";
+          }, overflowing);
+          await waitFrame();
+          const actual = await geometry();
+          if (
+            actual.some((rect, i) =>
+              rect.some((value, j) => Math.abs(value - baseline[i][j]) > 0.5),
+            )
+          )
+            throw new Error(
+              `${label} at ${width}px moved navigation, icons or labels with ${overflowing ? "long" : "short"} content: ${JSON.stringify(baseline)} -> ${JSON.stringify(actual)}`,
+            );
+        }
+      }
+      result.checks.push(
+        `${width}px: tab clicks and alternating short/long pages keep the bar, items, icons and labels in place.`,
+      );
+      await p.context().close();
+    }
     return result;
   } catch (error) {
     return {
@@ -432,5 +493,6 @@ async (page) => {
     };
   } finally {
     await Promise.all(contexts.map((context) => context.close()));
+    await stabilityBrowser?.close();
   }
 };
