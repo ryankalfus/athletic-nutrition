@@ -378,13 +378,16 @@ async (page) => {
     await putAway.waitFor({ state: "hidden" });
     await p.getByRole("button", { name: "Past trips" }).click();
     const trips = p.getByRole("dialog", { name: "Past trips" });
-    // Hold the next read so the busy state stays on screen.
+    // Hold the save after it commits so the busy state stays on screen.
+    // Delaying a request's onsuccess instead lets IndexedDB commit the
+    // transaction before the write is made, so the save fails at once and the
+    // check races that failure.
     await p.evaluate(() => {
       const hook = Object.getOwnPropertyDescriptor(
-        IDBRequest.prototype,
-        "onsuccess",
+        IDBTransaction.prototype,
+        "oncomplete",
       );
-      Object.defineProperty(IDBRequest.prototype, "onsuccess", {
+      Object.defineProperty(IDBTransaction.prototype, "oncomplete", {
         configurable: true,
         get() {
           return hook.get.call(this);
@@ -411,8 +414,11 @@ async (page) => {
       busy.text !== "Undoing…"
     )
       throw new Error(`Undo trip busy state: ${JSON.stringify(busy)}`);
+    await toast("Trip undone. Those items are back on your list.");
+    if (await p.getByText("Not saved:").count())
+      throw new Error("Undo trip showed a save error");
     result.checks.push(
-      'Undo trip shows "Undoing…" with the spinner and aria-busy="true" while it saves (DS-11).',
+      'Undo trip shows "Undoing…" with the spinner and aria-busy="true" while it saves, then toasts "Trip undone." (DS-11).',
     );
     return result;
   } catch (error) {
