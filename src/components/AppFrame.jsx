@@ -6,8 +6,10 @@ import {
   CircleUserRound,
   Plus,
   Sunrise,
+  WifiOff,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import {
   useStore,
   exportBackup,
@@ -126,6 +128,67 @@ function useThemeColor() {
   });
 }
 
+// UX-CMP-16: one line under the header on every route while offline.
+function useOnline() {
+  const [online, setOnline] = useState(() => navigator.onLine !== false);
+  useEffect(() => {
+    const update = () => setOnline(navigator.onLine !== false);
+    window.addEventListener("online", update);
+    window.addEventListener("offline", update);
+    return () => {
+      window.removeEventListener("online", update);
+      window.removeEventListener("offline", update);
+    };
+  }, []);
+  return online;
+}
+
+function useMediaQuery(query) {
+  const [matches, setMatches] = useState(
+    () => !!query && window.matchMedia(query).matches,
+  );
+  useEffect(() => {
+    if (!query) return undefined;
+    const list = window.matchMedia(query);
+    const update = () => setMatches(list.matches);
+    update();
+    list.addEventListener("change", update);
+    return () => list.removeEventListener("change", update);
+  }, [query]);
+  return matches;
+}
+
+// UX-NAV-06: a page's floating action (Finish shopping, later Log food) goes
+// in the frame's slot, 8px above the tab bar with the bar's side insets.
+// Shell writes the slot's height to --float-stack so toasts stack above it
+// and the page's bottom padding clears it. From `inlineFrom` px wide the
+// action stays where the page put it.
+const FloatSlot = createContext(null);
+
+export function FloatingAction({ children, inlineFrom }) {
+  const slot = useContext(FloatSlot);
+  const inline = useMediaQuery(
+    inlineFrom ? `(min-width: ${inlineFrom}px)` : "",
+  );
+  if (inline) return children;
+  return slot ? createPortal(children, slot) : null;
+}
+
+function useFloatStack(slot) {
+  useEffect(() => {
+    if (!slot) return undefined;
+    const root = document.documentElement;
+    const observer = new ResizeObserver(() =>
+      root.style.setProperty("--float-stack", `${slot.offsetHeight}px`),
+    );
+    observer.observe(slot, { box: "border-box" });
+    return () => {
+      observer.disconnect();
+      root.style.removeProperty("--float-stack");
+    };
+  }, [slot]);
+}
+
 export function Shell({
   children,
   navigation = true,
@@ -144,6 +207,9 @@ export function Shell({
     return () => window.removeEventListener("scroll", check);
   }, []);
   useThemeColor();
+  const online = useOnline();
+  const [floatSlot, setFloatSlot] = useState(null);
+  useFloatStack(floatSlot);
   const [view, , subroute] = useRoute();
   const current = destinations.find(({ id }) => id === view);
   const title =
@@ -185,6 +251,7 @@ export function Shell({
         navigation && "has-navigation",
         back && "has-back",
         scrolled && "is-scrolled",
+        !online && "is-offline",
       ]
         .filter(Boolean)
         .join(" ")}
@@ -244,6 +311,14 @@ export function Shell({
         </header>
       )}
       <main id="main-content" className="shell" data-layout={layout}>
+        <p role="status" className="frame-offline">
+          {!online && (
+            <>
+              <WifiOff size={20} strokeWidth={1.75} aria-hidden="true" />
+              You're offline. Saved foods and your plan still work.
+            </>
+          )}
+        </p>
         {state.error && (
           <div className="save-error" role="alert">
             {state.error}{" "}
@@ -257,8 +332,9 @@ export function Shell({
             <span>nourally</span>
           </div>
         )}
-        {children}
+        <FloatSlot.Provider value={floatSlot}>{children}</FloatSlot.Provider>
       </main>
+      {navigation && <div className="frame-float" ref={setFloatSlot} />}
       {addingAthlete && (
         <AthleteNameSheet onClose={() => setAddingAthlete(false)} />
       )}

@@ -33,7 +33,7 @@ Source of truth: [UX-REDESIGN-PLAN.md](UX-REDESIGN-PLAN.md). Read the item there
 - [x] **U3-01** — Phone floating tab bar. Closes: UX-NAV-01, UX-NAV-02, UX-NAV-03, UX-NAV-04, UX-NAV-05, UX-NAV-08, UX-BUG-11; contributes to UX-DS-02. Done 2026.10.27: `browser-ux-nav.js` passes 39 checks across 15 phone routes, covering capsule geometry, glass and fallbacks, active state and contrast, axe, clearance, keyboard behavior and scroll stability; real tab clicks and alternating short/long pages also keep the bar, buttons, icons and labels fixed at 320, 390, 768, 1024 and 1440 px with classic scrollbars enabled.
 - [x] **U3-02** — Tablet capsule and desktop rail. Closes: UX-NAV-09, UX-NAV-10. Done 2026.10.28: `browser-ux-nav.js` checks Today, Schedule, Food and You at 768, 1024, 1100, 1280 and 1440 px: the 768 capsule is centered within 1 px, 52 px tall, radius 18 and 82 % glass with a 20 px blur; the rail is 88 px at 1024 and 1100 and 232 px at 1280 and 1440 with no border or shadow on the rail or its items; the pitch pill sits on the active item (within 1 px) with a lime icon and white label at every width. The same checks fail on the U3-01 frame.
 - [x] **U3-03** — Page headers and the footer. Closes: UX-NAV-11, UX-NAV-12, UX-NAV-13, UX-SCH-18, UX-MISC-01. Done 2026.10.28: `browser-ux-nav.js` checks all 15 routes at 390 × 844: the H1 is visible at scroll 0 at 34 px (Today's is the formatted date, Schedule's the month) and never runs under the bar's buttons; after 120 px a 52 px glass bar (20 px blur) shows the 17 px centered title with the tab bar still at the bottom; one avatar per screen; the device footer only on `#/you/device` and `#/you/about`; theme-color is paper, and pitch while a field panel is at the top. `browser-shared-ui.js` checks the 52 px bar and the 44 px round add button.
-- [ ] **U3-04** — Toasts, the floating action slot and the offline line. Closes: UX-DS-02, UX-NAV-06, UX-CMP-13, UX-CMP-16, UX-BUG-10, UX-RWD-11. Also closes (REDESIGN-CHECKLIST): STATE-03.
+- [x] **U3-04** — Toasts, the floating action slot and the offline line. Closes: UX-DS-02, UX-NAV-06, UX-CMP-13, UX-CMP-16, UX-BUG-10, UX-RWD-11. Also closes (REDESIGN-CHECKLIST): STATE-03. Done 2026.10.28: `browser-shared-ui.js` checks at 390 px a 48 px toast 8 ± 1 px above the tab bar on Today and above Finish shopping (itself 8 px above the bar) on Groceries, covering none of the frame's buttons, the floating action or the control that raised it; an Undo toast has no X; at 1440 px its center is within 2 px of main's on Today, Groceries and You. `browser-reliability.js` checks the offline line on all 15 routes and that it goes away back online. Owner decision 2026.10.28: page content scrolls under toasts (as on iOS), so "any visible button" means the frame's buttons, the floating action and the control that raised the toast.
 
 ### U4 — Shared components
 
@@ -99,7 +99,7 @@ One checkbox per ID. The note names the build item that closes it.
 ### Tokens and surfaces (`UX-DS`)
 
 - [x] **UX-DS-01** — Keep every color. (closes in U2-01) Done 2026.10.20 (U2-01): `tests/styles.test.js`.
-- [ ] **UX-DS-02** — Glass is for floating chrome only. (built in U3-01, U3-04; closes in U8-06)
+- [ ] **UX-DS-02** — Glass is for floating chrome only. (built in U3-01, U3-04; closes in U8-06) U3-04 part built 2026.10.28: toasts use `--surface-glass-dark` with blur.
 - [x] **UX-DS-03** — Radius ladder. (closes in U2-01) Done 2026.10.20 (U2-01): tokens in `tokens.css`, `tests/styles.test.js`; components move onto them in U4.
 - [ ] **UX-DS-04** — Content is flat. (closes in U8-06)
 - [ ] **UX-DS-05** — Retire the card. (closes in U8-06)
@@ -123,7 +123,7 @@ One checkbox per ID. The note names the build item that closes it.
 - [x] **UX-NAV-03** — Items and active state. (closes in U3-01) Done 2026.10.27: `aria-current`, the sliding pitch pill, lime icon, white label and inactive-label contrast pass on every phone route.
 - [x] **UX-NAV-04** — Content clearance. (closes in U3-01) Done 2026.10.27: every route clears the nav by at least 8 px at both phone sizes; You footer text also clears it.
 - [x] **UX-NAV-05** — Keyboard. (closes in U3-01) Done 2026.10.27: the nav hides for a focused text field at a simulated 50% viewport height and returns on blur.
-- [ ] **UX-NAV-06** — Stacking above the bar. (closes in U3-04)
+- [x] **UX-NAV-06** — Stacking above the bar. (closes in U3-04) Done 2026.10.28: the frame's floating slot sits 8 px above the tab bar with its side insets (Finish shopping moved in below 1200 px) and toasts stack 8 px above it; `browser-shared-ui.js` measures both at 390 px.
 - [x] **UX-NAV-07** — Safe areas. (closes in U1-02) Done 2026.10.20 (U1-02): `tests/styles.test.js`, `browser-shared-ui.js`.
 - [x] **UX-NAV-08** — Stable bar. (closes in U3-01) Done 2026.10.27: scrolling 600 px leaves the nav rect unchanged.
 - [x] **UX-NAV-09** — Floating top capsule. (closes in U3-02) Done 2026.10.28: `browser-ux-nav.js` at 768 px (centered, 52 px, radius 18, glass, pitch pill, no rule under the bar). The brand shows the logo alone at this width: the four equal-width tabs leave too little room for the name.
@@ -146,10 +146,10 @@ One checkbox per ID. The note names the build item that closes it.
 - [ ] **UX-CMP-10** — Bottom sheet. (closes in U4-05)
 - [ ] **UX-CMP-11** — Alert for every confirm. (closes in U4-05)
 - [ ] **UX-CMP-12** — Menus. (closes in U4-05)
-- [ ] **UX-CMP-13** — Toast. (closes in U3-04)
+- [x] **UX-CMP-13** — Toast. (closes in U3-04) Done 2026.10.28: 48 px, radius 16, `--surface-glass-dark` with a 20 px blur, white 14/20 text, lime Undo, max 440 px, centered; an Undo toast has no X; `browser-shared-ui.js` checks each.
 - [ ] **UX-CMP-14** — Empty states. (closes in U4-06)
 - [ ] **UX-CMP-15** — Loading. (closes in U4-06)
-- [ ] **UX-CMP-16** — Offline line. (closes in U3-04)
+- [x] **UX-CMP-16** — Offline line. (closes in U3-04) Done 2026.10.28: offline, all 15 routes show the wifi-off line "You're offline. Saved foods and your plan still work." under the header and it goes away back online (`browser-reliability.js`).
 - [ ] **UX-CMP-17** — Inline status line. (closes in U4-06)
 - [ ] **UX-CMP-18** — Pickers inside sheets. (closes in U4-05)
 - [ ] **UX-CMP-19** — Disclosure. (closes in U4-06)
@@ -342,7 +342,7 @@ One checkbox per ID. The note names the build item that closes it.
 - [x] **UX-BUG-07** — Barcode not found says "Add the food yourself." with no button for it. (closes in U1-03) Done 2026.10.20 (U1-03): `browser-search.js`.
 - [x] **UX-BUG-08** — Travel time wraps between "5:15" and "PM". (closes in U2-02) Done 2026.10.20 (U2-02): `domain.test.js`, `browser-shared-ui.js`.
 - [x] **UX-BUG-09** — At 320 px, a meta line wraps so that "· Lunch 11:30 AM" starts the second line with an orphan dot. (closes in U2-02) Done 2026.10.20 (U2-02): `browser-shared-ui.js` (no " · " at 320 px).
-- [ ] **UX-BUG-10** — Toasts cover content and actions: prompt buttons (`p126`, `p152`, `p531`), "Everything's checked" line (`p360`), the footer (`p318`). (closes in U3-04)
+- [x] **UX-BUG-10** — Toasts cover content and actions: prompt buttons (`p126`, `p152`, `p531`), "Everything's checked" line (`p360`), the footer (`p318`). (closes in U3-04) Done 2026.10.28: toasts no longer cover the tab bar, Finish shopping or "Everything's checked" (`p360`) and stack above them (`browser-shared-ui.js`). Owner decision 2026.10.28: page content, such as a prompt that happens to sit in the toast band (`p126`), scrolls under toasts as on iOS.
 - [x] **UX-BUG-11** — The footer line is clipped behind the tab bar at the end of You. (closes in U3-01) Done 2026.10.27: the footer text clears the floating nav by at least 8 px at 390 px and 320 px.
 - [ ] **UX-BUG-12** — Controls clip with no scroll cue: Ideas moment tray "To…" (`p301`), Quick add "Frozen b" (`p332`), 320 px tabs (`p709`). (closes in U7-01)
 - [x] **UX-BUG-13** — Duplicate re-import ends on a disabled button with only Back. (closes in U1-03) Done 2026.10.20 (U1-03): `browser-calendar-import.js`, `browser-journey.js`.
@@ -368,7 +368,7 @@ One checkbox per ID. The note names the build item that closes it.
 - [ ] **UX-RWD-08** — Welcome and setup split. (closes in U9-06)
 - [ ] **UX-RWD-09** — Desktop dialogs. (closes in U4-05)
 - [ ] **UX-RWD-10** — Desktop buttons. (closes in U4-01)
-- [ ] **UX-RWD-11** — Desktop toasts. (closes in U3-04)
+- [x] **UX-RWD-11** — Desktop toasts. (closes in U3-04) Done 2026.10.28: from 768 px toasts center on `main` (within 2 px at 1440 on Today, Groceries and You) 24 px above the edge.
 - [ ] **UX-RWD-12** — 320 px. (closes in U9-07)
 
 ### Tests and tooling (`UX-TEST`)
@@ -406,6 +406,7 @@ The 11 open items there are built in this plan (UX-REDESIGN-PLAN.md §10.12). Ti
 - [x] **Decision A: food art in food rows.** Decided 2026.10.20: yes (UX-CMP-23, Fluent Emoji, MIT).
 - [x] **Plan approved by the owner** 2026.10.20.
 - [x] **UX-BUG-22 decision: Undo on settings saves, not on At home taps.** Decided 2026.10.20: the You settings sheets (and Rename) toast "<Thing> saved." with Undo; At home Have/Low/Out and count changes stay silent (audit 6.5): the control shows the change and tapping again is the undo. Accepted exception to the §13.8 line "every reversible write offers Undo", which REDESIGN-CHECKLIST.md now words with the exception. Built in U1-05.
+- [x] **U3-04 decision: page content scrolls under toasts.** Decided 2026.10.28: toasts float 8 px above the tab bar or the floating action (as on iOS), and page content scrolls under them, so a prompt that happens to sit in the toast band (Today's reminder offer at 390 × 844, `p126`) can be covered while the toast shows. U3-04's "does not intersect any visible button" therefore means the frame's buttons, the floating action and the control that raised the toast. No extra bottom padding. Built in U3-04.
 
 ## Owner brief accepted (U10-01)
 

@@ -1871,6 +1871,8 @@ runs rules R1–R5 on route X at 390 and 1440 px and fails on any violation.
   any visible button; a toast with Undo has no dismiss button; at 1440 the toast's center x is
   within 2 px of `main`'s center x; with `context.setOffline(true)` every route shows "You're
   offline. Saved foods and your plan still work." and it disappears after going back online.
+  Owner decision 2026.10.28: page content scrolls under toasts (as on iOS), so "any visible
+  button" means the frame's buttons, the floating action and the control that raised the toast.
 - Closes: UX-CMP-13, UX-CMP-16, UX-NAV-06, UX-BUG-10, UX-RWD-11, UX-DS-02 (toast part);
   REDESIGN-CHECKLIST STATE-03.
 

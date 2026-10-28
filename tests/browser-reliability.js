@@ -1,4 +1,4 @@
-// Playwright snippet: legacy migration, cross-tab writes, profile isolation, route restore, corrupt-data recovery.
+// Playwright snippet: legacy migration, cross-tab writes, profile isolation, route restore, the offline line, corrupt-data recovery.
 // Creates fresh browser contexts, so existing Nourally data is untouched.
 async (page) => {
   const base = globalThis.BASE_URL ?? "http://127.0.0.1:5173/";
@@ -117,6 +117,42 @@ async (page) => {
       throw new Error("Migration backup or profiles missing in IndexedDB");
     result.checks.push(
       "IndexedDB holds both profiles and a backup of the legacy keys.",
+    );
+
+    // UX-CMP-16 / STATE-03: offline, every route shows the frame's offline
+    // line; it goes away when the connection is back. Hash changes keep the
+    // loaded app, so nothing is fetched while offline.
+    const offlineLine = "You're offline. Saved foods and your plan still work.";
+    await context.setOffline(true);
+    for (const route of [
+      "today",
+      "schedule",
+      "food/ideas",
+      "food/home",
+      "food/groceries",
+      "food/log",
+      "food/log/week",
+      "you",
+      "you/sport",
+      "you/needs",
+      "you/access",
+      "you/reminders",
+      "you/device",
+      "you/about",
+      "nope",
+    ]) {
+      await a.evaluate((hash) => (location.hash = hash), `#/${route}`);
+      await a.locator("main h1").waitFor();
+      await a
+        .getByRole("main")
+        .getByRole("status")
+        .getByText(offlineLine, { exact: true })
+        .waitFor();
+    }
+    await context.setOffline(false);
+    await a.getByText(offlineLine).waitFor({ state: "detached" });
+    result.checks.push(
+      "Offline, all 15 routes show “You're offline. Saved foods and your plan still work.” under the header; it disappears when back online (UX-CMP-16, STATE-03).",
     );
     await context.close();
 

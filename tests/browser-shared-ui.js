@@ -14,6 +14,8 @@
 //   the UX-DS-09 scale; the phone top-bar add is a round 44 px icon button
 //   named "Add" (UX-NAV-11); Log Day/Week is the shared segmented control and selected
 //   weekdays show a check (DS-12).
+// - U3-04: toast size, glass and placement above the tab bar and the floating
+//   action at 390 px, no X with Undo, centered on main at 1440 px.
 // The clock is fixed to Sunday 2026-10-11 10:00 with a 4:00 PM practice today.
 async (page) => {
   const base = globalThis.BASE_URL ?? "http://127.0.0.1:5173/";
@@ -209,7 +211,12 @@ async (page) => {
     await stacked("Setup step 3");
     fail();
     await p.getByRole("button", { name: "Skip setup" }).click();
-    await p.getByRole("heading", { level: 1, name: /^[A-Z][a-z]{2}, [A-Z][a-z]{2} \d{1,2}$/ }).waitFor();
+    await p
+      .getByRole("heading", {
+        level: 1,
+        name: /^[A-Z][a-z]{2}, [A-Z][a-z]{2} \d{1,2}$/,
+      })
+      .waitFor();
     result.checks.push(
       "Setup steps 2 and 3 stack their time fields one per row at 320 px (RWD-06); a selected weekday has the selected tint, primary border and a check (DS-12).",
     );
@@ -236,7 +243,10 @@ async (page) => {
 
     // A practice later today, so Today has a countdown.
     await p.goto(`${base}#/schedule`);
-    await p.getByRole("button", { name: /^(\+ )?Add$/ }).first().click();
+    await p
+      .getByRole("button", { name: /^(\+ )?Add$/ })
+      .first()
+      .click();
     const sheet = p.getByRole("dialog", { name: "Add practice" });
     await sheet.getByLabel("Starts", { exact: true }).fill("16:00");
     await sheet.getByLabel("Ends", { exact: true }).fill("17:30");
@@ -413,10 +423,151 @@ async (page) => {
         problems.push(`${route} column is ${column}px at 1440 px, not 720`);
     }
     fail();
+
+    // U3-04: toasts are 48 px dark glass, 8 px above the tab bar (or above the
+    // page's floating action, itself 8 px above the bar), cover no visible
+    // button, drop the X when they offer Undo, and center on main from 768 px
+    // (UX-CMP-13, UX-NAV-06, UX-BUG-10, UX-RWD-11).
+    const toast = p.locator(".app-toast");
+    const showToast = (message, undo) =>
+      p.evaluate(
+        ([text, withUndo]) =>
+          window.dispatchEvent(
+            new CustomEvent("nourally:toast", {
+              detail: {
+                message: text,
+                undo: withUndo ? async () => true : undefined,
+              },
+            }),
+          ),
+        [message, undo],
+      );
+    const toastMetrics = () =>
+      toast.evaluate((node) => {
+        const box = node.getBoundingClientRect();
+        const style = getComputedStyle(node);
+        const rect = (selector) =>
+          document.querySelector(selector)?.getBoundingClientRect();
+        // The frame's buttons (top bar, tab bar, floating action) and the
+        // control that raised the toast; page content scrolls under it.
+        const covered = [
+          ...document.querySelectorAll(
+            ".frame-header button, .frame-float button, [data-toast-source]",
+          ),
+        ]
+          .filter((button) => {
+            const b = button.getBoundingClientRect();
+            return (
+              b.width &&
+              b.height &&
+              getComputedStyle(button).visibility !== "hidden" &&
+              b.left < box.right &&
+              b.right > box.left &&
+              b.top < box.bottom &&
+              b.bottom > box.top
+            );
+          })
+          .map(
+            (button) => button.getAttribute("aria-label") || button.innerText,
+          );
+        const main = rect("main");
+        return {
+          height: box.height,
+          bottom: box.bottom,
+          centerX: box.left + box.width / 2,
+          mainCenterX: main.left + main.width / 2,
+          fromEdge: innerHeight - box.bottom,
+          navTop: rect(".frame-nav")?.top,
+          float: rect(".frame-float > *"),
+          radius: style.borderTopLeftRadius,
+          background: style.backgroundColor,
+          blur: style.backdropFilter || style.webkitBackdropFilter,
+          dismiss: !!node.querySelector(".toast-dismiss"),
+          undo: [...node.querySelectorAll("button")].some(
+            (b) => b.innerText === "Undo",
+          ),
+          covered,
+        };
+      });
+    const near = (a, b, tolerance = 1) => Math.abs(a - b) <= tolerance;
+    await p.setViewportSize({ width: 390, height: 844 });
+    await p.goto(`${base}#/today`);
+    const addWater = p
+      .getByRole("region", { name: "Water" })
+      .getByRole("button", { name: "+8", exact: true });
+    await addWater.evaluate((node) =>
+      node.setAttribute("data-toast-source", ""),
+    );
+    await addWater.click();
+    await toast.getByRole("button", { name: "Undo" }).waitFor();
+    let m = await toastMetrics();
+    if (!near(m.height, 48)) problems.push(`toast is ${m.height}px tall`);
+    if (!near(m.navTop - m.bottom, 8))
+      problems.push(`toast is ${m.navTop - m.bottom}px above the tab bar`);
+    if (m.radius !== "16px") problems.push(`toast radius ${m.radius}`);
+    if (m.background !== "rgba(20, 51, 60, 0.92)")
+      problems.push(`toast background ${m.background}`);
+    if (!String(m.blur).includes("blur(20px)"))
+      problems.push(`toast blur ${m.blur}`);
+    if (m.dismiss) problems.push("an Undo toast has a dismiss button");
+    if (m.covered.length)
+      problems.push(`toast covers ${m.covered.join(", ")} on Today`);
+    await showToast("Saved.", false);
+    await toast.getByText("Saved.", { exact: true }).waitFor();
+    if (!(await toastMetrics()).dismiss)
+      problems.push("a toast without Undo has no dismiss button");
+
+    await p.goto(`${base}#/food/groceries`);
+    if (!(await p.getByRole("checkbox", { name: /^Got / }).count())) {
+      await p.getByRole("button", { name: "Suggest for this week" }).click();
+      const week = p.getByRole("dialog", { name: "Add food for this week" });
+      await week.getByRole("checkbox").first().waitFor();
+      await week.getByRole("button", { name: /^Add \d+ to list$/ }).click();
+      await week.waitFor({ state: "hidden" });
+    }
+    const got = p
+      .getByRole("checkbox", { name: /^Got /, checked: false })
+      .first();
+    await got.evaluate((node) => node.setAttribute("data-toast-source", ""));
+    await got.click();
+    await p.getByRole("button", { name: /^Finish shopping/ }).waitFor();
+    await showToast("Bananas checked.", true);
+    await toast.getByText("Bananas checked.", { exact: true }).waitFor();
+    m = await toastMetrics();
+    if (!m.float) problems.push("Finish shopping is not in the floating slot");
+    else {
+      if (!near(m.navTop - m.float.bottom, 8))
+        problems.push(
+          `Finish shopping is ${m.navTop - m.float.bottom}px above the tab bar`,
+        );
+      if (!near(m.float.top - m.bottom, 8))
+        problems.push(
+          `toast is ${m.float.top - m.bottom}px above Finish shopping`,
+        );
+    }
+    if (m.covered.length)
+      problems.push(`toast covers ${m.covered.join(", ")} on Groceries`);
+
+    await p.setViewportSize({ width: 1440, height: 900 });
+    for (const route of ["today", "food/groceries", "you"]) {
+      await p.goto(`${base}#/${route}`);
+      await p.locator("main h1").waitFor();
+      await showToast("Added 8 oz of water.", true);
+      await toast.getByText("Added 8 oz of water.", { exact: true }).waitFor();
+      m = await toastMetrics();
+      if (!near(m.centerX, m.mainCenterX, 2))
+        problems.push(
+          `${route} toast center ${m.centerX} vs main ${m.mainCenterX} at 1440 px`,
+        );
+      if (!near(m.fromEdge, 24))
+        problems.push(`${route} toast is ${m.fromEdge}px above the edge`);
+    }
+    fail();
     result.checks.push(
       "The Now card countdown is Numeral XL 32/36 at 390 px and 40/44 at 1280 px; the water total is the time size, 17 then 18 px (DS-03, UX-DS-09); at 1280 px the page title is 40/44 and a section title 22/28 at 650 (UX-DS-09).",
-      'The phone top-bar add is a round 44 px icon button named Add (UX-NAV-11); Log Day/Week is the shared segmented control: muted track, white selected segment with a shadow (DS-12).',
+      "The phone top-bar add is a round 44 px icon button named Add (UX-NAV-11); Log Day/Week is the shared segmented control: muted track, white selected segment with a shadow (DS-12).",
       "You, About and This device sections are 40 px apart at 1280 px (UX-DS-08); Log Day and Week read in a 720 px column at 1440 px (DS-08).",
+      "U3-04: at 390 px a toast is 48 px dark glass (radius 16, 20 px blur), 8 px above the tab bar on Today and 8 px above Finish shopping (itself 8 px above the bar) on Groceries, covering neither the frame's buttons nor the control that raised it; an Undo toast has no X and a plain one keeps it; at 1440 px it centers on main 24 px above the edge on Today, Groceries and You (UX-CMP-13, UX-NAV-06, UX-BUG-10, UX-RWD-11).",
     );
     return result;
   } catch (error) {

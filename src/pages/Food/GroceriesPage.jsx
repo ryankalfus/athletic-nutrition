@@ -6,6 +6,7 @@ import { ConfirmDialog } from "../../components/ui/ConfirmDialog.jsx";
 import { Menu } from "../../components/ui/Menu.jsx";
 import { Button } from "../../components/ui/Button.jsx";
 import { FoodSearch } from "../../components/FoodSearch.jsx";
+import { FloatingAction } from "../../components/AppFrame.jsx";
 import { addDays, eventsForDate, getDateKey } from "../../domain/timing.js";
 import {
   groceryTrips,
@@ -324,24 +325,29 @@ export default function GroceriesPage({ todayKey }) {
           <p className="sr-only" aria-live="polite">
             {checked.length ? `${items(checked.length)} checked` : ""}
           </p>
-          {/* Phones and tablets: fixed above the tab bar, so it leaves no
-              hole in the page; from 1200px it sits in the right column. */}
+          {/* Phones and tablets: the frame's floating action, so it leaves
+              no hole in the page; from 1200px it sits in the right column. */}
           {checked.length > 0 && (
-            <section className="finish-bar" aria-labelledby="finish-bar-title">
-              <h2 id="finish-bar-title" className="sr-only">
-                Shopping
-              </h2>
-              {checked.length === grocery.items.length && (
-                <p>Everything's checked. Finish shopping?</p>
-              )}
-              <button
-                className="primary"
-                disabled={!!pending}
-                onClick={() => setSheet({ type: "putaway" })}
+            <FloatingAction inlineFrom={1200}>
+              <section
+                className="finish-bar"
+                aria-labelledby="finish-bar-title"
               >
-                Finish shopping ({checked.length})
-              </button>
-            </section>
+                <h2 id="finish-bar-title" className="sr-only">
+                  Shopping
+                </h2>
+                {checked.length === grocery.items.length && (
+                  <p>Everything's checked. Finish shopping?</p>
+                )}
+                <button
+                  className="primary"
+                  disabled={!!pending}
+                  onClick={() => setSheet({ type: "putaway" })}
+                >
+                  Finish shopping ({checked.length})
+                </button>
+              </section>
+            </FloatingAction>
           )}
         </div>
       </div>

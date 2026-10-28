@@ -138,7 +138,9 @@
   --card-padding: var(--space-5); /* Retired (4.4) */
   --now-card-padding: var(--space-5); /* DS-14: 20px phones, 28px desktop */
   --now-card-min: 240px; /* 6.3 desktop layout */
-  --top-bar: var(--top-bar-glass); /* phone top bar (UX-NAV-11); 64px from 768px */
+  --top-bar: var(
+    --top-bar-glass
+  ); /* phone top bar (UX-NAV-11); 64px from 768px */
   --dialog-header: 64px;
   --sticky-offset: 72px; /* below a sticky section control */
   --top-bar-glass: 52px; /* collapsed glass top bar (U3) */
@@ -152,6 +154,7 @@
   --tab-bar-max: 440px;
   --tab-active-offset: 0%; /* position of the nav's sliding pitch pill */
   --tab-capsule: 52px; /* tablet top tab capsule (UX-NAV-09) */
+  --toast-height: 48px; /* UX-CMP-13 */
   --hero-track: 4px; /* the hero's run-up line */
   --target: 44px;
   --stock-control: 144px; /* At home control column; 168px in a 328px page */

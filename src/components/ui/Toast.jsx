@@ -73,12 +73,15 @@ export function ToastProvider({ children }) {
                 Undo
               </button>
             )}
-            <IconButton
-              className="toast-dismiss"
-              label="Dismiss message"
-              icon={X}
-              onClick={() => setToast(null)}
-            />
+            {/* UX-CMP-13: an Undo toast dismisses itself, so it has no X. */}
+            {!toast.undo && (
+              <IconButton
+                className="toast-dismiss"
+                label="Dismiss message"
+                icon={X}
+                onClick={() => setToast(null)}
+              />
+            )}
           </div>
         )}
       </div>

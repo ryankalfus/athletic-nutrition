@@ -112,12 +112,24 @@
 }
 
 /* Phone navigation: one floating glass capsule with a single sliding active pill. */
+:root {
+  --tab-bar-left: max(
+    var(--tab-inset),
+    calc(env(safe-area-inset-left) + var(--tab-inset))
+  );
+  --tab-bar-right: max(
+    var(--tab-inset),
+    calc(env(safe-area-inset-right) + var(--tab-inset))
+  );
+  --tab-bar-bottom: max(
+    var(--tab-inset),
+    calc(env(safe-area-inset-bottom) - var(--space-2))
+  );
+}
+
 .frame-nav {
   position: fixed;
-  inset:
-    auto max(var(--tab-inset), calc(env(safe-area-inset-right) + var(--tab-inset)))
-    max(var(--tab-inset), calc(env(safe-area-inset-bottom) - var(--space-2)))
-    max(var(--tab-inset), calc(env(safe-area-inset-left) + var(--tab-inset)));
+  inset: auto var(--tab-bar-right) var(--tab-bar-bottom) var(--tab-bar-left);
   z-index: var(--z-rail);
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -277,18 +289,75 @@
  * bar, below "‹ You". */
 .app-frame.has-navigation .shell {
   padding-top: calc(
-    env(safe-area-inset-top) +
-      (var(--top-bar) - var(--leading-large-title)) / 2
+    env(safe-area-inset-top) + (var(--top-bar) - var(--leading-large-title)) / 2
   );
   padding-bottom: calc(
-    var(--tab-bar) +
-      max(var(--tab-inset), calc(env(safe-area-inset-bottom) - var(--space-2))) +
-      var(--space-6)
+    var(--tab-bar) + var(--tab-bar-bottom) + var(--space-6) + var(--float-stack)
   );
 }
 
-.app-frame.has-navigation.has-back .shell {
+/* A sub-page's title, or any title while offline (the offline line takes the
+ * row under the bar), starts below the bar. */
+.app-frame.has-navigation.has-back .shell,
+.app-frame.has-navigation.is-offline .shell {
   padding-top: calc(env(safe-area-inset-top) + var(--top-bar) + var(--space-2));
+}
+
+/* UX-CMP-16: the offline line under the header, on paper like the inline
+ * status lines. The empty element stays as the live region. */
+.frame-offline {
+  margin: 0;
+}
+
+.frame-offline:not(:empty) {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-4);
+  color: var(--color-ink-muted);
+  font-size: var(--text-small);
+  line-height: var(--leading-small);
+}
+
+.frame-offline svg {
+  flex: 0 0 auto;
+}
+
+/* UX-NAV-06, UX-CMP-13, UX-RWD-11: toasts and a page's floating action share
+ * one band. On phones it has the tab bar's side insets and starts 8px above
+ * the bar (16px above the screen edge while the bar is hidden); from 768px it
+ * is the page column, 24px above the edge. Shell sets --float-stack to the
+ * floating action's height plus its 8px gap, so a toast sits above it. */
+:root {
+  --float-left: var(--tab-bar-left);
+  --float-width: calc(100% - var(--tab-bar-left) - var(--tab-bar-right));
+  --float-base: calc(var(--space-4) + env(safe-area-inset-bottom));
+  --float-stack: 0px;
+}
+
+:root:has(.frame-nav:not([hidden])) {
+  --float-base: calc(var(--tab-bar) + var(--tab-bar-bottom) + var(--space-2));
+}
+
+.frame-float {
+  position: fixed;
+  bottom: var(--float-base);
+  left: var(--float-left);
+  z-index: var(--z-sticky);
+  display: grid;
+  justify-items: center;
+  width: var(--float-width);
+  pointer-events: none;
+}
+
+.frame-float:not(:empty) {
+  padding-top: var(--space-2);
+}
+
+.frame-float > * {
+  width: 100%;
+  max-width: var(--tab-bar-max);
+  pointer-events: auto;
 }
 
 /* Frame footer: a contentinfo landmark after </main> (A11Y-03), on the same
@@ -364,7 +433,8 @@
   margin-right: calc(2 * (var(--target) + var(--space-2)));
 }
 
-.app-frame.has-navigation.has-back main h1 {
+.app-frame.has-navigation.has-back main h1,
+.app-frame.has-navigation.is-offline main h1 {
   margin-right: 0;
 }
 
@@ -477,9 +547,17 @@
 
   .shell,
   .app-frame.has-navigation .shell,
-  .app-frame.has-navigation.has-back .shell {
+  .app-frame.has-navigation.has-back .shell,
+  .app-frame.has-navigation.is-offline .shell {
     padding-top: var(--space-6);
-    padding-bottom: var(--space-12);
+    padding-bottom: calc(var(--space-12) + var(--float-stack));
+  }
+
+  :root,
+  :root:has(.frame-nav:not([hidden])) {
+    --float-left: var(--gutter);
+    --float-width: calc(100% - 2 * var(--gutter));
+    --float-base: calc(var(--space-6) + env(safe-area-inset-bottom));
   }
 
   .app-frame.has-navigation .frame-footer {
@@ -588,8 +666,20 @@
 
   .shell,
   .app-frame.has-navigation .shell,
-  .app-frame.has-navigation.has-back .shell {
+  .app-frame.has-navigation.has-back .shell,
+  .app-frame.has-navigation.is-offline .shell {
     padding-top: var(--space-8);
+  }
+
+  /* The band is main's own box: the page column starts at the rail and is
+   * at most the route's column wide (not centered in the window). */
+  :root,
+  :root:has(.frame-nav:not([hidden])) {
+    --float-left: var(--width-rail);
+    --float-width: min(
+      calc(var(--layout-max) + 2 * var(--gutter)),
+      calc(100% - var(--width-rail))
+    );
   }
 
   /* The page column starts at the rail's gutter on every route (6.3 desktop

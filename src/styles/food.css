@@ -619,14 +619,10 @@
   border-bottom: var(--border);
 }
 
-/* Finish shopping: fixed above the tab bar on phones (and at the bottom on
- * tablets), a full-width 52px primary with no card, so it leaves no hole. */
+/* Finish shopping: the frame's floating action below 1200px (8px above the
+ * tab bar on phones), a full-width 52px primary with no card, so it leaves no
+ * hole; from 1200px it sits in the right column. */
 .finish-bar {
-  position: fixed;
-  right: var(--gutter);
-  bottom: calc(var(--tab-bar) + var(--space-2) + env(safe-area-inset-bottom));
-  left: var(--gutter);
-  z-index: var(--z-sticky);
   display: grid;
   gap: var(--space-2);
 }
@@ -643,10 +639,6 @@
   width: 100%;
   min-height: 52px;
   box-shadow: var(--shadow-3);
-}
-
-.groceries-page:has(.finish-bar) {
-  padding-bottom: calc(52px + var(--space-8));
 }
 
 .grocery-footer {
@@ -1109,12 +1101,6 @@
   .planned-meals {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
-
-  .finish-bar {
-    bottom: calc(var(--space-4) + env(safe-area-inset-bottom));
-    left: auto;
-    width: min(360px, calc(100vw - 2 * var(--gutter)));
-  }
 }
 
 @media (min-width: 1024px) {
@@ -1155,16 +1141,6 @@
     position: sticky;
     top: var(--sticky-offset);
     grid-column: 2;
-  }
-
-  /* In the right column the finish action sits in the flow. */
-  .finish-bar {
-    position: static;
-    width: auto;
-  }
-
-  .groceries-page:has(.finish-bar) {
-    padding-bottom: 0;
   }
 
   .low-bar {

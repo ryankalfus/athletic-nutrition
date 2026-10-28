@@ -17,7 +17,7 @@ Owner Ryan Kalfus confirmed the recommended options previously presented for aud
 - Awaiting approval (allergy filtering built but switched off; `ALLERGY_TAGS_REVIEWED = false`): P1-09, P1-10, ADD-03, ONB-04, YOU-02, YOU-03. P1-11 waits on ONB-04.
 - Incomplete, skipped for now (will come back to): P1-09, P1-10 and P1-13 (manual screen-reader test and keyboard-only core journey not done).
 - Not started: P3-01 to P3-05 (ADD-16 is P3-01, ADD-15 is P3-02).
-- Open work: STATE-03, STATE-04, STATE-05, STATE-07, STATE-08, STATE-11, STATE-15, STATE-16, CMP-10.
+- Open work: STATE-04, STATE-05, STATE-07, STATE-08, STATE-11, STATE-15, STATE-16, CMP-10.
 
 ### P0
 
@@ -422,7 +422,7 @@ Each ID is an individual checkbox. Implementation notes and blockers go on the m
 
 - [x] **STATE-01** — Fixed 2026.10.09: Schedule writes toast "Practice added.", "Practice updated.", "Practice deleted.", "Day skipped.", "School day saved." (browser-dialogs.js, domain.test.js).
 - [x] **STATE-02** — Fixed 2026.10.09: the dialog error renders just above the footer and scrolls into view; "Try again" repeats only the failed write and closes the sheet, leaving one copy (browser-dialogs.js, Add practice and Add food for this week).
-- [ ] **STATE-03** — Open: no app-frame offline banner; only search shows "You're offline. Recent and saved foods still work."
+- [x] **STATE-03** — Fixed 2026.10.28 (UX U3-04, UX-CMP-16): offline, every route shows "You're offline. Saved foods and your plan still work." under the header and it goes away back online (`browser-reliability.js`); search keeps its own "Recent and saved foods still work." line.
 - [ ] **STATE-04** — Open: Today's Now card flags a moved session ("Update your snack time?", Update/Keep), but Ideas plan cards do not, and the prompt does not name the new snack time ("Move your snack to about 3:30?", Move/Keep).
 - [ ] **STATE-05** — Open: when permission is lost, reminders switch off at once with "Reminders are off because this browser does not allow notifications." instead of asking "Turn them on again?" first.
 - [x] **STATE-06**

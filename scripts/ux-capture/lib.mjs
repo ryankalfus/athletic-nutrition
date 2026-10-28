@@ -261,10 +261,14 @@ export async function scenario(cap, start, label, fn) {
   }
 }
 
-// Dismiss every toast (so it does not sit over later screenshots).
+// Dismiss every toast (so it does not sit over later screenshots). An Undo
+// toast has no X (UX-CMP-13); the app clears toasts on a route change.
 export async function clearToasts(page) {
   for (const b of await page.locator(".app-toast .toast-dismiss").all())
     await b.click().catch(() => {});
+  await page
+    .evaluate(() => window.dispatchEvent(new HashChangeEvent("hashchange")))
+    .catch(() => {});
   await page.waitForTimeout(200);
 }
 
