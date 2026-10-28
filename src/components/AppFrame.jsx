@@ -2,6 +2,7 @@ import {
   Apple,
   CalendarDays,
   ChevronLeft,
+  ChevronRight,
   CircleUserRound,
   Sunrise,
 } from "lucide-react";
@@ -182,8 +183,8 @@ export function Shell({
           >
             <Avatar name={athleteName} size="sm" className="frame-avatar" />
             <span className="frame-athlete-name">{athleteName}</span>
-            <span className="frame-athlete-switch">
-              {severalAthletes ? "Switch" : "Add"}
+            <span className="frame-athlete-switch" aria-hidden="true">
+              <ChevronRight size={20} strokeWidth={1.75} />
             </span>
           </button>
           <div className="frame-mobile-title" aria-hidden="true">

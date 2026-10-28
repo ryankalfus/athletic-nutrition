@@ -99,8 +99,13 @@ async (page) => {
       const rect = main.getBoundingClientRect();
       const left = rect.left + parseFloat(style.paddingLeft);
       const right = rect.right - parseFloat(style.paddingRight);
+      // The rail is 88 px until 1200 px, then 232 px (UX-NAV-10).
       const rail =
-        main.closest(".has-navigation") && viewport >= 1024 ? 232 : 0;
+        main.closest(".has-navigation") && viewport >= 1024
+          ? viewport >= 1200
+            ? 232
+            : 88
+          : 0;
       const gutter = viewport >= 1024 ? 32 : viewport >= 768 ? 24 : 16;
       const max = {
         reading: 720,

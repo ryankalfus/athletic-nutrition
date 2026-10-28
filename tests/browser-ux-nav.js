@@ -1,5 +1,6 @@
 // UX U3-01: phone navigation geometry, glass, contrast, keyboard behavior,
 // content clearance, reduced transparency and scroll stability.
+// UX U3-02: the tablet top capsule and the 88px and 232px desktop rails.
 async (page) => {
   const base = globalThis.BASE_URL ?? "http://127.0.0.1:5173/";
   const browser = page.context().browser();
@@ -424,6 +425,156 @@ async (page) => {
 
       await p.context().close();
     }
+    // U3-02: the tablet top capsule (UX-NAV-09) and the quiet rail
+    // (UX-NAV-10). The pitch pill sits exactly on the active item at every
+    // width, so it is measured from the pseudo-element's box and transform.
+    const wideRoutes = [
+      ["today", "Today"],
+      ["schedule", "Schedule"],
+      ["food/ideas", "Food"],
+      ["you", "You"],
+    ];
+    for (const [width, height, layout] of [
+      [768, 1024, "capsule"],
+      [1024, 768, "icon rail"],
+      [1100, 800, "icon rail"],
+      [1280, 800, "label rail"],
+      [1440, 900, "label rail"],
+    ]) {
+      p = await start(width, height);
+      for (const [route, name] of wideRoutes) {
+        await p.goto(base + "#/" + route);
+        await p.locator(".frame-nav").waitFor();
+        await p.waitForTimeout(300);
+        const m = await p.evaluate(() => {
+          const rect = (element) => element.getBoundingClientRect().toJSON();
+          const header = document.querySelector(".frame-header");
+          const nav = header.querySelector(".frame-nav");
+          const items = [...nav.querySelectorAll(".frame-nav-item")];
+          const active = nav.querySelector('[aria-current="page"]');
+          const navRect = rect(nav);
+          const pill = getComputedStyle(nav, "::before");
+          const move =
+            pill.transform === "none"
+              ? new DOMMatrixReadOnly()
+              : new DOMMatrixReadOnly(pill.transform);
+          const shadows = [header, nav, ...items].map(
+            (element) => getComputedStyle(element).boxShadow,
+          );
+          const borders = [header, nav, ...items].flatMap((element) => {
+            const style = getComputedStyle(element);
+            return ["Top", "Right", "Bottom", "Left"].map((side) =>
+              Number.parseFloat(style[`border${side}Width`]),
+            );
+          });
+          const style = getComputedStyle(nav);
+          const athlete = header.querySelector(".frame-athlete");
+          const visible = (selector) => {
+            const element = athlete.querySelector(selector);
+            return !!element && element.getBoundingClientRect().width > 0;
+          };
+          return {
+            viewport: document.documentElement.clientWidth,
+            header: rect(header),
+            nav: navRect,
+            main: rect(document.querySelector("main")),
+            active: active ? rect(active) : null,
+            activeName: active?.textContent.trim() ?? null,
+            activeLabel: active
+              ? getComputedStyle(active.querySelector("span")).color
+              : null,
+            activeIcon: active
+              ? getComputedStyle(active.querySelector("svg")).color
+              : null,
+            pill: {
+              x: navRect.left + Number.parseFloat(pill.left) + move.m41,
+              y: navRect.top + Number.parseFloat(pill.top) + move.m42,
+              width: Number.parseFloat(pill.width),
+              height: Number.parseFloat(pill.height),
+              background: pill.backgroundColor,
+            },
+            radius: style.borderRadius,
+            background: style.backgroundColor,
+            filter: style.backdropFilter || style.webkitBackdropFilter,
+            headerBorder: getComputedStyle(header).borderBottomWidth,
+            shadows,
+            borders,
+            pitch: getComputedStyle(document.documentElement)
+              .getPropertyValue("--color-pitch")
+              .trim(),
+            brandName: header.querySelector(".frame-brand span")
+              .getBoundingClientRect().width,
+            athleteName: visible(".frame-athlete-name"),
+            athleteChevron: visible(".frame-athlete-switch svg"),
+          };
+        });
+        const failures = [];
+        const off = (a, b) => Math.abs(a - b) > 1;
+        if (m.activeName !== name) failures.push("active item is " + m.activeName);
+        if (!sameColor(parseColor(m.pill.background), parseColor(m.pitch)))
+          failures.push("the pill is not pitch");
+        if (
+          !m.active ||
+          off(m.pill.x, m.active.x) ||
+          off(m.pill.y, m.active.y) ||
+          off(m.pill.width, m.active.width) ||
+          off(m.pill.height, m.active.height)
+        )
+          failures.push(
+            "the pill is not on the active item: " +
+              JSON.stringify({ pill: m.pill, active: m.active }),
+          );
+        if (!sameColor(parseColor(m.activeLabel), { r: 255, g: 255, b: 255 }))
+          failures.push("active label is " + m.activeLabel);
+        if (!sameColor(parseColor(m.activeIcon), { r: 215, g: 244, b: 95 }))
+          failures.push("active icon is not lime");
+        if (layout === "capsule") {
+          const leftGap = m.nav.x;
+          const rightGap = m.viewport - (m.nav.x + m.nav.width);
+          if (Math.abs(leftGap - rightGap) > 1)
+            failures.push(`capsule gaps are ${leftGap} and ${rightGap}`);
+          if (Math.abs(m.nav.height - 52) > 0.5)
+            failures.push("capsule height is " + m.nav.height);
+          if (m.radius !== "18px") failures.push("capsule radius is " + m.radius);
+          if (!m.filter.includes("blur(20px)"))
+            failures.push("capsule blur is " + m.filter);
+          const glass = parseColor(m.background);
+          if (!glass || Math.abs(glass.a - 0.82) > 0.01)
+            failures.push("capsule glass is " + m.background);
+          if (m.headerBorder !== "0px")
+            failures.push("the tablet bar has a rule");
+          if (m.nav.y < m.header.y || m.nav.y + m.nav.height > m.header.y + m.header.height)
+            failures.push("the capsule overflows the bar");
+          if (m.brandName > 0) failures.push("the brand name crowds the capsule");
+        } else {
+          const railWidth = layout === "icon rail" ? 88 : 232;
+          if (Math.abs(m.header.width - railWidth) > 0.5)
+            failures.push(`rail is ${m.header.width}px, not ${railWidth}px`);
+          if (m.shadows.some((shadow) => shadow !== "none"))
+            failures.push("the rail casts a shadow: " + m.shadows.join(" / "));
+          if (m.borders.some((border) => border !== 0))
+            failures.push("the rail or an item has a border");
+          if (m.main.x < m.header.x + m.header.width)
+            failures.push("main starts under the rail");
+          const labelled = layout === "label rail";
+          if ((m.brandName > 0) !== labelled)
+            failures.push(`brand name shown: ${m.brandName > 0}`);
+          if (m.athleteName !== labelled || m.athleteChevron !== labelled)
+            failures.push(
+              `athlete row name ${m.athleteName}, chevron ${m.athleteChevron}`,
+            );
+        }
+        if (failures.length)
+          throw new Error(`${route} at ${width}px: ${failures.join(", ")}`);
+      }
+      result.checks.push(
+        width === 768
+          ? "768px: the floating top capsule is centered (gaps within 1px), 52px tall, radius 18, 82% glass with a 20px blur, in a bar with no rule; the pitch pill sits on the active item with a lime icon and white label on all four tabs."
+          : `${width}px: the ${layout === "icon rail" ? "88px icon rail" : "232px rail with labels"} has no border or shadow on the rail or its items, main starts beside it, the pitch pill sits on the active item on all four tabs, and the athlete row shows ${layout === "icon rail" ? "the avatar only" : "avatar, name and chevron"}.`,
+      );
+      await p.context().close();
+    }
+
     // Route content can add/remove a classic scrollbar. The navigation and
     // every icon/label must retain their geometry, including during real clicks.
     // Chromium normally hides scrollbars in headless mode, masking this bug.

@@ -150,7 +150,8 @@
   --tab-bar: 64px;
   --tab-inset: 12px; /* floating tab bar to the screen edges */
   --tab-bar-max: 440px;
-  --tab-active-offset: 0%; /* position of the phone nav's sliding pitch pill */
+  --tab-active-offset: 0%; /* position of the nav's sliding pitch pill */
+  --tab-capsule: 52px; /* tablet top tab capsule (UX-NAV-09) */
   --hero-track: 4px; /* the hero's run-up line */
   --target: 44px;
   --stock-control: 144px; /* At home control column; 168px in a 328px page */
@@ -162,6 +163,7 @@
   --radius-control: 14px; /* fields, buttons, the segmented track, tiles */
   --radius-toast: 16px;
   --radius-float: 24px; /* tab bar, alerts, menus, desktop dialogs */
+  --radius-capsule: 18px; /* tablet top tab capsule (UX-NAV-09) */
   --radius-sheet: 28px; /* sheet top corners */
   --radius-hero: 28px; /* hero bottom corners (top corners 12px) */
   --radius-full: 999px;
@@ -216,6 +218,7 @@
 @media (min-width: 1024px) {
   :root {
     --gutter: var(--space-8);
+    --width-rail: 88px; /* icon-over-label rail until 1200px (UX-NAV-10) */
     --rhythm-section: var(--space-10);
     --card-padding: var(--space-6);
     --now-card-padding: calc(var(--space-6) + var(--space-1));
@@ -235,5 +238,11 @@
     --leading-time: 24px;
     --text-numeral-xl: 40px;
     --leading-numeral-xl: 44px;
+  }
+}
+
+@media (min-width: 1200px) {
+  :root {
+    --width-rail: 232px; /* the rail with labels (UX-NAV-10) */
   }
 }

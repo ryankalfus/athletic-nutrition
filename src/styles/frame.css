@@ -1,5 +1,6 @@
-/* App frame (P0-02): mobile top bar + bottom tab bar, tablet top bar,
- * desktop 232px rail. Page column widths (DS-08) and gutters (DS-07). */
+/* App frame (P0-02): mobile top bar + floating tab bar, tablet top capsule,
+ * desktop 88px rail (232px from 1200px). Page column widths (DS-08) and
+ * gutters (DS-07). */
 
 .app-frame {
   min-height: 100dvh;
@@ -335,10 +336,14 @@
     display: inline-flex;
   }
 
-  /* Tablet top bar: brand, tabs centered on the bar, athlete. */
+  /* Tablet top bar: brand, tabs centered on the bar, athlete. The bar has no
+   * rule or fill of its own (UX-NAV-09); it fades from paper so content
+   * scrolling under the brand and avatar stays out of the way. */
   .frame-header {
     display: grid;
     grid-template-columns: 1fr auto 1fr;
+    border-bottom: 0;
+    background: linear-gradient(var(--color-paper) 70%, transparent);
   }
 
   .frame-brand {
@@ -346,31 +351,43 @@
     justify-self: start;
   }
 
+  /* The capsule takes the middle of the bar, so the brand is the logo alone
+   * until the 232px rail has room for the name. */
+  .frame-brand span {
+    display: none;
+  }
+
   .frame-athlete {
     justify-self: end;
     margin-left: 0;
   }
 
-  /* Tablet top bar with four destinations. */
+  /* UX-NAV-09: the floating top capsule. The phone's glass, fallbacks and
+   * sliding pitch pill carry over; the capsule is sized to its items, which
+   * share one width so the pill slides by whole items. */
   .frame-nav {
-    position: static;
-    display: flex;
-    flex: 1;
-    align-items: center;
-    justify-content: center;
-    gap: var(--space-1);
-    height: var(--top-bar);
-    padding: 0;
-    background: transparent;
-    box-shadow: none;
+    position: relative;
+    inset: auto;
+    grid-template-columns: none;
+    grid-auto-columns: 1fr;
+    grid-auto-flow: column;
+    width: max-content;
+    height: var(--tab-capsule);
+    max-width: none;
+    margin: 0;
+    border-radius: var(--radius-capsule);
+  }
+
+  .frame-nav::before {
+    border-radius: calc(var(--radius-capsule) - var(--space-1));
   }
 
   .frame-nav .frame-nav-item {
     flex-direction: row;
     gap: var(--space-2);
-    min-height: var(--control-height);
-    padding: var(--space-2) var(--space-3);
-    border-radius: var(--radius-md);
+    min-height: 0;
+    padding: 0 var(--space-3);
+    border-radius: calc(var(--radius-capsule) - var(--space-1));
     font-size: var(--text-label);
     line-height: var(--leading-label);
   }
@@ -378,38 +395,6 @@
   .frame-nav .frame-nav-item svg {
     width: 20px;
     height: 20px;
-  }
-
-  /* Keep the current tablet and rail treatment until U3-02; the glass capsule
-   * and sliding pitch pill are phone-only in U3-01. */
-  .frame-nav::before {
-    content: none;
-  }
-
-  .frame-nav .frame-nav-item[aria-current="page"] {
-    color: var(--color-primary);
-  }
-
-  .frame-nav .frame-nav-item[aria-current="page"] svg {
-    color: currentColor;
-  }
-
-  .frame-nav .frame-nav-item[aria-current="page"]::before {
-    position: absolute;
-    top: var(--space-1);
-    width: 6px;
-    height: 6px;
-    border-radius: var(--radius-full);
-    background: var(--color-lime);
-    box-shadow: 0 0 0 1px var(--color-primary);
-    content: "";
-  }
-
-  .frame-nav .frame-nav-item[aria-current="page"]::before {
-    top: auto;
-    bottom: 0;
-    width: 28px;
-    height: 4px;
   }
 
   .shell,
@@ -453,8 +438,9 @@
     padding-left: var(--width-rail);
   }
 
-  /* Desktop rail (DS-17): 48px items, 20px icon, 15px label, 4px lime bar.
-   * Brand, item icons and the avatar share one 32px left edge. */
+  /* UX-NAV-10: a quiet rail on paper, no rule and no shadow. 1024–1199px is
+   * an 88px rail with icons over labels; 1200px and up adds the brand name,
+   * labels beside the icons and the athlete's name. */
   .frame-header {
     position: fixed;
     inset: 0 auto 0 0;
@@ -463,61 +449,66 @@
     align-items: stretch;
     width: var(--width-rail);
     height: 100dvh;
-    padding: var(--space-6) var(--space-4);
+    padding: var(--space-6) var(--space-2);
     padding-top: calc(var(--space-6) + env(safe-area-inset-top));
-    border-right: var(--border);
-    border-bottom: 0;
-  }
-
-  .frame-nav {
-    flex: 0 0 auto;
-    flex-direction: column;
-    align-items: stretch;
-    height: auto;
-    max-width: none;
-    margin-inline: 0;
-    margin-top: var(--space-8);
+    border: 0;
+    background: var(--color-paper);
+    box-shadow: none;
   }
 
   .frame-brand {
-    padding-inline: var(--space-4);
+    justify-content: center;
+  }
+
+  /* The rail's pitch pill is one item tall and slides down by whole items. */
+  .frame-nav {
+    display: flex;
+    flex: 0 0 auto;
+    flex-direction: column;
+    align-items: stretch;
+    width: auto;
+    height: auto;
+    margin-top: var(--space-8);
+    padding: 0;
+    overflow: visible;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+
+  .frame-nav::before {
+    inset: 0 0 auto;
+    width: auto;
+    height: 25%;
+    border-radius: var(--radius-control);
+    transform: translateY(var(--tab-active-offset));
   }
 
   .frame-nav .frame-nav-item {
-    justify-content: flex-start;
-    padding: var(--space-3) var(--space-4);
+    flex-direction: column;
+    gap: var(--space-1);
+    min-height: var(--row-min);
+    padding: var(--space-2) var(--space-1);
+    border-radius: var(--radius-control);
+    font-size: var(--text-tab);
+    line-height: var(--leading-tab);
   }
 
-  .frame-nav .frame-nav-item[aria-current="page"]::before {
-    inset: var(--space-2) auto var(--space-2) 0;
-    width: 4px;
-    height: auto;
+  .frame-nav .frame-nav-item svg {
+    width: 24px;
+    height: 24px;
   }
 
+  /* The athlete switcher is a plain row at the bottom (avatar, name,
+   * chevron); the narrow rail shows the avatar only. */
   .frame-athlete {
-    justify-content: flex-start;
     gap: var(--space-2);
     width: 100%;
     margin: auto 0 0;
-    padding: 0 var(--space-4);
-    border-radius: var(--radius-md);
-    font-weight: 500;
-  }
-
-  .frame-athlete-name {
-    display: inline;
-    flex: 1 1 auto;
-    min-width: 0;
-    overflow: hidden;
-    text-align: left;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
-  /* The rail's "Switch" reads as a text button (4.4). */
-  .frame-athlete-switch {
-    display: inline;
-    color: var(--color-primary);
+    border-radius: var(--radius-control);
     font-weight: 600;
   }
 
@@ -534,6 +525,60 @@
 }
 
 @media (min-width: 1200px) {
+  /* The 232px rail. Brand, item icons and the avatar share one 32px left
+   * edge. */
+  .frame-header {
+    padding-inline: var(--space-4);
+  }
+
+  .frame-brand {
+    justify-content: flex-start;
+    padding-inline: var(--space-4);
+  }
+
+  .frame-brand span {
+    display: inline;
+  }
+
+  .frame-nav .frame-nav-item {
+    flex-direction: row;
+    justify-content: flex-start;
+    gap: var(--space-3);
+    min-height: var(--control-height);
+    padding: var(--space-3) var(--space-4);
+    font-size: var(--text-label);
+    line-height: var(--leading-label);
+  }
+
+  .frame-nav .frame-nav-item svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  .frame-athlete {
+    justify-content: flex-start;
+    height: var(--control-height);
+    padding: 0 var(--space-4);
+  }
+
+  .frame-athlete-switch {
+    display: flex;
+  }
+
+  .frame-athlete-name {
+    display: block;
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    text-align: left;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .frame-athlete-switch {
+    color: var(--color-ink-muted);
+  }
+
   /* Today and Schedule add a 320px right column. */
   :root:has(.shell[data-layout="wide"]) {
     --layout-max: calc(
