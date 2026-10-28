@@ -265,10 +265,10 @@ export default function TodayPage({
   // The rail needs more than the Now marker to be worth a card.
   const showRail = rows.some((row) => !row.now);
   return (
-    <Shell footer={false} onNavigate={onNavigate}>
+    <Shell onNavigate={onNavigate} title={formatDate(todayKey)}>
+      {/* UX-NAV-11: the date is Today's header; the tab already says Today. */}
       <header className="today-heading">
-        <h1 className="page-title">Today</h1>
-        <p>{formatDate(todayKey)}</p>
+        <h1 className="page-title">{formatDate(todayKey)}</h1>
         <div className="today-chips">
           {guidance.schoolToday && (
             <span>

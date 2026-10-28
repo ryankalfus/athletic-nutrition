@@ -52,9 +52,9 @@ async (page) => {
     await p.getByRole("button", { name: "Next", exact: true }).click();
     await p.getByRole("heading", { name: "Your school day" }).waitFor();
     await p.getByRole("button", { name: "Skip setup" }).click();
-    await p.getByRole("heading", { name: "Today", exact: true }).waitFor();
+    await p.getByRole("heading", { level: 1, name: /^[A-Z][a-z]{2}, [A-Z][a-z]{2} \d{1,2}$/ }).waitFor();
     await p.goto(`${base}#/schedule`);
-    await p.getByRole("heading", { name: "Schedule", level: 1 }).waitFor();
+    await p.getByRole("heading", { level: 1, name: /^(January|February|March|April|May|June|July|August|September|October|November|December)$/ }).waitFor();
 
     // --- P2-01: file import preview ---
     let sheet = await openImport();

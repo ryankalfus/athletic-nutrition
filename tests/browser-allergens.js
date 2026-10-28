@@ -49,7 +49,7 @@ async (page) => {
     await p.getByRole("button", { name: "Next", exact: true }).click();
     await p.getByRole("heading", { name: "Your school day" }).waitFor();
     await p.getByRole("button", { name: "Skip setup" }).click();
-    await p.getByRole("heading", { name: "Today", exact: true }).waitFor();
+    await p.getByRole("heading", { level: 1, name: /^[A-Z][a-z]{2}, [A-Z][a-z]{2} \d{1,2}$/ }).waitFor();
     await p.goto(`${base}#/food/log`);
     await p.getByRole("button", { name: "Log food", exact: true }).click();
     await p.getByRole("button", { name: "Scan barcode" }).click();

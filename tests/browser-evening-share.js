@@ -48,7 +48,7 @@ async (page) => {
     await p.getByRole("button", { name: "Next", exact: true }).click();
     await p.getByRole("heading", { name: "Your school day" }).waitFor();
     await p.getByRole("button", { name: "Skip setup" }).click();
-    await p.getByRole("heading", { name: "Today", exact: true }).waitFor();
+    await p.getByRole("heading", { level: 1, name: /^[A-Z][a-z]{2}, [A-Z][a-z]{2} \d{1,2}$/ }).waitFor();
   };
   try {
     // --- Clipboard fallback: no Web Share in this browser. ---
@@ -63,7 +63,7 @@ async (page) => {
 
     // An away game tomorrow at 4:00 PM, left unnamed.
     await p.goto(`${base}#/schedule`);
-    await p.getByRole("button", { name: "+ Add", exact: true }).first().click();
+    await p.getByRole("button", { name: /^(\+ )?Add$/ }).first().click();
     const sheet = p.getByRole("dialog");
     await sheet.getByRole("button", { name: "Game", exact: true }).click();
     await sheet.getByLabel("Activity date").fill(key(tomorrow));
@@ -159,7 +159,7 @@ async (page) => {
     await p.getByRole("button", { name: "Save a backup file" }).click();
     await download;
     await p.goto(`${base}#/today`);
-    await p.getByRole("heading", { name: "Today", exact: true }).waitFor();
+    await p.getByRole("heading", { level: 1, name: /^[A-Z][a-z]{2}, [A-Z][a-z]{2} \d{1,2}$/ }).waitFor();
     if (await p.getByRole("complementary", { name: "Backup" }).count())
       throw new Error("Backup nudge shows right after a backup");
     await context.clock.setFixedTime(later(32));
@@ -173,7 +173,7 @@ async (page) => {
     await nudge.getByRole("button", { name: "Not now" }).click();
     await nudge.waitFor({ state: "hidden" });
     await p.reload();
-    await p.getByRole("heading", { name: "Today", exact: true }).waitFor();
+    await p.getByRole("heading", { level: 1, name: /^[A-Z][a-z]{2}, [A-Z][a-z]{2} \d{1,2}$/ }).waitFor();
     if (await nudge.count())
       throw new Error("Not now did not snooze the nudge");
     await context.clock.setFixedTime(later(65));

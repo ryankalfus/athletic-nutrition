@@ -124,7 +124,7 @@ export default async function ({ browser, pass, cap }) {
       await go(p, "you");
       await shot(p, "tablet", "you", "Tablet 768×1024: You");
       await go(p, "schedule");
-      await p.getByRole("button", { name: "+ Add", exact: true }).first().click();
+      await p.getByRole("button", { name: /^(\+ )?Add$/ }).first().click();
       await p.getByRole("dialog").waitFor();
       await shot(p, "tablet", "sheet", "Tablet 768×1024: Add practice sheet");
       await closeAll(p);

@@ -53,7 +53,7 @@ async (page) => {
     await p.getByRole("button", { name: "Next", exact: true }).click();
     await p.getByRole("heading", { name: "Food at school" }).waitFor();
     await p.getByRole("button", { name: "Skip setup" }).click();
-    await p.getByRole("heading", { name: "Today", exact: true }).waitFor();
+    await p.getByRole("heading", { level: 1, name: /^[A-Z][a-z]{2}, [A-Z][a-z]{2} \d{1,2}$/ }).waitFor();
   };
   // Every segment of every visible segmented control shares one row and
   // none of them overflows its label.
@@ -232,10 +232,10 @@ async (page) => {
 
     // Schedule at 390: + Add in the top bar, one-line week label, day heads.
     await p.goto(`${base}#/schedule`);
-    await p.getByRole("heading", { name: "Schedule", level: 1 }).waitFor();
+    await p.getByRole("heading", { level: 1, name: /^(January|February|March|April|May|June|July|August|September|October|November|December)$/ }).waitFor();
     const add = p
       .getByRole("banner")
-      .getByRole("button", { name: "+ Add", exact: true });
+      .getByRole("button", { name: /^(\+ )?Add$/ });
     if (!(await add.isVisible()))
       fail("Schedule + Add is not in the phone top bar");
     const label = await box(p.locator(".schedule-week-switcher strong"));
@@ -254,7 +254,7 @@ async (page) => {
     );
     if (heads)
       fail(`${heads} day headings drop their add button to a second row`);
-    await p.getByRole("button", { name: "+ Add", exact: true }).first().click();
+    await p.getByRole("button", { name: /^(\+ )?Add$/ }).first().click();
     const activity = p.getByRole("dialog", { name: "Add practice" });
     await activity.waitFor();
     await p.waitForTimeout(250);

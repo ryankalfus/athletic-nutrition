@@ -1,6 +1,9 @@
 // UX U3-01: phone navigation geometry, glass, contrast, keyboard behavior,
 // content clearance, reduced transparency and scroll stability.
 // UX U3-02: the tablet top capsule and the 88px and 232px desktop rails.
+// UX U3-03: large titles that collapse into a glass top bar, Today's date and
+// Schedule's month as headers, one avatar, the device footer on This device
+// and About only, and the theme color following a field panel.
 async (page) => {
   const base = globalThis.BASE_URL ?? "http://127.0.0.1:5173/";
   const browser = page.context().browser();
@@ -97,7 +100,7 @@ async (page) => {
     await currentPage.getByRole("button", { name: "Next", exact: true }).click();
     await currentPage.getByRole("heading", { name: "Your school day" }).waitFor();
     await currentPage.getByRole("button", { name: "Skip setup" }).click();
-    await currentPage.getByRole("heading", { name: "Today", exact: true }).waitFor();
+    await currentPage.getByRole("heading", { level: 1, name: /^[A-Z][a-z]{2}, [A-Z][a-z]{2} \d{1,2}$/ }).waitFor();
     return currentPage;
   };
 
@@ -264,7 +267,8 @@ async (page) => {
               clearance.toFixed(1) +
               "px above the nav",
           );
-        if (route === "you") {
+        // UX-MISC-01: the device footer lives on This device and About only.
+        if (route === "you/device" || route === "you/about") {
           const footerClearance = await p.evaluate(() => {
             const footer = document.querySelector(".frame-footer");
             const navElement = document.querySelector(".frame-nav");
@@ -278,7 +282,8 @@ async (page) => {
           });
           if (footerClearance === null || footerClearance < 8)
             throw new Error(
-              "You at " +
+              route +
+                " at " +
                 width +
                 "px: footer text ends " +
                 (footerClearance === null
@@ -322,7 +327,9 @@ async (page) => {
             " at " +
             width +
             "px: capsule geometry, active state, contrast and content clearance" +
-            (route === "you" ? ", including footer clearance." : "."),
+            (route === "you/device" || route === "you/about"
+              ? ", including footer clearance."
+              : "."),
         );
       }
 
@@ -425,6 +432,170 @@ async (page) => {
 
       await p.context().close();
     }
+    // U3-03 at 390 × 844 (clock: Tue, Sep 29): every route shows a 34px H1 at
+    // scroll 0 beside a clear bar, and after 120px of scroll a glass bar with
+    // the title (UX-NAV-11); one avatar per screen (UX-NAV-12); the device
+    // footer only on This device and About (UX-MISC-01, UX-SCH-18).
+    p = await start(390, 844);
+    for (const route of routes) {
+      await p.goto(base + "#/" + route);
+      await p.locator("main h1").waitFor();
+      await p.evaluate(() => window.scrollTo(0, 0));
+      await p.waitForTimeout(300);
+      const top = await p.evaluate(() => {
+        const h1 = document.querySelector("main h1");
+        const rect = h1.getBoundingClientRect();
+        const text = document.createRange();
+        text.selectNodeContents(h1);
+        const header = document.querySelector(".frame-header");
+        const controls = [
+          ...header.querySelectorAll(".frame-action, .frame-athlete"),
+        ]
+          .map((element) => element.getBoundingClientRect())
+          .filter((box) => box.width > 0);
+        const textBox = text.getBoundingClientRect();
+        return {
+          text: h1.textContent.trim(),
+          fontSize: getComputedStyle(h1).fontSize,
+          visible: rect.width > 1 && rect.height > 1 && rect.top >= 0,
+          overlaps: controls.some(
+            (box) =>
+              textBox.right > box.left &&
+              textBox.left < box.right &&
+              textBox.bottom > box.top &&
+              textBox.top < box.bottom,
+          ),
+          glass: getComputedStyle(header, "::before").opacity,
+          avatars: [...document.querySelectorAll(".avatar")].filter(
+            (avatar) =>
+              !avatar.closest(".device-athletes") &&
+              avatar.getBoundingClientRect().width > 0 &&
+              getComputedStyle(avatar).visibility !== "hidden",
+          ).length,
+          footer: document.body.innerText.includes(
+            "Saved on this device. Food search uses online food databases.",
+          ),
+          today: new Intl.DateTimeFormat("en-US", {
+            weekday: "short",
+            month: "short",
+            day: "numeric",
+          }).format(new Date()),
+          theme: document
+            .querySelector('meta[name="theme-color"]')
+            .getAttribute("content"),
+          paper: getComputedStyle(document.documentElement)
+            .getPropertyValue("--color-paper")
+            .trim(),
+        };
+      });
+      const failures = [];
+      if (!top.visible) failures.push("the H1 is not visible at scroll 0");
+      if (top.fontSize !== "34px") failures.push("H1 is " + top.fontSize);
+      if (top.overlaps) failures.push("the H1 runs under the bar's buttons");
+      if (Number(top.glass) !== 0) failures.push("the bar is not clear at 0");
+      if (route === "today" && top.text !== top.today)
+        failures.push(`Today's H1 is "${top.text}", not "${top.today}"`);
+      if (route === "schedule" && top.text !== "September")
+        failures.push(`Schedule's H1 is "${top.text}"`);
+      if (top.avatars !== 1) failures.push(`${top.avatars} avatars`);
+      const wantsFooter = route === "you/device" || route === "you/about";
+      if (top.footer !== wantsFooter)
+        failures.push(
+          wantsFooter ? "the device footer is missing" : "the device footer shows",
+        );
+      if (top.theme.toLowerCase() !== top.paper.toLowerCase())
+        failures.push("theme-color is " + top.theme);
+
+      await p.evaluate(() => {
+        document.querySelector("main").style.minHeight = "2000px";
+        window.scrollTo(0, 120);
+      });
+      await p.waitForTimeout(300);
+      const scrolled = await p.evaluate(() => {
+        const header = document.querySelector(".frame-header");
+        const glass = getComputedStyle(header, "::before");
+        const title = header.querySelector(".frame-mobile-title");
+        const titleBox = title.getBoundingClientRect();
+        const headerBox = header.getBoundingClientRect();
+        return {
+          glass: glass.opacity,
+          filter: glass.backdropFilter || glass.webkitBackdropFilter,
+          title: title.textContent.trim(),
+          titleOpacity: getComputedStyle(title).opacity,
+          titleSize: getComputedStyle(title).fontSize,
+          centered: Math.abs(
+            titleBox.left + titleBox.width / 2 - window.innerWidth / 2,
+          ),
+          headerHeight: headerBox.height,
+          nav: document.querySelector(".frame-nav").getBoundingClientRect()
+            .bottom,
+        };
+      });
+      if (Number(scrolled.glass) !== 1) failures.push("no glass after scroll");
+      if (!scrolled.filter.includes("blur(20px)"))
+        failures.push("the scrolled bar's blur is " + scrolled.filter);
+      if (Number(scrolled.titleOpacity) !== 1 || !scrolled.title)
+        failures.push("no title in the scrolled bar");
+      if (scrolled.titleSize !== "17px")
+        failures.push("bar title is " + scrolled.titleSize);
+      if (scrolled.centered > 1) failures.push("bar title is off center");
+      if (Math.abs(scrolled.headerHeight - 52) > 0.5)
+        failures.push("bar is " + scrolled.headerHeight + "px tall");
+      if (scrolled.nav < 800)
+        failures.push("the tab bar left the bottom of the screen");
+      if (
+        (route === "today" || route === "schedule") &&
+        scrolled.title !== top.text
+      )
+        failures.push(`bar title "${scrolled.title}" is not the H1`);
+      if (failures.length)
+        throw new Error(`U3-03 ${route} at 390px: ${failures.join(", ")}`);
+    }
+    result.checks.push(
+      `390px, all ${routes.length} routes: a visible 34px H1 beside a clear bar at scroll 0 (Today's is the date, Schedule's the month) that never runs under the bar's buttons; after 120px a 52px glass bar with a 20px blur and the 17px centered title, with the tab bar still at the bottom; one avatar per screen; the device footer only on This device and About; theme-color paper.`,
+    );
+
+    // UX-NAV-13: theme-color turns pitch while a field panel is at the top.
+    await p.goto(base + "#/today");
+    await p.locator("main h1").waitFor();
+    const theme = await p.evaluate(async () => {
+      const meta = document.querySelector('meta[name="theme-color"]');
+      const root = getComputedStyle(document.documentElement);
+      const frame = () =>
+        new Promise((resolve) =>
+          requestAnimationFrame(() => requestAnimationFrame(resolve)),
+        );
+      const panel = document.createElement("div");
+      panel.className = "field-panel";
+      panel.style.height = "400px";
+      document.querySelector("main").prepend(panel);
+      document.querySelector("main").style.minHeight = "3000px";
+      window.scrollTo(0, 0);
+      window.dispatchEvent(new Event("scroll"));
+      await frame();
+      const atTop = meta.getAttribute("content");
+      window.scrollTo(0, 1200);
+      window.dispatchEvent(new Event("scroll"));
+      await frame();
+      const below = meta.getAttribute("content");
+      panel.remove();
+      return {
+        atTop,
+        below,
+        pitch: root.getPropertyValue("--color-pitch").trim(),
+        paper: root.getPropertyValue("--color-paper").trim(),
+      };
+    });
+    if (
+      theme.atTop.toLowerCase() !== theme.pitch.toLowerCase() ||
+      theme.below.toLowerCase() !== theme.paper.toLowerCase()
+    )
+      throw new Error("theme-color does not follow the field panel: " + JSON.stringify(theme));
+    result.checks.push(
+      "theme-color is pitch while a field panel is at the top and paper once it scrolls away.",
+    );
+    await p.context().close();
+
     // U3-02: the tablet top capsule (UX-NAV-09) and the quiet rail
     // (UX-NAV-10). The pitch pill sits exactly on the active item at every
     // width, so it is measured from the pseudo-element's box and transform.

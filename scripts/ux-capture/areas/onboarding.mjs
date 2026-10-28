@@ -80,7 +80,7 @@ export default async function ({ browser, pass, cap }) {
     await step("You're set");
     await shot(p, "setup", "step6-youre-set", "Step 6 of 6 (You're set): first plan preview and Open Today");
     await p.getByRole("button", { name: "Open Today" }).click();
-    await p.getByRole("heading", { name: "Today", exact: true }).waitFor();
+    await p.getByRole("heading", { level: 1, name: /^[A-Z][a-z]{2}, [A-Z][a-z]{2} \d{1,2}$/ }).waitFor();
     await settle(p);
     await shot(p, "today", "first-open-after-setup", "Today right after setup at 7:00 AM Tuesday (before school)");
   });
@@ -96,7 +96,7 @@ export default async function ({ browser, pass, cap }) {
     await p.getByRole("button", { name: "Skip setup" }).focus();
     await shot(p, "setup", "step2-focus-skip-setup", "Step 2 with keyboard focus on Skip setup in the footer", { kind: "fold" });
     await p.getByRole("button", { name: "Skip setup" }).click();
-    await p.getByRole("heading", { name: "Today", exact: true }).waitFor();
+    await p.getByRole("heading", { level: 1, name: /^[A-Z][a-z]{2}, [A-Z][a-z]{2} \d{1,2}$/ }).waitFor();
     await settle(p);
     await shot(p, "today", "after-skip-setup", "Today after Skip setup at step 2: no schedule (setup Now card)");
   });
@@ -136,7 +136,7 @@ export default async function ({ browser, pass, cap }) {
     await seed(p, baseDoc(), "today");
     await go(p, "welcome");
     await p.locator(".welcome-tile-open").first().click();
-    await p.getByRole("heading", { name: "Today", exact: true }).waitFor();
+    await p.getByRole("heading", { level: 1, name: /^[A-Z][a-z]{2}, [A-Z][a-z]{2} \d{1,2}$/ }).waitFor();
     await settle(p);
     await shot(p, "today", "opened-from-welcome", "Today opened from a Welcome tile");
   });

@@ -25,7 +25,7 @@ async (page) => {
     await p.getByRole("button", { name: "Next", exact: true }).click();
     await p.getByRole("heading", { name: "Your school day" }).waitFor();
     await p.getByRole("button", { name: "Skip setup" }).click();
-    await p.getByRole("heading", { name: "Today", exact: true }).waitFor();
+    await p.getByRole("heading", { level: 1, name: /^[A-Z][a-z]{2}, [A-Z][a-z]{2} \d{1,2}$/ }).waitFor();
   };
   const groceryCount = () =>
     p.evaluate(
@@ -52,7 +52,7 @@ async (page) => {
     await setup();
     // A one-day practice today, named "Practice" (shown as Soccer practice).
     await p.goto(`${base}#/schedule`);
-    await p.getByRole("button", { name: "+ Add", exact: true }).first().click();
+    await p.getByRole("button", { name: /^(\+ )?Add$/ }).first().click();
     const add = p.getByRole("dialog", { name: "Add practice" });
     await add.getByRole("textbox", { name: "Name" }).fill("Practice");
     await add.getByLabel("Starts").fill("15:00");
@@ -67,7 +67,7 @@ async (page) => {
     await schoolSheet.getByRole("button", { name: "Save school day" }).click();
     await schoolSheet.waitFor({ state: "hidden" });
     await p.goto(`${base}#/today`);
-    await p.getByRole("heading", { name: "Today", exact: true }).waitFor();
+    await p.getByRole("heading", { level: 1, name: /^[A-Z][a-z]{2}, [A-Z][a-z]{2} \d{1,2}$/ }).waitFor();
 
     // COPY-23 and COPY-34.
     await p
@@ -158,7 +158,7 @@ async (page) => {
     await open({ width: 390, height: 844 });
     await setup();
     await p.goto(`${base}#/schedule`);
-    await p.getByRole("button", { name: "+ Add", exact: true }).first().click();
+    await p.getByRole("button", { name: /^(\+ )?Add$/ }).first().click();
     const phoneAdd = p.getByRole("dialog", { name: "Add practice" });
     await phoneAdd.getByRole("textbox", { name: "Name" }).fill("Practice");
     await phoneAdd

@@ -38,7 +38,7 @@ export default async function ({ browser, pass, cap }) {
     await scenario(cap, n, `today ${state}`, async (opened) => {
       const p = await opener(opened)(clock);
       await seed(p, make(), "today");
-      await p.getByRole("heading", { name: "Today", exact: true }).waitFor();
+      await p.getByRole("heading", { level: 1, name: /^[A-Z][a-z]{2}, [A-Z][a-z]{2} \d{1,2}$/ }).waitFor();
       await settle(p);
       await shot(p, `now-${state}`, note);
     });

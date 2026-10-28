@@ -8,7 +8,7 @@ export default async function ({ browser, pass, cap }) {
     return r.page;
   };
   const shot = (p, state, note, o) => cap.shot(p, "schedule", state, note, o);
-  const head = (p) => p.getByRole("heading", { name: "Schedule", level: 1 }).waitFor();
+  const head = (p) => p.getByRole("heading", { level: 1, name: /^(January|February|March|April|May|June|July|August|September|October|November|December)$/ }).waitFor();
   const today = (p) => p.getByRole("region", { name: / Today$/ });
 
   // 1. Empty schedule.
@@ -97,7 +97,7 @@ export default async function ({ browser, pass, cap }) {
     const p = await opener(opened)();
     await seed(p, baseDoc(), "schedule");
     await head(p);
-    await p.getByRole("button", { name: "+ Add", exact: true }).first().click();
+    await p.getByRole("button", { name: /^(\+ )?Add$/ }).first().click();
     const sheet = p.getByRole("dialog", { name: /^Add / });
     await sheet.waitFor();
     await shot(p, "add-sheet-default", "Add practice sheet: Type, Name, Date or days, Starts/Ends, Where, More options");
@@ -115,7 +115,7 @@ export default async function ({ browser, pass, cap }) {
     await shot(p, "add-sheet-every-week", "Add sheet with Every week chosen: weekday picker and repeat end");
     await closeAll(p);
     // Overlap confirm: one-day practice at the same time as Tue practice.
-    await p.getByRole("button", { name: "+ Add", exact: true }).first().click();
+    await p.getByRole("button", { name: /^(\+ )?Add$/ }).first().click();
     await sheet.waitFor();
     await sheet.getByRole("textbox", { name: "Name" }).fill("Extra skills");
     await sheet.getByLabel("Starts").fill("16:30");
@@ -124,7 +124,7 @@ export default async function ({ browser, pass, cap }) {
     await p.waitForTimeout(500);
     await shot(p, "overlap-confirm", "Overlapping activity confirm: 'This overlaps Soccer practice. Save anyway?'");
     await closeAll(p);
-    await p.getByRole("button", { name: "+ Add", exact: true }).first().click();
+    await p.getByRole("button", { name: /^(\+ )?Add$/ }).first().click();
     await sheet.waitFor();
     await sheet.getByRole("textbox", { name: "Name" }).fill("Film session");
     await sheet.getByLabel("Starts").fill("18:30");

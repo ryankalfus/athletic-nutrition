@@ -32,7 +32,7 @@ Source of truth: [UX-REDESIGN-PLAN.md](UX-REDESIGN-PLAN.md). Read the item there
 
 - [x] **U3-01** — Phone floating tab bar. Closes: UX-NAV-01, UX-NAV-02, UX-NAV-03, UX-NAV-04, UX-NAV-05, UX-NAV-08, UX-BUG-11; contributes to UX-DS-02. Done 2026.10.27: `browser-ux-nav.js` passes 39 checks across 15 phone routes, covering capsule geometry, glass and fallbacks, active state and contrast, axe, clearance, keyboard behavior and scroll stability; real tab clicks and alternating short/long pages also keep the bar, buttons, icons and labels fixed at 320, 390, 768, 1024 and 1440 px with classic scrollbars enabled.
 - [x] **U3-02** — Tablet capsule and desktop rail. Closes: UX-NAV-09, UX-NAV-10. Done 2026.10.28: `browser-ux-nav.js` checks Today, Schedule, Food and You at 768, 1024, 1100, 1280 and 1440 px: the 768 capsule is centered within 1 px, 52 px tall, radius 18 and 82 % glass with a 20 px blur; the rail is 88 px at 1024 and 1100 and 232 px at 1280 and 1440 with no border or shadow on the rail or its items; the pitch pill sits on the active item (within 1 px) with a lime icon and white label at every width. The same checks fail on the U3-01 frame.
-- [ ] **U3-03** — Page headers and the footer. Closes: UX-NAV-11, UX-NAV-12, UX-NAV-13, UX-SCH-18, UX-MISC-01.
+- [x] **U3-03** — Page headers and the footer. Closes: UX-NAV-11, UX-NAV-12, UX-NAV-13, UX-SCH-18, UX-MISC-01. Done 2026.10.28: `browser-ux-nav.js` checks all 15 routes at 390 × 844: the H1 is visible at scroll 0 at 34 px (Today's is the formatted date, Schedule's the month) and never runs under the bar's buttons; after 120 px a 52 px glass bar (20 px blur) shows the 17 px centered title with the tab bar still at the bottom; one avatar per screen; the device footer only on `#/you/device` and `#/you/about`; theme-color is paper, and pitch while a field panel is at the top. `browser-shared-ui.js` checks the 52 px bar and the 44 px round add button.
 - [ ] **U3-04** — Toasts, the floating action slot and the offline line. Closes: UX-DS-02, UX-NAV-06, UX-CMP-13, UX-CMP-16, UX-BUG-10, UX-RWD-11. Also closes (REDESIGN-CHECKLIST): STATE-03.
 
 ### U4 — Shared components
@@ -128,9 +128,9 @@ One checkbox per ID. The note names the build item that closes it.
 - [x] **UX-NAV-08** — Stable bar. (closes in U3-01) Done 2026.10.27: scrolling 600 px leaves the nav rect unchanged.
 - [x] **UX-NAV-09** — Floating top capsule. (closes in U3-02) Done 2026.10.28: `browser-ux-nav.js` at 768 px (centered, 52 px, radius 18, glass, pitch pill, no rule under the bar). The brand shows the logo alone at this width: the four equal-width tabs leave too little room for the name.
 - [x] **UX-NAV-10** — Quiet rail. (closes in U3-02) Done 2026.10.28: `browser-ux-nav.js` at 1024, 1100, 1280 and 1440 px (88 px icon rail, then 232 px with labels; no border or shadow; pitch pill; athlete row of avatar, name and chevron at 1200 px and up, avatar alone on the 88 px rail); `browser-visual.js` keeps the one 32 px rail edge at 1280.
-- [ ] **UX-NAV-11** — Large titles that collapse. (closes in U3-03)
-- [ ] **UX-NAV-12** — One avatar. (closes in U3-03)
-- [ ] **UX-NAV-13** — Browser chrome color. (closes in U3-03)
+- [x] **UX-NAV-11** — Large titles that collapse. (closes in U3-03) Done 2026.10.28: `browser-ux-nav.js` (390 px, every route). On phones Schedule's bar action is a round 44 px icon button named "Add" so the month keeps its row at 320 px.
+- [x] **UX-NAV-12** — One avatar. (closes in U3-03) Done 2026.10.28: You lost its second avatar; `browser-ux-nav.js` counts one per screen (This device's list of athletes is a list, not counted).
+- [x] **UX-NAV-13** — Browser chrome color. (closes in U3-03) Done 2026.10.28: Shell sets theme-color to pitch while a `.field-panel` is at the top and paper otherwise; `browser-ux-nav.js` checks it with an injected panel. The Welcome and setup-done field panels arrive in U8 and only need the class.
 
 ### Shared components (`UX-CMP`)
 
@@ -222,7 +222,7 @@ One checkbox per ID. The note names the build item that closes it.
 - [ ] **UX-SCH-15** — Rest days sheet. (closes in U6-03)
 - [ ] **UX-SCH-16** — Import preview without 40 dropdowns. (closes in U6-04)
 - [ ] **UX-SCH-17** — Team calendar row. (closes in U6-04)
-- [ ] **UX-SCH-18** — No unrelated footer. (closes in U3-03)
+- [x] **UX-SCH-18** — No unrelated footer. (closes in U3-03) Done 2026.10.28: `browser-ux-nav.js` (no device footer on Schedule).
 
 ### Food frame (`UX-FOOD`)
 
@@ -311,7 +311,7 @@ One checkbox per ID. The note names the build item that closes it.
 
 ### About, Not found and footer (`UX-MISC`)
 
-- [ ] **UX-MISC-01** — Device line said once. (closes in U3-03)
+- [x] **UX-MISC-01** — Device line said once. (closes in U3-03) Done 2026.10.28: Shell's footer is off by default and on for This device and About only; `browser-ux-nav.js` checks every route.
 - [ ] **UX-MISC-02** — About. (closes in U8-05)
 - [ ] **UX-MISC-03** — Not found. (closes in U8-05)
 

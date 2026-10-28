@@ -4,6 +4,7 @@ import {
   ChevronLeft,
   ChevronRight,
   CircleUserRound,
+  Plus,
   Sunrise,
 } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -89,21 +90,60 @@ export function AppNavigation({ active, onNavigate }) {
   );
 }
 
-// `title` and `back` replace the phone top bar's page name with a sub-page's
-// own ("This device" with a chevron back to You), so the page does not repeat
-// its name and back link below the bar (6.14). `action` is a page's main
-// button in the phone top bar (Schedule's "+ Add", 6.9); wider screens show
-// the page's own copy in its header.
+// UX-NAV-11: on phones the page's H1 is a large title in the content and the
+// top bar is clear until the page scrolls 40 px; then it turns to glass and
+// shows `title` (the H1's text) at 17 px. A sub-page's `back` shows a chevron
+// with the parent's name ("‹ You"). `action` is a page's main button in the
+// phone top bar, drawn as an icon (Schedule's add, 6.9); wider screens show
+// the page's own button in its header.
+const SCROLLED_AT = 40;
+
+// UX-NAV-13: the browser chrome is paper, or pitch while a field panel
+// (Welcome, setup done) is at the top of the screen: it starts within the
+// first 64px and has not scrolled away.
+const FIELD_PANEL_TOP = 64;
+
+function useThemeColor() {
+  useEffect(() => {
+    const meta = document.querySelector('meta[name="theme-color"]');
+    if (!meta) return undefined;
+    const update = () => {
+      const panel = document
+        .querySelector("main .field-panel")
+        ?.getBoundingClientRect();
+      const atTop = panel && panel.top <= FIELD_PANEL_TOP && panel.bottom > 0;
+      const token = atTop ? "--color-pitch" : "--color-paper";
+      meta.setAttribute(
+        "content",
+        getComputedStyle(document.documentElement)
+          .getPropertyValue(token)
+          .trim(),
+      );
+    };
+    update();
+    window.addEventListener("scroll", update, { passive: true });
+    return () => window.removeEventListener("scroll", update);
+  });
+}
+
 export function Shell({
   children,
   navigation = true,
-  footer = true,
+  footer = false,
   onNavigate,
   title: pageTitle,
   back,
   action,
 }) {
   const state = useStore();
+  const [scrolled, setScrolled] = useState(false);
+  useEffect(() => {
+    const check = () => setScrolled(window.scrollY > SCROLLED_AT);
+    check();
+    window.addEventListener("scroll", check, { passive: true });
+    return () => window.removeEventListener("scroll", check);
+  }, []);
+  useThemeColor();
   const [view, , subroute] = useRoute();
   const current = destinations.find(({ id }) => id === view);
   const title =
@@ -139,7 +179,16 @@ export function Shell({
   };
 
   return (
-    <div className={`app-frame${navigation ? " has-navigation" : ""}`}>
+    <div
+      className={[
+        "app-frame",
+        navigation && "has-navigation",
+        back && "has-back",
+        scrolled && "is-scrolled",
+      ]
+        .filter(Boolean)
+        .join(" ")}
+    >
       <a className="skip-link" href="#main-content" onClick={skip}>
         Skip to content
       </a>
@@ -148,11 +197,12 @@ export function Shell({
           {back && (
             <button
               type="button"
-              className="icon-button frame-back"
+              className="text-button frame-back"
               aria-label={back.label}
               onClick={back.onClick}
             >
               <ChevronLeft size={24} strokeWidth={1.75} aria-hidden="true" />
+              {back.text}
             </button>
           )}
           <div className="frame-brand" aria-label="Nourally">
@@ -164,9 +214,10 @@ export function Shell({
             <button
               type="button"
               className="primary frame-action"
+              aria-label={action.label}
               onClick={action.onClick}
             >
-              {action.label}
+              <Plus size={24} strokeWidth={2} aria-hidden="true" />
             </button>
           )}
           {/* IA-14 / COPY-28: with 2+ athletes this opens the chooser

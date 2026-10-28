@@ -5,6 +5,7 @@ import { useStore } from "../../store.js";
 import {
   formatDate,
   formatDateRange,
+  formatMonth,
   formatTime,
   formatTimeRange,
   formatWeekdays,
@@ -200,9 +201,13 @@ export default function ScheduleCalendar({
   );
 
   return (
-    <Shell action={{ label: "+ Add", onClick: addActivity }}>
+    <Shell
+      title={formatMonth(selectedKey)}
+      action={{ label: "Add", onClick: addActivity }}
+    >
+      {/* UX-NAV-11: the month is Schedule's header. */}
       <header className="calendar-head">
-        <h1 className="page-title">Schedule</h1>
+        <h1 className="page-title">{formatMonth(selectedKey)}</h1>
         <div className="page-head-tools">
           <button className="primary" onClick={addActivity}>
             + Add

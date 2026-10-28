@@ -37,7 +37,7 @@ async (page) => {
     await p.getByRole("button", { name: "Next", exact: true }).click();
     await p.getByRole("heading", { name: "Your school day" }).waitFor();
     await p.getByRole("button", { name: "Skip setup" }).click();
-    await p.getByRole("heading", { name: "Today", exact: true }).waitFor();
+    await p.getByRole("heading", { level: 1, name: /^[A-Z][a-z]{2}, [A-Z][a-z]{2} \d{1,2}$/ }).waitFor();
     const rules = await p.evaluate(() =>
       import("/src/domain/rules.js").then((m) => m.RULES),
     );
@@ -96,7 +96,7 @@ async (page) => {
 
     // A one-day practice today, 3:00-4:30 PM.
     await p.goto(`${base}#/schedule`);
-    await p.getByRole("button", { name: "+ Add", exact: true }).first().click();
+    await p.getByRole("button", { name: /^(\+ )?Add$/ }).first().click();
     const add = p.getByRole("dialog", { name: "Add practice" });
     await add.getByRole("textbox", { name: "Name" }).fill("Practice");
     await add.getByLabel("Starts").fill("15:00");
@@ -119,7 +119,7 @@ async (page) => {
       await context.clock.setFixedTime(at(h, m));
       await p.goto(`${base}#/today`);
       await p.reload();
-      await p.getByRole("heading", { name: "Today", exact: true }).waitFor();
+      await p.getByRole("heading", { level: 1, name: /^[A-Z][a-z]{2}, [A-Z][a-z]{2} \d{1,2}$/ }).waitFor();
       await expectWhy(state);
     }
   } catch (error) {

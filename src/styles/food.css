@@ -1,9 +1,9 @@
 /* Food frame (6.4), Ideas (6.7), At home (6.5), Groceries (6.6), Log and Week (6.8). */
 
 /* Section control (RWD-05): a full-width paper strip sticks under the top bar
- * (56 + 4 + 48 + 4 = 112px of phone chrome, so content starts at 120px,
- * RWD-04), so rows never scroll past beside it; the track inside keeps four
- * equal segments that fit at 320px. */
+ * (52 + 4 + 48 + 4 = 108px of phone chrome once scrolled, RWD-04), so rows
+ * never scroll past beside it; the track inside keeps four equal segments
+ * that fit at 320px. */
 .food-sections-bar {
   position: sticky;
   top: calc(var(--top-bar) + env(safe-area-inset-top));

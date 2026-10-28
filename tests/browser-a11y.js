@@ -257,15 +257,15 @@ async (page) => {
       await step("You're set");
       await scan("Setup 6", width);
       await p.getByRole("button", { name: "Open Today" }).click();
-      await go("today", "Today");
+      await go("today", /^[A-Z][a-z]{2}, [A-Z][a-z]{2} \d{1,2}$/);
       await scan("Today", width);
     });
 
     await attempt(`Schedule @${width}`, async () => {
-      await go("schedule", "Schedule");
+      await go("schedule", /^(January|February|March|April|May|June|July|August|September|October|November|December)$/);
       await scan("Schedule week", width);
       await p
-        .getByRole("button", { name: "+ Add", exact: true })
+        .getByRole("button", { name: /^(\+ )?Add$/ })
         .first()
         .click();
       const activity = p.getByRole("dialog", { name: "Add practice" });
@@ -418,7 +418,7 @@ async (page) => {
     );
 
     // Keyboard: skip link first, then the frame nav in order.
-    await go("today", "Today");
+    await go("today", /^[A-Z][a-z]{2}, [A-Z][a-z]{2} \d{1,2}$/);
     await p.locator("body").focus();
     await p.evaluate(() => document.activeElement?.blur());
     const order = [];
@@ -477,7 +477,7 @@ async (page) => {
     await p.keyboard.press("Shift+Tab");
     await p.keyboard.press("Shift+Tab");
     await p.keyboard.press("Enter");
-    await p.getByRole("heading", { name: "Schedule", level: 1 }).waitFor();
+    await p.getByRole("heading", { level: 1, name: /^(January|February|March|April|May|June|July|August|September|October|November|December)$/ }).waitFor();
     await p.waitForFunction(
       () =>
         document.activeElement?.tagName === "H1" &&
@@ -493,7 +493,7 @@ async (page) => {
 
     // Dialog: open with the keyboard, focus the first control (the Type chips,
     // not ×), Tab stays inside, Escape closes and returns focus to the trigger.
-    const add = p.getByRole("button", { name: "+ Add", exact: true }).first();
+    const add = p.getByRole("button", { name: /^(\+ )?Add$/ }).first();
     await add.focus();
     await p.keyboard.press("Enter");
     const dialog = p.getByRole("dialog", { name: "Add practice" });
@@ -578,7 +578,7 @@ async (page) => {
     );
 
     // Month grid: one tab stop; arrows move the selected day, Page Down the month.
-    await go("schedule", "Schedule");
+    await go("schedule", /^(January|February|March|April|May|June|July|August|September|October|November|December)$/);
     await p.getByRole("radio", { name: "Month" }).click();
     const days = p.getByRole("group", { name: /^Days in / });
     const stop = days.locator('button[tabindex="0"]');
@@ -644,8 +644,8 @@ async (page) => {
 
     // Reduced motion: no transform animation on the sheet.
     await p.emulateMedia({ reducedMotion: "reduce" });
-    await go("schedule", "Schedule");
-    await p.getByRole("button", { name: "+ Add", exact: true }).first().click();
+    await go("schedule", /^(January|February|March|April|May|June|July|August|September|October|November|December)$/);
+    await p.getByRole("button", { name: /^(\+ )?Add$/ }).first().click();
     const moving = await dialog.evaluate(
       (d) =>
         d

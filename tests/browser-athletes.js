@@ -17,7 +17,7 @@ async (page) => {
     await p.getByRole("button", { name: "Next", exact: true }).click();
     await p.getByRole("heading", { name: "Your school day" }).waitFor();
     await p.getByRole("button", { name: "Skip setup" }).click();
-    await p.getByRole("heading", { name: "Today", exact: true }).waitFor();
+    await p.getByRole("heading", { level: 1, name: /^[A-Z][a-z]{2}, [A-Z][a-z]{2} \d{1,2}$/ }).waitFor();
   };
   const deleteOpenAthlete = async (name) => {
     await p.goto(`${base}#/you/device`);
@@ -56,7 +56,7 @@ async (page) => {
     await banner().getByRole("button", { name: "Switch athlete" }).click();
     await p.getByRole("heading", { name: "Who's using Nourally?" }).waitFor();
     await p.getByRole("button", { name: /^Ana, Soccer/ }).click();
-    await p.getByRole("heading", { name: "Today", exact: true }).waitFor();
+    await p.getByRole("heading", { level: 1, name: /^[A-Z][a-z]{2}, [A-Z][a-z]{2} \d{1,2}$/ }).waitFor();
     await banner().getByText("Ana").waitFor();
     result.checks.push(
       "Two athletes: the top-bar “Switch athlete” opens the chooser on Welcome, and choosing Ana opens Today for Ana.",
@@ -70,7 +70,7 @@ async (page) => {
       .getByText("Deleted Ana's data from this device.", { exact: true })
       .waitFor();
     await p.getByRole("button", { name: /^Ben, / }).click();
-    await p.getByRole("heading", { name: "Today", exact: true }).waitFor();
+    await p.getByRole("heading", { level: 1, name: /^[A-Z][a-z]{2}, [A-Z][a-z]{2} \d{1,2}$/ }).waitFor();
 
     // Delete Ben, the last athlete: first-run Welcome, no leftover tile.
     await deleteOpenAthlete("Ben");

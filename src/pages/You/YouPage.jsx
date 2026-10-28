@@ -21,7 +21,6 @@ import { RemindersSheet } from "./RemindersSheet.jsx";
 import { AthleteNameSheet } from "./AthleteNameSheet.jsx";
 import { DevicePage } from "./DevicePage.jsx";
 import { AboutPage } from "./AboutPage.jsx";
-import { Avatar } from "../../components/ui/Avatar.jsx";
 
 const plural = (n, word) => `${n} ${word}${n === 1 ? "" : "s"}`;
 
@@ -65,8 +64,8 @@ export default function YouPage({ subroute, onNavigate }) {
         <header>
           <h1 className="page-title">You</h1>
         </header>
+        {/* UX-NAV-12: the frame's avatar is the only one; the name leads. */}
         <section className="you-athlete" aria-label="Athlete">
-          <Avatar name={name} className="you-avatar" />
           <div>
             <p className="you-athlete-name">{name}</p>
             {hasAthleteName(state.current) ? (

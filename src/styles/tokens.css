@@ -138,7 +138,7 @@
   --card-padding: var(--space-5); /* Retired (4.4) */
   --now-card-padding: var(--space-5); /* DS-14: 20px phones, 28px desktop */
   --now-card-min: 240px; /* 6.3 desktop layout */
-  --top-bar: 56px;
+  --top-bar: var(--top-bar-glass); /* phone top bar (UX-NAV-11); 64px from 768px */
   --dialog-header: 64px;
   --sticky-offset: 72px; /* below a sticky section control */
   --top-bar-glass: 52px; /* collapsed glass top bar (U3) */

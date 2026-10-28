@@ -37,7 +37,7 @@ async (page) => {
   };
   const today = async () => {
     await p.goto(`${base}#/today`);
-    await p.getByRole("heading", { name: "Today", exact: true }).waitFor();
+    await p.getByRole("heading", { level: 1, name: /^[A-Z][a-z]{2}, [A-Z][a-z]{2} \d{1,2}$/ }).waitFor();
   };
   try {
     await p.goto(base);
@@ -47,10 +47,10 @@ async (page) => {
     await p.getByRole("button", { name: "Next", exact: true }).click();
     await p.getByRole("heading", { name: "Your school day" }).waitFor();
     await p.getByRole("button", { name: "Skip setup" }).click();
-    await p.getByRole("heading", { name: "Today", exact: true }).waitFor();
+    await p.getByRole("heading", { level: 1, name: /^[A-Z][a-z]{2}, [A-Z][a-z]{2} \d{1,2}$/ }).waitFor();
     // A practice on Sunday, so Monday has a last week to describe.
     await p.goto(`${base}#/schedule`);
-    await p.getByRole("button", { name: "+ Add", exact: true }).first().click();
+    await p.getByRole("button", { name: /^(\+ )?Add$/ }).first().click();
     const add = p.getByRole("dialog", { name: "Add practice" });
     await add.getByRole("textbox", { name: "Name" }).fill("Practice");
     await add.getByLabel("Starts").fill("15:00");
@@ -171,7 +171,7 @@ async (page) => {
     await context.clock.setFixedTime(new Date(2026, 9, 12, 10, 0, 0));
     await today();
     await p.reload();
-    await p.getByRole("heading", { name: "Today", exact: true }).waitFor();
+    await p.getByRole("heading", { level: 1, name: /^[A-Z][a-z]{2}, [A-Z][a-z]{2} \d{1,2}$/ }).waitFor();
     const card = p.locator('aside[aria-label="Last week"]');
     await card
       .getByText("Last week: 1 practice. It had no food plan.", { exact: true })
@@ -198,7 +198,7 @@ async (page) => {
       .getByText("Hidden until next Monday.", { exact: true })
       .waitFor();
     await p.reload();
-    await p.getByRole("heading", { name: "Today", exact: true }).waitFor();
+    await p.getByRole("heading", { level: 1, name: /^[A-Z][a-z]{2}, [A-Z][a-z]{2} \d{1,2}$/ }).waitFor();
     await waterRow().waitFor();
     if (await card.count())
       throw new Error("The hidden last week card came back after reload");

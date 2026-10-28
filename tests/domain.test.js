@@ -130,6 +130,7 @@ import {
   formatDuration,
   formatPlanStatus,
   formatDateRange,
+  formatMonth,
   formatShortTime,
   formatTime,
   formatTimeRange,
@@ -1642,6 +1643,9 @@ test("P0-05: format helpers return human dates, times, durations, and counts", (
   assert.equal(formatTimeRange("11:00", "12:30"), nb("11:00 AM–12:30 PM"));
   assert.equal(formatDateRange("2026-10-12", "2026-10-18"), "Oct 12–18");
   assert.equal(formatDateRange("2026-09-29", "2026-10-05"), "Sep 29–Oct 5");
+  // U3-03 (UX-NAV-11): Schedule's large title is the month.
+  assert.equal(formatMonth("2026-10-13"), "October");
+  assert.equal(formatMonth("2026-09-30"), "September");
   assert.equal(formatTime("25:00"), "25:00");
   assert.equal(formatTime(""), "Time TBD");
   assert.equal(formatDuration(90), "1 hr 30 min");

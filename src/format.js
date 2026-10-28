@@ -12,6 +12,14 @@ export function formatDate(value, { year = false, weekday = true } = {}) {
   }).format(date);
 }
 
+// The month of a date key, "October": Schedule's large title (UX-NAV-11).
+export function formatMonth(value) {
+  if (!/^\d{4}-\d{2}-\d{2}/.test(value || "")) return value || "";
+  return new Intl.DateTimeFormat("en-US", { month: "long" }).format(
+    new Date(`${value.slice(0, 10)}T12:00:00`),
+  );
+}
+
 // A no-break space (U+00A0) joins a time to its AM/PM, so "5:15 PM" never
 // wraps between the two (UX-COPY-04).
 export const NBSP = "\u00a0";

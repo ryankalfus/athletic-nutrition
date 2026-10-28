@@ -212,7 +212,7 @@ async (page) => {
       .waitFor();
     await fits(p, "Step 6");
     await p.getByRole("button", { name: "Open Today" }).click();
-    await p.getByRole("heading", { name: "Today", exact: true }).waitFor();
+    await p.getByRole("heading", { level: 1, name: /^[A-Z][a-z]{2}, [A-Z][a-z]{2} \d{1,2}$/ }).waitFor();
     if (!p.url().endsWith("#/today"))
       throw new Error(`Open Today went to ${p.url()}`);
     await p.getByText("Soccer practice at 4:00 PM").first().waitFor();
@@ -225,7 +225,7 @@ async (page) => {
     await p
       .getByRole("button", { name: "Maya, Soccer, last used today" })
       .click();
-    await p.getByRole("heading", { name: "Today", exact: true }).waitFor();
+    await p.getByRole("heading", { level: 1, name: /^[A-Z][a-z]{2}, [A-Z][a-z]{2} \d{1,2}$/ }).waitFor();
     if (!p.url().endsWith("#/today"))
       throw new Error(`Choosing an athlete opened ${p.url()}`);
     await p.clock.setFixedTime(new Date(2026, 8, 29, 9, 5, 0));
@@ -239,7 +239,7 @@ async (page) => {
     await next(p);
     await step(p, "Your school day").waitFor();
     await p.getByRole("button", { name: "Skip setup" }).click();
-    await p.getByRole("heading", { name: "Today", exact: true }).waitFor();
+    await p.getByRole("heading", { level: 1, name: /^[A-Z][a-z]{2}, [A-Z][a-z]{2} \d{1,2}$/ }).waitFor();
     await p.goto(`${base}#/welcome`);
     const tiles = p.locator(".welcome-tile-open");
     await tiles.nth(1).waitFor();
@@ -266,7 +266,7 @@ async (page) => {
     await next(p);
     await step(p, "Food at school").waitFor();
     await p.getByRole("button", { name: "Skip setup" }).click();
-    await p.getByRole("heading", { name: "Today", exact: true }).waitFor();
+    await p.getByRole("heading", { level: 1, name: /^[A-Z][a-z]{2}, [A-Z][a-z]{2} \d{1,2}$/ }).waitFor();
     await p.getByText("Soccer practice at 4:00 PM").first().waitFor();
     result.checks.push(
       "Completing only steps 1 and 3 gives a Today hero that names the practice.",

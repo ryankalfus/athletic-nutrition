@@ -11,7 +11,11 @@ export function AboutPage({ onNavigate, standalone = false }) {
       navigation={!standalone}
       footer={!standalone}
       title="About"
-      back={{ label: "Back to You", onClick: () => onNavigate("you") }}
+      back={{
+        label: "Back to You",
+        text: "You",
+        onClick: () => onNavigate("you"),
+      }}
     >
       <article className="you-page about-page">
         <header>

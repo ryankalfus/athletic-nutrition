@@ -813,8 +813,11 @@
 /* ---------- Dialogs and sheets (DS-15, CMP-04, RWD-11) ---------- */
 
 /* Phones get a bottom sheet (RWD-11): full width, up to 92% tall, drag handle. */
+/* A modal sheet renders in the top layer anyway; the explicit layer keeps
+ * stacking tools (axe target-size) from ranking the fixed top bar above it. */
 .app-dialog {
   --dialog-pad: var(--space-4);
+  z-index: var(--z-dialog);
   width: 100%;
   max-width: 100%;
   max-height: 92dvh;

@@ -84,13 +84,13 @@ async (page) => {
       await p.getByRole("combobox", { name: /^Sport/ }).fill("Soccer");
       await p.getByRole("button", { name: "Next", exact: true }).click();
       await p.getByRole("button", { name: "Skip setup" }).click();
-      await p.getByRole("heading", { name: "Today", exact: true }).waitFor();
+      await p.getByRole("heading", { level: 1, name: /^[A-Z][a-z]{2}, [A-Z][a-z]{2} \d{1,2}$/ }).waitFor();
 
       // Schedule › Add practice › More options, then a practice at 3:00 PM.
       await p.goto(`${base}#/schedule`);
-      await p.getByRole("heading", { name: "Schedule", level: 1 }).waitFor();
+      await p.getByRole("heading", { level: 1, name: /^(January|February|March|April|May|June|July|August|September|October|November|December)$/ }).waitFor();
       await p
-        .getByRole("button", { name: "+ Add", exact: true })
+        .getByRole("button", { name: /^(\+ )?Add$/ })
         .first()
         .click();
       const add = p.getByRole("dialog", { name: "Add practice" });
@@ -135,7 +135,7 @@ async (page) => {
 
       // Today: plan the snack, pack everything, then Show list / Hide list.
       await p.goto(`${base}#/today`);
-      await p.getByRole("heading", { name: "Today", exact: true }).waitFor();
+      await p.getByRole("heading", { level: 1, name: /^[A-Z][a-z]{2}, [A-Z][a-z]{2} \d{1,2}$/ }).waitFor();
       await p.locator(".today-primary").click();
       const pack = p.getByRole("region", { name: "Pack & prep" });
       await pack.getByRole("checkbox").first().waitFor();

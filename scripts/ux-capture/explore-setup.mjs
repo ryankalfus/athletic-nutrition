@@ -30,7 +30,7 @@ await next();
 await p.getByRole("heading", { name: "You're set", level: 1 }).waitFor();
 console.log((await p.locator("main").innerText()).slice(0, 800));
 await p.getByRole("button", { name: "Open Today" }).click();
-await p.getByRole("heading", { name: "Today", exact: true }).waitFor();
+await p.getByRole("heading", { level: 1, name: /^[A-Z][a-z]{2}, [A-Z][a-z]{2} \d{1,2}$/ }).waitFor();
 await p.waitForTimeout(500);
 console.log("=== TODAY\n", (await p.locator("body").innerText()).slice(0, 3000));
 writeFileSync(`${HERE}/seeds/after-setup.json`, JSON.stringify(await dump(p), null, 1));

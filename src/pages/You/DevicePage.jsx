@@ -73,7 +73,12 @@ export function DevicePage({ onNavigate }) {
     <Shell
       onNavigate={onNavigate}
       title="This device"
-      back={{ label: "Back to You", onClick: () => onNavigate("you") }}
+      back={{
+        label: "Back to You",
+        text: "You",
+        onClick: () => onNavigate("you"),
+      }}
+      footer
     >
       <div className="you-page device-page">
         <header>

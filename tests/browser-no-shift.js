@@ -106,12 +106,12 @@ async (page) => {
       await p.getByRole("button", { name: "Next", exact: true }).click();
       await p.getByRole("heading", { name: "Your school day" }).waitFor();
       await p.getByRole("button", { name: "Skip setup" }).click();
-      await p.getByRole("heading", { name: "Today", exact: true }).waitFor();
+      await p.getByRole("heading", { level: 1, name: /^[A-Z][a-z]{2}, [A-Z][a-z]{2} \d{1,2}$/ }).waitFor();
 
       // A one-day practice, so Schedule has a row with a menu.
-      await go("schedule", "Schedule");
+      await go("schedule", /^(January|February|March|April|May|June|July|August|September|October|November|December)$/);
       await p
-        .getByRole("button", { name: "+ Add", exact: true })
+        .getByRole("button", { name: /^(\+ )?Add$/ })
         .first()
         .click();
       const add = dialog("Add practice");
@@ -124,7 +124,7 @@ async (page) => {
       await add.waitFor({ state: "hidden" });
 
       // Today: Why this?, Add water and the day rail's activity sheet.
-      await go("today", "Today");
+      await go("today", /^[A-Z][a-z]{2}, [A-Z][a-z]{2} \d{1,2}$/);
       await openDialog(
         `${width} today: Why this?`,
         "Why this?",
@@ -145,8 +145,8 @@ async (page) => {
 
       // The rail / top bar athlete button on every tab and Food section.
       for (const [hash, heading] of [
-        ["today", "Today"],
-        ["schedule", "Schedule"],
+        ["today", /^[A-Z][a-z]{2}, [A-Z][a-z]{2} \d{1,2}$/],
+        ["schedule", /^(January|February|March|April|May|June|July|August|September|October|November|December)$/],
         ["food/log", "Food"],
         ["food/ideas", "Food"],
         ["food/home", "Food"],
@@ -170,15 +170,15 @@ async (page) => {
         p.locator("main").getByRole("button", { name: "Add another athlete" }),
       );
 
-      await go("schedule", "Schedule");
+      await go("schedule", /^(January|February|March|April|May|June|July|August|September|October|November|December)$/);
       await openDialog(
         `${width} schedule: Add practice`,
         "Add practice",
-        p.getByRole("button", { name: "+ Add", exact: true }).first(),
+        p.getByRole("button", { name: /^(\+ )?Add$/ }).first(),
       );
       // The nested confirm opens over a dirty sheet: neither moves the page.
       await p
-        .getByRole("button", { name: "+ Add", exact: true })
+        .getByRole("button", { name: /^(\+ )?Add$/ })
         .first()
         .click();
       await dialog("Add practice")
@@ -289,7 +289,7 @@ async (page) => {
         p.getByRole("button", { name: "Delete Zoe's data" }),
       );
 
-      await go("today", "Today");
+      await go("today", /^[A-Z][a-z]{2}, [A-Z][a-z]{2} \d{1,2}$/);
       await same(
         `${width} today: toast`,
         () =>

@@ -35,11 +35,11 @@
   padding-left: 0;
 }
 
-/* Avatar and name on the first row; the action lines up under the name on
- * phones and sits at the end of the row from 480px. */
+/* The name on the first row (no second avatar, UX-NAV-12); the action lines
+ * up under it on phones and sits at the end of the row from 480px. */
 .you-athlete {
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr);
   align-items: center;
   gap: var(--space-3) var(--space-4);
   padding: var(--card-padding);
@@ -54,17 +54,12 @@
 }
 
 .you-athlete > .you-secondary {
-  grid-column: 2;
   justify-self: start;
 }
 
 @media (min-width: 480px) {
   .you-athlete {
-    grid-template-columns: auto minmax(0, 1fr) auto;
-  }
-
-  .you-athlete > .you-secondary {
-    grid-column: 3;
+    grid-template-columns: minmax(0, 1fr) auto;
   }
 }
 

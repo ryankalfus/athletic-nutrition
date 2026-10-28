@@ -77,11 +77,11 @@ async (page) => {
     await p.getByRole("button", { name: "Next", exact: true }).click();
     await p.getByRole("heading", { name: "Your school day" }).waitFor();
     await p.getByRole("button", { name: "Skip setup" }).click();
-    await p.getByRole("heading", { name: "Today", exact: true }).waitFor();
+    await p.getByRole("heading", { level: 1, name: /^[A-Z][a-z]{2}, [A-Z][a-z]{2} \d{1,2}$/ }).waitFor();
 
     // A11Y-10: one control named "Today" (the nav); the calendar's is "Go to today".
     await p.goto(`${base}#/schedule`);
-    await p.getByRole("heading", { name: "Schedule", level: 1 }).waitFor();
+    await p.getByRole("heading", { level: 1, name: /^(January|February|March|April|May|June|July|August|September|October|November|December)$/ }).waitFor();
     for (const view of ["Week", "Month"]) {
       await p.getByRole("radio", { name: view }).click();
       await p.getByRole("button", { name: "Go to today", exact: true }).click();
@@ -112,7 +112,7 @@ async (page) => {
       if (!state.title || state.ring)
         throw new Error(`${where} opened by mouse: ${JSON.stringify(state)}`);
     };
-    await p.getByRole("button", { name: "+ Add", exact: true }).first().click();
+    await p.getByRole("button", { name: /^(\+ )?Add$/ }).first().click();
     await p.getByRole("dialog", { name: "Add practice" }).waitFor();
     await titleFocus("Add practice");
     await p.keyboard.press("Escape");
@@ -144,7 +144,7 @@ async (page) => {
     await p.goto(`${base}#/schedule`);
 
     // A11Y-09: empty date and start time are app errors on the field.
-    await p.getByRole("button", { name: "+ Add", exact: true }).first().click();
+    await p.getByRole("button", { name: /^(\+ )?Add$/ }).first().click();
     const add = p.getByRole("dialog", { name: "Add practice" });
     const submit = add.getByRole("button", {
       name: "Add practice",
@@ -268,7 +268,7 @@ async (page) => {
       .getByRole("button", { name: "Delete", exact: true })
       .click();
     await toast("Practice deleted.");
-    await p.getByRole("button", { name: "+ Add", exact: true }).first().click();
+    await p.getByRole("button", { name: /^(\+ )?Add$/ }).first().click();
     await add.getByRole("button", { name: "Game", exact: true }).click();
     const addGame = p.getByRole("dialog", { name: "Add game" });
     await addGame.getByLabel("Name", { exact: true }).fill("Weekly game");

@@ -24,7 +24,7 @@ async (page) => {
     await p.getByRole("button", { name: "Next", exact: true }).click();
     await p.getByRole("heading", { name: "Your school day" }).waitFor();
     await p.getByRole("button", { name: "Skip setup" }).click();
-    await p.getByRole("heading", { name: "Today", exact: true }).waitFor();
+    await p.getByRole("heading", { level: 1, name: /^[A-Z][a-z]{2}, [A-Z][a-z]{2} \d{1,2}$/ }).waitFor();
     await p.goto(`${base}#/you/device`);
     await p.getByRole("heading", { name: "This device", level: 1 }).waitFor();
     await p
@@ -42,7 +42,7 @@ async (page) => {
     await p.getByRole("button", { name: /^Open Riley/ }).click();
     await athlete().getByText("Riley").waitFor();
     await p.goto(`${base}#/today`);
-    await p.getByRole("heading", { name: "Today", exact: true }).waitFor();
+    await p.getByRole("heading", { level: 1, name: /^[A-Z][a-z]{2}, [A-Z][a-z]{2} \d{1,2}$/ }).waitFor();
     if (!(await athlete().innerText()).includes("Riley"))
       throw new Error("Athlete switch did not survive navigation");
     await p.goto(`${base}#/you`);
@@ -58,7 +58,7 @@ async (page) => {
     );
 
     await p.getByRole("button", { name: /^Riley(?!.* options$)/ }).click();
-    await p.getByRole("heading", { name: "Today", exact: true }).waitFor();
+    await p.getByRole("heading", { level: 1, name: /^[A-Z][a-z]{2}, [A-Z][a-z]{2} \d{1,2}$/ }).waitFor();
     if (!p.url().endsWith("#/today"))
       throw new Error(`Choosing an athlete did not open Today: ${p.url()}`);
     await p.goto(`${base}#/you/device`);
