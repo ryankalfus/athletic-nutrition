@@ -6,7 +6,8 @@
 // footer buttons, round weekday circles, a centered tablet tab group, one rail
 // edge, a Now card above the tab bar, a Day rail whose times fit, and the
 // Schedule week switcher, day headers, top-bar add and month headers; U4-01
-// button kinds: no outlined buttons, data-kind, desktop hug width.
+// button kinds: no outlined buttons, data-kind, desktop hug width; U4-02 the
+// Row and Section fixture (?ui=rows).
 // The clock is Tuesday 2026-09-29 10:00 with a 4:00 PM practice today.
 async (page) => {
   const base = globalThis.BASE_URL ?? "http://127.0.0.1:5173/";
@@ -559,6 +560,91 @@ async (page) => {
     }
     result.checks.push(
       "U4-01: no button in main or a sheet is outlined on any of the 15 routes at 390 and 1440 px; Button renders data-kind (Save is primary); at 1440 px no primary outside a dialog spans its column (UX-CMP-01, UX-RWD-10).",
+    );
+
+    // ---------- U4-02: the Row and Section fixture (?ui=rows, dev only) ----------
+    // UX-CMP-02/03/23: 56px min rows with an inset hairline, no background,
+    // border or shadow, a 44px trailing target, 17/22 600 titles clamped to
+    // two lines, 20/26 650 section titles, and 44px food art tiles (radius
+    // 10) with the letter tile for unknown foods.
+    await open(390);
+    await p.goto(`${base}?ui=rows`);
+    await p.locator(".row").first().waitFor();
+    const rows = await p.evaluate(() =>
+      [...document.querySelectorAll(".row")].map((row) => {
+        const style = getComputedStyle(row);
+        const after = getComputedStyle(row, "::after");
+        const art = row.querySelector(".row-art");
+        const trailing = row.querySelector(".row-trailing, .row-actions");
+        const title = row.querySelector(".row-title");
+        const titleStyle = getComputedStyle(title);
+        const size = (el) => {
+          const b = el.getBoundingClientRect();
+          return [Math.round(b.width), Math.round(b.height)];
+        };
+        return {
+          height: Math.round(row.getBoundingClientRect().height),
+          background: style.backgroundColor,
+          border: style.borderTopWidth,
+          shadow: style.boxShadow,
+          hairline: after.content !== "none" && after.borderTopWidth === "1px",
+          last: !row.nextElementSibling,
+          art: art && {
+            size: size(art),
+            radius: getComputedStyle(art).borderRadius,
+            img: !!art.querySelector("img"),
+            letter: art.textContent,
+          },
+          trailing: trailing && size(trailing),
+          title: `${titleStyle.fontSize}/${titleStyle.lineHeight} ${titleStyle.fontWeight}`,
+          titleLines: Math.round(title.getBoundingClientRect().height / 22),
+        };
+      }),
+    );
+    if (rows.length < 9) fail(`the rows fixture renders ${rows.length} rows`);
+    rows.forEach((row, i) => {
+      if (row.height < 56) fail(`row ${i} is ${row.height}px tall`);
+      if (row.background !== "rgba(0, 0, 0, 0)")
+        fail(`row ${i} has a background`);
+      if (row.border !== "0px" || row.shadow !== "none")
+        fail(`row ${i} has a border or shadow`);
+      if (row.hairline === row.last)
+        fail(`row ${i} hairline ${row.hairline} (last: ${row.last})`);
+      if (!row.trailing || row.trailing[0] < 44 || row.trailing[1] < 44)
+        fail(`row ${i} trailing target ${row.trailing}`);
+      if (row.title !== "17px/22px 600") fail(`row ${i} title ${row.title}`);
+      if (row.titleLines > 2)
+        fail(`row ${i} title runs ${row.titleLines} lines`);
+    });
+    const arts = rows.filter((row) => row.art).map((row) => row.art);
+    if (arts.length !== 3) fail(`${arts.length} food art tiles, want 3`);
+    for (const art of arts)
+      if (art.size[0] !== 44 || art.size[1] !== 44 || art.radius !== "10px")
+        fail(`art tile ${art.size} radius ${art.radius}`);
+    if (!(
+      arts[0]?.img &&
+      arts[1]?.img &&
+      !arts[2]?.img &&
+      arts[2]?.letter === "M"
+    ))
+      fail(
+        "food rows: want art for Bananas and Hummus + pita, the letter M for the unknown food",
+      );
+    const sectionTitles = await p
+      .locator(".section-head h2")
+      .evaluateAll((all) =>
+        all.map((h) => {
+          const s = getComputedStyle(h);
+          return `${s.fontSize}/${s.lineHeight} ${s.fontWeight}`;
+        }),
+      );
+    if (sectionTitles.some((t) => t !== "20px/26px 650"))
+      fail(`section titles ${sectionTitles.join(", ")}`);
+    if ((await p.locator(".section-head .text-button").count()) !== 1)
+      fail("one section has a trailing text action");
+    await context.close();
+    result.checks.push(
+      "U4-02: the ?ui=rows fixture's nine rows are 56 px or taller with an inset hairline between rows, no background, border or shadow, a 44 px trailing target and 17/22 600 titles clamped to two lines; section titles are 20/26 650 with one text action; food rows show a 44 px art tile (radius 10) for Bananas and Hummus + pita and the letter M for an unknown food (UX-CMP-02, UX-CMP-03, UX-CMP-23).",
     );
 
     // ---------- 768: tablet tabs centered on the bar ----------

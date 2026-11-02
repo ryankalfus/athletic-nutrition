@@ -1141,3 +1141,194 @@
 .app-toast .toast-dismiss {
   color: var(--color-on-dark);
 }
+
+/* ---------- Rows and sections (UX-CMP-02, UX-CMP-03, UX-CMP-23) ---------- */
+
+/* Row: the flat replacement for cards. 56px min, an inset hairline between
+ * rows, no background, border or shadow; pressed is --color-hover bleeding to
+ * the gutters (a spread shadow, so no negative margins). */
+.row-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: var(--row-min);
+}
+
+.row::after {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: calc(48px + var(--space-3));
+  border-top: var(--border);
+  content: "";
+}
+
+.row-no-leading::after {
+  left: 0;
+}
+
+.row:last-child::after {
+  content: none;
+}
+
+.row-main {
+  display: flex;
+  flex: 1 1 auto;
+  align-items: center;
+  gap: var(--space-3);
+  min-width: 0;
+  min-height: var(--row-min);
+  padding: var(--space-2) 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+}
+
+.row-press {
+  cursor: pointer;
+}
+
+@media (hover: hover) {
+  .row-press:hover:not(:disabled) {
+    background: var(--color-hover);
+    box-shadow: 0 0 0 var(--gutter) var(--color-hover);
+  }
+}
+
+.row-press:active:not(:disabled) {
+  background: var(--color-hover);
+  box-shadow: 0 0 0 var(--gutter) var(--color-hover);
+}
+
+/* Leading column, 48px: a time in Barlow, a glyph or a check. A time with
+ * its AM/PM never wraps; the column grows for it. */
+.row-leading {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  min-width: 48px;
+}
+
+.row-time {
+  font-size: var(--text-time);
+  line-height: var(--leading-h3);
+  white-space: nowrap;
+}
+
+.row-glyph {
+  display: inline-flex;
+  color: var(--color-primary);
+}
+
+/* Food art tile (UX-CMP-23): 44px rounded square, radius 10; the letter
+ * tile is the food's first letter in ink on the muted surface. */
+.row-art {
+  display: inline-grid;
+  place-items: center;
+  width: var(--target);
+  height: var(--target);
+  overflow: hidden;
+  border-radius: var(--radius-md);
+  background: var(--color-surface-muted);
+}
+
+.row-art img {
+  display: block;
+  width: 32px;
+  height: 32px;
+}
+
+.row-art-letter {
+  color: var(--color-ink);
+  font-family: var(--font-numeral);
+  font-size: var(--text-h3);
+  font-weight: 600;
+}
+
+.row-text {
+  display: grid;
+  flex: 1 1 auto;
+  gap: 2px;
+  min-width: 0;
+}
+
+.row-title {
+  display: -webkit-box;
+  overflow: hidden;
+  font-size: var(--text-h3);
+  line-height: var(--leading-h3);
+  font-weight: 600;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.row-meta {
+  color: var(--color-ink-muted);
+  font-size: var(--text-small);
+  line-height: var(--leading-small);
+}
+
+/* One trailing element: value text, status word, chevron, or a 44px icon
+ * button or switch passed in. */
+.row-trailing {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: flex-end;
+  min-width: var(--target);
+  min-height: var(--target);
+  color: var(--color-ink-muted);
+  font-size: var(--text-small);
+  line-height: var(--leading-small);
+  text-align: right;
+}
+
+.row-status {
+  color: var(--color-ink);
+  font-weight: 600;
+}
+
+.row-chevron {
+  color: var(--color-ink-subtle);
+}
+
+.row-actions {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+}
+
+/* Section: a 20/26 650 title with one optional text action, then content;
+ * never a box. Sections sit --rhythm-section apart. */
+.section + .section {
+  margin-top: var(--rhythm-section);
+}
+
+.section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-bottom: var(--space-3);
+}
+
+.section-head h2 {
+  margin: 0;
+  font-size: var(--text-h2);
+  line-height: var(--leading-h2);
+  font-weight: 650;
+}
+
+.section-head .text-button {
+  flex: 0 0 auto;
+}

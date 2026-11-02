@@ -1,4 +1,11 @@
-import { Component, StrictMode, useEffect, useState } from "react";
+import {
+  Component,
+  StrictMode,
+  Suspense,
+  lazy,
+  useEffect,
+  useState,
+} from "react";
 import { createRoot } from "react-dom/client";
 import "@fontsource-variable/dm-sans/wght.css";
 import "@fontsource/barlow-semi-condensed/600.css";
@@ -255,8 +262,22 @@ class ErrorBoundary extends Component {
     );
   }
 }
+// U4-02: `?ui=rows` (dev only) renders every Row variant for the visual
+// check without touching stored data.
+const RowsFixture =
+  import.meta.env.DEV &&
+  new URLSearchParams(window.location.search).get("ui") === "rows"
+    ? lazy(() => import("./components/ui/RowsFixture.jsx"))
+    : null;
+
 function StoreGate() {
   const state = useStore();
+  if (RowsFixture)
+    return (
+      <Suspense fallback={null}>
+        <RowsFixture />
+      </Suspense>
+    );
   if (state.loading)
     return (
       <main className="shell">

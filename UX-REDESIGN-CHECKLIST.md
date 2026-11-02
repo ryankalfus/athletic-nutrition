@@ -38,7 +38,7 @@ Source of truth: [UX-REDESIGN-PLAN.md](UX-REDESIGN-PLAN.md). Read the item there
 ### U4 — Shared components
 
 - [x] **U4-01** — Buttons. Closes: UX-CMP-01, UX-RWD-10. Done 2026.11.02: `Button` renders `data-kind` = primary | hero | secondary | text | destructive and components.css keys every kind on both the class and `data-kind`; the default button is the secondary look (`--color-surface-muted` fill, radius 14, no border), chips and the selected segment lost their 1 px borders, the page destructive is an error-colored text button (error fill only inside a sheet), the hero primary is lime at 56 px, and from 1024 px primaries in a page hug their label (min 160 px, `justify-self: start`). `browser-visual.js` visits all 15 routes and the Sport & season sheet at 390 and 1440 px: no outlined button (R13), Save carries `data-kind="primary"`, no primary outside a dialog spans its column; it failed on the old code. `browser-ux-rules.js` R13 is 0 on every route (was 73 at 390). `npm run check` (209 unit tests) and 26/26 browser scripts pass.
-- [ ] **U4-02** — Row and Section. Closes: UX-CMP-02, UX-CMP-03, UX-CMP-23.
+- [x] **U4-02** — Row and Section. Closes: UX-CMP-02, UX-CMP-03, UX-CMP-23. Done 2026.11.02: `Row.jsx` (leading time, glyph or food art; title; meta; one trailing value, status, chevron, icon button or switch; the whole row a button with `onClick`; secondary actions beside it) and `Section.jsx` (20/26 650 title with one text action, no box) in `src/components/ui/`, styled in components.css; 37 Fluent Emoji flat SVGs with their MIT license in `src/assets/food-art/` and `src/domain/foodArt.js` maps every ingredient, grocery item and idea (first ingredient) to one; `tests/foodArt.test.js` proves each file exists, only mapped files are bundled and unknown foods get a letter tile. `?ui=rows` (dev only) renders nine variants and `browser-visual.js` measures them at 390 px: 56 px min, inset hairline, no background, border or shadow, 44 px trailing target, 17/22 600 titles clamped to two lines, 44 px art tiles (radius 10), the letter M for an unknown food. Not yet used by any screen (U5–U8). `npm run check` (212 unit tests) and 26/26 browser scripts pass.
 - [ ] **U4-03** — Fields, time and date. Closes: UX-CMP-04, UX-CMP-09, UX-COPY-05.
 - [ ] **U4-04** — Selection controls. Closes: UX-CMP-05, UX-CMP-06, UX-CMP-07, UX-CMP-08, UX-CMP-21, UX-CMP-22.
 - [ ] **U4-05** — Sheets, alerts and menus. Closes: UX-CMP-10, UX-CMP-11, UX-CMP-12, UX-CMP-18, UX-CMP-20, UX-RWD-09. Also closes (REDESIGN-CHECKLIST): STATE-15.
@@ -135,8 +135,8 @@ One checkbox per ID. The note names the build item that closes it.
 ### Shared components (`UX-CMP`)
 
 - [x] **UX-CMP-01** — Four button kinds, one primary per screen. (closes in U4-01) Done 2026.11.02: the five kinds in `Button.jsx` and components.css; no outlined button on any route or sheet (`browser-visual.js`). One primary per screen is still open on Ideas (six "Plan this"), which U7-02's IdeaRow removes (R5).
-- [ ] **UX-CMP-02** — One row component. (closes in U4-02)
-- [ ] **UX-CMP-03** — Section. (closes in U4-02)
+- [x] **UX-CMP-02** — One row component. (closes in U4-02) Done 2026.11.02: `Row.jsx`; measured on `?ui=rows` by `browser-visual.js`. Screens adopt it in U5–U8.
+- [x] **UX-CMP-03** — Section. (closes in U4-02) Done 2026.11.02: `Section.jsx`, 20/26 650 title with one trailing text button, never a box. Screens adopt it in U5–U8.
 - [ ] **UX-CMP-04** — Fields. (closes in U4-03)
 - [ ] **UX-CMP-05** — Checklist rows. (closes in U4-04)
 - [ ] **UX-CMP-06** — Segmented control. (closes in U4-04)
@@ -156,7 +156,7 @@ One checkbox per ID. The note names the build item that closes it.
 - [ ] **UX-CMP-20** — Changed elsewhere. (closes in U4-05)
 - [ ] **UX-CMP-21** — Quick-amount bar. (closes in U4-04)
 - [ ] **UX-CMP-22** — Tiles. (closes in U4-04)
-- [ ] **UX-CMP-23** — Food art in food rows (owner decision A). (closes in U4-02)
+- [x] **UX-CMP-23** — Food art in food rows (owner decision A). (closes in U4-02) Done 2026.11.02: Fluent Emoji flat SVGs (MIT, license bundled) in `src/assets/food-art/`, mapped in `src/domain/foodArt.js` with a unit test; the Row's 44 px tile (radius 10) is decorative (`alt=""`, `aria-hidden`) and unknown foods get a letter tile.
 
 ### Copy rules (`UX-COPY`)
 
