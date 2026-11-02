@@ -1,11 +1,15 @@
 import { forwardRef } from "react";
 
-// Buttons (CMP-02, DS-11). The look lives in components.css; these components
-// pick the class, default type="button", and carry the busy state so every
-// button shows the spinner and verb label the same way.
+// Buttons (UX-CMP-01, 5.4). The look lives in components.css and keys on
+// data-kind (the class names stay for callers that write a plain <button>);
+// these components default type="button" and carry the busy state so every
+// button shows the spinner and verb label the same way. Kinds: primary (teal),
+// hero (lime, the one action on a hero), secondary (muted fill), text and
+// destructive.
 const variants = {
   secondary: "",
   primary: "primary",
+  hero: "hero-primary",
   text: "text-button",
   destructive: "danger-button",
 };
@@ -32,6 +36,7 @@ export const Button = forwardRef(function Button(
       ref={ref}
       type={type}
       className={classes || undefined}
+      data-kind={variant}
       disabled={disabled || busy}
       aria-busy={busy || undefined}
       {...props}

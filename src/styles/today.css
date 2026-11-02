@@ -173,10 +173,10 @@
   min-height: var(--control-height);
 }
 
-/* Secondary buttons on the pitch surface. */
+/* Secondary buttons on the pitch surface: a white fill at 12 %, no border. */
 .now-card :where(button):not(.today-primary, .today-text) {
-  border-color: var(--color-line-dark);
-  background: transparent;
+  border-color: transparent;
+  background: var(--color-on-dark-fill);
   color: var(--color-on-dark);
 }
 
@@ -191,28 +191,7 @@
   color: var(--color-on-dark-muted);
 }
 
-/* Go: the only lime button (DS-11). */
-.today-primary {
-  width: 100%;
-  min-height: 52px;
-  background: var(--color-lime);
-  color: var(--color-ink);
-}
-
-@media (hover: hover) {
-  .today-primary:hover:not(:disabled) {
-    background: var(--color-lime-hover);
-  }
-}
-
-.today-primary:active:not(:disabled) {
-  background: var(--color-lime-hover);
-}
-
-.today-primary:disabled {
-  background: var(--color-on-dark-disabled);
-  color: var(--color-on-dark-muted);
-}
+/* Go is the hero primary (lime, 56px): see components.css. */
 
 .today-text {
   justify-self: start;

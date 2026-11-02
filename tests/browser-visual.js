@@ -5,7 +5,8 @@
 // title edge and row across tabs, 52 px inputs (U2-01), 64 px sheet headers, equal
 // footer buttons, round weekday circles, a centered tablet tab group, one rail
 // edge, a Now card above the tab bar, a Day rail whose times fit, and the
-// Schedule week switcher, day headers, top-bar add and month headers.
+// Schedule week switcher, day headers, top-bar add and month headers; U4-01
+// button kinds: no outlined buttons, data-kind, desktop hug width.
 // The clock is Tuesday 2026-09-29 10:00 with a 4:00 PM practice today.
 async (page) => {
   const base = globalThis.BASE_URL ?? "http://127.0.0.1:5173/";
@@ -53,7 +54,12 @@ async (page) => {
     await p.getByRole("button", { name: "Next", exact: true }).click();
     await p.getByRole("heading", { name: "Food at school" }).waitFor();
     await p.getByRole("button", { name: "Skip setup" }).click();
-    await p.getByRole("heading", { level: 1, name: /^[A-Z][a-z]{2}, [A-Z][a-z]{2} \d{1,2}$/ }).waitFor();
+    await p
+      .getByRole("heading", {
+        level: 1,
+        name: /^[A-Z][a-z]{2}, [A-Z][a-z]{2} \d{1,2}$/,
+      })
+      .waitFor();
   };
   // Every segment of every visible segmented control shares one row and
   // none of them overflows its label.
@@ -232,7 +238,12 @@ async (page) => {
 
     // Schedule at 390: + Add in the top bar, one-line week label, day heads.
     await p.goto(`${base}#/schedule`);
-    await p.getByRole("heading", { level: 1, name: /^(January|February|March|April|May|June|July|August|September|October|November|December)$/ }).waitFor();
+    await p
+      .getByRole("heading", {
+        level: 1,
+        name: /^(January|February|March|April|May|June|July|August|September|October|November|December)$/,
+      })
+      .waitFor();
     const add = p
       .getByRole("banner")
       .getByRole("button", { name: /^(\+ )?Add$/ });
@@ -254,7 +265,10 @@ async (page) => {
     );
     if (heads)
       fail(`${heads} day headings drop their add button to a second row`);
-    await p.getByRole("button", { name: /^(\+ )?Add$/ }).first().click();
+    await p
+      .getByRole("button", { name: /^(\+ )?Add$/ })
+      .first()
+      .click();
     const activity = p.getByRole("dialog", { name: "Add practice" });
     await activity.waitFor();
     await p.waitForTimeout(250);
@@ -447,6 +461,105 @@ async (page) => {
       "320 Food: grocery checks and menus sit on the name line with one-line reason chips; the section bar is a full-width strip whose four links fit at 44 px or more; At home rows stay on one line with a segmented filter; a low row menu opens above the tab bar; a disabled day arrow is dimmed.",
     );
     await context.close();
+
+    // ---------- U4-01: button kinds, no outlined buttons, desktop hug ----------
+    // UX-CMP-01: no <button> in main or a dialog is outlined (a 1 px border
+    // on a clear or white fill, R13); Button renders data-kind; UX-RWD-10:
+    // at 1440 no primary outside a dialog spans its column.
+    const outlinedButtons = () =>
+      p.evaluate(() => {
+        const clear = (c) =>
+          !c || c === "transparent" || /rgba\(.*,\s*0\)$/.test(c);
+        return [
+          ...document.querySelectorAll("main button, [role=dialog] button"),
+        ]
+          .filter((el) => el.getBoundingClientRect().width)
+          .filter((el) => {
+            const s = getComputedStyle(el);
+            const outlined = ["Top", "Right", "Bottom", "Left"].every(
+              (side) =>
+                Math.round(parseFloat(s[`border${side}Width`])) === 1 &&
+                !clear(s[`border${side}Color`]),
+            );
+            return (
+              outlined &&
+              (clear(s.backgroundColor) ||
+                s.backgroundColor === "rgb(255, 255, 255)")
+            );
+          })
+          .map((el) => el.getAttribute("aria-label") || el.innerText.trim());
+      });
+    const fullWidthPrimaries = () =>
+      p.evaluate(() => {
+        const main = document.querySelector("main");
+        const gutter = parseFloat(
+          getComputedStyle(document.documentElement).getPropertyValue(
+            "--gutter",
+          ),
+        );
+        const column = main.getBoundingClientRect().width - 2 * gutter;
+        return [
+          ...main.querySelectorAll(
+            ".primary, .today-primary, [data-kind=primary], [data-kind=hero]",
+          ),
+        ]
+          .filter(
+            (el) =>
+              !el.closest("[role=dialog]") &&
+              el.getBoundingClientRect().width >= column - 1,
+          )
+          .map((el) => el.innerText.trim());
+      });
+    const everyRoute = [
+      "today",
+      "schedule",
+      "food/ideas",
+      "food/home",
+      "food/groceries",
+      "food/log",
+      "food/log/week",
+      "you",
+      "you/sport",
+      "you/needs",
+      "you/access",
+      "you/reminders",
+      "you/device",
+      "you/about",
+      "nope",
+    ];
+    for (const width of [390, 1440]) {
+      await open(width);
+      await setup();
+      for (const route of everyRoute) {
+        await p.goto(`${base}#/${route}`);
+        await p.locator("main h1").first().waitFor();
+        await p.waitForTimeout(100);
+        const outlined = await outlinedButtons();
+        if (outlined.length)
+          fail(`${width} ${route}: outlined buttons ${outlined.join(", ")}`);
+        if (width === 1440) {
+          const wide = await fullWidthPrimaries();
+          if (wide.length)
+            fail(`1440 ${route}: full-width primary ${wide.join(", ")}`);
+        }
+      }
+      // A sheet built on Button: Save carries data-kind="primary".
+      await p.goto(`${base}#/you/sport`);
+      const sheet = p.getByRole("dialog").first();
+      await sheet.waitFor();
+      const saveKind = await sheet
+        .getByRole("button", { name: "Save", exact: true })
+        .getAttribute("data-kind");
+      if (saveKind !== "primary")
+        fail(`${width}: the sheet's Save has data-kind ${saveKind}`);
+      const inSheet = await outlinedButtons();
+      if (inSheet.length)
+        fail(`${width} sheet: outlined buttons ${inSheet.join(", ")}`);
+      await context.close();
+    }
+    result.checks.push(
+      "U4-01: no button in main or a sheet is outlined on any of the 15 routes at 390 and 1440 px; Button renders data-kind (Save is primary); at 1440 px no primary outside a dialog spans its column (UX-CMP-01, UX-RWD-10).",
+    );
 
     // ---------- 768: tablet tabs centered on the bar ----------
     await open(768, 1024);

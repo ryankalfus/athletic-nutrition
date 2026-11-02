@@ -1,7 +1,12 @@
 /* Shared primitives (5.7): buttons, chips, segmented controls, cards, rows,
  * dialogs and sheets, toasts, empty states, badges and inline messages. */
 
-/* ---------- Buttons (DS-11, CMP-02) ---------- */
+/* ---------- Buttons (UX-CMP-01, 5.4) ---------- */
+
+/* Five kinds: primary (teal), hero (lime, on the hero), secondary (muted
+ * fill, no border), text and destructive. No button is outlined (R13).
+ * Button.jsx marks its kind with data-kind; the class names stay for the
+ * callers that write a plain <button>. */
 
 /* Secondary is the default look for every button without its own class rule. */
 :where(button) {
@@ -11,9 +16,9 @@
   gap: var(--space-2);
   min-height: var(--target);
   padding: var(--space-2) var(--space-4);
-  border: var(--border-control);
-  border-radius: var(--radius-md);
-  background: var(--color-surface);
+  border: 1px solid transparent;
+  border-radius: var(--radius-control);
+  background: var(--color-surface-muted);
   color: var(--color-ink);
   font-size: var(--text-label);
   line-height: var(--leading-label);
@@ -38,41 +43,96 @@
 }
 
 :where(button):active:not(:disabled) {
-  background-color: var(--color-surface-muted);
+  background-color: var(--color-line);
 }
 
 :where(button):disabled,
 :where(button)[aria-disabled="true"] {
-  border-color: var(--color-line);
+  border-color: transparent;
   background-color: var(--color-surface-muted);
   color: var(--color-ink-subtle);
   cursor: not-allowed;
 }
 
-/* Primary: one per view. */
-.primary {
+/* Primary: teal, 52px, radius 14, 16/20 600; one per screen. */
+.primary,
+[data-kind="primary"] {
   min-height: var(--control-height);
   padding: var(--space-3) var(--space-5);
   border: 1px solid transparent;
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-control);
   background: var(--color-primary);
   color: var(--color-on-dark);
+  font-size: var(--text-body);
+  line-height: var(--leading-label);
 }
 
 @media (hover: hover) {
-  .primary:hover:not(:disabled) {
+  :is(.primary, [data-kind="primary"]):hover:not(:disabled) {
     background: var(--color-primary-hover);
   }
 }
 
-.primary:active:not(:disabled) {
+:is(.primary, [data-kind="primary"]):active:not(:disabled) {
   background: var(--color-primary-pressed);
 }
 
-.primary:disabled {
+:is(.primary, [data-kind="primary"]):disabled {
   border-color: transparent;
   background: var(--color-surface-muted);
   color: var(--color-ink-subtle);
+}
+
+/* Hero primary: lime, ink text, 56px; replaces the teal primary on the
+ * screen with a hero (the Now card's Go). */
+.today-primary,
+.hero-primary,
+[data-kind="hero"] {
+  width: 100%;
+  min-height: var(--cta-height);
+  padding: var(--space-3) var(--space-5);
+  border: 1px solid transparent;
+  border-radius: var(--radius-control);
+  background: var(--color-lime);
+  color: var(--color-ink);
+  font-size: var(--text-body);
+  line-height: var(--leading-label);
+}
+
+@media (hover: hover) {
+  :is(.today-primary, .hero-primary, [data-kind="hero"]):hover:not(:disabled) {
+    background: var(--color-lime-hover);
+  }
+}
+
+:is(.today-primary, .hero-primary, [data-kind="hero"]):active:not(:disabled) {
+  background: var(--color-lime-hover);
+}
+
+:is(.today-primary, .hero-primary, [data-kind="hero"]):disabled {
+  background: var(--color-on-dark-disabled);
+  color: var(--color-on-dark-muted);
+}
+
+/* UX-RWD-10: on desktop a primary hugs its label (min 160px) and aligns
+ * left with its content; full width stays for phone sheets and the Welcome
+ * and setup flows (no navigation). */
+@media (min-width: 1024px) {
+  .app-frame.has-navigation
+    main
+    :is(
+      .primary,
+      .today-primary,
+      .hero-primary,
+      .today-secondary,
+      [data-kind="primary"],
+      [data-kind="hero"]
+    ) {
+    width: auto;
+    min-width: 160px;
+    justify-self: start;
+    align-self: start;
+  }
 }
 
 /* Full-width calls to action on phones are 52px (DS-11). */
@@ -82,7 +142,8 @@
 }
 
 /* Tertiary (text) */
-.text-button {
+.text-button,
+[data-kind="text"] {
   display: inline-flex;
   align-items: center;
   justify-content: flex-start;
@@ -100,39 +161,47 @@
 }
 
 @media (hover: hover) {
-  .text-button:hover:not(:disabled) {
+  :is(.text-button, [data-kind="text"]):hover:not(:disabled) {
     background: transparent;
     text-decoration: underline;
   }
 }
 
-.text-button:disabled {
+:is(.text-button, [data-kind="text"]):disabled {
   background: transparent;
 }
 
-/* Destructive: error text in pages and menus; error fill in confirm dialogs. */
-.danger-button {
-  border-color: var(--color-error);
+/* Destructive: an error-colored text button in pages and menus; the error
+ * fill only inside a confirm alert. */
+.danger-button,
+[data-kind="destructive"] {
+  padding-inline: var(--space-3);
+  border-color: transparent;
+  background: transparent;
   color: var(--color-error);
 }
 
-.app-dialog .danger-button {
+.app-dialog :is(.danger-button, [data-kind="destructive"]) {
   min-height: var(--control-height);
-  border-color: transparent;
   background: var(--color-error);
   color: var(--color-on-dark);
 }
 
 @media (hover: hover) {
-  .danger-button:hover:not(:disabled) {
+  :is(.danger-button, [data-kind="destructive"]):hover:not(:disabled) {
     background: var(--color-error-tint);
   }
-  .app-dialog .danger-button:hover:not(:disabled) {
+  .app-dialog
+    :is(.danger-button, [data-kind="destructive"]):hover:not(:disabled) {
     background: var(--color-error-hover);
   }
 }
 
-.app-dialog .danger-button:disabled {
+:is(.danger-button, [data-kind="destructive"]):disabled {
+  background: transparent;
+}
+
+.app-dialog :is(.danger-button, [data-kind="destructive"]):disabled {
   background: var(--color-surface-muted);
   color: var(--color-ink-subtle);
 }
@@ -204,9 +273,9 @@
   min-height: 36px;
   margin-block: var(--space-1);
   padding: var(--space-1) var(--space-4);
-  border: var(--border-control);
+  border: 1px solid transparent;
   border-radius: var(--radius-full);
-  background: var(--color-surface);
+  background: var(--color-surface-muted);
   color: var(--color-ink);
 }
 
@@ -269,7 +338,6 @@
 }
 
 .segmented > button:is([aria-pressed="true"], [aria-checked="true"]) {
-  border-color: var(--color-line-strong);
   background: var(--color-surface);
   box-shadow: var(--shadow-1);
   color: var(--color-ink);
@@ -284,10 +352,11 @@
   color: var(--color-ink-subtle);
 }
 
-/* A disabled selection keeps its outline so the saved value still shows;
- * only the label dims. */
+/* A disabled selection keeps its white segment so the saved value still
+ * shows; only the label dims. */
 .segmented > button:disabled:is([aria-pressed="true"], [aria-checked="true"]) {
-  border-color: var(--color-line-strong);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-1);
 }
 
 /* 44px touch area around a 36px segment, like chips (9.6). */
