@@ -580,6 +580,8 @@ fieldset:disabled .segmented {
 }
 
 .row-menu-items {
+  border-radius: var(--radius-float);
+  box-shadow: var(--elev-menu);
   position: absolute;
   top: calc(100% + var(--space-1));
   right: 0;
@@ -609,12 +611,6 @@ fieldset:disabled .segmented {
 .row-menu-items.opens-up {
   top: auto;
   bottom: calc(100% + var(--space-1));
-}
-
-.row-menu-items > .separated {
-  margin-top: var(--space-1);
-  border-top: var(--border);
-  border-radius: 0 0 var(--radius-sm) var(--radius-sm);
 }
 
 /* Combobox (Sport): a text box with the select chevron as a button that
@@ -1691,4 +1687,54 @@ fieldset:disabled .segmented {
   flex: 0 0 auto;
   width: 100%;
   min-height: var(--control-height);
+}
+
+.menu-sheet {
+  z-index: var(--z-dialog);
+  width: 100%;
+  max-width: 100%;
+  max-height: 92dvh;
+  margin: auto 0 0;
+  padding: var(--space-4);
+  border: 0;
+  border-radius: var(--radius-sheet) var(--radius-sheet) 0 0;
+  background: var(--color-surface);
+  color: var(--color-ink);
+  box-shadow: var(--elev-sheet);
+}
+.menu-sheet::backdrop {
+  background: var(--color-backdrop);
+}
+.menu-sheet > header {
+  padding-top: var(--space-4);
+}
+.menu-sheet h2 {
+  margin: 0 0 var(--space-3);
+  font-size: 22px;
+  line-height: 28px;
+}
+.menu-sheet .row-menu-items {
+  position: static;
+  padding: 0;
+  border: 0;
+  box-shadow: none;
+}
+.menu-sheet .row-menu-items > button {
+  min-height: 52px;
+}
+.menu-sheet .danger {
+  color: var(--color-error);
+}
+
+@media (min-width: 768px) {
+  .row-menu-items .separated {
+    position: relative;
+    margin-top: var(--space-1);
+  }
+  .row-menu-items .separated::before {
+    position: absolute;
+    inset: 0 var(--space-2) auto;
+    border-top: var(--border);
+    content: "";
+  }
 }

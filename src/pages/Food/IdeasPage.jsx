@@ -239,6 +239,7 @@ export default function IdeasPage({ now, todayKey }) {
                 <h3>{idea.name}</h3>
                 <Menu
                   label={`${idea.name} options`}
+                  title={idea.name}
                   items={[
                     missing.length > 0 && {
                       label: "Add missing to groceries",
@@ -443,6 +444,7 @@ export function MealPlanCard({
         {/* Change and Remove in a row menu; Remove reads as destructive. */}
         <Menu
           label={`${plan.template.name} plan options`}
+          title={plan.template.name}
           items={[
             plan.status !== "eaten" && {
               label: "Change idea",

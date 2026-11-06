@@ -122,7 +122,13 @@ async (page) => {
       await expectButton(`${width} row menu`, menuButton, false);
       await menuButton.click();
       await expectButton(`${width} row menu (click)`, menuButton, true);
-      await menuButton.click();
+      if (width < 768) {
+        // The modal sheet covers the trigger. Tap the scrim to dismiss it.
+        const sheet = await p.getByRole("dialog").boundingBox();
+        await p.mouse.click(width / 2, sheet.y / 2);
+      } else {
+        await menuButton.click();
+      }
       await expectButton(`${width} row menu (click 2)`, menuButton, false);
       await menuButton.focus();
       await p.keyboard.press("Enter");

@@ -350,6 +350,10 @@ async (page) => {
     // ---------- 1280: one title edge, rail edge, Discard centered ----------
     await open(1280);
     await setup();
+    // Finishing setup is a route change. Measure first-load focus on a reload.
+    await p.reload();
+    await p.locator("main h1").first().waitFor();
+    await p.evaluate(() => new Promise(requestAnimationFrame));
     if (await p.evaluate(() => document.activeElement?.tagName === "H1"))
       fail("A fresh load focuses the page H1");
     const titles = {};
@@ -475,7 +479,7 @@ async (page) => {
       fail(`At home rows wrap at 320: ${JSON.stringify(stock)}`);
     if (!(await p.getByRole("radiogroup", { name: "Stock filter" }).count()))
       fail("The At home filter is not a segmented control");
-    // A row menu near the bottom opens upward, clear of the tab bar.
+    // A low row opens a full-width action sheet at the viewport edge.
     await p.evaluate(() => window.scrollTo(0, 0));
     const last = p.locator(".stock-row").last();
     await last.evaluate((row) => {
@@ -501,10 +505,17 @@ async (page) => {
     );
     if (tops.includes(null) || new Set(tops).size !== 1)
       fail(`A row menu near the tab bar moves or closes (${tops})`);
-    const menu = await box(p.locator(".row-menu-items"));
-    const mobileNav = await box(p.locator(".frame-nav"));
-    if (menu.bottom > mobileNav.y - 8)
-      fail(`A row menu runs under the tab bar (${Math.round(menu.bottom)}px)`);
+    const actionSheet = p.getByRole("dialog");
+    const menu = await box(actionSheet);
+    if (
+      !near(menu.x, 0) ||
+      !near(menu.w, 320) ||
+      !near(menu.bottom, await p.evaluate(() => innerHeight)) ||
+      !(await actionSheet.evaluate((node) => node.matches(":modal")))
+    )
+      fail(
+        `A low row must open a modal bottom action sheet: ${JSON.stringify(menu)}`,
+      );
     await p.keyboard.press("Escape");
     await p.goto(`${base}#/food/log`);
     const arrows = await p.evaluate(() => {
@@ -520,7 +531,7 @@ async (page) => {
     if (arrows[2] && arrows[0] === arrows[1])
       fail("The disabled Next day arrow looks enabled");
     result.checks.push(
-      "320 Food: grocery checks and menus sit on the name line with one-line reason chips; the section bar is a full-width strip whose four links fit at 44 px or more; At home rows stay on one line with a segmented filter; a low row menu opens above the tab bar; a disabled day arrow is dimmed.",
+      "320 Food: grocery checks and menus sit on the name line with one-line reason chips; the section bar is a full-width strip whose four links fit at 44 px or more; At home rows stay on one line with a segmented filter; a low row opens a full-width modal bottom action sheet; a disabled day arrow is dimmed.",
     );
     await context.close();
 

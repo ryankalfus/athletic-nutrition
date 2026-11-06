@@ -68,7 +68,10 @@ async (page) => {
       .locator(".stock-row")
       .filter({ has: p.getByText("Bananas", { exact: true }) });
     await bananas.getByRole("button", { name: "Bananas options" }).click();
-    await bananas.getByRole("menuitem", { name: "Edit details" }).click();
+    await p
+      .getByRole("menu")
+      .getByRole("menuitem", { name: "Edit details" })
+      .click();
     const details = p.getByRole("dialog");
     await details
       .getByRole("combobox", { name: "Amount type" })
@@ -171,7 +174,7 @@ async (page) => {
     await row("Bananas")
       .getByRole("button", { name: "Bananas options" })
       .click();
-    await row("Bananas").getByRole("menuitem", { name: "Edit" }).click();
+    await p.getByRole("menu").getByRole("menuitem", { name: "Edit" }).click();
     const edit = p.getByRole("dialog", { name: "Edit food" });
     // UX-BUG-06: amount 0 keeps Save enabled and says why on Save.
     const amount = edit.getByRole("spinbutton", { name: "Amount eaten" });
@@ -375,7 +378,7 @@ async (page) => {
     await row("Bananas")
       .getByRole("button", { name: "Bananas options" })
       .click();
-    await row("Bananas").getByRole("menuitem", { name: "Remove" }).click();
+    await p.getByRole("menu").getByRole("menuitem", { name: "Remove" }).click();
     await p.getByRole("status").getByText("Removed Bananas.").waitFor();
     await p.getByRole("status").getByRole("button", { name: "Undo" }).click();
     await row("Bananas").waitFor();

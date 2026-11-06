@@ -158,6 +158,7 @@ export default function WeekSettings({ events, todayKey }) {
                   </span>
                   <Menu
                     label={`Actions for ${sub.name || "team calendar"}`}
+                    title={sub.name || "Team calendar"}
                     items={[
                       {
                         label: "Refresh",

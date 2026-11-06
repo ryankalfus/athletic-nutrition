@@ -87,6 +87,7 @@ export default function ScheduleRow({
       <Menu
         className="schedule-row-menu"
         label={`Actions for ${event.title}`}
+        title={event.title}
         items={items}
       />
     </article>

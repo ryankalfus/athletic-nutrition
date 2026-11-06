@@ -210,6 +210,7 @@ export default function GroceriesPage({ todayKey }) {
       </div>
       <Menu
         label={`${item.name} options`}
+        title={item.name}
         items={[
           {
             label: "Edit",

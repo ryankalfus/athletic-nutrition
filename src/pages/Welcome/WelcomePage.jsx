@@ -101,6 +101,7 @@ export default function WelcomePage({ firstRun, onNavigate }) {
                     </button>
                     <Menu
                       label={`${name} options`}
+                      title={name}
                       items={[
                         {
                           label: "Rename",

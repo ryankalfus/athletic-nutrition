@@ -349,6 +349,7 @@ export default function LogDay({ date, todayKey, now, onNavigate }) {
                   </div>
                   <Menu
                     label={`${item.entry.name} options`}
+                    title={item.entry.name}
                     items={[
                       {
                         label: "Edit",

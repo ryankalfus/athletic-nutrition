@@ -95,6 +95,32 @@ function firstStop(node) {
   return node.querySelector("button:not([aria-label^='Close'])");
 }
 
+export function SheetGrabber({ onDismiss }) {
+  const dragStart = useRef(null);
+  return (
+    <span
+      className="sheet-grabber"
+      aria-hidden="true"
+      onPointerDown={(event) => {
+        if (!event.isPrimary || event.button !== 0) return;
+        dragStart.current = event.clientY;
+        event.currentTarget.setPointerCapture(event.pointerId);
+      }}
+      onPointerCancel={() => {
+        dragStart.current = null;
+      }}
+      onPointerUp={(event) => {
+        if (
+          dragStart.current !== null &&
+          event.clientY - dragStart.current >= 40
+        )
+          onDismiss();
+        dragStart.current = null;
+      }}
+    />
+  );
+}
+
 export function DialogCancel({ children = "Cancel", ...props }) {
   const close = useDialogClose();
   const dirty = useContext(DialogDirty);
@@ -127,7 +153,6 @@ export function Dialog({
   discardMessage = "Your changes aren't saved yet.",
 }) {
   const ref = useRef(null);
-  const dragStart = useRef(null);
   const pressedBackdrop = useRef(false);
   const titleId = useId();
   const { error } = useStore();
@@ -267,28 +292,7 @@ export function Dialog({
         <DialogClose.Provider value={requestClose}>
           <DialogErrorSlot.Provider value={{ error, retry, register }}>
             <header>
-              {!alert && (
-                <span
-                  className="sheet-grabber"
-                  aria-hidden="true"
-                  onPointerDown={(event) => {
-                    if (!event.isPrimary || event.button !== 0) return;
-                    dragStart.current = event.clientY;
-                    event.currentTarget.setPointerCapture(event.pointerId);
-                  }}
-                  onPointerCancel={() => {
-                    dragStart.current = null;
-                  }}
-                  onPointerUp={(event) => {
-                    if (
-                      dragStart.current !== null &&
-                      event.clientY - dragStart.current >= 40
-                    )
-                      requestClose();
-                    dragStart.current = null;
-                  }}
-                />
-              )}
+              {!alert && <SheetGrabber onDismiss={requestClose} />}
               <h2 id={titleId} tabIndex={-1}>
                 {title}
               </h2>

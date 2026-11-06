@@ -285,6 +285,7 @@ export default function HomePage({ todayKey }) {
                         )}
                         <Menu
                           label={`${row.name} options`}
+                          title={row.name}
                           items={[
                             {
                               label:
@@ -314,30 +315,33 @@ export default function HomePage({ todayKey }) {
                               },
                             },
                             // Every place except the one the food is in.
-                            ...places.flatMap(([, group, locations]) =>
-                              locations
-                                .filter(
-                                  (location) =>
-                                    location !== "kitchen" &&
-                                    PLACE_NAMES[location] !==
-                                      PLACE_NAMES[row.location || "pantry"],
-                                )
-                                .map((location) => ({
-                                  key: location,
-                                  label: `Move to ${PLACE_NAMES[location]}`,
-                                  disabled: !!pending,
-                                  onSelect: () =>
-                                    write(
-                                      "move",
-                                      (d) => {
-                                        d.groceryState.pantry.find(
-                                          (i) => i.id === row.id,
-                                        ).location = location;
-                                      },
-                                      `Moved ${row.name} to ${group.toLowerCase()}.`,
-                                    ),
-                                })),
-                            ),
+                            {
+                              label: "Move to…",
+                              items: places.flatMap(([, group, locations]) =>
+                                locations
+                                  .filter(
+                                    (location) =>
+                                      location !== "kitchen" &&
+                                      PLACE_NAMES[location] !==
+                                        PLACE_NAMES[row.location || "pantry"],
+                                  )
+                                  .map((location) => ({
+                                    key: location,
+                                    label: `Move to ${PLACE_NAMES[location]}`,
+                                    disabled: !!pending,
+                                    onSelect: () =>
+                                      write(
+                                        "move",
+                                        (d) => {
+                                          d.groceryState.pantry.find(
+                                            (i) => i.id === row.id,
+                                          ).location = location;
+                                        },
+                                        `Moved ${row.name} to ${group.toLowerCase()}.`,
+                                      ),
+                                  })),
+                              ),
+                            },
                             stockStatus(row) !== "have" && {
                               label: "Add to groceries",
                               disabled: !!pending,
