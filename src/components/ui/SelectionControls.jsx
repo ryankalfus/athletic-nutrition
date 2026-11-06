@@ -87,7 +87,11 @@ export function ChipGroup({
       </div>
       <FieldError field={field} />
       {/* Hints sit under the control, like input hints (DS-13). */}
-      {hint && <p className="muted field-hint">{hint}</p>}
+      {hint && (
+        <p className="muted field-hint" data-hint>
+          {hint}
+        </p>
+      )}
     </fieldset>
   );
 }
@@ -105,7 +109,11 @@ export function SwitchRow({ checked, onChange, label, hint, disabled }) {
       />
       <span>
         {label}
-        {hint && <small className="muted field-hint">{hint}</small>}
+        {hint && (
+          <small className="muted field-hint" data-hint>
+            {hint}
+          </small>
+        )}
       </span>
     </label>
   );

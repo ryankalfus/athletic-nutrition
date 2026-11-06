@@ -41,9 +41,19 @@ async (page) => {
     await p.getByRole("button", { name: "Next", exact: true }).click();
     await p.getByRole("heading", { name: "Your school day" }).waitFor();
     await p.getByRole("button", { name: "Skip setup" }).click();
-    await p.getByRole("heading", { level: 1, name: /^[A-Z][a-z]{2}, [A-Z][a-z]{2} \d{1,2}$/ }).waitFor();
+    await p
+      .getByRole("heading", {
+        level: 1,
+        name: /^[A-Z][a-z]{2}, [A-Z][a-z]{2} \d{1,2}$/,
+      })
+      .waitFor();
     await p.goto(`${base}#/schedule`);
-    await p.getByRole("heading", { level: 1, name: /^(January|February|March|April|May|June|July|August|September|October|November|December)$/ }).waitFor();
+    await p
+      .getByRole("heading", {
+        level: 1,
+        name: /^(January|February|March|April|May|June|July|August|September|October|November|December)$/,
+      })
+      .waitFor();
     if (
       !(await p
         .getByRole("radio", { name: "Week" })
@@ -60,7 +70,10 @@ async (page) => {
       "Schedule opens in Week view; an empty week shows one empty state.",
     );
 
-    await p.getByRole("button", { name: /^(\+ )?Add$/ }).first().click();
+    await p
+      .getByRole("button", { name: /^(\+ )?Add$/ })
+      .first()
+      .click();
     const sheet = p.getByRole("dialog", { name: "Add practice" });
     await sheet.getByRole("textbox", { name: "Name" }).fill("Late practice");
     await sheet.getByLabel("Starts").fill("16:00");
@@ -202,8 +215,30 @@ async (page) => {
 
     await p.getByRole("button", { name: /^(Edit|Set up) school day$/ }).click();
     const school = p.getByRole("dialog", { name: "School day" });
-    await school.getByLabel("School year starts").fill(inYear(-30));
-    await school.getByLabel("School year ends").fill(inYear(120));
+    // DateField (U4-03): open the picker, page to the month, pick the day.
+    const pickDate = async (scope, label, iso) => {
+      await scope
+        .getByRole("button", { name: new RegExp(`^${label}`) })
+        .click();
+      const grid = p.getByRole("dialog", { name: "Choose a date" });
+      await grid.waitFor();
+      for (let i = 0; i < 24; i += 1) {
+        if (await grid.locator(`[data-key="${iso}"]`).count()) break;
+        const shown = await grid
+          .locator(".calendar-day:not(.outside)")
+          .first()
+          .getAttribute("data-key");
+        await grid
+          .getByRole("button", {
+            name: iso < shown ? "Previous month" : "Next month",
+          })
+          .click();
+      }
+      await grid.locator(`[data-key="${iso}"]`).first().click();
+      await grid.waitFor({ state: "hidden" });
+    };
+    await pickDate(school, "School year starts", inYear(-30));
+    await pickDate(school, "School year ends", inYear(120));
     // UX-BUG-03: the School day sheet uses setup's lunch rule and message.
     await school.getByLabel("Lunch starts").fill("16:00");
     await school.getByLabel("Lunch ends").fill("16:30");
@@ -365,6 +400,97 @@ async (page) => {
     await dayOf("Mon, Oct 19").getByText(all).waitFor();
     result.checks.push(
       "ACT-02: Change all Tuesday practices moves Tuesdays to 5:00 PM; Mon, Wed, Thu, Fri stay at 4:00 PM.",
+    );
+
+    // U4-03 (UX-CMP-09, UX-CMP-04): the activity date is a DateField: a
+    // button reading like "Tue, Oct 13" that opens the month grid; arrows
+    // move, Enter picks, Escape closes only the picker. A focused invalid
+    // field has a 2 px error-colored border and no outer ring.
+    await p
+      .getByRole("button", { name: /^(\+ )?Add$/ })
+      .first()
+      .click();
+    const addSheet = p.getByRole("dialog", { name: "Add practice" });
+    const dateField = addSheet.getByRole("button", { name: /^Activity date/ });
+    const before = (await dateField.innerText()).trim();
+    if (!/^[A-Z][a-z]{2}, [A-Z][a-z]{2} \d{1,2}$/.test(before))
+      throw new Error(`Activity date reads "${before}"`);
+    if (await addSheet.locator("input[type=date], input[type=time]").count())
+      throw new Error("Add practice still has a native date or time input");
+    await dateField.click();
+    const picker = p.getByRole("dialog", { name: "Choose a date" });
+    await picker.waitFor();
+    const focused = () =>
+      p.evaluate(() => document.activeElement.getAttribute("data-key"));
+    await p.waitForFunction(() =>
+      document.activeElement?.hasAttribute("data-key"),
+    );
+    const startKey = await focused();
+    await p.keyboard.press("ArrowRight");
+    await p.keyboard.press("ArrowDown");
+    const movedKey = await focused();
+    const days = (a, b) =>
+      Math.round(
+        (new Date(`${b}T12:00:00`) - new Date(`${a}T12:00:00`)) / 864e5,
+      );
+    if (days(startKey, movedKey) !== 8)
+      throw new Error(`Arrows moved from ${startKey} to ${movedKey}`);
+    if ((await dateField.innerText()).trim() !== before)
+      throw new Error("Arrow keys changed the date before Enter");
+    await p.keyboard.press("Enter");
+    await picker.waitFor({ state: "hidden" });
+    const after = (await dateField.innerText()).trim();
+    if (
+      after === before ||
+      !/^[A-Z][a-z]{2}, [A-Z][a-z]{2} \d{1,2}$/.test(after)
+    )
+      throw new Error(`Enter picked "${after}" (was "${before}")`);
+    if (!(await dateField.evaluate((node) => node === document.activeElement)))
+      throw new Error("Focus did not return to the date button");
+    await dateField.click();
+    await picker.waitFor();
+    await p.keyboard.press("Escape");
+    await picker.waitFor({ state: "hidden" });
+    if (!(await addSheet.isVisible()))
+      throw new Error("Escape in the picker closed the sheet");
+    const startsBox = addSheet.getByRole("combobox", {
+      name: "Starts",
+      exact: true,
+    });
+    await startsBox.fill("");
+    await addSheet
+      .getByRole("button", { name: "Add practice", exact: true })
+      .click();
+    await addSheet.getByText("Choose a start time.").waitFor();
+    // The border color eases in over 150 ms.
+    await p.waitForTimeout(400);
+    const invalid = await startsBox.evaluate((node) => {
+      const style = getComputedStyle(node);
+      const probe = document.createElement("div");
+      probe.style.color = "var(--color-error)";
+      document.body.append(probe);
+      const error = getComputedStyle(probe).color;
+      probe.remove();
+      const inset = style.boxShadow.match(
+        /^(rgb\([^)]+\)) 0px 0px 0px (\d+)px inset$/,
+      );
+      return {
+        focused: node === document.activeElement,
+        width:
+          parseFloat(style.borderTopWidth) + (inset ? Number(inset[2]) : 0),
+        colors: style.borderTopColor === error && inset?.[1] === error,
+        outline: style.outlineStyle,
+      };
+    });
+    if (
+      !invalid.focused ||
+      invalid.width !== 2 ||
+      !invalid.colors ||
+      invalid.outline !== "none"
+    )
+      throw new Error(`Invalid focused field: ${JSON.stringify(invalid)}`);
+    result.checks.push(
+      "U4-03: Activity date is a button reading like “Tue, Oct 13” with no native date or time input in the sheet; its month grid moves with the arrows, Enter picks and returns focus, Escape closes only the picker; an empty focused Starts has a 2 px error-colored border and no outer ring (UX-CMP-09, UX-CMP-04).",
     );
     return result;
   } catch (e) {

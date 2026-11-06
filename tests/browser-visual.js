@@ -103,13 +103,14 @@ async (page) => {
     const order = await p.evaluate(() => {
       const field = document.querySelector(".field input");
       const error = document.querySelector(".field .field-error");
-      const hint = document.querySelector(".field .field-hint");
-      return [field, error, hint].map((n) =>
-        Math.round(n.getBoundingClientRect().top),
-      );
+      return [
+        ...[field, error].map((n) => Math.round(n.getBoundingClientRect().top)),
+        document.querySelectorAll(".field .field-hint").length,
+      ];
     });
-    if (!(order[0] < order[1] && order[1] < order[2]))
-      fail(`Sport field, error and hint are not in that order: ${order}`);
+    // UX-COPY-05: the helper that described the system is gone.
+    if (!(order[0] < order[1]) || order[2] !== 0)
+      fail(`Sport field then error, with no helper line: ${order}`);
     await sport.fill("Soccer");
     await p.getByRole("button", { name: "Next", exact: true }).click();
     await p.getByRole("heading", { name: "Your school day" }).waitFor();
@@ -129,12 +130,12 @@ async (page) => {
         `Weekday circles are not round at 320: ${JSON.stringify(circles[1])}`,
       );
     const inputs = await p
-      .locator(".setup-fields input[type=time]")
+      .locator(".setup-fields .time-field input")
       .evaluateAll((all) => all.map((i) => i.getBoundingClientRect().height));
     if (inputs.some((h) => !near(h, 52)))
       fail(`Time inputs are ${inputs.join("/")}px, not 52`);
     result.checks.push(
-      "320: setup segments stay on one row, Sport reads e.g. Soccer with field → error → hint, step 2's header is one row, weekday circles are round and time inputs are 52 px (U2-01, UX-DS-06).",
+      "320: setup segments stay on one row, Sport reads e.g. Soccer with field → error and no helper line (UX-COPY-05), step 2's header is one row, weekday circles are round and time inputs are 52 px (U2-01, UX-DS-06).",
     );
     await context.close();
 

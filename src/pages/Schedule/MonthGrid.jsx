@@ -3,6 +3,9 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { addDays, getDateKey } from "../../domain/timing.js";
 import { plural } from "../../format.js";
 
+// The Schedule month and, with `onPick`, the DateField's picker (UX-CMP-09):
+// there a click or Enter picks the day, the arrows only move the highlight,
+// days outside `min`/`max` are disabled, and no activities are shown.
 export default function MonthGrid({
   monthCursor,
   setMonthCursor,
@@ -12,7 +15,11 @@ export default function MonthGrid({
   selectedKey,
   selectDay,
   goToToday,
+  onPick,
+  min,
+  max,
 }) {
+  const outOfRange = (key) => Boolean((min && key < min) || (max && key > max));
   // One tab stop for the grid (the selected day, else the 1st); arrows move by
   // day or week, Home/End to the week's ends, Page Up/Down by month.
   const grid = useRef(null);
@@ -47,14 +54,16 @@ export default function MonthGrid({
       );
     if (!next) return;
     event.preventDefault();
+    if (outOfRange(getDateKey(next))) return;
     moved.current = true;
     selectDay(next);
   };
   return (
-    <div className="card month-calendar">
+    <div className={onPick ? "date-grid" : "card month-calendar"}>
       <div className="calendar-toolbar">
         <div className="calendar-month-controls">
           <button
+            type="button"
             onClick={() =>
               setMonthCursor(
                 new Date(
@@ -69,6 +78,7 @@ export default function MonthGrid({
             <ChevronLeft size={20} strokeWidth={1.75} aria-hidden="true" />
           </button>
           <button
+            type="button"
             onClick={() =>
               setMonthCursor(
                 new Date(
@@ -89,13 +99,16 @@ export default function MonthGrid({
             year: "numeric",
           }).format(monthCursor)}
         </h2>
-        <button
-          className="text-button schedule-today"
-          aria-label="Go to today"
-          onClick={goToToday}
-        >
-          Today
-        </button>
+        {goToToday && (
+          <button
+            type="button"
+            className="text-button schedule-today"
+            aria-label="Go to today"
+            onClick={goToToday}
+          >
+            Today
+          </button>
+        )}
       </div>
       {/* Sentence case (5.4); one letter below 480px. Decorative: each day
           button names its full date. */}
@@ -118,7 +131,7 @@ export default function MonthGrid({
       >
         {calendarDays.map((date) => {
           const key = getDateKey(date);
-          const dayEvents = getEventsForDay(date);
+          const dayEvents = getEventsForDay ? getEventsForDay(date) : [];
           const outsideMonth = date.getMonth() !== monthCursor.getMonth();
           return (
             <button
@@ -129,8 +142,13 @@ export default function MonthGrid({
               tabIndex={key === focusKey ? 0 : -1}
               aria-pressed={key === selectedKey}
               aria-current={key === todayKey ? "date" : undefined}
+              disabled={outOfRange(key)}
               onKeyDown={(event) => onKeyDown(event, date)}
               onClick={() => {
+                if (onPick) {
+                  onPick(date);
+                  return;
+                }
                 selectDay(date);
                 window.requestAnimationFrame(() =>
                   document
@@ -145,7 +163,9 @@ export default function MonthGrid({
                   day: "numeric",
                   year: "numeric",
                 }).format(date) +
-                `, ${dayEvents.length} ${plural(dayEvents.length, "activity")}`
+                (getEventsForDay
+                  ? `, ${dayEvents.length} ${plural(dayEvents.length, "activity")}`
+                  : "")
               }
             >
               <span className="day-number">{date.getDate()}</span>

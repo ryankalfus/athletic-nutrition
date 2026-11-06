@@ -131,6 +131,9 @@ import {
   formatPlanStatus,
   formatDateRange,
   formatMonth,
+  formatTimeInput,
+  parseTime,
+  timeOptions,
   formatShortTime,
   formatTime,
   formatTimeRange,
@@ -3004,4 +3007,36 @@ test("Loading keeps undo-ledger entries for 30 days only", () => {
     dated.operations.map((op) => op.id),
     ["b"],
   );
+});
+
+test("UX-CMP-09: a time box shows app times and reads what is typed", () => {
+  assert.equal(formatTimeInput("16:00"), "4:00 PM");
+  assert.equal(formatTimeInput("09:05"), "9:05 AM");
+  assert.equal(formatTimeInput(""), "");
+  const cases = {
+    "4:10p": "16:10",
+    "4p": "16:00",
+    "4 pm": "16:00",
+    "4:10 PM": "16:10",
+    "4:10\u00a0PM": "16:10",
+    "410p": "16:10",
+    "4:10": "16:10",
+    "8:00": "08:00",
+    "11:30": "11:30",
+    12: "12:00",
+    "12a": "00:00",
+    "12:15 a.m.": "00:15",
+    "16:00": "16:00",
+    "04:00": "04:00",
+    1630: "16:30",
+  };
+  for (const [typed, clock] of Object.entries(cases))
+    assert.equal(parseTime(typed), clock, typed);
+  for (const typed of ["", "4:1", "25:00", "13pm", "4:75", "soon", "4:10x"])
+    assert.equal(parseTime(typed), null, typed);
+  const options = timeOptions();
+  assert.equal(options.length, 96);
+  assert.equal(options[0], "5:00 AM");
+  assert.ok(options.includes("4:15 PM"));
+  assert.ok(options.every((option) => parseTime(option)));
 });

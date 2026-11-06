@@ -48,7 +48,12 @@ async (page) => {
     await p.getByRole("button", { name: "Next", exact: true }).click();
     await p.getByRole("heading", { name: "Your school day" }).waitFor();
     await p.getByRole("button", { name: "Skip setup" }).click();
-    await p.getByRole("heading", { level: 1, name: /^[A-Z][a-z]{2}, [A-Z][a-z]{2} \d{1,2}$/ }).waitFor();
+    await p
+      .getByRole("heading", {
+        level: 1,
+        name: /^[A-Z][a-z]{2}, [A-Z][a-z]{2} \d{1,2}$/,
+      })
+      .waitFor();
   };
   try {
     // --- Clipboard fallback: no Web Share in this browser. ---
@@ -63,10 +68,35 @@ async (page) => {
 
     // An away game tomorrow at 4:00 PM, left unnamed.
     await p.goto(`${base}#/schedule`);
-    await p.getByRole("button", { name: /^(\+ )?Add$/ }).first().click();
+    await p
+      .getByRole("button", { name: /^(\+ )?Add$/ })
+      .first()
+      .click();
     const sheet = p.getByRole("dialog");
     await sheet.getByRole("button", { name: "Game", exact: true }).click();
-    await sheet.getByLabel("Activity date").fill(key(tomorrow));
+    // DateField (UX-CMP-09): open the picker, page to the month, pick the day.
+    const pickDate = async (scope, label, iso) => {
+      await scope
+        .getByRole("button", { name: new RegExp(`^${label}`) })
+        .click();
+      const picker = p.getByRole("dialog", { name: "Choose a date" });
+      await picker.waitFor();
+      for (let i = 0; i < 24; i += 1) {
+        if (await picker.locator(`[data-key="${iso}"]`).count()) break;
+        const shown = await picker
+          .locator(".calendar-day:not(.outside)")
+          .first()
+          .getAttribute("data-key");
+        await picker
+          .getByRole("button", {
+            name: iso < shown ? "Previous month" : "Next month",
+          })
+          .click();
+      }
+      await picker.locator(`[data-key="${iso}"]`).first().click();
+      await picker.waitFor({ state: "hidden" });
+    };
+    await pickDate(sheet, "Activity date", key(tomorrow));
     await sheet.getByLabel("Starts").fill("16:00");
     await sheet.getByLabel("Ends").fill("17:30");
     await sheet.getByRole("button", { name: "Away", exact: true }).click();
@@ -159,7 +189,12 @@ async (page) => {
     await p.getByRole("button", { name: "Save a backup file" }).click();
     await download;
     await p.goto(`${base}#/today`);
-    await p.getByRole("heading", { level: 1, name: /^[A-Z][a-z]{2}, [A-Z][a-z]{2} \d{1,2}$/ }).waitFor();
+    await p
+      .getByRole("heading", {
+        level: 1,
+        name: /^[A-Z][a-z]{2}, [A-Z][a-z]{2} \d{1,2}$/,
+      })
+      .waitFor();
     if (await p.getByRole("complementary", { name: "Backup" }).count())
       throw new Error("Backup nudge shows right after a backup");
     await context.clock.setFixedTime(later(32));
@@ -173,7 +208,12 @@ async (page) => {
     await nudge.getByRole("button", { name: "Not now" }).click();
     await nudge.waitFor({ state: "hidden" });
     await p.reload();
-    await p.getByRole("heading", { level: 1, name: /^[A-Z][a-z]{2}, [A-Z][a-z]{2} \d{1,2}$/ }).waitFor();
+    await p
+      .getByRole("heading", {
+        level: 1,
+        name: /^[A-Z][a-z]{2}, [A-Z][a-z]{2} \d{1,2}$/,
+      })
+      .waitFor();
     if (await nudge.count())
       throw new Error("Not now did not snooze the nudge");
     await context.clock.setFixedTime(later(65));

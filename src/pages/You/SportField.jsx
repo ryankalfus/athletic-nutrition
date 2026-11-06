@@ -5,9 +5,9 @@ import { Combobox } from "../../components/ui/Combobox.jsx";
 
 export function SportField({ value, onChange, required = false }) {
   const id = useId();
-  // Field, then its error, then the hint (DS-13): the message sits right
-  // under the box it describes. Any sport can be typed; the list only
-  // suggests common ones.
+  // Field, then its error (DS-13): the message sits right under the box it
+  // describes. Any sport can be typed; the list only suggests common ones.
+  // No helper line: it described the system, not the field (UX-COPY-05).
   return (
     <div className="field">
       <label htmlFor={id}>
@@ -22,13 +22,9 @@ export function SportField({ value, onChange, required = false }) {
         listLabel="Sport suggestions"
         maxLength={40}
         aria-required={required || undefined}
-        aria-describedby="sport-hint"
         placeholder="e.g. Soccer"
       />
       <FieldError field="sport" />
-      <span id="sport-hint" className="muted field-hint">
-        New activities are named after it, like “Soccer practice”.
-      </span>
     </div>
   );
 }

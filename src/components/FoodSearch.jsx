@@ -238,7 +238,9 @@ export function FoodSearch({
           term.length >= 2 &&
           !current$ &&
           !loading && (
-            <p className="muted field-hint">Press Enter to search.</p>
+            <p className="muted field-hint" data-hint>
+              Press Enter to search.
+            </p>
           )}
       </form>
       {/* Always rendered so screen readers hear the change (A11Y-07). */}

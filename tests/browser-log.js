@@ -44,11 +44,19 @@ async (page) => {
     await p.getByRole("button", { name: "Next", exact: true }).click();
     await p.getByRole("heading", { name: "Your school day" }).waitFor();
     await p.getByRole("button", { name: "Skip setup" }).click();
-    await p.getByRole("heading", { level: 1, name: /^[A-Z][a-z]{2}, [A-Z][a-z]{2} \d{1,2}$/ }).waitFor();
+    await p
+      .getByRole("heading", {
+        level: 1,
+        name: /^[A-Z][a-z]{2}, [A-Z][a-z]{2} \d{1,2}$/,
+      })
+      .waitFor();
 
     // A practice today (context row) and bananas at home with an exact count.
     await p.goto(`${base}#/schedule`);
-    await p.getByRole("button", { name: /^(\+ )?Add$/ }).first().click();
+    await p
+      .getByRole("button", { name: /^(\+ )?Add$/ })
+      .first()
+      .click();
     const sheet = p.getByRole("dialog", { name: "Add practice" });
     await sheet
       .getByRole("button", { name: "Add practice", exact: true })
@@ -131,7 +139,7 @@ async (page) => {
     await search.getByText("Enter an amount above 0.").waitFor();
     await portionAmount.fill("118");
     const time = await search.getByLabel("Time eaten").inputValue();
-    if (!/^\d\d:\d\d$/.test(time))
+    if (!/^\d{1,2}:\d\d [AP]M$/.test(time))
       throw new Error(`No time for today: ${time}`);
     await search.getByRole("button", { name: "Save", exact: true }).click();
     await search.waitFor({ state: "hidden" });

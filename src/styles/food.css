@@ -780,39 +780,6 @@
   }
 }
 
-.day-picker {
-  position: relative;
-  display: grid;
-  place-items: center;
-  width: var(--target);
-  height: var(--target);
-  border-radius: var(--radius-md);
-}
-
-@media (hover: hover) {
-  .day-picker:hover {
-    background: var(--color-hover);
-  }
-}
-
-.day-picker:focus-within {
-  outline: 2px solid var(--color-focus);
-  outline-offset: 2px;
-}
-
-/* The native date input covers the icon so a tap opens the picker. */
-.day-picker input {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  min-height: 0;
-  height: 100%;
-  padding: 0;
-  border: 0;
-  opacity: 0;
-  cursor: pointer;
-}
-
 .log-prompt {
   display: grid;
   gap: var(--space-3);

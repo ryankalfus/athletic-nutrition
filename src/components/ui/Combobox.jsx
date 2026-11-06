@@ -68,6 +68,7 @@ export function Combobox({
   options,
   listLabel,
   className = "",
+  onBlur,
   ...inputProps
 }) {
   const [open, setOpen] = useState(false);
@@ -193,7 +194,10 @@ export function Combobox({
           setOpen(true);
         }}
         onKeyDown={onKeyDown}
-        onBlur={close}
+        onBlur={(event) => {
+          close();
+          onBlur?.(event);
+        }}
       />
       <button
         type="button"

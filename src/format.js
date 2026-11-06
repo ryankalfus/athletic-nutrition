@@ -35,6 +35,53 @@ export function formatTime(value) {
     .replace(/\s+(?=[AP]M$)/, NBSP);
 }
 
+// TimeField (UX-CMP-09): the text in a time box. Like formatTime but with a
+// plain space (an input never wraps) and "" for no time.
+export function formatTimeInput(value) {
+  return isClock(value) ? formatTime(value).replace(NBSP, " ") : "";
+}
+
+// What an athlete types into a time box, as "HH:MM", or null when it is not a
+// time. "4:10p", "4 pm", "4:10 PM" and "410p" carry their half of the day;
+// "16:00" and "04:00" (two digits, a colon, two digits) are a 24-hour clock;
+// with no AM/PM, 1 to 6 is the afternoon ("4:10" is 4:10 PM), 7 to 11 the
+// morning and 12 is noon.
+export function parseTime(text) {
+  const typed = String(text || "")
+    .trim()
+    .toLowerCase()
+    .replace(/\u00a0/g, " ")
+    .replace(/\./g, "");
+  const match = typed.match(/^(\d{1,2})(?::?(\d{2}))?\s*(am|pm|a|p)?$/);
+  if (!match) return null;
+  let hours = Number(match[1]);
+  const minutes = Number(match[2] ?? 0);
+  const half = match[3]?.[0];
+  if (minutes > 59) return null;
+  if (half) {
+    if (hours < 1 || hours > 12) return null;
+    hours = (hours % 12) + (half === "p" ? 12 : 0);
+  } else if (/^\d{2}:\d{2}$/.test(typed) || hours === 0 || hours > 12) {
+    if (hours > 23) return null;
+  } else if (hours <= 6) hours += 12;
+  return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`;
+}
+
+// The suggestions in a time box: every `step` minutes, starting at 5:00 AM
+// so the common times come first.
+export function timeOptions(step = 15) {
+  const options = [];
+  for (let i = 0; i < (24 * 60) / step; i += 1) {
+    const total = (5 * 60 + i * step) % (24 * 60);
+    options.push(
+      formatTimeInput(
+        `${String(Math.floor(total / 60)).padStart(2, "0")}:${String(total % 60).padStart(2, "0")}`,
+      ),
+    );
+  }
+  return options;
+}
+
 // A time range with an unspaced en dash (UX-COPY-04): "4:00–5:30 PM", or
 // "11:00 AM–12:30 PM" when the half of the day changes.
 export function formatTimeRange(start, end) {

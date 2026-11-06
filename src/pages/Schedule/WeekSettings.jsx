@@ -60,9 +60,8 @@ function RestDaysSheet({ restWeekdays, onClose }) {
               )
             }
           />
-          <p className="muted field-hint">
-            Today shows a rest day on these days. A practice or game on that day
-            still comes first, and you can undo a rest day on Today.
+          <p className="muted field-hint" data-hint>
+            A practice or game on a rest day still comes first.
           </p>
         </div>
         <DialogError />

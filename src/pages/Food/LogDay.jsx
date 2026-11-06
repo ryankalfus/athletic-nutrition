@@ -1,5 +1,6 @@
+import { DateField } from "../../components/ui/DateField.jsx";
 import { useEffect, useRef, useState } from "react";
-import { CalendarDays, ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Menu } from "../../components/ui/Menu.jsx";
 import {
   consumeStock,
@@ -236,20 +237,14 @@ export default function LogDay({ date, todayKey, now, onNavigate }) {
           >
             <ChevronRight size={20} strokeWidth={1.75} aria-hidden="true" />
           </button>
-          <label className="day-picker">
-            <CalendarDays size={20} strokeWidth={1.75} aria-hidden="true" />
-            <span className="sr-only">Choose a day</span>
-            <input
-              type="date"
-              max={todayKey}
-              value={date}
-              onChange={(e) =>
-                e.target.value &&
-                e.target.value <= todayKey &&
-                go(e.target.value)
-              }
-            />
-          </label>
+          <DateField
+            icon
+            label="Choose a day"
+            required
+            max={todayKey}
+            value={date}
+            onChange={(next) => next && next <= todayKey && go(next)}
+          />
         </nav>
         {!isToday && (
           <button className="text-button" onClick={() => go(todayKey)}>

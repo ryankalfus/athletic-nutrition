@@ -7,7 +7,8 @@
 // - Each page's H1 sits in a <header> (A11Y-03).
 // - A page shorter than the window does not scroll (P1-11: the sr-only announcer
 //   added a 1 px scroll).
-// - Setup steps 2 and 3 stack time fields one per row at 320 px (RWD-06).
+// - Setup steps 2 and 3 keep start and end times side by side at 320 px
+//   (UX-CMP-09); every [data-hint] is at most 14 words at 14 px (UX-COPY-05).
 // - Numeral XL countdown and the water total at the time size (DS-03,
 //   UX-DS-09); Log in the 720 px reading column (DS-08); You and About sections
 //   40 px apart from 1024 px (UX-DS-08); the large title and section titles on
@@ -60,6 +61,7 @@ async (page) => {
     "Ingredient relationship",
   ];
   const problems = [];
+  let hintsSeen = 0;
   // 7.6: the listed terms (any case for "streak"), ISO dates, bare 24-hour
   // times; U2-02: dot-meta, spaced dashes, uppercase, capitals and times that
   // can wrap before AM/PM.
@@ -92,6 +94,22 @@ async (page) => {
     // UX-COPY-04, UX-BUG-08: a time and its AM/PM are joined by U+00A0.
     const loose = text.match(/.{0,24}\d:\d\d [AP]M/);
     if (loose) problems.push(`${route}: breakable time "${loose[0]}"`);
+    // UX-COPY-05: a helper is one line of at most 14 words at 14 px.
+    const hints = await p.evaluate(() =>
+      [...document.querySelectorAll("[data-hint]")]
+        .filter((el) => el.getClientRects().length)
+        .map((el) => ({
+          text: el.innerText.trim(),
+          size: getComputedStyle(el).fontSize,
+        })),
+    );
+    hintsSeen += hints.length;
+    for (const hint of hints) {
+      if (hint.text.split(/\s+/).length > 14)
+        problems.push(`${route}: helper over 14 words "${hint.text}"`);
+      if (hint.size !== "14px")
+        problems.push(`${route}: helper at ${hint.size} "${hint.text}"`);
+    }
     const upper = await p.evaluate(() =>
       [...document.querySelectorAll("body *")]
         .filter((el) => getComputedStyle(el).textTransform === "uppercase")
@@ -145,20 +163,27 @@ async (page) => {
     if (!String(first).includes("skip-link"))
       problems.push(`${route}: first Tab lands on ${first}, not the skip link`);
   };
-  const stacked = async (step) => {
+  const paired = async (step) => {
     const rows = await p.evaluate(() =>
-      [...document.querySelectorAll(".time-fields, .school-date-fields")]
+      [...document.querySelectorAll(".time-pair")]
         .filter((group) => group.getClientRects().length)
         .map((group) => {
-          const inputs = [...group.querySelectorAll("input")].map((input) =>
-            input.getBoundingClientRect(),
+          const inputs = [...group.querySelectorAll("input")];
+          const boxes = inputs.map((input) => input.getBoundingClientRect());
+          return (
+            inputs.length === 2 &&
+            boxes[0].top === boxes[1].top &&
+            boxes[1].right <= window.innerWidth &&
+            inputs.every((input) => input.scrollWidth <= input.clientWidth) &&
+            inputs.every((input) => /^\d{1,2}:\d\d [AP]M$/.test(input.value))
           );
-          return inputs.length < 2 || inputs[1].top >= inputs[0].bottom;
         }),
     );
     if (!rows.length) problems.push(`${step}: no time fields found`);
     if (rows.some((ok) => !ok))
-      problems.push(`${step}: time fields sit side by side at 320 px`);
+      problems.push(
+        `${step}: start and end times are not side by side, unclipped and in the app's format at 320 px`,
+      );
   };
   const tokenColor = (token) =>
     p.evaluate((name) => {
@@ -186,7 +211,7 @@ async (page) => {
     await p.getByRole("combobox", { name: /^Sport/ }).fill("Soccer");
     await p.getByRole("button", { name: "Next", exact: true }).click();
     await p.getByRole("heading", { name: "Your school day" }).waitFor();
-    await stacked("Setup step 2");
+    await paired("Setup step 2");
     const day = await p
       .getByRole("button", { name: "Monday", exact: true })
       .evaluate((node) => ({
@@ -208,7 +233,7 @@ async (page) => {
       );
     await p.getByRole("button", { name: "Next", exact: true }).click();
     await p.getByRole("heading", { name: "Practices and games" }).waitFor();
-    await stacked("Setup step 3");
+    await paired("Setup step 3");
     fail();
     await p.getByRole("button", { name: "Skip setup" }).click();
     await p
@@ -218,7 +243,7 @@ async (page) => {
       })
       .waitFor();
     result.checks.push(
-      "Setup steps 2 and 3 stack their time fields one per row at 320 px (RWD-06); a selected weekday has the selected tint, primary border and a check (DS-12).",
+      "Setup steps 2 and 3 keep start and end times side by side at 320 px, unclipped, reading like “8:00 AM” (UX-CMP-09, replaces RWD-06's stacking); a selected weekday has the selected tint, primary border and a check (DS-12).",
     );
 
     // U1-02 (UX-BUG-04, UX-NAV-07): the page asks for safe-area insets, and
@@ -271,8 +296,11 @@ async (page) => {
     await p.getByRole("radio", { name: "Month" }).click();
     await scan("schedule month");
     await p.getByRole("radio", { name: "Week" }).click();
+    if (hintsSeen < 4)
+      problems.push(`only ${hintsSeen} [data-hint] helpers were scanned`);
     fail();
     result.checks.push(
+      `UX-COPY-05: the ${hintsSeen} helpers marked data-hint on those routes and sheets are each at most 14 words at 14 px.`,
       `No 7.6 term ("streak" included), ISO date or bare 24-hour time on Welcome and ${routes.length} routes at 320 and 1280 px, plus Schedule Month (P0-07, P0-05).`,
       `No " · ", no spaced dash between words, no text-transform uppercase, no capital word over 3 letters but USDA, and every time joined to its AM/PM by U+00A0, on Welcome and ${routes.length} routes at 320 and 1280 px plus Schedule Month (U2-02: UX-COPY-01 to 04, UX-BUG-08, UX-BUG-09).`,
       "Every route's H1 sits inside a <header>: Welcome, Today, Schedule, Food, You, This device, About and Not found (A11Y-03).",

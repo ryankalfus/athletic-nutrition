@@ -119,7 +119,12 @@ async (page) => {
       await p.getByRole("button", { name: "Next", exact: true }).click();
       await p.getByRole("heading", { name: "Your school day" }).waitFor();
       await p.getByRole("button", { name: "Skip setup" }).click();
-      await p.getByRole("heading", { level: 1, name: /^[A-Z][a-z]{2}, [A-Z][a-z]{2} \d{1,2}$/ }).waitFor();
+      await p
+        .getByRole("heading", {
+          level: 1,
+          name: /^[A-Z][a-z]{2}, [A-Z][a-z]{2} \d{1,2}$/,
+        })
+        .waitFor();
 
       // You › Sport & season: Escape closes the list, not the sheet.
       await p.goto(`${base}#/you/sport`);
@@ -197,6 +202,93 @@ async (page) => {
     result.failure = `touch: ${error.message}`;
   } finally {
     await context.close();
+  }
+  if (result.failure) return result;
+
+  // U4-03 (UX-CMP-09): a TimeField is the same combobox. It shows the app's
+  // time ("4:00 PM", never "04:00 PM"), suggests times every 15 minutes,
+  // reads what is typed ("4:10p"), and ArrowDown, Enter and Escape work as
+  // on Sport; Escape closes only the list, not the sheet.
+  const timeContext = await browser.newContext({
+    viewport: { width: 390, height: 844 },
+  });
+  await timeContext.clock.setFixedTime(new Date(2026, 9, 13, 10, 0, 0));
+  p = await timeContext.newPage();
+  p.setDefaultTimeout(15000);
+  p.on("pageerror", (e) => result.errors.push(e.message));
+  try {
+    await p.goto(base);
+    await p.getByRole("button", { name: "Get started" }).click();
+    await p.getByRole("textbox", { name: /First name/ }).fill("Maya");
+    await p.getByRole("combobox", { name: /^Sport/ }).fill("Soccer");
+    await p.getByRole("button", { name: "Next", exact: true }).click();
+    await p.getByRole("heading", { name: "Your school day" }).waitFor();
+    await p.getByRole("button", { name: "Skip setup" }).click();
+    await p
+      .getByRole("heading", {
+        level: 1,
+        name: /^[A-Z][a-z]{2}, [A-Z][a-z]{2} \d{1,2}$/,
+      })
+      .waitFor();
+    await p.goto(`${base}#/schedule`);
+    await p
+      .getByRole("button", { name: /^(\+ )?Add$/ })
+      .first()
+      .click();
+    const sheet = p.getByRole("dialog", { name: "Add practice" });
+    const starts = sheet.getByRole("combobox", { name: "Starts", exact: true });
+    await starts.waitFor();
+    let t = await state(starts);
+    expect(t.value === "4:00 PM", `Starts shows "${t.value}", not 4:00 PM`);
+    expect(
+      (await sheet.locator("input[type=time], input[type=date]").count()) === 0,
+      "the sheet still has a native time or date input",
+    );
+    await starts.fill("4:10p");
+    await sheet.getByRole("textbox", { name: "Name" }).focus();
+    t = await state(starts);
+    expect(t.value === "4:10 PM", `typed 4:10p reads "${t.value}"`);
+    await starts.fill("16:45");
+    await sheet.getByRole("textbox", { name: "Name" }).focus();
+    expect(
+      (await state(starts)).value === "4:45 PM",
+      "typed 16:45 does not read 4:45 PM",
+    );
+    await starts.focus();
+    await p.keyboard.press("ArrowDown");
+    t = await state(starts);
+    expect(
+      t.expanded === "true" &&
+        t.options.length === 96 &&
+        t.active === "4:45 PM",
+      `ArrowDown did not open 96 times on 4:45 PM: ${JSON.stringify({ ...t, options: t.options.length })}`,
+    );
+    await p.keyboard.press("ArrowDown");
+    await p.keyboard.press("Enter");
+    t = await state(starts);
+    expect(
+      t.value === "5:00 PM" && t.expanded === "false",
+      `ArrowDown then Enter picked "${t.value}"`,
+    );
+    await p.keyboard.press("ArrowDown");
+    await p.keyboard.press("Escape");
+    expect(
+      (await state(starts)).expanded === "false" && (await sheet.isVisible()),
+      "Escape did not close only the time list",
+    );
+    await sheet.getByRole("combobox", { name: "Ends", exact: true }).fill("6p");
+    await sheet
+      .getByRole("button", { name: "Add practice", exact: true })
+      .click();
+    await sheet.waitFor({ state: "hidden" });
+    await p.getByRole("main").getByText("5:00 PM–6:00 PM").first().waitFor();
+    result.checks.push(
+      "U4-03 TimeField at 390: Starts shows 4:00 PM with no native time or date input in the sheet; typed 4:10p reads 4:10 PM and 16:45 reads 4:45 PM; ArrowDown opens 96 times on the current one, ArrowDown and Enter pick 5:00 PM, Escape closes only the list; saving with Ends 6p lists 5:00 PM–6:00 PM (UX-CMP-09).",
+    );
+  } catch (error) {
+    result.failure = `time field: ${error.message}`;
+  } finally {
+    await timeContext.close();
   }
   return result;
 };

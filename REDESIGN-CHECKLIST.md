@@ -390,7 +390,7 @@ Each ID is an individual checkbox. Implementation notes and blockers go on the m
 - [x] **RWD-03**
 - [x] **RWD-04** — Fixed 2026.10.09: Food chrome is 112 px and content starts at 120 px at 320x740 (browser-responsive.js).
 - [x] **RWD-05** — Fixed 2026.10.09: Food chip focus ring uses a 1 px offset, so 3 + 1 px fits the 4 px scroller padding; browser-responsive.js checks each focused chip at 320 px.
-- [x] **RWD-06** — Fixed 2026.10.09: setup steps 2 and 3 stack time fields below 480 px and still fit 390x844 (browser-shared-ui.js, browser-setup.js).
+- [x] **RWD-06** — Fixed 2026.10.09: setup steps 2 and 3 stack time fields below 480 px and still fit 390x844 (browser-shared-ui.js, browser-setup.js). Superseded 2026.11.05 by UX-CMP-09 (UX U4-03): start and end times now sit side by side at every width, 320 px included, because a TimeField ("4:00 PM") is narrower than the native input; browser-shared-ui.js checks the pair is unclipped at 320 px.
 - [x] **RWD-07**
 - [x] **RWD-08**
 - [x] **RWD-09**

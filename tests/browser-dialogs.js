@@ -7,7 +7,8 @@
 // - Schedule writes toast what happened ("Practice added.", "Day skipped.").
 // - A failed save shows its error just above the sheet's footer; "Try again"
 //   repeats only that write and closes the sheet (one practice, not two).
-// - An empty date or time in Add practice is the app's own field error.
+// - An empty time in Add practice is the app's own field error (the date is
+//   a DateField and always holds a day).
 // - The calendar's Today button is named "Go to today" in Week and Month.
 // - "Undo trip" shows the busy spinner and aria-busy while it saves.
 // The clock is fixed to Sunday 2026-10-11 10:00.
@@ -77,11 +78,21 @@ async (page) => {
     await p.getByRole("button", { name: "Next", exact: true }).click();
     await p.getByRole("heading", { name: "Your school day" }).waitFor();
     await p.getByRole("button", { name: "Skip setup" }).click();
-    await p.getByRole("heading", { level: 1, name: /^[A-Z][a-z]{2}, [A-Z][a-z]{2} \d{1,2}$/ }).waitFor();
+    await p
+      .getByRole("heading", {
+        level: 1,
+        name: /^[A-Z][a-z]{2}, [A-Z][a-z]{2} \d{1,2}$/,
+      })
+      .waitFor();
 
     // A11Y-10: one control named "Today" (the nav); the calendar's is "Go to today".
     await p.goto(`${base}#/schedule`);
-    await p.getByRole("heading", { level: 1, name: /^(January|February|March|April|May|June|July|August|September|October|November|December)$/ }).waitFor();
+    await p
+      .getByRole("heading", {
+        level: 1,
+        name: /^(January|February|March|April|May|June|July|August|September|October|November|December)$/,
+      })
+      .waitFor();
     for (const view of ["Week", "Month"]) {
       await p.getByRole("radio", { name: view }).click();
       await p.getByRole("button", { name: "Go to today", exact: true }).click();
@@ -112,7 +123,10 @@ async (page) => {
       if (!state.title || state.ring)
         throw new Error(`${where} opened by mouse: ${JSON.stringify(state)}`);
     };
-    await p.getByRole("button", { name: /^(\+ )?Add$/ }).first().click();
+    await p
+      .getByRole("button", { name: /^(\+ )?Add$/ })
+      .first()
+      .click();
     await p.getByRole("dialog", { name: "Add practice" }).waitFor();
     await titleFocus("Add practice");
     await p.keyboard.press("Escape");
@@ -143,8 +157,11 @@ async (page) => {
     );
     await p.goto(`${base}#/schedule`);
 
-    // A11Y-09: empty date and start time are app errors on the field.
-    await p.getByRole("button", { name: /^(\+ )?Add$/ }).first().click();
+    // A11Y-09: an empty start time is the app's error on the field.
+    await p
+      .getByRole("button", { name: /^(\+ )?Add$/ })
+      .first()
+      .click();
     const add = p.getByRole("dialog", { name: "Add practice" });
     const submit = add.getByRole("button", {
       name: "Add practice",
@@ -165,17 +182,20 @@ async (page) => {
     };
     if (!(await add.locator("form").evaluate((form) => form.noValidate)))
       throw new Error("Add practice still uses the browser's validation popup");
-    await add.getByLabel("Activity date", { exact: true }).fill("");
-    await submit.click();
-    await fieldError("Activity date", "Choose a date.");
-    await add.getByLabel("Activity date", { exact: true }).fill("2026-10-11");
+    // The date is a DateField (U4-03): it always holds a day, so only the
+    // time can be empty here; tests/domain.test.js covers "Choose a date.".
+    const dateText = await add
+      .getByRole("button", { name: /^Activity date/ })
+      .innerText();
+    if (dateText.trim() !== "Sun, Oct 11")
+      throw new Error(`Activity date reads "${dateText}", not Sun, Oct 11`);
     await add.getByLabel("Starts", { exact: true }).fill("");
     await submit.click();
     await fieldError("Starts", "Choose a start time.");
     await add.getByLabel("Starts", { exact: true }).fill("16:00");
     await add.getByLabel("Ends", { exact: true }).fill("17:30");
     result.checks.push(
-      "Add practice with an empty date or start time shows the app's message, aria-invalid and aria-describedby on the field, and focuses it (A11Y-09).",
+      "Add practice shows the day as “Sun, Oct 11”; an empty start time shows the app's message, aria-invalid and aria-describedby on the field, and focuses it (A11Y-09).",
     );
 
     // STATE-02: a failed save shows above the footer; Try again saves once
@@ -268,7 +288,10 @@ async (page) => {
       .getByRole("button", { name: "Delete", exact: true })
       .click();
     await toast("Practice deleted.");
-    await p.getByRole("button", { name: /^(\+ )?Add$/ }).first().click();
+    await p
+      .getByRole("button", { name: /^(\+ )?Add$/ })
+      .first()
+      .click();
     await add.getByRole("button", { name: "Game", exact: true }).click();
     const addGame = p.getByRole("dialog", { name: "Add game" });
     await addGame.getByLabel("Name", { exact: true }).fill("Weekly game");

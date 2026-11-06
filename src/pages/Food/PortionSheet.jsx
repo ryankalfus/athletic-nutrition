@@ -1,3 +1,4 @@
+import { TimeField } from "../../components/ui/TimeField.jsx";
 import { useState } from "react";
 import { portionCalories, startingAmount } from "../../domain/food.js";
 import { portionFormProblem } from "../../domain/validation.js";
@@ -57,17 +58,15 @@ export function WhenField({ when, isToday }) {
           }}
         />
       )}
-      <label>
-        {isToday ? "Time eaten" : "Or an exact time"}
-        <input
-          type="time"
-          value={when.exact}
-          onChange={(e) => {
-            when.setExact(e.target.value);
-            if (e.target.value) when.setApprox("");
-          }}
-        />
-      </label>
+      <TimeField
+        label={isToday ? "Time eaten" : "Or an exact time"}
+        field="when"
+        value={when.exact}
+        onChange={(time) => {
+          when.setExact(time);
+          if (time) when.setApprox("");
+        }}
+      />
       <FieldError field="when" />
     </fieldset>
   );
@@ -81,9 +80,7 @@ export function PortionSheet({ food, entry, isToday, onSave, onDirty }) {
   const [name, setName] = useState(
     entry?.name || food.displayName || food.name,
   );
-  const [amount, setAmount] = useState(() =>
-    startingAmount(food, entry, hint),
-  );
+  const [amount, setAmount] = useState(() => startingAmount(food, entry, hint));
   const [unit, setUnit] = useState(
     entry?.portion?.unit ||
       (entry?.servingGrams ? "g" : "") ||

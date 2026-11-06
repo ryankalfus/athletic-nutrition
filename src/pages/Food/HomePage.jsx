@@ -516,7 +516,7 @@ function CountsAsSheet({ row, pending, onClose, onSave }) {
               </option>
             ))}
           </select>
-          <small>Ideas that need this food will use it.</small>
+          <small data-hint>Ideas that need this food will use it.</small>
         </label>
         <DialogError />
         <div className="sheet-footer">

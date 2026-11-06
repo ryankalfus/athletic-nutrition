@@ -1332,3 +1332,159 @@
 .section-head .text-button {
   flex: 0 0 auto;
 }
+
+/* ---------- Date field (UX-CMP-09) ---------- */
+
+/* The box is a wrapper with the field's border and fill; the button inside
+ * has neither, so it is not an outlined button. Focus and invalid are the
+ * 2px border, as on every field. */
+.date-field-box {
+  display: flex;
+  height: var(--control-height);
+  border: var(--border-control);
+  border-radius: var(--radius-control);
+  background: var(--color-surface);
+  transition: border-color var(--motion-fast) var(--ease-out);
+}
+
+.date-field-box:focus-within {
+  border-color: var(--color-primary);
+  box-shadow: inset 0 0 0 1px var(--color-primary);
+}
+
+.date-field-box:has([aria-invalid="true"]) {
+  border-color: var(--color-error);
+  box-shadow: inset 0 0 0 1px var(--color-error);
+}
+
+.date-field-button {
+  flex: 1 1 auto;
+  justify-content: space-between;
+  min-width: 0;
+  min-height: 0;
+  padding: 0 var(--space-3);
+  border: 0;
+  border-radius: inherit;
+  background: transparent;
+  color: var(--color-ink);
+  font-size: var(--text-body);
+  line-height: var(--leading-body);
+  font-weight: 400;
+  text-align: left;
+}
+
+.date-field-button:focus-visible {
+  outline: none;
+}
+
+@media (hover: hover) {
+  .date-field-button:hover:not(:disabled) {
+    background: transparent;
+  }
+}
+
+.date-field-button > span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.date-field-button > svg {
+  color: var(--color-ink-muted);
+}
+
+.date-field-placeholder {
+  color: var(--color-ink-subtle);
+}
+
+/* The picker: a bottom sheet on phones, a popover under the button from
+ * 768px (DateField.jsx sets left and top). It is in the top layer, so a
+ * sheet's scroll box never clips it. */
+.date-popover {
+  position: fixed;
+  inset: auto 0 0;
+  width: 100%;
+  max-width: none;
+  max-height: 90dvh;
+  margin: 0;
+  padding: var(--space-4) var(--gutter)
+    calc(var(--space-4) + env(safe-area-inset-bottom));
+  overflow-y: auto;
+  border: 0;
+  border-radius: var(--radius-sheet) var(--radius-sheet) 0 0;
+  background: var(--color-surface);
+  box-shadow: var(--elev-sheet);
+  color: var(--color-ink);
+}
+
+.date-popover::backdrop {
+  background: var(--color-backdrop);
+}
+
+.date-grid .calendar-day {
+  align-content: center;
+  min-height: var(--target);
+}
+
+.date-grid .day-events {
+  display: none;
+}
+
+.calendar-day:disabled {
+  background: transparent;
+  color: var(--color-line-strong);
+}
+
+.date-clear {
+  margin-top: var(--space-2);
+}
+
+@media (min-width: 768px) {
+  .date-popover {
+    inset: auto;
+    width: 336px;
+    padding: var(--space-3);
+    border-radius: var(--radius-float);
+    box-shadow: var(--elev-menu);
+  }
+
+  .date-popover::backdrop {
+    background: transparent;
+  }
+}
+
+/* ---------- Field prefix and suffix (UX-CMP-04) ---------- */
+
+/* The unit sits inside the field: "$" before the value, "min" after it. */
+.field-affix {
+  position: relative;
+  display: block;
+}
+
+.field-prefix,
+.field-suffix {
+  position: absolute;
+  top: 50%;
+  color: var(--color-ink-muted);
+  font-size: var(--text-body);
+  line-height: 1;
+  font-weight: 400;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.field-prefix {
+  left: var(--space-3);
+}
+
+.field-suffix {
+  right: var(--space-3);
+}
+
+.field-affix:has(> .field-prefix) > input {
+  padding-left: var(--space-8);
+}
+
+.field-affix:has(> .field-suffix) > input {
+  padding-right: var(--space-12);
+}

@@ -1,3 +1,5 @@
+import { FieldAffix } from "../../components/ui/FieldAffix.jsx";
+import { DateField } from "../../components/ui/DateField.jsx";
 import { useRef, useState } from "react";
 import { useAsyncAction } from "../../hooks/useAsyncAction.js";
 import { Dialog, DialogCancel, DialogError } from "../../components/Dialog.jsx";
@@ -151,20 +153,16 @@ export function ActivitySheet({ model }) {
                 )}
                 {repeatMode === "once" && editingScope !== "weekday" ? (
                   <>
-                    <label>
-                      Activity date
-                      <Input
-                        field="date"
-                        required
-                        type="date"
-                        value={dateDraft}
-                        onChange={(event) => {
-                          setDateDraft(event.target.value);
-                          if (event.target.value)
-                            setSelectedKey(event.target.value);
-                        }}
-                      />
-                    </label>
+                    <DateField
+                      label="Activity date"
+                      field="date"
+                      required
+                      value={dateDraft}
+                      onChange={(next) => {
+                        setDateDraft(next);
+                        if (next) setSelectedKey(next);
+                      }}
+                    />
                     <FieldError field="date" />
                   </>
                 ) : (
@@ -175,19 +173,14 @@ export function ActivitySheet({ model }) {
                       value={repeatWeekdays}
                       onToggle={toggleRepeatDay}
                     />
-                    <label>
-                      Until
-                      <Input
-                        field="repeatEnd"
-                        required
-                        type="date"
-                        min={selectedKey}
-                        value={repeatEndDate}
-                        onChange={(event) =>
-                          setRepeatEndDate(event.target.value)
-                        }
-                      />
-                    </label>
+                    <DateField
+                      label="Until"
+                      field="repeatEnd"
+                      required
+                      min={selectedKey}
+                      value={repeatEndDate}
+                      onChange={setRepeatEndDate}
+                    />
                     <FieldError field="repeatEnd" />
                   </div>
                 )}
@@ -219,17 +212,19 @@ export function ActivitySheet({ model }) {
             </fieldset>
             {location === "away" && (
               <label>
-                Travel time (min)
-                <Input
-                  field="travel"
-                  type="number"
-                  min="0"
-                  max="360"
-                  step="5"
-                  value={travelMinutes}
-                  onChange={(event) => setTravelMinutes(event.target.value)}
-                />
-                <small>Minutes from home to the venue.</small>
+                Travel time<span className="sr-only"> (min)</span>
+                <FieldAffix suffix="min">
+                  <Input
+                    field="travel"
+                    type="number"
+                    min="0"
+                    max="360"
+                    step="5"
+                    value={travelMinutes}
+                    onChange={(event) => setTravelMinutes(event.target.value)}
+                  />
+                </FieldAffix>
+                <small data-hint>Minutes from home to the venue.</small>
                 {Number(travelMinutes) > 0 &&
                   Number(travelMinutes) <= timeToMinutes(startTime) && (
                     <small>

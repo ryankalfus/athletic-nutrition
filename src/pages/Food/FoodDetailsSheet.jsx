@@ -1,3 +1,5 @@
+import { FieldAffix } from "../../components/ui/FieldAffix.jsx";
+import { DateField } from "../../components/ui/DateField.jsx";
 import { useState } from "react";
 import {
   INGREDIENTS,
@@ -193,7 +195,7 @@ export function FoodDetailsSheet({
                 </option>
               ))}
             </select>
-            <small className="muted">
+            <small className="muted" data-hint>
               Ideas that need this food will use it.
             </small>
           </label>
@@ -239,28 +241,29 @@ export function FoodDetailsSheet({
                 />
               </label>
             )}
-            <label>
-              Use-by date (optional)
-              <input
-                type="date"
-                value={draft.expiry || ""}
-                onChange={(e) => set("expiry", e.target.value)}
-              />
-            </label>
+            <DateField
+              label="Use-by date (optional)"
+              value={draft.expiry || ""}
+              onChange={(date) => set("expiry", date)}
+            />
           </>
         )}
         {!home && showPrices && (
           <>
             <label>
-              Price estimate ($, optional)
-              <Input
-                field="price"
-                type="number"
-                min="0"
-                step="0.01"
-                value={draft.price}
-                onChange={(e) => set("price", e.target.value)}
-              />
+              {/* The "$" is inside the field; the name keeps it. */}
+              <span aria-hidden="true">Price estimate (optional)</span>
+              <span className="sr-only">Price estimate ($, optional)</span>
+              <FieldAffix prefix="$">
+                <Input
+                  field="price"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={draft.price}
+                  onChange={(e) => set("price", e.target.value)}
+                />
+              </FieldAffix>
             </label>
             <FieldError field="price" />
           </>

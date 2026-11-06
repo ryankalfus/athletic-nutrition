@@ -1,3 +1,5 @@
+import { TimeField } from "../../components/ui/TimeField.jsx";
+import { DateField } from "../../components/ui/DateField.jsx";
 import { useRef } from "react";
 import { useAsyncAction } from "../../hooks/useAsyncAction.js";
 import { Dialog, DialogCancel, DialogError } from "../../components/Dialog.jsx";
@@ -101,25 +103,19 @@ export function SchoolDayEditor({ model }) {
                 />
               </label>
               <div className="school-date-fields">
-                <label>
-                  School year starts
-                  <input
-                    required
-                    type="date"
-                    value={schoolStartDate}
-                    onChange={(event) => setSchoolStartDate(event.target.value)}
-                  />
-                </label>
-                <label>
-                  School year ends
-                  <Input
-                    field="endDate"
-                    required
-                    type="date"
-                    value={schoolEndDate}
-                    onChange={(event) => setSchoolEndDate(event.target.value)}
-                  />
-                </label>
+                <DateField
+                  label="School year starts"
+                  required
+                  value={schoolStartDate}
+                  onChange={setSchoolStartDate}
+                />
+                <DateField
+                  label="School year ends"
+                  field="endDate"
+                  required
+                  value={schoolEndDate}
+                  onChange={setSchoolEndDate}
+                />
               </div>
               <FieldError field="endDate" />
               <TimeRange
@@ -154,31 +150,29 @@ export function SchoolDayEditor({ model }) {
                   onStart={setLunchStartTime}
                   onEnd={setLunchEndTime}
                 />
-                <div className="school-date-fields">
-                  <label>
-                    Morning snack{" "}
-                    <span className="optional-label">Optional</span>
-                    <Input
-                      field="snacks"
-                      type="time"
-                      value={morningSnackTime}
-                      onChange={(event) =>
-                        setMorningSnackTime(event.target.value)
-                      }
-                    />
-                  </label>
-                  <label>
-                    Afternoon snack{" "}
-                    <span className="optional-label">Optional</span>
-                    <Input
-                      field="snacks"
-                      type="time"
-                      value={afternoonSnackTime}
-                      onChange={(event) =>
-                        setAfternoonSnackTime(event.target.value)
-                      }
-                    />
-                  </label>
+                <div className="school-date-fields time-pair">
+                  <TimeField
+                    label={
+                      <>
+                        Morning snack{" "}
+                        <span className="optional-label">Optional</span>
+                      </>
+                    }
+                    field="snacks"
+                    value={morningSnackTime}
+                    onChange={setMorningSnackTime}
+                  />
+                  <TimeField
+                    label={
+                      <>
+                        Afternoon snack{" "}
+                        <span className="optional-label">Optional</span>
+                      </>
+                    }
+                    field="snacks"
+                    value={afternoonSnackTime}
+                    onChange={setAfternoonSnackTime}
+                  />
                 </div>
                 <FieldError field="snacks" />
                 <label>
@@ -192,7 +186,7 @@ export function SchoolDayEditor({ model }) {
                     value={commuteMinutes}
                     onChange={(event) => setCommuteMinutes(event.target.value)}
                   />
-                  <small>
+                  <small data-hint>
                     Minutes from school to home, practice, or your usual next
                     stop.
                   </small>
@@ -215,24 +209,18 @@ export function SchoolDayEditor({ model }) {
                   dates.
                 </p>
                 <div className="school-date-fields">
-                  <label>
-                    From
-                    <input
-                      type="date"
-                      value={daysOffStart}
-                      onChange={(event) => setDaysOffStart(event.target.value)}
-                    />
-                  </label>
-                  <label>
-                    Through
-                    <Input
-                      field="daysOff"
-                      type="date"
-                      min={daysOffStart}
-                      value={daysOffEnd}
-                      onChange={(event) => setDaysOffEnd(event.target.value)}
-                    />
-                  </label>
+                  <DateField
+                    label="From"
+                    value={daysOffStart}
+                    onChange={setDaysOffStart}
+                  />
+                  <DateField
+                    label="Through"
+                    field="daysOff"
+                    min={daysOffStart || undefined}
+                    value={daysOffEnd}
+                    onChange={setDaysOffEnd}
+                  />
                 </div>
                 <FieldError field="daysOff" />
                 <button type="button" onClick={addDaysOff}>
@@ -271,24 +259,18 @@ export function SchoolDayEditor({ model }) {
                 </label>
                 {pauseSchool && (
                   <div className="school-date-fields">
-                    <label>
-                      Pause from
-                      <input
-                        type="date"
-                        value={pausedFrom}
-                        onChange={(event) => setPausedFrom(event.target.value)}
-                      />
-                    </label>
-                    <label>
-                      Resume after
-                      <Input
-                        field="pause"
-                        type="date"
-                        min={pausedFrom}
-                        value={pausedUntil}
-                        onChange={(event) => setPausedUntil(event.target.value)}
-                      />
-                    </label>
+                    <DateField
+                      label="Pause from"
+                      value={pausedFrom}
+                      onChange={setPausedFrom}
+                    />
+                    <DateField
+                      label="Resume after"
+                      field="pause"
+                      min={pausedFrom || undefined}
+                      value={pausedUntil}
+                      onChange={setPausedUntil}
+                    />
                   </div>
                 )}
                 <FieldError field="pause" />

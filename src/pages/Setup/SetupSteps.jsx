@@ -1,3 +1,4 @@
+import { DateField } from "../../components/ui/DateField.jsx";
 import { useState } from "react";
 import { Plus } from "lucide-react";
 import {
@@ -31,7 +32,7 @@ import {
   toggleDay,
 } from "../Schedule/ScheduleFields.jsx";
 import { StepForm } from "./StepForm.jsx";
-import { FieldError, Input } from "../../components/ui/FieldError.jsx";
+import { FieldError } from "../../components/ui/FieldError.jsx";
 
 const WHERE = [
   ["home", "Home"],
@@ -191,16 +192,13 @@ export function PracticesStep({ data, title, next, todayKey }) {
       {game ? (
         <fieldset className="setup-group">
           <legend>Game</legend>
-          <label>
-            Game date
-            <Input
-              field="gameDate"
-              type="date"
-              min={todayKey}
-              value={game.date}
-              onChange={(event) => setGame({ date: event.target.value })}
-            />
-          </label>
+          <DateField
+            label="Game date"
+            field="gameDate"
+            min={todayKey}
+            value={game.date}
+            onChange={(date) => setGame({ date })}
+          />
           <FieldError field="gameDate" />
           <TimeRange
             className="time-fields"

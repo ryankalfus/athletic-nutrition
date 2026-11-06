@@ -156,7 +156,7 @@ legend {
   min-height: var(--control-height);
   padding: var(--space-3);
   border: var(--border-control);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-control);
   background: var(--color-surface);
   color: var(--color-ink);
   font-size: var(--text-body);
@@ -375,8 +375,14 @@ td {
   outline-offset: 2px;
 }
 
-:where(input, select, textarea):focus-visible {
-  outline-offset: 1px;
+/* UX-CMP-04: a text field's focus is its 2px border (1px border plus a 1px
+ * inset line), teal or the error color when invalid, with no outer ring. */
+:where(
+  input:not([type="checkbox"], [type="radio"], [type="file"], [type="range"]),
+  select,
+  textarea
+):focus-visible {
+  outline: none;
 }
 
 /* A page heading takes focus after a route change so screen readers start

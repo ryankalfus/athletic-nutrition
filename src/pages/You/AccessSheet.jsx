@@ -132,7 +132,7 @@ export function AccessSheet({ data, onClose, onNavigate }) {
           </span>
         </label>
         <FieldError field="budget" />
-        <span id="budget-hint" className="muted field-hint">
+        <span id="budget-hint" className="muted field-hint" data-hint>
           Shown on Groceries when price estimates are on.
         </span>
       </div>

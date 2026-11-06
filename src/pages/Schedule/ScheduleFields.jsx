@@ -1,3 +1,4 @@
+import { TimeField } from "../../components/ui/TimeField.jsx";
 import {
   FieldError,
   useFieldInvalid,
@@ -57,29 +58,24 @@ export function TimeRange({
   const endOnly = useFieldInvalid(endField);
   return (
     <>
-      <div className={className}>
-        <label>
-          {startLabel}
-          <input
-            required
-            type="time"
-            value={start}
-            onChange={(event) => onStart(event.target.value)}
-            {...both}
-            {...startOnly}
-          />
-        </label>
-        <label>
-          {endLabel}
-          <input
-            required
-            type="time"
-            value={end}
-            onChange={(event) => onEnd(event.target.value)}
-            {...both}
-            {...endOnly}
-          />
-        </label>
+      {/* Start and end sit side by side at every width (UX-CMP-09). */}
+      <div className={`${className} time-pair`}>
+        <TimeField
+          label={startLabel}
+          required
+          value={start}
+          onChange={onStart}
+          {...both}
+          {...startOnly}
+        />
+        <TimeField
+          label={endLabel}
+          required
+          value={end}
+          onChange={onEnd}
+          {...both}
+          {...endOnly}
+        />
       </div>
       <FieldError field={[field, startField, endField].filter(Boolean)} />
     </>

@@ -63,7 +63,11 @@ export async function mockApi(context) {
     if (p === "/api/foods/status") return json(route, { mode: api.status });
     if (p === "/api/foods/search") {
       if (api.searchMode === "error")
-        return json(route, { error: "Food provider unavailable or product not found." }, 502);
+        return json(
+          route,
+          { error: "Food provider unavailable or product not found." },
+          502,
+        );
       if (api.searchMode === "fail") return route.abort("failed");
       const q = (url.searchParams.get("q") || "").toLowerCase().trim();
       const foods = SEARCH_FIXTURES[q] || [];
@@ -261,6 +265,33 @@ export async function scenario(cap, start, label, fn) {
   }
 }
 
+// DateField (U4-03): open the picker for `label`, page to the month and pick
+// `iso` ("YYYY-MM-DD"); with iso "" press "Clear date" when the field has one.
+export async function pickDate(page, label, iso) {
+  await page.getByRole("button", { name: new RegExp(`^${label}`) }).click();
+  const picker = page.getByRole("dialog", { name: "Choose a date" });
+  await picker.waitFor();
+  if (!iso) {
+    const clear = picker.getByRole("button", { name: "Clear date" });
+    if (await clear.count()) await clear.click();
+    else await page.keyboard.press("Escape");
+    return;
+  }
+  for (let i = 0; i < 24; i += 1) {
+    if (await picker.locator(`[data-key="${iso}"]`).count()) break;
+    const shown = await picker
+      .locator(".calendar-day:not(.outside)")
+      .first()
+      .getAttribute("data-key");
+    await picker
+      .getByRole("button", {
+        name: iso < shown ? "Previous month" : "Next month",
+      })
+      .click();
+  }
+  await picker.locator(`[data-key="${iso}"]`).first().click();
+}
+
 // Dismiss every toast (so it does not sit over later screenshots). An Undo
 // toast has no X (UX-CMP-13); the app clears toasts on a route change.
 export async function clearToasts(page) {
@@ -275,13 +306,20 @@ export async function clearToasts(page) {
 // Close open dialogs with Escape, discarding unsaved changes if asked.
 export async function closeAll(page) {
   for (let i = 0; i < 5; i++) {
-    const discard = page.getByRole("dialog", { name: "Discard changes?" }).or(page.getByRole("alertdialog", { name: "Discard changes?" }));
+    const discard = page
+      .getByRole("dialog", { name: "Discard changes?" })
+      .or(page.getByRole("alertdialog", { name: "Discard changes?" }));
     if (await discard.count()) {
-      await discard.getByRole("button", { name: "Discard", exact: true }).click();
+      await discard
+        .getByRole("button", { name: "Discard", exact: true })
+        .click();
       await page.waitForTimeout(300);
       continue;
     }
-    const open = await page.locator("dialog[open], [role=dialog], [role=alertdialog]").filter({ visible: true }).count();
+    const open = await page
+      .locator("dialog[open], [role=dialog], [role=alertdialog]")
+      .filter({ visible: true })
+      .count();
     if (!open) return;
     await page.keyboard.press("Escape");
     await page.waitForTimeout(350);

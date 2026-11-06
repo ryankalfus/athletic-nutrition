@@ -208,9 +208,9 @@ export function ImportSheet({ events, subscriptions = [], todayKey, onClose }) {
             <FieldErrors error={error}>
               {mode === "file" ? (
                 <>
-                  <p className="muted field-hint">
-                    In your team app, look for Export or Download calendar, then
-                    choose the .ics file it saves.
+                  <p className="muted field-hint" data-hint>
+                    In your team app, choose Export or Download calendar, then
+                    pick the .ics file.
                   </p>
                   {/* Opened by "Choose file", like the backup restore. */}
                   <Input
@@ -244,7 +244,7 @@ export function ImportSheet({ events, subscriptions = [], todayKey, onClose }) {
                     />
                   </label>
                   <FieldError field="link" />
-                  <p className="muted field-hint">
+                  <p className="muted field-hint" data-hint>
                     In your team app, look for Subscribe or Sync calendar and
                     copy the link.
                   </p>
