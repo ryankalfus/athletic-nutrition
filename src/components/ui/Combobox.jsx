@@ -1,5 +1,5 @@
 import { useEffect, useId, useLayoutEffect, useRef, useState } from "react";
-import { Check, ChevronDown } from "lucide-react";
+import { Check, ChevronDown, ChevronLeft } from "lucide-react";
 import { Input } from "./FieldError.jsx";
 
 const same = (a, b) => a.trim().toLowerCase() === b.trim().toLowerCase();
@@ -69,8 +69,18 @@ export function Combobox({
   listLabel,
   className = "",
   onBlur,
+  pushed = false,
   ...inputProps
 }) {
+  const [phone, setPhone] = useState(
+    () => !window.matchMedia("(min-width: 768px)").matches,
+  );
+  useEffect(() => {
+    const media = window.matchMedia("(min-width: 768px)");
+    const update = () => setPhone(!media.matches);
+    media.addEventListener("change", update);
+    return () => media.removeEventListener("change", update);
+  }, []);
   const [open, setOpen] = useState(false);
   // null: show every option (opened from the chevron or arrows); a string:
   // filter by what was typed.
@@ -89,19 +99,41 @@ export function Combobox({
   // Typing the one matching option in full leaves nothing to suggest.
   const nothingToAdd =
     query != null && shown.length === 1 && same(shown[0], query);
-  const expanded = open && shown.length > 0 && !nothingToAdd;
+  const push = pushed && phone && open;
+  const expanded = open && (push || (shown.length > 0 && !nothingToAdd));
+  useLayoutEffect(() => {
+    if (!push) return undefined;
+    input.current?.focus();
+    list.current?.removeAttribute("style");
+    const disabled = [];
+    let node = root.current;
+    const sheet = node.closest("dialog");
+    while (node && node !== sheet) {
+      for (const sibling of node.parentElement.children) {
+        if (sibling !== node && !sibling.inert) {
+          sibling.inert = true;
+          disabled.push(sibling);
+        }
+      }
+      node = node.parentElement;
+    }
+    return () =>
+      disabled.forEach((node) => {
+        node.inert = false;
+      });
+  }, [push]);
 
   useLayoutEffect(() => {
     const node = list.current;
-    if (!node?.showPopover) return;
+    if (!node?.showPopover || push) return;
     const isOpen = node.matches(":popover-open");
     if (expanded && !isOpen) node.showPopover();
     else if (!expanded && isOpen) node.hidePopover();
-  }, [expanded]);
+  }, [expanded, push]);
 
   useLayoutEffect(() => {
     const node = list.current;
-    if (!expanded || !node || !input.current) return undefined;
+    if (push || !expanded || !node || !input.current) return undefined;
     const follow = () => place(node, input.current);
     follow();
     window.addEventListener("scroll", follow, { capture: true, passive: true });
@@ -110,7 +142,7 @@ export function Combobox({
       window.removeEventListener("scroll", follow, { capture: true });
       window.removeEventListener("resize", follow);
     };
-  }, [expanded, shown.length]);
+  }, [expanded, shown.length, push]);
 
   // A click or tap outside the box and its list closes it (the box may not
   // have focus after a tap on the chevron, so blur alone is not enough).
@@ -121,7 +153,7 @@ export function Combobox({
     };
     document.addEventListener("pointerdown", outside);
     return () => document.removeEventListener("pointerdown", outside);
-  }, [expanded]);
+  }, [expanded, push]);
 
   useLayoutEffect(() => {
     if (expanded && active >= 0)
@@ -159,9 +191,14 @@ export function Combobox({
         return;
       }
       const count = shown.length;
+      if (!count) return;
       setActive((index) =>
         key === "ArrowDown" ? (index + 1) % count : (index - 1 + count) % count,
       );
+    } else if (key === "Enter" && push && active < 0) {
+      event.preventDefault();
+      close();
+      input.current?.focus();
     } else if (key === "Enter" && expanded && active >= 0) {
       event.preventDefault();
       pick(shown[active]);
@@ -169,11 +206,42 @@ export function Combobox({
       event.preventDefault();
       event.stopPropagation(); // keep an enclosing dialog open
       close();
-    } else if (key === "Tab") close();
+    } else if (key === "Tab" && !push) close();
   };
 
   return (
-    <div className={`combobox ${className}`.trim()} ref={root}>
+    <div
+      className={`combobox ${push ? "combobox-pushed" : ""} ${className}`.trim()}
+      ref={root}
+      onKeyDown={(event) => {
+        if (push && event.key === "Escape") {
+          event.preventDefault();
+          event.stopPropagation();
+          close();
+          input.current.focus();
+        }
+        if (push && event.key === "Tab") {
+          event.preventDefault();
+          event.stopPropagation();
+          if (document.activeElement === input.current)
+            root.current.querySelector(".picker-back").focus();
+          else input.current.focus();
+        }
+      }}
+    >
+      {push && (
+        <button
+          type="button"
+          className="picker-back"
+          aria-label="Back to form"
+          onClick={() => {
+            close();
+            input.current?.focus();
+          }}
+        >
+          <ChevronLeft aria-hidden="true" size={20} /> Back
+        </button>
+      )}
       <Input
         {...inputProps}
         ref={input}
@@ -187,6 +255,9 @@ export function Combobox({
         }
         autoComplete="off"
         value={text}
+        onFocus={(event) => {
+          inputProps.onFocus?.(event);
+        }}
         onChange={(event) => {
           onChange(event.target.value);
           setQuery(event.target.value);
@@ -195,7 +266,7 @@ export function Combobox({
         }}
         onKeyDown={onKeyDown}
         onBlur={(event) => {
-          close();
+          if (!push) close();
           onBlur?.(event);
         }}
       />
@@ -224,7 +295,7 @@ export function Combobox({
         id={listId}
         role="listbox"
         aria-label={listLabel}
-        popover="manual"
+        popover={push ? undefined : "manual"}
         hidden={!expanded}
         className={`combobox-list${keyboard ? " keyboard" : ""}`}
       >

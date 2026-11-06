@@ -54,6 +54,8 @@ async (page) => {
     if ((await sportField.inputValue()) !== "Soccer")
       throw new Error("Sport was not saved to the profile");
     await sportField.fill("Swimming");
+    if ((await sportField.getAttribute("aria-expanded")) === "true")
+      await sportField.press("Escape");
     await sport.getByRole("button", { name: "Save", exact: true }).click();
     await sport.waitFor({ state: "hidden" });
     await p.locator(".app-toast").getByText("Sport & season saved.").waitFor();
@@ -71,6 +73,8 @@ async (page) => {
     if (/Optional/.test(await required.locator("label").first().innerText()))
       throw new Error("Sport is labelled Optional in the You sheet");
     await requiredField.fill("");
+    if ((await requiredField.getAttribute("aria-expanded")) === "true")
+      await requiredField.press("Escape");
     await requiredField.press("Tab");
     await required.getByRole("button", { name: "Save", exact: true }).click();
     await required.getByText("Enter your sport.").waitFor();
@@ -99,6 +103,8 @@ async (page) => {
     if (stored !== "Swimming")
       throw new Error(`The stored sport changed to "${stored}"`);
     await requiredField.fill("Swimming");
+    if ((await requiredField.getAttribute("aria-expanded")) === "true")
+      await requiredField.press("Escape");
     await required
       .getByText("Enter your sport.")
       .waitFor({ state: "detached" });
@@ -233,7 +239,12 @@ async (page) => {
     await undoSave(
       fromYou(/^Sport & season/),
       "Sport & season",
-      (d) => d.getByRole("combobox", { name: /^Sport/ }).fill("Basketball"),
+      async (d) => {
+        const box = d.getByRole("combobox", { name: /^Sport/ });
+        await box.fill("Basketball");
+        if ((await box.getAttribute("aria-expanded")) === "true")
+          await box.press("Escape");
+      },
       "Sport & season saved.",
     );
     await p.getByRole("link", { name: /^Sport & season — Swimming/ }).waitFor();

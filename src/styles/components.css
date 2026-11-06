@@ -1738,3 +1738,49 @@ fieldset:disabled .segmented {
     content: "";
   }
 }
+/* Sport suggestions push inside their existing sheet on phones. */
+.app-dialog:has(.combobox-pushed) {
+  height: 92dvh;
+}
+.combobox-pushed {
+  position: absolute;
+  inset: 0;
+  z-index: var(--z-sticky);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  background: var(--color-surface);
+}
+.combobox-pushed .picker-back {
+  align-self: start;
+  background: transparent;
+}
+.combobox-pushed > input {
+  flex: 0 0 auto;
+  width: 100%;
+  padding-right: var(--space-3);
+}
+.combobox-pushed > .combobox-toggle {
+  display: none;
+}
+.combobox-pushed > .combobox-list {
+  position: static;
+  width: 100%;
+  max-height: none;
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+.combobox-pushed > .combobox-list > [role="option"] {
+  min-height: 56px;
+  border-bottom: var(--border);
+  border-radius: 0;
+}
+
+.app-dialog:has(.combobox-pushed) [inert] {
+  visibility: hidden;
+}
