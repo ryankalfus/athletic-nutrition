@@ -2,8 +2,8 @@
 // and Food reports, 2026.09.29) so they cannot regress. Each check measures
 // geometry or computed style: one-row segmented controls, a Discard confirm
 // that is its own sheet or centered dialog, 700 as the heaviest weight, one
-// title edge and row across tabs, 52 px inputs (U2-01), 64 px sheet headers, equal
-// footer buttons, a joined weekday bar, a centered tablet tab group, one rail
+// title edge and row across tabs, 52 px inputs (U2-01), borderless sheet headers, full-width
+// sticky primary buttons, a joined weekday bar, a centered tablet tab group, one rail
 // edge, a Now card above the tab bar, a Day rail whose times fit, and the
 // Schedule week switcher, day headers, top-bar add and month headers; U4-01
 // button kinds: no outlined buttons, data-kind, desktop hug width; U4-02 the
@@ -201,22 +201,59 @@ async (page) => {
     );
     if (docWidth > 390) fail(`Today scrolls sideways at 390 (${docWidth}px)`);
 
-    // You sheet: 64 px header, 52 px inputs, equal footer buttons, Discard.
+    // UX-CMP-10: plain sheet chrome and a full-width sticky primary.
     await p.goto(`${base}#/you/sport`);
     const sheet = p.getByRole("dialog", { name: "Sport & season" });
     await sheet.waitFor();
     await p.waitForTimeout(250);
-    const head = await box(sheet.locator("header"));
-    if (!near(head.h, 64)) fail(`Sheet header is ${head.h}px, not 64`);
+    const chrome = await sheet.evaluate((node) => {
+      const header = node.querySelector("header");
+      const footer = node.querySelector(".dialog-actions");
+      const save = footer.querySelector('[data-kind="primary"]');
+      const css = getComputedStyle(node);
+      const title = getComputedStyle(header.querySelector("h2"));
+      const ruled = [
+        header,
+        footer,
+        ...header.children,
+        ...footer.children,
+      ].some((el) =>
+        ["", "::before", "::after"].some((pseudo) => {
+          const s = getComputedStyle(el, pseudo || null);
+          return (
+            (s.content !== "none" || !pseudo) &&
+            (parseFloat(s.borderTopWidth) || parseFloat(s.borderBottomWidth))
+          );
+        }),
+      );
+      return {
+        radius: css.borderTopLeftRadius,
+        title: `${title.fontSize}/${title.lineHeight}`,
+        ruled,
+        primary: save.getBoundingClientRect().width,
+        content:
+          footer.clientWidth -
+          parseFloat(getComputedStyle(footer).paddingLeft) -
+          parseFloat(getComputedStyle(footer).paddingRight),
+        sticky: getComputedStyle(footer).position,
+        close: !!header.querySelector('[aria-label^="Close"]'),
+      };
+    });
+    if (
+      chrome.radius !== "28px" ||
+      chrome.title !== "22px/28px" ||
+      chrome.ruled ||
+      chrome.close ||
+      chrome.sticky !== "sticky" ||
+      !near(chrome.primary, chrome.content, 1)
+    )
+      fail(`Sheet chrome at 390: ${JSON.stringify(chrome)}`);
+    if (
+      await sheet.getByRole("button", { name: "Cancel", exact: true }).count()
+    )
+      fail("Clean sheet exposes Cancel");
     const field = await box(sheet.getByRole("combobox", { name: /^Sport/ }));
     if (!near(field.h, 52)) fail(`Sheet text input is ${field.h}px, not 52`);
-    const footer = await sheet
-      .locator(".dialog-actions > button")
-      .evaluateAll((all) =>
-        all.map((b) => Math.round(b.getBoundingClientRect().width)),
-      );
-    if (new Set(footer).size > 1)
-      fail(`Sheet footer buttons differ: ${footer.join(" vs ")}`);
     for (const m of await segmentsOnOneRow("Sport sheet @390")) fail(m);
     await sheet.getByRole("combobox", { name: /^Sport/ }).fill("Hockey");
     await p.keyboard.press("Escape");
@@ -304,7 +341,7 @@ async (page) => {
     if (gap < 15)
       fail(`"Activity date" sits ${Math.round(gap)}px under Date or days`);
     result.checks.push(
-      "390: the Now card and the top of the Day rail fit above the tab bar, chips take one row, rail times fit and the marker reads Now, water buttons are equal; sheets have 64 px headers, 52 px inputs and equal footers; Discard is its own bottom sheet on <body>; no text is heavier than 700; Schedule's + Add is in the top bar, the week label and day headings stay on one row, and the activity sheet keeps 16 px between groups.",
+      "390: the Now card and the top of the Day rail fit above the tab bar, chips take one row, rail times fit and the marker reads Now, water buttons are equal; sheets have 28 px top corners, 22/28 titles, no hairlines or short-sheet X, 52 px inputs and full-width sticky Save; Discard is its own bottom sheet on <body>; no text is heavier than 700; Schedule's + Add is in the top bar, the week label and day headings stay on one row, and the activity sheet keeps 16 px between groups.",
     );
     await context.close();
 

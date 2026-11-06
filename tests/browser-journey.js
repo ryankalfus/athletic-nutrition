@@ -89,7 +89,12 @@ async (page) => {
   const primary = () => now().locator(".today-primary");
   const openToday = async () => {
     await p.goto(`${base}#/today`);
-    await p.getByRole("heading", { level: 1, name: /^[A-Z][a-z]{2}, [A-Z][a-z]{2} \d{1,2}$/ }).waitFor();
+    await p
+      .getByRole("heading", {
+        level: 1,
+        name: /^[A-Z][a-z]{2}, [A-Z][a-z]{2} \d{1,2}$/,
+      })
+      .waitFor();
   };
   const openIdeas = async () => {
     await p.goto(`${base}#/food/ideas`);
@@ -162,7 +167,12 @@ async (page) => {
     await step("You're set");
     await done("setup, ready");
     await p.getByRole("button", { name: "Open Today" }).click();
-    await p.getByRole("heading", { level: 1, name: /^[A-Z][a-z]{2}, [A-Z][a-z]{2} \d{1,2}$/ }).waitFor();
+    await p
+      .getByRole("heading", {
+        level: 1,
+        name: /^[A-Z][a-z]{2}, [A-Z][a-z]{2} \d{1,2}$/,
+      })
+      .waitFor();
     await done("Today after setup");
     result.checks.push(
       `${width} px: Welcome → setup (Soccer, school day, Thursday practice, food at school, food needs with "Allergy filtering coming soon." and no allergy chips) → Today.`,
@@ -170,7 +180,12 @@ async (page) => {
 
     // 3. Import the team calendar, then re-import it: nothing new.
     await p.goto(`${base}#/schedule`);
-    await p.getByRole("heading", { level: 1, name: /^(January|February|March|April|May|June|July|August|September|October|November|December)$/ }).waitFor();
+    await p
+      .getByRole("heading", {
+        level: 1,
+        name: /^(January|February|March|April|May|June|July|August|September|October|November|December)$/,
+      })
+      .waitFor();
     let sheet = await importSheet();
     await sheet.getByText("20 upcoming events").waitFor();
     await done("import preview");
@@ -209,7 +224,7 @@ async (page) => {
     );
     if (allergyChip) throw new Error(`Allergy chip shows: ${allergyChip}`);
     await done("food needs sheet");
-    await needs.getByRole("button", { name: "Cancel" }).click();
+    await p.keyboard.press("Escape");
     await needs.waitFor({ state: "hidden" });
     result.checks.push(
       `${width} px: You › Food needs & allergies shows "Allergy filtering coming soon." and no allergy chips.`,

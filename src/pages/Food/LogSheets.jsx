@@ -12,7 +12,11 @@ import { uid } from "../../domain/storage.js";
 import { changeData, useStore } from "../../store.js";
 import { useAsyncAction } from "../../hooks/useAsyncAction.js";
 import { plural } from "../../format.js";
-import { DialogCancel, useReportDirty, DialogError } from "../../components/Dialog.jsx";
+import {
+  DialogCancel,
+  useReportDirty,
+  DialogError,
+} from "../../components/Dialog.jsx";
 import {
   FieldError,
   FieldErrors,
@@ -95,14 +99,15 @@ export function UseFromHomeSheet({ entry, only, onDone, onDirty }) {
       ))}
       <DialogError />
       <div className="sheet-footer">
-        <DialogCancel />
         <button
           aria-busy={pending === "consume" || undefined}
+          data-kind="primary"
           className="primary"
           disabled={pending === "consume" || !items.length}
         >
           {pending === "consume" ? "Saving…" : "Save"}
         </button>
+        <DialogCancel />
       </div>
     </form>
   );
@@ -228,14 +233,15 @@ export function ChangedPlanSheet({ plan, date, todayKey, onDone, onDirty }) {
       </FieldErrors>
       <DialogError />
       <div className="sheet-footer">
-        <DialogCancel />
         <button
           aria-busy={pending === "meal-log" || undefined}
+          data-kind="primary"
           className="primary"
           disabled={pending === "meal-log"}
         >
           {pending === "meal-log" ? "Saving…" : "Log it"}
         </button>
+        <DialogCancel />
       </div>
     </form>
   );

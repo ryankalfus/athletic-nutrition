@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import { Dialog, DialogCancel, DialogError } from "../../components/Dialog.jsx";
+import { Dialog, DialogError } from "../../components/Dialog.jsx";
 import { ConfirmDialog } from "../../components/ui/ConfirmDialog.jsx";
 import { uid } from "../../domain/storage.js";
 import { changeData } from "../../store.js";
@@ -418,7 +418,9 @@ export function useActivityEditor({
             </button>
             <button
               className={
-                scopePrompt.kind === "edit" ? undefined : "text-button danger-text"
+                scopePrompt.kind === "edit"
+                  ? undefined
+                  : "text-button danger-text"
               }
               onClick={chooseAll}
             >
@@ -426,7 +428,9 @@ export function useActivityEditor({
               {weekdayName(scopePrompt.dateKey)}{" "}
               {plural(2, scopePrompt.event.type)}
             </button>
-            <DialogCancel />
+            <button type="button" onClick={() => setScopePrompt(null)}>
+              Cancel
+            </button>
           </div>
         </Dialog>
       )}

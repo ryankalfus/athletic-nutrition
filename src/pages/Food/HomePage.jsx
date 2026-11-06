@@ -2,7 +2,7 @@ import { BatteryLow, CircleCheck, CircleOff, Minus, Plus } from "lucide-react";
 import { useState, useRef } from "react";
 import { useStore, changeData } from "../../store.js";
 import { useAsyncAction } from "../../hooks/useAsyncAction.js";
-import { Dialog, DialogError } from "../../components/Dialog.jsx";
+import { Dialog, DialogCancel, DialogError } from "../../components/Dialog.jsx";
 import { Menu } from "../../components/ui/Menu.jsx";
 import { FoodSearch } from "../../components/FoodSearch.jsx";
 import { GROCERY_CATALOG } from "../../domain/catalog.js";
@@ -447,7 +447,7 @@ export default function HomePage({ todayKey }) {
             mode="home"
             item={edit}
             pending={pending === "edit"}
-            onDirty={() => setDirty(true)}
+            onDirty={setDirty}
             onSave={(fields) =>
               write(
                 "edit",
@@ -520,16 +520,21 @@ function CountsAsSheet({ row, pending, onClose, onSave }) {
         </label>
         <DialogError />
         <div className="sheet-footer">
-          <button type="button" onClick={onClose} disabled={pending}>
-            Skip
-          </button>
           <button
             aria-busy={pending || undefined}
+            data-kind="primary"
             className="primary"
             disabled={pending}
           >
             {pending ? "Saving…" : "Save"}
           </button>
+          {id ? (
+            <DialogCancel />
+          ) : (
+            <button type="button" onClick={onClose} disabled={pending}>
+              Skip
+            </button>
+          )}
         </div>
       </form>
     </Dialog>

@@ -26,9 +26,17 @@ async (page) => {
     await p.getByRole("button", { name: "Next", exact: true }).click();
     await p.getByRole("heading", { name: "Your school day" }).waitFor();
     await p.getByRole("button", { name: "Skip setup" }).click();
-    await p.getByRole("heading", { level: 1, name: /^[A-Z][a-z]{2}, [A-Z][a-z]{2} \d{1,2}$/ }).waitFor();
+    await p
+      .getByRole("heading", {
+        level: 1,
+        name: /^[A-Z][a-z]{2}, [A-Z][a-z]{2} \d{1,2}$/,
+      })
+      .waitFor();
     await p.goto(`${base}#/schedule`);
-    await p.getByRole("button", { name: /^(\+ )?Add$/ }).first().click();
+    await p
+      .getByRole("button", { name: /^(\+ )?Add$/ })
+      .first()
+      .click();
     const name = p
       .getByRole("dialog", { name: "Add practice" })
       .getByRole("textbox", { name: "Name" });
@@ -94,7 +102,7 @@ async (page) => {
     await required
       .getByText("Enter your sport.")
       .waitFor({ state: "detached" });
-    await required.getByRole("button", { name: "Cancel" }).click();
+    await p.keyboard.press("Escape");
     await required.waitFor({ state: "hidden" });
     result.checks.push(
       "In #/you/sport an empty Sport shows “Enter your sport.”, keeps the sheet open and leaves the stored sport (Swimming); typing a sport clears it (UX-BUG-01, UX-BUG-02).",
@@ -123,7 +131,7 @@ async (page) => {
     for (const chip of ["Peanuts", "Tree nuts", "Milk", "Sesame"])
       if (await needs.getByRole("button", { name: chip, exact: true }).count())
         throw new Error(`Allergy chip ${chip} shows while the gate is closed`);
-    await needs.getByRole("button", { name: "Cancel" }).click();
+    await p.keyboard.press("Escape");
     await needs.waitFor({ state: "hidden" });
     result.checks.push(
       "Food needs offers only Vegetarian and Vegan; no Gluten-free, Dairy-free or Nut-free chip; no allergy chips while ALLERGY_TAGS_REVIEWED is false, and the waiting line shows.",
@@ -135,7 +143,7 @@ async (page) => {
     if (!p.url().endsWith("#/you/reminders"))
       throw new Error(`Reminders sheet did not route: ${p.url()}`);
     await sheet.getByText(honesty, { exact: true }).waitFor();
-    await sheet.getByRole("button", { name: /^Close/ }).click();
+    await p.keyboard.press("Escape");
     await sheet.waitFor({ state: "hidden" });
     if (!p.url().endsWith("#/you"))
       throw new Error(`Closing Reminders did not return to #/you: ${p.url()}`);
@@ -185,7 +193,7 @@ async (page) => {
       throw new Error(
         `Blocked reminders leave options active: ${JSON.stringify(dependents)}`,
       );
-    await sheet.getByRole("button", { name: /^Close/ }).click();
+    await p.keyboard.press("Escape");
     await sheet.waitFor({ state: "hidden" });
     await p.evaluate(() => localStorage.removeItem("test-permission"));
     result.checks.push(
@@ -219,7 +227,7 @@ async (page) => {
       return dialog;
     };
     const closeSheet = async (dialog) => {
-      await dialog.getByRole("button", { name: /^Close/ }).click();
+      await p.keyboard.press("Escape");
       await dialog.waitFor({ state: "hidden" });
     };
     await undoSave(

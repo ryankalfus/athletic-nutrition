@@ -459,7 +459,7 @@ export default function GroceriesPage({ todayKey }) {
               item={sheet.type === "swap" ? sheet.item : null}
               showPrices={showPrices}
               pending={pending === "save-item"}
-              onDirty={() => setDirtySheet(sheet)}
+              onDirty={(dirty) => setDirtySheet(dirty ? sheet : null)}
               onSave={(fields) =>
                 sheet.type === "swap"
                   ? saveEdit(sheet.item, sheet.food, fields)
@@ -486,7 +486,7 @@ export default function GroceriesPage({ todayKey }) {
             item={sheet.item}
             showPrices={showPrices}
             pending={pending === "save-item"}
-            onDirty={() => setDirtySheet(sheet)}
+            onDirty={(dirty) => setDirtySheet(dirty ? sheet : null)}
             onSave={(fields) => saveEdit(sheet.item, null, fields)}
           />
         </Dialog>

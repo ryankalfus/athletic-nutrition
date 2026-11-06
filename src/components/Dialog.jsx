@@ -15,11 +15,11 @@ import { InlineError } from "./ui/InlineError.jsx";
 import { Button, IconButton } from "./ui/Button.jsx";
 
 const DialogClose = createContext(null);
+const DialogDirty = createContext(false);
 const DialogErrorSlot = createContext(null);
 const FIELDS =
   "input:not([type=hidden]):not(:disabled), select:not(:disabled), textarea:not(:disabled)";
-// A sheet whose job is typing (Log food and Add to groceries search) keeps
-// its field focused however it was opened (P1-08).
+// The full-height Log food search is ready to type however it was opened.
 const TYPING = 'input[type="search"], input[type="text"], textarea';
 
 // How the athlete last used the page. A sheet opened by pointer or by route
@@ -97,8 +97,10 @@ function firstStop(node) {
 
 export function DialogCancel({ children = "Cancel", ...props }) {
   const close = useDialogClose();
+  const dirty = useContext(DialogDirty);
+  if (children === "Cancel" && !dirty) return null;
   return (
-    <Button {...props} onClick={close}>
+    <Button variant="text" {...props} onClick={close}>
       {children}
     </Button>
   );
@@ -119,10 +121,13 @@ export function Dialog({
   children,
   initialFocusRef,
   className = "",
+  fullHeight = false,
   dirty = false,
   discardMessage = "Your changes aren't saved yet.",
 }) {
   const ref = useRef(null);
+  const dragStart = useRef(null);
+  const pressedBackdrop = useRef(false);
   const titleId = useId();
   const { error } = useStore();
   const [asking, setAsking] = useState(false);
@@ -142,12 +147,22 @@ export function Dialog({
     if (latest.current.dirty) setAsking(true);
     else latest.current.onClose();
   };
+  const outside = (event) => {
+    if (event.target !== event.currentTarget) return false;
+    const rect = event.currentTarget.getBoundingClientRect();
+    return (
+      event.clientX < rect.left ||
+      event.clientX >= rect.right ||
+      event.clientY < rect.top ||
+      event.clientY >= rect.bottom
+    );
+  };
   useEffect(() => {
     const node = ref.current;
     const previous = document.activeElement;
     node.showModal();
     const preferred = initialFocusRef?.current;
-    (lastInput === "keyboard" || preferred?.matches(TYPING)
+    (lastInput === "keyboard" || (fullHeight && preferred?.matches(TYPING))
       ? preferred ||
         node.querySelector(FIELDS) ||
         node.querySelector("button:not([aria-label^='Close'])")
@@ -191,7 +206,17 @@ export function Dialog({
   return createPortal(
     <dialog
       ref={ref}
-      className={`app-dialog ${className}`.trim()}
+      className={["app-dialog", fullHeight && "sheet-full-height", className]
+        .filter(Boolean)
+        .join(" ")}
+      onPointerDown={(event) => {
+        pressedBackdrop.current =
+          event.isPrimary && event.button === 0 && outside(event);
+      }}
+      onClick={(event) => {
+        if (pressedBackdrop.current && outside(event)) requestClose();
+        pressedBackdrop.current = false;
+      }}
       aria-labelledby={titleId}
       onKeyDown={(e) => {
         // showModal() makes the page inert but lets Tab reach the browser's
@@ -220,22 +245,46 @@ export function Dialog({
         if (!asking) requestClose();
       }}
     >
-      <DialogClose.Provider value={requestClose}>
-        <DialogErrorSlot.Provider value={{ error, retry, register }}>
-          <header>
-            <h2 id={titleId} tabIndex={-1}>
-              {title}
-            </h2>
-            <IconButton
-              label={`Close ${title}`}
-              icon={X}
-              onClick={requestClose}
-            />
-          </header>
-          {children}
-          {!slots && <InlineError message={error} onRetry={retry} />}
-        </DialogErrorSlot.Provider>
-      </DialogClose.Provider>
+      <DialogDirty.Provider value={dirty}>
+        <DialogClose.Provider value={requestClose}>
+          <DialogErrorSlot.Provider value={{ error, retry, register }}>
+            <header>
+              <span
+                className="sheet-grabber"
+                aria-hidden="true"
+                onPointerDown={(event) => {
+                  if (!event.isPrimary || event.button !== 0) return;
+                  dragStart.current = event.clientY;
+                  event.currentTarget.setPointerCapture(event.pointerId);
+                }}
+                onPointerCancel={() => {
+                  dragStart.current = null;
+                }}
+                onPointerUp={(event) => {
+                  if (
+                    dragStart.current !== null &&
+                    event.clientY - dragStart.current >= 40
+                  )
+                    requestClose();
+                  dragStart.current = null;
+                }}
+              />
+              <h2 id={titleId} tabIndex={-1}>
+                {title}
+              </h2>
+              {fullHeight && (
+                <IconButton
+                  label={`Close ${title}`}
+                  icon={X}
+                  onClick={requestClose}
+                />
+              )}
+            </header>
+            {children}
+            {!slots && <InlineError message={error} onRetry={retry} />}
+          </DialogErrorSlot.Provider>
+        </DialogClose.Provider>
+      </DialogDirty.Provider>
       {asking && (
         <DiscardDialog
           message={discardMessage}

@@ -267,9 +267,9 @@ export function ActivitySheet({ model }) {
         </div>
         <DialogError />
         <div className="schedule-form-footer">
-          <DialogCancel />
           <button
             aria-busy={pending || undefined}
+            data-kind="primary"
             className="primary"
             type="submit"
             disabled={!!pending}
@@ -277,6 +277,7 @@ export function ActivitySheet({ model }) {
           >
             {pending ? "Saving…" : editingId ? "Save changes" : `Add ${type}`}
           </button>
+          <DialogCancel />
         </div>
       </form>
     </Dialog>

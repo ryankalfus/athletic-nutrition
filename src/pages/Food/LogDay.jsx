@@ -461,6 +461,7 @@ export default function LogDay({ date, todayKey, now, onNavigate }) {
 
       {dialog && (
         <Dialog
+          fullHeight={dialog.type === "search"}
           initialFocusRef={dialog.type === "search" ? searchInput : undefined}
           className={dialog.type === "search" ? "food-search-dialog" : ""}
           title={

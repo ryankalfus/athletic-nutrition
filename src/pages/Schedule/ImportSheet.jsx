@@ -1,6 +1,6 @@
 import { useRef, useState } from "react";
 import { useAsyncAction } from "../../hooks/useAsyncAction.js";
-import { Dialog, DialogError } from "../../components/Dialog.jsx";
+import { Dialog, DialogCancel, DialogError } from "../../components/Dialog.jsx";
 import { Button } from "../../components/ui/Button.jsx";
 import {
   FieldError,
@@ -174,9 +174,10 @@ export function ImportSheet({ events, subscriptions = [], todayKey, onClose }) {
   return (
     <Dialog
       title="Import team calendar"
+      fullHeight
       className="import-sheet"
       onClose={onClose}
-      dirty={Boolean(preview)}
+      dirty={!nothingNew && Boolean(preview || link.trim() || !keepUpdated)}
       discardMessage="The events you picked won't be added."
     >
       {!preview ? (
@@ -261,7 +262,6 @@ export function ImportSheet({ events, subscriptions = [], todayKey, onClose }) {
           </div>
           <DialogError />
           <div className="schedule-form-footer">
-            <Button onClick={onClose}>Cancel</Button>
             <Button
               variant="primary"
               type="submit"
@@ -270,6 +270,7 @@ export function ImportSheet({ events, subscriptions = [], todayKey, onClose }) {
             >
               {mode === "file" ? "Choose file" : "Preview"}
             </Button>
+            <DialogCancel />
           </div>
         </form>
       ) : (
@@ -417,6 +418,7 @@ export function ImportSheet({ events, subscriptions = [], todayKey, onClose }) {
                 </Button>
               </>
             )}
+            <DialogCancel />
           </div>
         </form>
       )}

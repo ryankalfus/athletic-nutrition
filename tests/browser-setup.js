@@ -181,8 +181,12 @@ async (page) => {
       indicator.height !== 24 ||
       indicator.x < row.x + row.width / 2
     )
-      throw new Error("Selected Microwave row needs a 24 px check on the right");
-    result.checks.push("Selecting Microwave shows a 24 px check on the right of its row.");
+      throw new Error(
+        "Selected Microwave row needs a 24 px check on the right",
+      );
+    result.checks.push(
+      "Selecting Microwave shows a 24 px check on the right of its row.",
+    );
     await next(p);
 
     await step(p, "Food needs").waitFor();
@@ -198,7 +202,9 @@ async (page) => {
         );
     await p.getByRole("button", { name: "Vegetarian" }).waitFor();
     // Tab through the long list; the last focused row must clear the pinned footer.
-    const dislikes = p.getByRole("group", { name: "Not a fan of" }).getByRole("button");
+    const dislikes = p
+      .getByRole("group", { name: "Not a fan of" })
+      .getByRole("button");
     await dislikes.first().focus();
     const totalChoices = await dislikes.count();
     for (let index = 1; index < totalChoices; index++) {
@@ -206,10 +212,17 @@ async (page) => {
     }
     const reachable = await dislikes.last().evaluate((row) => {
       const box = row.getBoundingClientRect();
-      const footer = document.querySelector(".setup-actions").getBoundingClientRect();
-      return row === document.activeElement && box.top >= 0 && box.bottom <= footer.top;
+      const footer = document
+        .querySelector(".setup-actions")
+        .getBoundingClientRect();
+      return (
+        row === document.activeElement &&
+        box.top >= 0 &&
+        box.bottom <= footer.top
+      );
     });
-    if (!reachable) throw new Error("Last food-needs choice is under the pinned footer");
+    if (!reachable)
+      throw new Error("Last food-needs choice is under the pinned footer");
     result.checks.push(
       "Step 5 shows no allergy chips while ALLERGY_TAGS_REVIEWED is false, only the waiting line.",
     );
@@ -224,7 +237,12 @@ async (page) => {
       .waitFor();
     await fits(p, "Step 6");
     await p.getByRole("button", { name: "Open Today" }).click();
-    await p.getByRole("heading", { level: 1, name: /^[A-Z][a-z]{2}, [A-Z][a-z]{2} \d{1,2}$/ }).waitFor();
+    await p
+      .getByRole("heading", {
+        level: 1,
+        name: /^[A-Z][a-z]{2}, [A-Z][a-z]{2} \d{1,2}$/,
+      })
+      .waitFor();
     if (!p.url().endsWith("#/today"))
       throw new Error(`Open Today went to ${p.url()}`);
     await p.getByText("Soccer practice at 4:00 PM").first().waitFor();
@@ -237,7 +255,12 @@ async (page) => {
     await p
       .getByRole("button", { name: "Maya, Soccer, last used today" })
       .click();
-    await p.getByRole("heading", { level: 1, name: /^[A-Z][a-z]{2}, [A-Z][a-z]{2} \d{1,2}$/ }).waitFor();
+    await p
+      .getByRole("heading", {
+        level: 1,
+        name: /^[A-Z][a-z]{2}, [A-Z][a-z]{2} \d{1,2}$/,
+      })
+      .waitFor();
     if (!p.url().endsWith("#/today"))
       throw new Error(`Choosing an athlete opened ${p.url()}`);
     await p.clock.setFixedTime(new Date(2026, 8, 29, 9, 5, 0));
@@ -251,7 +274,12 @@ async (page) => {
     await next(p);
     await step(p, "Your school day").waitFor();
     await p.getByRole("button", { name: "Skip setup" }).click();
-    await p.getByRole("heading", { level: 1, name: /^[A-Z][a-z]{2}, [A-Z][a-z]{2} \d{1,2}$/ }).waitFor();
+    await p
+      .getByRole("heading", {
+        level: 1,
+        name: /^[A-Z][a-z]{2}, [A-Z][a-z]{2} \d{1,2}$/,
+      })
+      .waitFor();
     await p.goto(`${base}#/welcome`);
     const tiles = p.locator(".welcome-tile-open");
     await tiles.nth(1).waitFor();
@@ -278,7 +306,12 @@ async (page) => {
     await next(p);
     await step(p, "Food at school").waitFor();
     await p.getByRole("button", { name: "Skip setup" }).click();
-    await p.getByRole("heading", { level: 1, name: /^[A-Z][a-z]{2}, [A-Z][a-z]{2} \d{1,2}$/ }).waitFor();
+    await p
+      .getByRole("heading", {
+        level: 1,
+        name: /^[A-Z][a-z]{2}, [A-Z][a-z]{2} \d{1,2}$/,
+      })
+      .waitFor();
     await p.getByText("Soccer practice at 4:00 PM").first().waitFor();
     result.checks.push(
       "Completing only steps 1 and 3 gives a Today hero that names the practice.",

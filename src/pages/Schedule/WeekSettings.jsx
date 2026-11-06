@@ -66,7 +66,6 @@ function RestDaysSheet({ restWeekdays, onClose }) {
         </div>
         <DialogError />
         <div className="schedule-form-footer">
-          <DialogCancel />
           <Button
             variant="primary"
             type="submit"
@@ -75,6 +74,7 @@ function RestDaysSheet({ restWeekdays, onClose }) {
           >
             Save
           </Button>
+          <DialogCancel />
         </div>
       </form>
     </Dialog>

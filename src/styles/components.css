@@ -919,7 +919,9 @@ fieldset:disabled .segmented {
    sit just above the sticky footer (STATE-02, UX-BUG-03). */
 .app-dialog .inline-error,
 .app-dialog .field-error {
-  scroll-margin-bottom: calc(var(--control-height) + 2 * var(--space-4));
+  scroll-margin-bottom: calc(
+    var(--cta-height) + var(--target) + var(--space-1) + 2 * var(--space-4)
+  );
 }
 
 .save-error {
@@ -968,9 +970,9 @@ fieldset:disabled .segmented {
   overflow-y: auto;
   overscroll-behavior: contain;
   border: 0;
-  border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+  border-radius: var(--radius-sheet) var(--radius-sheet) 0 0;
   background: var(--color-surface);
-  box-shadow: var(--shadow-3);
+  box-shadow: var(--elev-sheet);
   color: var(--color-ink);
 }
 
@@ -998,15 +1000,17 @@ fieldset:disabled .segmented {
   align-items: center;
   justify-content: space-between;
   gap: var(--space-3);
-  min-height: var(--dialog-header);
+
   margin-bottom: var(--space-4);
-  padding: var(--space-2) var(--space-3) var(--space-2) var(--dialog-pad);
-  border-bottom: var(--border);
+  padding: var(--space-6) var(--dialog-pad) var(--space-1);
   background: var(--color-surface);
 }
 
 .app-dialog > header h2 {
   margin: 0;
+  font-size: 22px;
+  line-height: 28px;
+  text-align: left;
 }
 
 .app-dialog > header button {
@@ -1068,9 +1072,8 @@ fieldset:disabled .segmented {
   bottom: 0;
   z-index: var(--z-sticky);
   display: flex;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-  gap: var(--space-3);
+  flex-direction: column;
+  gap: var(--space-1);
   padding: var(--space-4) 0;
   background: var(--color-surface);
 }
@@ -1085,13 +1088,26 @@ fieldset:disabled .segmented {
   position: absolute;
   inset: 0 calc(var(--dialog-pad) * -1);
   z-index: -1;
-  border-top: var(--border);
   background: var(--color-surface);
   content: "";
 }
 
-/* Drag handle on phone sheets. */
-.app-dialog > header::before {
+.dialog-actions > .inline-error {
+  border: 0;
+}
+
+/* The visible grip has a larger hit area for a downward drag. */
+.sheet-grabber {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 72px;
+  height: var(--target);
+  transform: translateX(-50%);
+  cursor: grab;
+  touch-action: none;
+}
+.sheet-grabber::before {
   position: absolute;
   top: var(--space-2);
   left: 50%;
@@ -1103,20 +1119,18 @@ fieldset:disabled .segmented {
   transform: translateX(-50%);
 }
 
-.app-dialog.food-search-dialog > header::before {
-  content: none;
-}
-
-/* Equal halves on phones: the same basis and padding for every button. */
 :is(.dialog-actions, .confirm-actions, .sheet-footer, .schedule-form-footer)
   > button {
-  flex: 1 1 0;
   min-width: 0;
-  min-height: var(--control-height);
-  padding-inline: var(--space-4);
+  border: 0;
+}
+.app-dialog
+  :is(.dialog-actions, .sheet-footer, .schedule-form-footer)
+  > :is(.primary, [data-kind="primary"]) {
+  width: 100%;
+  min-height: var(--cta-height);
 }
 
-/* From 768px: a centered 560px dialog (640px for search). */
 @media (min-width: 768px) {
   .app-dialog {
     --dialog-pad: var(--space-6);
@@ -1125,14 +1139,8 @@ fieldset:disabled .segmented {
     margin: auto;
     border-radius: var(--radius-xl);
   }
-
-  .app-dialog > header::before {
-    content: none;
-  }
-
-  :is(.dialog-actions, .confirm-actions, .sheet-footer, .schedule-form-footer)
-    > button {
-    flex: 0 0 auto;
+  .sheet-grabber {
+    display: none;
   }
 }
 
