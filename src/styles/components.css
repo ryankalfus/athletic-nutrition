@@ -1128,10 +1128,11 @@ fieldset:disabled .segmented {
   min-height: var(--cta-height);
 }
 
+/* From 768px: a centered 520px dialog. */
 @media (min-width: 768px) {
   .app-dialog {
     --dialog-pad: var(--space-6);
-    width: min(560px, calc(100vw - 2 * var(--gutter)));
+    width: min(520px, calc(100vw - 2 * var(--gutter)));
     max-height: min(92dvh, 800px);
     margin: auto;
     border-radius: var(--radius-xl);

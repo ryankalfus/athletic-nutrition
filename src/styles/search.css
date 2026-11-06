@@ -224,20 +224,11 @@
 }
 
 @media (min-width: 768px) {
-  .app-dialog.sheet-full-height {
-    height: auto;
-    max-height: min(92dvh, 800px);
-    width: min(560px, calc(100vw - 2 * var(--gutter)));
-    margin: auto;
-  }
-  /* Grows with its content from a 480px floor, up to 800px. */
-  .app-dialog.food-search-dialog {
-    width: min(640px, calc(100vw - 2 * var(--gutter)));
-    height: auto;
-    min-height: min(480px, 92dvh);
+  .app-dialog:is(.sheet-full-height, .food-search-dialog) {
+    width: min(520px, calc(100vw - 2 * var(--gutter)));
+    height: fit-content;
     max-height: min(92dvh, 800px);
     margin: auto;
-    border-radius: var(--radius-xl);
   }
 
   .camera-frame {
