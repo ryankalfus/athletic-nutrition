@@ -1,7 +1,9 @@
 import { BatteryLow, CircleCheck, CircleOff, Minus, Plus } from "lucide-react";
 import { useState, useRef } from "react";
-import { useStore, changeData } from "../../store.js";
+import { useStore, changeData, assertUnchangedItem } from "../../store.js";
+import { useItemChanges } from "../../hooks/useItemChanges.js";
 import { useAsyncAction } from "../../hooks/useAsyncAction.js";
+import { showToast } from "../../components/ui/Toast.jsx";
 import { Dialog, DialogCancel, DialogError } from "../../components/Dialog.jsx";
 import { Menu } from "../../components/ui/Menu.jsx";
 import { FoodSearch } from "../../components/FoodSearch.jsx";
@@ -61,10 +63,31 @@ export default function HomePage({ todayKey }) {
   const [search, setSearch] = useState(false);
   const [edit, setEdit] = useState(null);
   const [merge, setMerge] = useState(null);
+  const duplicate = useItemChanges(
+    merge?.existing.id,
+    rows.find((row) => row.id === merge?.existing.id),
+    (item) => setMerge((value) => ({ ...value, existing: item })),
+  );
   const [dirty, setDirty] = useState(false);
   const [counts, setCounts] = useState({});
   const [countsAs, setCountsAs] = useState(null);
+  const countsEdited = useItemChanges(
+    countsAs?.id,
+    rows.find((row) => row.id === countsAs?.id),
+    setCountsAs,
+  );
+  // Toast actions can outlive the render that added the item.
+  const currentPantry = useRef(rows);
+  currentPantry.current = rows;
   const timers = useRef({});
+  const edited = useItemChanges(
+    edit?.id,
+    rows.find((row) => row.id === edit?.id),
+    (item) => {
+      setEdit(item);
+      setDirty(false);
+    },
+  );
   const low = lowOrOut(rows);
   const write = (key, fn, message, action) =>
     run(key, () => changeData(fn, message, action));
@@ -89,7 +112,9 @@ export default function HomePage({ todayKey }) {
       location: "pantry",
       price: null,
     });
-    const existing = rows.find((i) => sameProduct(i, record));
+    const existing = choice
+      ? merge.existing
+      : rows.find((i) => sameProduct(i, record));
     if (existing && !choice) {
       setSearch(false);
       setMerge({ food, existing });
@@ -98,8 +123,12 @@ export default function HomePage({ todayKey }) {
     const ok = await write(
       "add",
       (d) => {
-        if (existing && choice === "update") {
+        if (choice === "update") {
           const row = d.groceryState.pantry.find((i) => i.id === existing.id);
+          if (!row) throw new Error("This item was removed on another screen.");
+          assertUnchangedItem(row, existing);
+          if (!sameProduct(row, record))
+            throw new Error("This item no longer matches the food you chose.");
           row.availability = "have";
           row.updatedDate = todayKey;
         } else d.groceryState.pantry.push(record);
@@ -108,11 +137,13 @@ export default function HomePage({ todayKey }) {
       {
         label: "Edit details",
         onClick: () => {
-          setEdit(
-            existing && choice === "update"
-              ? { ...existing, availability: "have" }
-              : record,
-          );
+          const id = choice === "update" ? existing.id : record.id;
+          const item = currentPantry.current.find((row) => row.id === id);
+          if (!item) {
+            showToast("This item was removed on another screen.");
+            return;
+          }
+          setEdit(item);
           setDirty(false);
         },
       },
@@ -415,6 +446,7 @@ export default function HomePage({ todayKey }) {
       {merge && (
         <Dialog
           title="Food already at home"
+          changedElsewhere={duplicate.changed}
           onClose={() => setMerge(null)}
           alert
         >
@@ -456,11 +488,13 @@ export default function HomePage({ todayKey }) {
       {edit && (
         <Dialog
           title={`Edit ${edit.name}`}
+          changedElsewhere={edited.changed}
           onClose={close}
           dirty={dirty}
           discardMessage="Your unsaved food details will be lost."
         >
           <FoodDetailsSheet
+            key={edited.version}
             mode="home"
             item={edit}
             pending={pending === "edit"}
@@ -469,6 +503,12 @@ export default function HomePage({ todayKey }) {
               write(
                 "edit",
                 (d) => {
+                  const target = d.groceryState.pantry.find(
+                    (i) => i.id === edit.id,
+                  );
+                  if (!target)
+                    throw new Error("This item was removed on another screen.");
+                  assertUnchangedItem(target, edited.source);
                   d.groceryState.pantry = d.groceryState.pantry.map((i) =>
                     i.id === edit.id
                       ? { ...i, ...fields, updatedDate: todayKey }
@@ -488,6 +528,8 @@ export default function HomePage({ todayKey }) {
       )}
       {countsAs && (
         <CountsAsSheet
+          key={countsEdited.version}
+          changedElsewhere={countsEdited.changed}
           row={countsAs}
           pending={!!pending}
           onClose={() => setCountsAs(null)}
@@ -498,7 +540,10 @@ export default function HomePage({ todayKey }) {
                 const target = d.groceryState.pantry.find(
                   (i) => i.id === countsAs.id,
                 );
-                if (target) target.ingredientId = id;
+                if (!target)
+                  throw new Error("This item was removed on another screen.");
+                assertUnchangedItem(target, countsEdited.source);
+                target.ingredientId = id;
               },
               // A sheet save, so it toasts with Undo (UX-BUG-22).
               `Updated ${countsAs.name}.`,
@@ -509,15 +554,21 @@ export default function HomePage({ todayKey }) {
     </div>
   );
 }
-function CountsAsSheet({ row, pending, onClose, onSave }) {
-  const [id, setId] = useState("");
+function CountsAsSheet({ row, pending, onClose, onSave, changedElsewhere }) {
+  const original = row.ingredientId || "";
+  const [id, setId] = useState(original);
   return (
-    <Dialog title="Counts as?" onClose={onClose} dirty={id !== ""}>
+    <Dialog
+      title="Counts as?"
+      onClose={onClose}
+      dirty={id !== original}
+      changedElsewhere={changedElsewhere}
+    >
       <form
         className="home-details"
         onSubmit={(e) => {
           e.preventDefault();
-          if (id) onSave(id);
+          if (id || id !== original) onSave(id);
           else onClose();
         }}
       >
@@ -545,7 +596,7 @@ function CountsAsSheet({ row, pending, onClose, onSave }) {
           >
             {pending ? "Saving…" : "Save"}
           </button>
-          {id ? (
+          {id !== original ? (
             <DialogCancel />
           ) : (
             <button type="button" onClick={onClose} disabled={pending}>

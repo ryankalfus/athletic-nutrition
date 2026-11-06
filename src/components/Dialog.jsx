@@ -150,6 +150,7 @@ export function Dialog({
   fullHeight = false,
   dirty = false,
   alert = false,
+  changedElsewhere = false,
   discardMessage = "Your changes aren't saved yet.",
 }) {
   const ref = useRef(null);
@@ -232,6 +233,9 @@ export function Dialog({
         previous.focus();
     };
   }, []);
+  useLayoutEffect(() => {
+    if (!dirty) setAsking(false);
+  }, [dirty]);
   useEffect(() => {
     if (!dirty) return undefined;
     const warn = (event) => {
@@ -304,6 +308,11 @@ export function Dialog({
                 />
               )}
             </header>
+            {changedElsewhere && (
+              <p role="status">
+                This item changed on another screen. Showing the latest version.
+              </p>
+            )}
             {children}
             {!slots && <InlineError message={error} onRetry={retry} />}
           </DialogErrorSlot.Provider>

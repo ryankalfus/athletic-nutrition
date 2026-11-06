@@ -3,7 +3,8 @@ import { Dialog, DialogError } from "../../components/Dialog.jsx";
 import { Button } from "../../components/ui/Button.jsx";
 import { ConfirmDialog } from "../../components/ui/ConfirmDialog.jsx";
 import { uid } from "../../domain/storage.js";
-import { changeData } from "../../store.js";
+import { useItemChanges } from "../../hooks/useItemChanges.js";
+import { changeData, assertUnchangedItem } from "../../store.js";
 import { activityTitle, activityToast } from "../../domain/sport.js";
 import { formatDate, plural } from "../../format.js";
 import {
@@ -117,6 +118,21 @@ export function useActivityEditor({
     setFormDate(dateKey);
     setFormError("");
   }
+
+  const edited = useItemChanges(
+    showForm ? editingId : null,
+    events.find((event) => event.id === editingId),
+    (event) => {
+      const source =
+        editingScope === "date"
+          ? eventsForDate(events, formDate).find(
+              (item) => item.id === event.id,
+            ) || event
+          : event;
+      setConfirmation((value) => (value?.kind === "overlap" ? null : value));
+      fill(source, source.date || formDate, editingScope, editingId);
+    },
+  );
 
   function close() {
     setShowForm(false);
@@ -241,6 +257,7 @@ export function useActivityEditor({
     );
     if (overlap && !approvedOverlap) {
       setConfirmation({
+        kind: "overlap",
         title: "Overlapping activity",
         body: `This overlaps ${titleOf(overlap)}. Save anyway?`,
         confirmLabel: "Save anyway",
@@ -287,13 +304,16 @@ export function useActivityEditor({
       (current) => {
         if (!editingId) return [...current, scheduled];
         const series = current.find((item) => item.id === editingId);
-        if (series?.recurrence && editingScope === "date")
+        if (!series)
+          throw new Error("This activity was removed on another screen.");
+        assertUnchangedItem(series, edited.source);
+        if (series.recurrence && editingScope === "date")
           return current.map((item) =>
             item.id === editingId
               ? applyOccurrenceOverride(item, formDate, fields)
               : item,
           );
-        if (series?.recurrence && editingScope === "weekday")
+        if (series.recurrence && editingScope === "weekday")
           return changeSeriesWeekday(
             current,
             editingId,
@@ -353,12 +373,14 @@ export function useActivityEditor({
     <>
       {showForm && (
         <ActivitySheet
+          key={edited.version}
           model={{
             editingId,
             selectedKey: formDate,
             type,
             closeActivitySheet: close,
             activityDirty,
+            changedElsewhere: edited.changed,
             saveEvent,
             setType,
             title,

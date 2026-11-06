@@ -22,7 +22,8 @@ import {
   weekDates,
   APPROX_TIMES,
 } from "../../domain/log.js";
-import { changeData, useStore } from "../../store.js";
+import { changeData, useStore, assertUnchangedItem } from "../../store.js";
+import { useItemChanges } from "../../hooks/useItemChanges.js";
 import { useAsyncAction } from "../../hooks/useAsyncAction.js";
 import {
   formatActivityType,
@@ -95,6 +96,30 @@ export default function LogDay({ date, todayKey, now, onNavigate }) {
   );
   const isToday = date === todayKey;
   const log = data.dailyLogs[date] || { entries: [] };
+  const watchedItem = dialog?.type === "changed" ? dialog.plan : dialog?.entry;
+  const latestItem =
+    dialog?.type === "changed"
+      ? data.mealPlans.find((plan) => plan.id === watchedItem?.id)
+      : log.entries.find((entry) => entry.id === watchedItem?.id);
+  const edited = useItemChanges(
+    watchedItem ? `${dialog.type}:${watchedItem.id}` : null,
+    latestItem,
+    (item) => {
+      setDialog((value) =>
+        value.type === "changed"
+          ? { ...value, plan: item, date: item.date }
+          : {
+              ...value,
+              entry: item,
+              food: foodFor(item),
+              only: value.only
+                ? homeMatches(data.groceryState.pantry, item)
+                : undefined,
+            },
+      );
+      setDirtyDialog(null);
+    },
+  );
   const timeline = dayTimeline({ log, events: data.schedule, dateKey: date });
   const plans = unconfirmedPlans(data.mealPlans, date, todayKey);
   const water = dayWater(log);
@@ -136,6 +161,7 @@ export default function LogDay({ date, todayKey, now, onNavigate }) {
             const found = day.entries.find((e) => e.id === old.id);
             if (!found)
               throw new Error("This entry was removed on another screen.");
+            assertUnchangedItem(found, edited.source);
             day.entries = day.entries.map((e) =>
               e.id === found.id
                 ? {
@@ -476,17 +502,22 @@ export default function LogDay({ date, todayKey, now, onNavigate }) {
           }
           onClose={() => setDialog(null)}
           dirty={dirtyDialog === dialog}
+          changedElsewhere={edited.changed}
         >
           {dialog.type === "use" ? (
             <UseFromHomeSheet
+              key={edited.version}
               entry={dialog.entry}
+              expectedItem={edited.source}
               only={dialog.only}
               onDone={() => setDialog(null)}
               onDirty={(dirty) => setDirtyDialog(dirty ? dialog : null)}
             />
           ) : dialog.type === "changed" ? (
             <ChangedPlanSheet
+              key={edited.version}
               plan={dialog.plan}
+              expectedItem={edited.source}
               date={dialog.date}
               todayKey={todayKey}
               onDirty={(dirty) => setDirtyDialog(dirty ? dialog : null)}
@@ -498,6 +529,7 @@ export default function LogDay({ date, todayKey, now, onNavigate }) {
             />
           ) : dialog.type === "portion" ? (
             <PortionSheet
+              key={edited.version}
               food={dialog.food}
               entry={dialog.entry}
               isToday={isToday}

@@ -24,6 +24,7 @@ export function ActivitySheet({ model }) {
     type,
     closeActivitySheet,
     activityDirty,
+    changedElsewhere,
     saveEvent,
     setType,
     title,
@@ -84,6 +85,7 @@ export function ActivitySheet({ model }) {
       className="activity-sheet"
       onClose={closeActivitySheet}
       dirty={activityDirty}
+      changedElsewhere={changedElsewhere}
       discardMessage="Your unsaved activity changes will be lost."
     >
       <form

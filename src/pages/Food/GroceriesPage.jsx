@@ -1,5 +1,6 @@
 import { useRef, useState } from "react";
-import { changeData, useStore } from "../../store.js";
+import { changeData, useStore, assertUnchangedItem } from "../../store.js";
+import { useItemChanges } from "../../hooks/useItemChanges.js";
 import { useAsyncAction } from "../../hooks/useAsyncAction.js";
 import { Dialog, DialogError } from "../../components/Dialog.jsx";
 import { ConfirmDialog } from "../../components/ui/ConfirmDialog.jsx";
@@ -79,6 +80,16 @@ export default function GroceriesPage({ todayKey }) {
   // The item form marks its sheet dirty; a new sheet starts clean (DS-15).
   const [dirtySheet, setDirtySheet] = useState(null);
   const formDirty = sheet !== null && dirtySheet === sheet;
+  const edited = useItemChanges(
+    ["edit", "swap"].includes(sheet?.type)
+      ? `${sheet.type}:${sheet.item.id}`
+      : null,
+    grocery.items.find((item) => item.id === sheet?.item?.id),
+    (item) => {
+      setSheet((value) => ({ ...value, item }));
+      setDirtySheet(null);
+    },
+  );
   const updateItem = (id, fn) => (d) => {
     const target = d.groceryState.items.find((i) => i.id === id);
     if (!target)
@@ -131,6 +142,7 @@ export default function GroceriesPage({ todayKey }) {
     const ok = await write(
       "save-item",
       updateItem(item.id, (target) => {
+        assertUnchangedItem(target, edited.source);
         Object.assign(target, fields);
         if (food) {
           // GROC-07: a swap keeps the reason and remembers what was needed.
@@ -426,6 +438,7 @@ export default function GroceriesPage({ todayKey }) {
               ? `Swap ${sheet.item.name}`
               : "Add to groceries"
           }
+          changedElsewhere={edited.changed}
           initialFocusRef={searchInput}
           className={sheet.food ? "" : "food-search-dialog"}
           onClose={closeSheet}
@@ -433,6 +446,7 @@ export default function GroceriesPage({ todayKey }) {
         >
           {sheet.food ? (
             <FoodDetailsSheet
+              key={edited.version}
               mode="grocery"
               food={sheet.food}
               item={sheet.type === "swap" ? sheet.item : null}
@@ -447,6 +461,7 @@ export default function GroceriesPage({ todayKey }) {
             />
           ) : (
             <FoodSearch
+              key={edited.version}
               searchInputRef={searchInput}
               initialQuery={sheet.type === "swap" ? sheet.item.name : ""}
               onChoose={(food) => setSheet({ ...sheet, food })}
@@ -494,10 +509,12 @@ export default function GroceriesPage({ todayKey }) {
       {sheet?.type === "edit" && (
         <Dialog
           title={`Edit ${sheet.item.name}`}
+          changedElsewhere={edited.changed}
           onClose={closeSheet}
           dirty={formDirty}
         >
           <FoodDetailsSheet
+            key={edited.version}
             mode="grocery"
             item={sheet.item}
             showPrices={showPrices}

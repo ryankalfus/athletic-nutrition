@@ -9,7 +9,7 @@ import {
 import { markPlanLogged } from "../../domain/plans.js";
 import { entryTimeFields } from "../../domain/log.js";
 import { uid } from "../../domain/storage.js";
-import { changeData, useStore } from "../../store.js";
+import { changeData, useStore, assertUnchangedItem } from "../../store.js";
 import { useAsyncAction } from "../../hooks/useAsyncAction.js";
 import { plural } from "../../format.js";
 import {
@@ -38,7 +38,13 @@ export const foodFor = (item) =>
 
 // "Used from At home…": take exact counts from At home for one entry. `only`
 // limits the list to the rows the entry matched (LOG-05).
-export function UseFromHomeSheet({ entry, only, onDone, onDirty }) {
+export function UseFromHomeSheet({
+  entry,
+  expectedItem = entry,
+  only,
+  onDone,
+  onDirty,
+}) {
   const { current } = useStore();
   const { pending, run } = useAsyncAction();
   const [amounts, setAmounts] = useState(() =>
@@ -67,7 +73,15 @@ export function UseFromHomeSheet({ entry, only, onDone, onDirty }) {
         if (
           await run("consume", () =>
             changeData(
-              (data) => consumeStock(data, entry.id, deductions),
+              (data) => {
+                const latest = Object.values(data.dailyLogs)
+                  .flatMap((day) => day.entries)
+                  .find((item) => item.id === entry.id);
+                if (!latest)
+                  throw new Error("This entry was removed on another screen.");
+                assertUnchangedItem(latest, expectedItem);
+                consumeStock(data, entry.id, deductions);
+              },
               used
                 ? `Took ${used} ${plural(used, "food")} from At home.`
                 : "Nothing taken from At home.",
@@ -114,7 +128,14 @@ export function UseFromHomeSheet({ entry, only, onDone, onDirty }) {
 }
 
 // "Changed it": log a plan with the amounts actually eaten (LOG-03).
-export function ChangedPlanSheet({ plan, date, todayKey, onDone, onDirty }) {
+export function ChangedPlanSheet({
+  plan,
+  expectedItem = plan,
+  date,
+  todayKey,
+  onDone,
+  onDirty,
+}) {
   const { current } = useStore();
   const { pending, run } = useAsyncAction();
   const isToday = date === todayKey;
@@ -187,6 +208,14 @@ export function ChangedPlanSheet({ plan, date, todayKey, onDone, onDirty }) {
         };
         const ok = await run("meal-log", () =>
           changeData((data) => {
+            const latest = data.mealPlans.find((item) => item.id === plan.id);
+            if (!latest)
+              throw new Error("This plan was removed on another screen.");
+            assertUnchangedItem(latest, expectedItem);
+            if (latest.status === "eaten" || latest.status === "logged")
+              throw new Error(
+                "This plan was already logged on another screen.",
+              );
             const day = data.dailyLogs[date] || { entries: [], water: 0 };
             day.entries.push(structuredClone(entry));
             data.dailyLogs[date] = day;
