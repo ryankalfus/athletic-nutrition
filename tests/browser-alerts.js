@@ -78,6 +78,7 @@ async (page) => {
       if ((await keep.getAttribute("data-kind")) !== "primary")
         throw new Error("Keep editing must be the primary safe action");
       await p.screenshot({
+        animations: "disabled",
         path: "output/playwright/discard-alert-" + width + ".png",
       });
       await keep.click();
@@ -130,6 +131,7 @@ async (page) => {
       )
         throw new Error("Delete alert's safe Cancel must be primary");
       await p.screenshot({
+        animations: "disabled",
         path: "output/playwright/type-delete-alert-" + width + ".png",
       });
       await deletion.getByRole("textbox").fill("DELETE");

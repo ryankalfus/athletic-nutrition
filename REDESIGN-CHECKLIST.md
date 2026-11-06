@@ -17,7 +17,7 @@ Owner Ryan Kalfus confirmed the recommended options previously presented for aud
 - Awaiting approval (allergy filtering built but switched off; `ALLERGY_TAGS_REVIEWED = false`): P1-09, P1-10, ADD-03, ONB-04, YOU-02, YOU-03. P1-11 waits on ONB-04.
 - Incomplete, skipped for now (will come back to): P1-09, P1-10 and P1-13 (manual screen-reader test and keyboard-only core journey not done).
 - Not started: P3-01 to P3-05 (ADD-16 is P3-01, ADD-15 is P3-02).
-- Open work: STATE-04, STATE-05, STATE-07, STATE-08, STATE-11, STATE-15, STATE-16, CMP-10.
+- Open work: STATE-04, STATE-05, STATE-07, STATE-08, STATE-11, STATE-16, CMP-10.
 
 ### P0
 
@@ -106,7 +106,7 @@ Each ID is an individual checkbox. Implementation notes and blockers go on the m
 - [x] **DS-12** — Fixed 2026.10.09: Log Day/Week is the shared segmented control (muted track, white selected segment, shadow); selected weekdays use the selected tint, 2 px primary border and a check badge (browser-shared-ui.js). Superseded 2026.11.06 by UX U4-04 (§5.6): selected segments and weekdays use pitch fill with white text for contrast, weekdays form a joined bar without badges, and multi-select choices use checklist rows.
 - [x] **DS-13**
 - [x] **DS-14**
-- [x] **DS-15**
+- [x] **DS-15** — UX U4-05 supersedes the original sheet chrome and desktop widths (2026.11.06). Section 5.7 defines the close controls, centered alerts and 520 px desktop dialogs.
 - [x] **DS-16**
 - [x] **DS-17**
 - [x] **DS-18**
@@ -434,7 +434,7 @@ Each ID is an individual checkbox. Implementation notes and blockers go on the m
 - [x] **STATE-12**
 - [x] **STATE-13** — 404: "We couldn't find that barcode. Add the food yourself."; 5xx/timeout: "Barcode lookup isn't working right now. Try again." (unit test).
 - [x] **STATE-14**
-- [ ] **STATE-15** — Open: removed items fail with "removed on another screen", but an item edited in another tab shows no "This item changed on another screen. Showing the latest version."
+- [x] **STATE-15** — 2026.11.06. Two-tab browser checks cover Log, At home and Groceries, including the retained name and visible error when an item has been removed. An external edit reloads the open form and shows “This item changed on another screen. Showing the latest version.”
 - [ ] **STATE-16** — Open: no "Add your school day to plan lunch and after-school snacks." prompt on Today when activities exist without a school day.
 - [x] **STATE-17**
 
