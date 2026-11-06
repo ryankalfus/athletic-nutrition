@@ -255,16 +255,18 @@ async (page) => {
     const field = await box(sheet.getByRole("combobox", { name: /^Sport/ }));
     if (!near(field.h, 52)) fail(`Sheet text input is ${field.h}px, not 52`);
     for (const m of await segmentsOnOneRow("Sport sheet @390")) fail(m);
-    await sheet.getByRole("combobox", { name: /^Sport/ }).fill("Hockey");
+    await sheet.getByRole("radio").first().click();
     await p.keyboard.press("Escape");
     const discard = p.getByRole("dialog", { name: "Discard changes?" });
     await discard.waitFor();
     await p.waitForTimeout(250);
     const d390 = await box(discard);
-    if (d390.x < 0 || d390.right > 390 + 0.5 || !near(d390.bottom, 844))
-      fail(
-        `Discard sheet at 390 is not a bottom sheet: ${JSON.stringify(d390)}`,
-      );
+    if (
+      !near(d390.w, 320) ||
+      !near(d390.x + d390.w / 2, 195) ||
+      !near(d390.y + d390.h / 2, 422)
+    )
+      fail(`Discard at 390 must be a centered alert: ${JSON.stringify(d390)}`);
     if (!(await discard.evaluate((d) => d.parentElement === document.body)))
       fail("The Discard confirm is nested inside the sheet");
     await discard.getByRole("button", { name: "Discard", exact: true }).click();
@@ -341,7 +343,7 @@ async (page) => {
     if (gap < 15)
       fail(`"Activity date" sits ${Math.round(gap)}px under Date or days`);
     result.checks.push(
-      "390: the Now card and the top of the Day rail fit above the tab bar, chips take one row, rail times fit and the marker reads Now, water buttons are equal; sheets have 28 px top corners, 22/28 titles, no hairlines or short-sheet X, 52 px inputs and full-width sticky Save; Discard is its own bottom sheet on <body>; no text is heavier than 700; Schedule's + Add is in the top bar, the week label and day headings stay on one row, and the activity sheet keeps 16 px between groups.",
+      "390: the Now card and the top of the Day rail fit above the tab bar, chips take one row, rail times fit and the marker reads Now, water buttons are equal; sheets have 28 px top corners, 22/28 titles, no hairlines or short-sheet X, 52 px inputs and full-width sticky Save; Discard is a centered 320 px alert on <body>; no text is heavier than 700; Schedule's + Add is in the top bar, the week label and day headings stay on one row, and the activity sheet keeps 16 px between groups.",
     );
     await context.close();
 
@@ -394,7 +396,11 @@ async (page) => {
     await confirm.waitFor();
     await p.waitForTimeout(250);
     const d1280 = await box(confirm);
-    if (!near(d1280.x + d1280.w / 2, 640, 2) || d1280.y < 100)
+    if (
+      !near(d1280.w, 320) ||
+      !near(d1280.x + d1280.w / 2, 640, 1) ||
+      !near(d1280.y + d1280.h / 2, 450, 1)
+    )
       fail(`Discard dialog at 1280 is not centered: ${JSON.stringify(d1280)}`);
     result.checks.push(
       "1280: no H1 focus on load; Today, Schedule, Food, You and This device titles share one left edge and the tabs one title row; rail brand, icons and avatar share one edge; month headers are sentence case; the glance never says '1 games'; Discard is a centered dialog.",

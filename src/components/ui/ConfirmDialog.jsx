@@ -17,7 +17,13 @@ export function ConfirmDialog({
   const [pending, setPending] = useState(false);
   const [error, setError] = useState("");
   return (
-    <Dialog title={title} onClose={onCancel}>
+    <Dialog
+      title={title}
+      onClose={() => {
+        if (!pending) onCancel();
+      }}
+      alert
+    >
       <p>{body}</p>
       <InlineError message={error} onRetry={() => setError("")} />
       {requireText && (
@@ -31,9 +37,11 @@ export function ConfirmDialog({
       )}
       <DialogError />
       <div className="confirm-actions">
-        <Button onClick={onCancel}>{cancelLabel}</Button>
+        <Button variant="primary" disabled={pending} onClick={onCancel}>
+          {cancelLabel}
+        </Button>
         <Button
-          variant={destructive ? "destructive" : "primary"}
+          variant={destructive ? "destructive" : "secondary"}
           busy={pending}
           busyLabel="Working…"
           disabled={requireText && typed !== requireText}

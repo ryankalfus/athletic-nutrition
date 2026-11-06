@@ -202,8 +202,9 @@
 }
 
 .app-dialog :is(.danger-button, [data-kind="destructive"]):disabled {
-  background: var(--color-surface-muted);
-  color: var(--color-ink-subtle);
+  background: var(--color-error);
+  color: var(--color-on-dark);
+  opacity: 0.4;
 }
 
 /* Icon button: 20px icon in a 44 x 44 target. */
@@ -1658,4 +1659,36 @@ fieldset:disabled .segmented {
   .tiles {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
+}
+
+/* UX-CMP-11: confirmations are centered alerts at every viewport width. */
+.app-dialog.alert-dialog {
+  width: calc(100% - 2 * var(--space-4));
+  max-width: 320px;
+  max-height: calc(100dvh - 2 * var(--space-4));
+  margin: auto;
+  border-radius: 24px;
+}
+.alert-dialog > header {
+  min-height: 0;
+  padding: var(--space-6) var(--dialog-pad) 0;
+  border: 0;
+}
+.alert-dialog > header h2 {
+  font-size: 20px;
+  line-height: 26px;
+}
+.alert-dialog :is(.confirm-actions, .scope-options) {
+  position: static;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+.alert-dialog .confirm-actions::before {
+  border: 0;
+}
+.alert-dialog :is(.confirm-actions, .scope-options) > button {
+  flex: 0 0 auto;
+  width: 100%;
+  min-height: var(--control-height);
 }

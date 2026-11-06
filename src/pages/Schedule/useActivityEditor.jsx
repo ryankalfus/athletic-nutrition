@@ -1,5 +1,6 @@
 import { useRef, useState } from "react";
 import { Dialog, DialogError } from "../../components/Dialog.jsx";
+import { Button } from "../../components/ui/Button.jsx";
 import { ConfirmDialog } from "../../components/ui/ConfirmDialog.jsx";
 import { uid } from "../../domain/storage.js";
 import { changeData } from "../../store.js";
@@ -390,6 +391,7 @@ export function useActivityEditor({
       )}
       {scopePrompt && (
         <Dialog
+          alert
           title={
             scopePrompt.kind === "edit"
               ? "Change repeating activity"
@@ -404,12 +406,16 @@ export function useActivityEditor({
           {/* DLG-03: a failed delete shows above the choices. */}
           <DialogError />
           <div className="scope-options">
+            <Button variant="primary" onClick={() => setScopePrompt(null)}>
+              Cancel
+            </Button>
+
             {/* The safe choice is the primary (UX-BUG-17): "Delete only"
                 is the filled destructive button, "Delete all" a text button
                 in the error colour; both 48 px, with Cancel (ACT-03). */}
             <button
               className={
-                scopePrompt.kind === "edit" ? "primary" : "danger-button"
+                scopePrompt.kind === "edit" ? undefined : "danger-button"
               }
               onClick={chooseOnly}
             >
@@ -427,9 +433,6 @@ export function useActivityEditor({
               {scopePrompt.kind === "edit" ? "Change" : "Delete"} all{" "}
               {weekdayName(scopePrompt.dateKey)}{" "}
               {plural(2, scopePrompt.event.type)}
-            </button>
-            <button type="button" onClick={() => setScopePrompt(null)}>
-              Cancel
             </button>
           </div>
         </Dialog>

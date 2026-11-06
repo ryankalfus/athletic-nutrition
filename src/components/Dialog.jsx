@@ -123,6 +123,7 @@ export function Dialog({
   className = "",
   fullHeight = false,
   dirty = false,
+  alert = false,
   discardMessage = "Your changes aren't saved yet.",
 }) {
   const ref = useRef(null);
@@ -160,6 +161,15 @@ export function Dialog({
   useEffect(() => {
     const node = ref.current;
     const previous = document.activeElement;
+    const underneath = alert
+      ? [...document.querySelectorAll("dialog[open]")].filter(
+          (dialog) => dialog !== node,
+        )
+      : [];
+    const inertStates = underneath.map((dialog) => dialog.inert);
+    underneath.forEach((dialog) => {
+      dialog.inert = true;
+    });
     node.showModal();
     const preferred = initialFocusRef?.current;
     (lastInput === "keyboard" || (fullHeight && preferred?.matches(TYPING))
@@ -188,6 +198,9 @@ export function Dialog({
       observer.disconnect();
       node.removeEventListener("focusin", track);
       node.close();
+      underneath.forEach((dialog, index) => {
+        dialog.inert = inertStates[index];
+      });
       // Only return focus to a control that is still on screen (a nested
       // confirm closes with its parent dialog).
       if (previous?.isConnected && !previous.closest("dialog:not([open])"))
@@ -206,7 +219,12 @@ export function Dialog({
   return createPortal(
     <dialog
       ref={ref}
-      className={["app-dialog", fullHeight && "sheet-full-height", className]
+      className={[
+        "app-dialog",
+        alert && "alert-dialog",
+        fullHeight && "sheet-full-height",
+        className,
+      ]
         .filter(Boolean)
         .join(" ")}
       onPointerDown={(event) => {
@@ -249,26 +267,28 @@ export function Dialog({
         <DialogClose.Provider value={requestClose}>
           <DialogErrorSlot.Provider value={{ error, retry, register }}>
             <header>
-              <span
-                className="sheet-grabber"
-                aria-hidden="true"
-                onPointerDown={(event) => {
-                  if (!event.isPrimary || event.button !== 0) return;
-                  dragStart.current = event.clientY;
-                  event.currentTarget.setPointerCapture(event.pointerId);
-                }}
-                onPointerCancel={() => {
-                  dragStart.current = null;
-                }}
-                onPointerUp={(event) => {
-                  if (
-                    dragStart.current !== null &&
-                    event.clientY - dragStart.current >= 40
-                  )
-                    requestClose();
-                  dragStart.current = null;
-                }}
-              />
+              {!alert && (
+                <span
+                  className="sheet-grabber"
+                  aria-hidden="true"
+                  onPointerDown={(event) => {
+                    if (!event.isPrimary || event.button !== 0) return;
+                    dragStart.current = event.clientY;
+                    event.currentTarget.setPointerCapture(event.pointerId);
+                  }}
+                  onPointerCancel={() => {
+                    dragStart.current = null;
+                  }}
+                  onPointerUp={(event) => {
+                    if (
+                      dragStart.current !== null &&
+                      event.clientY - dragStart.current >= 40
+                    )
+                      requestClose();
+                    dragStart.current = null;
+                  }}
+                />
+              )}
               <h2 id={titleId} tabIndex={-1}>
                 {title}
               </h2>
@@ -300,15 +320,14 @@ export function Dialog({
   );
 }
 
-// Like every Dialog it is portaled to <body>, so the confirm is not a child
-// of the sheet: the sheet's body margins (.app-dialog > *) never reach it,
-// and it opens as its own bottom sheet (phones) or centered dialog.
 function DiscardDialog({ message, onKeep, onDiscard }) {
   return (
-    <Dialog title="Discard changes?" onClose={onKeep}>
+    <Dialog title="Discard changes?" onClose={onKeep} alert>
       <p>{message}</p>
       <div className="confirm-actions">
-        <Button onClick={onKeep}>Keep editing</Button>
+        <Button variant="primary" onClick={onKeep}>
+          Keep editing
+        </Button>
         <Button variant="destructive" onClick={onDiscard}>
           Discard
         </Button>

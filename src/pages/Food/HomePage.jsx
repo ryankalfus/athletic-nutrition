@@ -409,7 +409,11 @@ export default function HomePage({ todayKey }) {
         </Dialog>
       )}
       {merge && (
-        <Dialog title="Food already at home" onClose={() => setMerge(null)}>
+        <Dialog
+          title="Food already at home"
+          onClose={() => setMerge(null)}
+          alert
+        >
           <p>
             You already have {merge.existing.name} (
             {stockStatus(merge.existing) === "have"
@@ -420,7 +424,16 @@ export default function HomePage({ todayKey }) {
             ). Update it or keep both?
           </p>
           <DialogError />
-          <div className="dialog-actions">
+          <LabelCheck food={merge.food} />
+          <div className="confirm-actions">
+            <button
+              className="primary"
+              data-kind="primary"
+              disabled={!!pending}
+              onClick={() => setMerge(null)}
+            >
+              Cancel
+            </button>
             <button
               disabled={!!pending}
               onClick={() => add(merge.food, "update")}
