@@ -114,7 +114,7 @@ async (page) => {
   const small = [];
 
   // Runs in the page: non-text contrast (WCAG 1.4.11, audit 9.6). Field
-  // borders, selected chip and segment borders, and the focus ring must reach
+  // borders, selected checklist, weekday, tile and segment boundaries must reach
   // 3:1 against what is behind them.
   const weakBoundaries = () => {
     const parse = (c) => {
@@ -147,18 +147,33 @@ async (page) => {
     const modal = [...document.querySelectorAll("dialog[open]")].at(-1);
     const out = [];
     const controls = document.querySelectorAll(
-      'input:not([type=checkbox]):not([type=radio]):not([type=hidden]), select, textarea, .chip-group > button[aria-pressed="true"], .segmented > button:is([aria-pressed="true"], [aria-checked="true"])',
+      'input:not([type=checkbox]):not([type=radio]):not([type=hidden]), select, textarea, .checklist-group > button[aria-pressed="true"] > .checklist-check, .school-weekdays > button[aria-pressed="true"], .tiles button[aria-pressed="true"], .segmented > button:is([aria-pressed="true"], [aria-checked="true"])',
     );
     for (const el of controls) {
       if (modal && !modal.contains(el)) continue;
       const rect = el.getBoundingClientRect();
       if (!rect.width || !rect.height || el.closest(".sr-only")) continue;
       const style = getComputedStyle(el);
-      if (style.borderTopStyle === "none" || !parseFloat(style.borderTopWidth))
-        continue;
+      if (el.matches(":disabled")) continue;
+      const selected =
+        el.matches('[aria-pressed="true"], [aria-checked="true"]') ||
+        el.parentElement.matches('.checklist-row[aria-pressed="true"]');
+      // A solid selected fill is the boundary when a control has no border.
+      const fill = parse(style.backgroundColor);
       const border = parse(style.borderTopColor);
-      if (!border || border.a === 0) continue;
-      const value = ratio(border, behind(el));
+      const hasBorder =
+        style.borderTopStyle !== "none" &&
+        parseFloat(style.borderTopWidth) &&
+        border?.a;
+      const boundary = hasBorder ? border : selected && fill?.a ? fill : null;
+      if (!boundary) {
+        if (selected)
+          out.push(
+            `Selected control "${(el.getAttribute("aria-label") || el.textContent || el.parentElement.textContent || "").trim().slice(0, 24)}" has no visible boundary`,
+          );
+        continue;
+      }
+      const value = ratio(boundary, behind(el));
       if (value < 3)
         out.push(
           `${el.tagName.toLowerCase()} "${(el.getAttribute("aria-label") || el.textContent || el.name || "").trim().slice(0, 24)}" border ${value.toFixed(2)}:1`,
@@ -262,7 +277,10 @@ async (page) => {
     });
 
     await attempt(`Schedule @${width}`, async () => {
-      await go("schedule", /^(January|February|March|April|May|June|July|August|September|October|November|December)$/);
+      await go(
+        "schedule",
+        /^(January|February|March|April|May|June|July|August|September|October|November|December)$/,
+      );
       await scan("Schedule week", width);
       await p
         .getByRole("button", { name: /^(\+ )?Add$/ })
@@ -414,7 +432,7 @@ async (page) => {
     result.checks.push(
       `axe: ${scans} scans (every route, setup step and key dialog, sheet and menu state at 390 and 1280 px) have zero serious or critical violations.`,
       "Every visible control in those scans is at least 44 × 44 px (inline links in sentences at least 24 px).",
-      "Field borders and selected chip and segment borders reach 3:1 against their background in every scan (WCAG 1.4.11).",
+      "Field borders and selected checklist, weekday, tile and segment boundaries reach 3:1 against their background in every scan (WCAG 1.4.11).",
     );
 
     // Keyboard: skip link first, then the frame nav in order.
@@ -477,7 +495,12 @@ async (page) => {
     await p.keyboard.press("Shift+Tab");
     await p.keyboard.press("Shift+Tab");
     await p.keyboard.press("Enter");
-    await p.getByRole("heading", { level: 1, name: /^(January|February|March|April|May|June|July|August|September|October|November|December)$/ }).waitFor();
+    await p
+      .getByRole("heading", {
+        level: 1,
+        name: /^(January|February|March|April|May|June|July|August|September|October|November|December)$/,
+      })
+      .waitFor();
     await p.waitForFunction(
       () =>
         document.activeElement?.tagName === "H1" &&
@@ -578,7 +601,10 @@ async (page) => {
     );
 
     // Month grid: one tab stop; arrows move the selected day, Page Down the month.
-    await go("schedule", /^(January|February|March|April|May|June|July|August|September|October|November|December)$/);
+    await go(
+      "schedule",
+      /^(January|February|March|April|May|June|July|August|September|October|November|December)$/,
+    );
     await p.getByRole("radio", { name: "Month" }).click();
     const days = p.getByRole("group", { name: /^Days in / });
     const stop = days.locator('button[tabindex="0"]');
@@ -644,8 +670,14 @@ async (page) => {
 
     // Reduced motion: no transform animation on the sheet.
     await p.emulateMedia({ reducedMotion: "reduce" });
-    await go("schedule", /^(January|February|March|April|May|June|July|August|September|October|November|December)$/);
-    await p.getByRole("button", { name: /^(\+ )?Add$/ }).first().click();
+    await go(
+      "schedule",
+      /^(January|February|March|April|May|June|July|August|September|October|November|December)$/,
+    );
+    await p
+      .getByRole("button", { name: /^(\+ )?Add$/ })
+      .first()
+      .click();
     const moving = await dialog.evaluate(
       (d) =>
         d

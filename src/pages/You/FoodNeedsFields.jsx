@@ -8,7 +8,7 @@ import {
 } from "../../domain/allergens.js";
 import { DIET_CHOICES, DISLIKE_CHOICES } from "../../domain/you.js";
 import { LabelCheck } from "../../components/ui/LabelCheck.jsx";
-import { ChipGroup } from "../../components/ui/SelectionControls.jsx";
+import { ChecklistGroup } from "../../components/ui/SelectionControls.jsx";
 import { toggle } from "./SettingsSheet.jsx";
 
 // Allergies, "I don't eat" and "Not a fan of" (YOU-02, ONB step 5). Shared by
@@ -35,7 +35,7 @@ export function FoodNeedsFields({
       >
         {reviewed ? (
           <>
-            <ChipGroup
+            <ChecklistGroup
               legend="Allergies"
               hint={allergyHint}
               options={ALLERGY_CHOICES}
@@ -64,7 +64,7 @@ export function FoodNeedsFields({
           </>
         )}
       </section>
-      <ChipGroup
+      <ChecklistGroup
         legend="I don't eat"
         options={DIET_CHOICES}
         selected={draft.dietaryNeeds}
@@ -75,7 +75,7 @@ export function FoodNeedsFields({
           })
         }
       />
-      <ChipGroup
+      <ChecklistGroup
         legend="Not a fan of"
         hint="Ideas that use these are hidden. This is not an allergy filter."
         options={DISLIKE_CHOICES}

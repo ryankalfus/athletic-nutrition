@@ -226,7 +226,8 @@
   gap: var(--space-4);
   /* Phones: fill the screen below the brand and step header so "Next" sits
      at the bottom even on short steps. */
-  min-height: calc(100dvh - 128px);
+  --setup-height: calc(100dvh - 128px);
+  min-height: var(--setup-height);
   padding-top: var(--space-2);
 }
 
@@ -251,6 +252,16 @@
 .setup-fields {
   display: grid;
   gap: var(--space-4);
+}
+
+/* Long checklist rows scroll between the heading and pinned Next button. */
+.setup-step:has(.checklist-group) {
+  max-height: var(--setup-height);
+}
+
+.setup-step:has(.checklist-group) > .setup-fields {
+  min-height: 112px;
+  overflow-y: auto;
 }
 
 .setup-fields fieldset {
@@ -391,6 +402,10 @@
   .setup-step {
     min-height: 0;
     padding-top: var(--space-4);
+  }
+
+  .setup-step:has(.checklist-group) {
+    max-height: none;
   }
 
   .shell:has(> .setup) {

@@ -14,7 +14,7 @@
 //   40 px apart from 1024 px (UX-DS-08); the large title and section titles on
 //   the UX-DS-09 scale; the phone top-bar add is a round 44 px icon button
 //   named "Add" (UX-NAV-11); Log Day/Week is the shared segmented control and selected
-//   weekdays show a check (DS-12).
+//   weekdays use the joined pitch-fill bar (UX-CMP-07).
 // - U3-04: toast size, glass and placement above the tab bar and the floating
 //   action at 390 px, no X with Undo, centered on main at 1440 px.
 // The clock is fixed to Sunday 2026-10-11 10:00 with a 4:00 PM practice today.
@@ -217,20 +217,11 @@ async (page) => {
       .evaluate((node) => ({
         pressed: node.getAttribute("aria-pressed"),
         background: getComputedStyle(node).backgroundColor,
-        check: getComputedStyle(node, "::before").backgroundImage,
-        border: getComputedStyle(node).borderColor,
+        check: getComputedStyle(node, "::before").content,
+        color: getComputedStyle(node).color,
       }));
-    const selectedBg = await tokenColor("--color-selected-bg");
-    const primary = await tokenColor("--color-primary");
-    if (
-      day.pressed !== "true" ||
-      day.background !== selectedBg ||
-      day.border !== primary ||
-      !day.check.includes("svg")
-    )
-      problems.push(
-        `A selected weekday is not a checked chip: ${JSON.stringify(day)}`,
-      );
+    const pitch = await tokenColor("--color-pitch");
+    const white = await tokenColor("--color-surface");
     await p.getByRole("button", { name: "Next", exact: true }).click();
     await p.getByRole("heading", { name: "Practices and games" }).waitFor();
     await paired("Setup step 3");
@@ -243,7 +234,7 @@ async (page) => {
       })
       .waitFor();
     result.checks.push(
-      "Setup steps 2 and 3 keep start and end times side by side at 320 px, unclipped, reading like “8:00 AM” (UX-CMP-09, replaces RWD-06's stacking); a selected weekday has the selected tint, primary border and a check (DS-12).",
+      "Setup steps 2 and 3 keep start and end times side by side at 320 px, unclipped, reading like “8:00 AM” (UX-CMP-09, replaces RWD-06's stacking); a selected weekday has pitch fill, white text and no check badge (UX-CMP-07).",
     );
 
     // U1-02 (UX-BUG-04, UX-NAV-07): the page asks for safe-area insets, and
@@ -338,7 +329,7 @@ async (page) => {
     await p.locator(".now-card .today-countdown").waitFor();
     const phone = {
       countdown: await size(".now-card .today-countdown"),
-      water: await size(".water-row .numeral"),
+      water: await size(".water-row h2 .numeral"),
     };
     if (phone.countdown !== "32/36")
       problems.push(`Countdown at 390 px is ${phone.countdown}, not 32/36`);
@@ -371,19 +362,45 @@ async (page) => {
           '[aria-checked="true"], [aria-pressed="true"]',
         );
         const style = getComputedStyle(selected);
+        const luminance = (color) =>
+          color
+            .match(/[\d.]+/g)
+            .slice(0, 3)
+            .map(Number)
+            .map((v) => v / 255)
+            .map((v) =>
+              v <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4,
+            )
+            .reduce((sum, v, i) => sum + v * [0.2126, 0.7152, 0.0722][i], 0);
+        const [hi, lo] = [
+          luminance(style.color),
+          luminance(style.backgroundColor),
+        ].sort((a, b) => b - a);
         return {
+          contrast: (hi + 0.05) / (lo + 0.05),
           track: getComputedStyle(track).backgroundColor,
           selected: style.backgroundColor,
-          shadow: style.boxShadow,
+          color: style.color,
+          height: track.getBoundingClientRect().height,
         };
       });
     const muted = await tokenColor("--color-surface-muted");
     const surface = await tokenColor("--color-surface");
     if (
+      day.pressed !== "true" ||
+      day.background !== pitch ||
+      day.color !== white ||
+      !["none", "normal"].includes(day.check)
+    )
+      problems.push(
+        `A selected weekday must have pitch fill, white text and no badge: ${JSON.stringify(day)}`,
+      );
+    if (
       control.track !== muted ||
-      control.selected !== surface ||
-      control.shadow === "none" ||
-      /inset/.test(control.shadow)
+      control.selected !== pitch ||
+      control.color !== surface ||
+      control.height !== 48 ||
+      control.contrast < 4.5
     )
       problems.push(
         `Log Day/Week is not the segmented control: ${JSON.stringify(control)}`,
@@ -394,7 +411,7 @@ async (page) => {
     await p.locator(".now-card .today-countdown").waitFor();
     const desk = {
       countdown: await size(".now-card .today-countdown"),
-      water: await size(".water-row .numeral"),
+      water: await size(".water-row h2 .numeral"),
     };
     if (desk.countdown !== "40/44")
       problems.push(`Countdown at 1280 px is ${desk.countdown}, not 40/44`);
@@ -593,7 +610,7 @@ async (page) => {
     fail();
     result.checks.push(
       "The Now card countdown is Numeral XL 32/36 at 390 px and 40/44 at 1280 px; the water total is the time size, 17 then 18 px (DS-03, UX-DS-09); at 1280 px the page title is 40/44 and a section title 22/28 at 650 (UX-DS-09).",
-      "The phone top-bar add is a round 44 px icon button named Add (UX-NAV-11); Log Day/Week is the shared segmented control: muted track, white selected segment with a shadow (DS-12).",
+      "The phone top-bar add is a round 44 px icon button named Add (UX-NAV-11); Log Day/Week is the shared segmented control: 48 px muted track, pitch selected segment and white text (UX-CMP-06).",
       "You, About and This device sections are 40 px apart at 1280 px (UX-DS-08); Log Day and Week read in a 720 px column at 1440 px (DS-08).",
       "U3-04: at 390 px a toast is 48 px dark glass (radius 16, 20 px blur), 8 px above the tab bar on Today and 8 px above Finish shopping (itself 8 px above the bar) on Groceries, covering neither the frame's buttons nor the control that raised it; an Undo toast has no X and a plain one keeps it; at 1440 px it centers on main 24 px above the edge on Today, Groceries and You (UX-CMP-13, UX-NAV-06, UX-BUG-10, UX-RWD-11).",
     );

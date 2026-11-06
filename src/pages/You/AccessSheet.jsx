@@ -10,7 +10,7 @@ import { lowCostOn } from "../../domain/ranking.js";
 import { FieldError, Input } from "../../components/ui/FieldError.jsx";
 import { SettingsSheet, toggle } from "./SettingsSheet.jsx";
 import {
-  ChipGroup,
+  ChecklistGroup,
   SegmentedControl,
   SwitchRow,
 } from "../../components/ui/SelectionControls.jsx";
@@ -65,7 +65,7 @@ export function AccessSheet({ data, onClose, onNavigate }) {
         });
       }}
     >
-      <ChipGroup
+      <ChecklistGroup
         legend="Where you can get food"
         field="foodSources"
         options={FOOD_SOURCES}
@@ -75,7 +75,7 @@ export function AccessSheet({ data, onClose, onNavigate }) {
         }
       />
       {schoolSchedule ? (
-        <ChipGroup
+        <ChecklistGroup
           legend="At school"
           hint="Also in Schedule › School day."
           options={SCHOOL_ACCESS}

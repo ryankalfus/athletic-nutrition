@@ -93,26 +93,6 @@
   font-weight: 600;
 }
 
-/* Quick add and Quick basics: one row of secondary buttons with a Plus
- * icon that scrolls sideways instead of wrapping (4px keeps focus rings). */
-.quick-add-list {
-  display: flex;
-  gap: var(--space-2);
-  margin: 0;
-  padding: var(--space-1);
-  overflow-x: auto;
-  list-style: none;
-  scrollbar-width: thin;
-}
-
-.quick-add-list li {
-  flex: 0 0 auto;
-}
-
-.quick-add-list button {
-  white-space: nowrap;
-}
-
 /* Ideas */
 .ideas-page,
 .home-page,
@@ -698,11 +678,6 @@
 .log-page {
   display: grid;
   gap: var(--space-4);
-}
-
-/* Day and Week is the shared segmented control (DS-12), sized to its labels. */
-.log-view-tabs .segmented {
-  width: min(100%, 240px);
 }
 
 .log-layout {

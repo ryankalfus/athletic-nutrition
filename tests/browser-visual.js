@@ -3,7 +3,7 @@
 // geometry or computed style: one-row segmented controls, a Discard confirm
 // that is its own sheet or centered dialog, 700 as the heaviest weight, one
 // title edge and row across tabs, 52 px inputs (U2-01), 64 px sheet headers, equal
-// footer buttons, round weekday circles, a centered tablet tab group, one rail
+// footer buttons, a joined weekday bar, a centered tablet tab group, one rail
 // edge, a Now card above the tab bar, a Day rail whose times fit, and the
 // Schedule week switcher, day headers, top-bar add and month headers; U4-01
 // button kinds: no outlined buttons, data-kind, desktop hug width; U4-02 the
@@ -87,7 +87,7 @@ async (page) => {
     }, where);
 
   try {
-    // ---------- 320: setup, segmented controls, weekday circles ----------
+    // ---------- 320: setup, segmented controls, joined weekdays ----------
     await open(320);
     await p.goto(base);
     await p.getByRole("button", { name: "Get started" }).click();
@@ -117,25 +117,42 @@ async (page) => {
     const header = await box(p.locator(".setup-header"));
     if (header.h > 64)
       fail(`Setup step header is ${header.h}px tall at 320 (wraps)`);
-    const circles = await p
-      .locator(".school-weekdays > button")
-      .evaluateAll((all) =>
-        all.map((b) => [
-          b.getBoundingClientRect().width,
-          b.getBoundingClientRect().height,
-        ]),
-      );
-    if (circles.some(([w, h]) => !near(w, h)))
-      fail(
-        `Weekday circles are not round at 320: ${JSON.stringify(circles[1])}`,
-      );
+    const weekdayBar = await p.locator(".school-weekdays").evaluate((bar) => {
+      const buttons = [...bar.querySelectorAll("button")];
+      const boxes = buttons.map((button) => button.getBoundingClientRect());
+      return {
+        count: buttons.length,
+        height: bar.getBoundingClientRect().height,
+        gap: getComputedStyle(bar).gap,
+        tops: [...new Set(boxes.map((rect) => rect.top))],
+        gaps: boxes
+          .slice(1)
+          .map((rect, index) => rect.left - boxes[index].right),
+        badges: buttons.some((button) => {
+          const before = getComputedStyle(button, "::before");
+          return (
+            button.children.length ||
+            !["none", "normal"].includes(before.content)
+          );
+        }),
+      };
+    });
+    if (
+      weekdayBar.count !== 7 ||
+      weekdayBar.height !== 48 ||
+      weekdayBar.gap !== "0px" ||
+      weekdayBar.tops.length !== 1 ||
+      weekdayBar.gaps.some((gap) => Math.abs(gap) > 0.01) ||
+      weekdayBar.badges
+    )
+      fail(`Joined weekday bar @320: ${JSON.stringify(weekdayBar)}`);
     const inputs = await p
       .locator(".setup-fields .time-field input")
       .evaluateAll((all) => all.map((i) => i.getBoundingClientRect().height));
     if (inputs.some((h) => !near(h, 52)))
       fail(`Time inputs are ${inputs.join("/")}px, not 52`);
     result.checks.push(
-      "320: setup segments stay on one row, Sport reads e.g. Soccer with field → error and no helper line (UX-COPY-05), step 2's header is one row, weekday circles are round and time inputs are 52 px (U2-01, UX-DS-06).",
+      "320: setup segments stay on one row, Sport reads e.g. Soccer with field → error and no helper line (UX-COPY-05), step 2's header is one row, the seven weekdays form one 48 px joined row with 0 px gaps and no badges (UX-CMP-07) and time inputs are 52 px (U2-01, UX-DS-06).",
     );
     await context.close();
 

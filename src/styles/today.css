@@ -494,17 +494,6 @@ button.rail-body {
   font-size: var(--text-time);
 }
 
-.water-row div {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: var(--space-2);
-}
-
-.water-row button {
-  min-width: 0;
-  padding-inline: 0;
-}
-
 .water-row .water-note {
   margin: 0;
   color: var(--color-ink-muted);

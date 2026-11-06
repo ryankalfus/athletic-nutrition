@@ -833,3 +833,14 @@ U4-03: fields are radius 14 and their focus is a 2 px border (1 px border plus a
 U4-03: start and end times sit side by side at every width (`.time-pair`), replacing RWD-06's stacking below 480 px; date pairs still stack on phones. 2026.11.05
 U4-03: field helpers carry `data-hint` (UX-COPY-05): the Sport helper is removed, the rest-day helper reads "A practice or game on a rest day still comes first." and the file-import helper is one 14-word sentence. 2026.11.05
 U4-03: tests: browser-combobox.js adds the TimeField checks, browser-schedule.js the DateField and invalid-border checks and picks school dates in the grid, browser-shared-ui.js checks paired times at 320 px and every [data-hint]; browser-dialogs.js, browser-evening-share.js, browser-visual.js, browser-log.js and the capture scripts (pickDate in lib.mjs) follow the new fields. The new checks fail on the old code. npm run check (214 unit tests) and 26/26 browser scripts pass. Ticked U4-03, UX-CMP-04, UX-CMP-09, UX-COPY-05. 2026.11.05
+Recorded the U4-04 conflict between the Food Log Day/Week test (white selected fill and shadow) and §5.6 (pitch selected fill and white text) in the UX checklist for the owner to resolve before implementation. 2026.11.06
+U4-04: The owner confirmed §5.6 supersedes DS-12; the legacy checklist and Food Log assertion now record pitch selection and white text. 2026.11.06
+U4-04: Replaced multi-select chips with checklist rows across setup, school access and Food needs, and aligned the native import and evening checkboxes with their trailing checks. 2026.11.06
+U4-04: Gave short single-choice controls a full-width 48 px muted track, pitch selected fill and a contrasting inset keyboard ring, including the hovered selection. 2026.11.06
+U4-04: Replaced weekday circles and badges with a joined 48 px bar that keeps the individual day names and pressed states. 2026.11.06
+U4-04: Moved switches to the right of their labels and kept the Reminders timing and evening choices disabled and dimmed when off or blocked. 2026.11.06
+U4-04: Today uses the joined quick-amount bar with formatted presets in the athlete’s unit and Custom last. 2026.11.06
+U4-04: At home and search use the shared food tiles; the existing development fixture exercises their selectable state. 2026.11.06
+U4-04: Long food-needs checklists on phones scroll above the pinned Next bar so neither pointer targets nor keyboard focus disappear behind it. 2026.11.06
+U4-04: Updated the geometry, boundary, axe, keyboard and forced-colors checks and captured four views at 320, 390 and 1280 px under docs/ux-review/u4-04. 2026.11.06
+U4-04: Verified all six control families fail on the old source and pass on the new source; npm run check passed 214 tests and the build, and 27/27 browser scripts passed with live USDA skipped. Ticked U4-04 and its six components; roadmap step 11 remains open. 2026.11.06

@@ -164,26 +164,25 @@ async (page) => {
       "A reload during step 4 reopens step 4, and Back shows steps 1–3 saved.",
     );
 
-    const chip = p
+    const microwave = p
       .getByRole("group", { name: "At school I have" })
-      .getByRole("button", { name: "Microwave" });
-    await chip.click();
-    const shapes = await p.evaluate(() => {
-      const pressed = document.querySelector(
-        '.chip-group > button[aria-pressed="true"]',
-      );
-      return {
-        check: pressed ? getComputedStyle(pressed, "::before").content : "",
-        segmented: Boolean(
-          document.querySelector(".segmented[role=radiogroup]"),
-        ),
-      };
-    });
-    if (!shapes.check || shapes.check === "none")
-      throw new Error("Selected multi-select chip has no check mark");
-    result.checks.push(
-      "Multi-select chips show a check when selected; single choices use a segmented radio group.",
-    );
+      .getByRole("button", { name: "Microwave", exact: true });
+    await microwave.click();
+    if ((await microwave.getAttribute("aria-pressed")) !== "true")
+      throw new Error("Selecting Microwave did not mark its checklist row");
+    const mark = microwave.locator(".checklist-check");
+    await mark.locator("svg").waitFor({ timeout: 1500 });
+    const indicator = await mark.boundingBox({ timeout: 1500 });
+    const row = await microwave.boundingBox();
+    if (
+      !indicator ||
+      !row ||
+      indicator.width !== 24 ||
+      indicator.height !== 24 ||
+      indicator.x < row.x + row.width / 2
+    )
+      throw new Error("Selected Microwave row needs a 24 px check on the right");
+    result.checks.push("Selecting Microwave shows a 24 px check on the right of its row.");
     await next(p);
 
     await step(p, "Food needs").waitFor();
@@ -198,6 +197,19 @@ async (page) => {
           `Allergy chip ${chipName} shows while the gate is closed`,
         );
     await p.getByRole("button", { name: "Vegetarian" }).waitFor();
+    // Tab through the long list; the last focused row must clear the pinned footer.
+    const dislikes = p.getByRole("group", { name: "Not a fan of" }).getByRole("button");
+    await dislikes.first().focus();
+    const totalChoices = await dislikes.count();
+    for (let index = 1; index < totalChoices; index++) {
+      await p.keyboard.press("Tab");
+    }
+    const reachable = await dislikes.last().evaluate((row) => {
+      const box = row.getBoundingClientRect();
+      const footer = document.querySelector(".setup-actions").getBoundingClientRect();
+      return row === document.activeElement && box.top >= 0 && box.bottom <= footer.top;
+    });
+    if (!reachable) throw new Error("Last food-needs choice is under the pinned footer");
     result.checks.push(
       "Step 5 shows no allergy chips while ALLERGY_TAGS_REVIEWED is false, only the waiting line.",
     );

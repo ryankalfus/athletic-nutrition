@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { formatAmount } from "../../format.js";
 import { changeDataUndoable } from "../../store.js";
 import {
   REMINDER_HONESTY_LINE,
@@ -9,6 +10,7 @@ import {
 } from "../../domain/reminders.js";
 import { SettingsSheet } from "./SettingsSheet.jsx";
 import {
+  ChecklistRow,
   SegmentedControl,
   SwitchRow,
 } from "../../components/ui/SelectionControls.jsx";
@@ -72,23 +74,18 @@ export function RemindersSheet({ settings, onClose }) {
           label="How long before"
           options={REMINDER_LEAD_OPTIONS.map((minutes) => [
             minutes,
-            `${minutes} min`,
+            formatAmount(minutes, "min"),
           ])}
           value={draft.leadMinutes}
           onChange={(minutes) => setDraft({ ...draft, leadMinutes: minutes })}
         />
       </fieldset>
-      <label className="check-row">
-        <input
-          type="checkbox"
-          checked={draft.eveningPrep}
-          disabled={dependentOff}
-          onChange={(event) =>
-            setDraft({ ...draft, eveningPrep: event.target.checked })
-          }
-        />
-        <span>Evening reminder when tomorrow starts before 10 AM</span>
-      </label>
+      <ChecklistRow
+        checked={draft.eveningPrep}
+        disabled={dependentOff}
+        onChange={(eveningPrep) => setDraft({ ...draft, eveningPrep })}
+        label="Evening reminder when tomorrow starts before 10 AM"
+      />
       <p className="reminder-honesty">{REMINDER_HONESTY_LINE}</p>
     </SettingsSheet>
   );
