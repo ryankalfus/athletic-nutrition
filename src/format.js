@@ -155,6 +155,11 @@ export function formatAmount(amount, unit, name) {
   return `${amount} ${unit || ""}${label ? ` ${label}` : ""}`.trim();
 }
 
+// Compact amounts for quick-add bars. The surrounding water total identifies
+// the athlete's unit, while the button keeps its familiar "+8" label.
+export const formatQuickAmount = (amount) =>
+  `+${new Intl.NumberFormat("en-US", { maximumFractionDigits: 2 }).format(amount)}`;
+
 export const formatAvailability = (value) =>
   ({
     some: "Have",

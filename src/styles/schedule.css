@@ -104,7 +104,7 @@
   border-bottom: var(--border);
 }
 
-.import-row .check-row > span {
+.import-row .checklist-row > span {
   gap: 0;
 }
 
@@ -132,10 +132,6 @@
   align-items: flex-end;
   gap: var(--space-3) var(--space-4);
   margin-bottom: var(--space-4);
-}
-
-.agenda-date-strip .segmented {
-  flex: 0 1 280px;
 }
 
 /* Week agenda */
@@ -594,54 +590,6 @@
 .schedule-form label small {
   color: var(--color-ink-muted);
   font-weight: 400;
-}
-
-/* Weekday circles: a selected day is a 2px primary ring and fill. */
-/* Weekday circles: up to 44px, 8px apart from the start of the row, and
- * always round (no chip min-height stretching them into ovals). */
-.school-weekdays {
-  flex-wrap: nowrap;
-  justify-content: flex-start;
-  gap: var(--space-2);
-}
-
-div.school-weekdays > button {
-  flex: 1 1 0;
-  max-width: var(--target);
-  min-width: 0;
-  min-height: 0;
-  height: auto;
-  aspect-ratio: 1;
-  padding: 0;
-}
-
-/* A selected day is a selected chip (DS-12): tint, 2px primary border and a
- * check, here a badge on the circle's corner since the letter fills it
- * (.selected outranks the shared chip rule). */
-.school-weekdays
-  > button.selected:is([aria-pressed="true"], [aria-checked="true"]) {
-  padding: 0;
-  border-color: var(--color-primary);
-  background: var(--color-selected-bg);
-  box-shadow: inset 0 0 0 1px var(--color-primary);
-  color: var(--color-primary-pressed);
-}
-
-.school-weekdays > button::before {
-  display: none;
-}
-
-.school-weekdays
-  > button.selected:is([aria-pressed="true"], [aria-checked="true"])::before {
-  position: absolute;
-  top: calc(var(--space-1) * -1);
-  right: calc(var(--space-1) * -1);
-  display: block;
-  width: 16px;
-  height: 16px;
-  border-radius: var(--radius-full);
-  background: var(--color-primary) var(--icon-check) center / 12px no-repeat;
-  content: "";
 }
 
 .schedule-more-options {

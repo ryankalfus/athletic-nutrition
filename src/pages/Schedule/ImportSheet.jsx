@@ -8,6 +8,7 @@ import {
   Input,
 } from "../../components/ui/FieldError.jsx";
 import {
+  ChecklistRow,
   SegmentedControl,
   SwitchRow,
 } from "../../components/ui/SelectionControls.jsx";
@@ -326,26 +327,23 @@ export function ImportSheet({ events, subscriptions = [], todayKey, onClose }) {
                       key={row.key}
                       className={`import-row${locked ? " is-locked" : ""}`}
                     >
-                      <label className="check-row">
-                        <input
-                          type="checkbox"
-                          checked={Boolean(choice.selected)}
-                          disabled={locked}
-                          onChange={(event) =>
-                            choose(row.key, { selected: event.target.checked })
-                          }
-                        />
-                        <span>
-                          <strong>{row.title}</strong>
-                          <small>{when}</small>
-                          {row.duplicate && (
-                            <small>Already in your schedule</small>
-                          )}
-                          {!row.duplicate && row.allDay && (
-                            <small>No start time</small>
-                          )}
-                        </span>
-                      </label>
+                      <ChecklistRow
+                        checked={Boolean(choice.selected)}
+                        disabled={locked}
+                        onChange={(selected) => choose(row.key, { selected })}
+                        label={
+                          <>
+                            <strong>{row.title}</strong>
+                            <small>{when}</small>
+                            {row.duplicate && (
+                              <small>Already in your schedule</small>
+                            )}
+                            {!row.duplicate && row.allDay && (
+                              <small>No start time</small>
+                            )}
+                          </>
+                        }
+                      />
                       {!locked && choice.selected && (
                         <div className="import-row-fields">
                           <label>

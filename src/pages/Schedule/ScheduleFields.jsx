@@ -29,7 +29,6 @@ export function WeekdayPicker({ legend, value, onToggle, field }) {
             key={day}
             aria-label={name}
             aria-pressed={value.includes(day)}
-            className={value.includes(day) ? "selected" : ""}
             onClick={() => onToggle(day)}
           >
             {label}

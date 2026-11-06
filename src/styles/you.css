@@ -148,10 +148,6 @@
   margin: 0;
 }
 
-.switch-row span {
-  display: grid;
-}
-
 .budget-input {
   display: flex;
   align-items: center;

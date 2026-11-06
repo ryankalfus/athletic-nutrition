@@ -1,24 +1,26 @@
-import { Plus } from "lucide-react";
+import { Apple, Banana, Carrot, Cherry, Sandwich, Wheat } from "lucide-react";
+import { Tiles } from "./Tiles.jsx";
 
-// One quick-add list (At home "Quick add", search "Quick basics"): secondary
-// buttons with a Plus icon in one row that scrolls sideways on phones, so a
-// set never wraps into an orphan. Action buttons, not selection chips.
+const FOOD_ICONS = {
+  bananas: Banana,
+  apples: Apple,
+  "frozen-berries": Cherry,
+  "baby-carrots": Carrot,
+  bread: Sandwich,
+  tortillas: Wheat,
+};
+
+// At home and search share food tiles, keeping their existing add action and
+// accessible names. Foods beyond the initial basics use the grain icon.
 export function QuickAddList({ items, onAdd, disabled = false, label }) {
   return (
-    <ul className="quick-add-list" aria-label={label}>
-      {items.map((item) => (
-        <li key={item.id}>
-          <button
-            type="button"
-            disabled={disabled}
-            aria-label={`Add ${item.name}`}
-            onClick={() => onAdd(item)}
-          >
-            <Plus size={18} strokeWidth={1.75} aria-hidden="true" />
-            {item.name}
-          </button>
-        </li>
-      ))}
-    </ul>
+    <Tiles
+      label={label}
+      items={items}
+      iconFor={(item) => FOOD_ICONS[item.id] || Wheat}
+      onChoose={onAdd}
+      disabled={disabled}
+      buttonLabel={(item) => `Add ${item.name}`}
+    />
   );
 }

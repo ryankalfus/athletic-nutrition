@@ -103,7 +103,7 @@ Each ID is an individual checkbox. Implementation notes and blockers go on the m
 - [x] **DS-09** — Fixed 2026.10.09: You, About and This device sections are 32 px apart (grid gap, no compensating margins) (browser-shared-ui.js).
 - [x] **DS-10**
 - [x] **DS-11** — Fixed 2026.10.09: the phone top-bar "+ Add" is 48 px; "Undo trip" uses Button busy (spinner, aria-busy, "Undoing…") (browser-shared-ui.js, browser-dialogs.js).
-- [x] **DS-12** — Fixed 2026.10.09: Log Day/Week is the shared segmented control (muted track, white selected segment, shadow); selected weekdays use the selected tint, 2 px primary border and a check badge (browser-shared-ui.js).
+- [x] **DS-12** — Fixed 2026.10.09: Log Day/Week is the shared segmented control (muted track, white selected segment, shadow); selected weekdays use the selected tint, 2 px primary border and a check badge (browser-shared-ui.js). Superseded 2026.11.06 by UX U4-04 (§5.6): selected segments and weekdays use pitch fill with white text for contrast, weekdays form a joined bar without badges, and multi-select choices use checklist rows.
 - [x] **DS-13**
 - [x] **DS-14**
 - [x] **DS-15**

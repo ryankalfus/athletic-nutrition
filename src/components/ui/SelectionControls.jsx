@@ -1,6 +1,7 @@
+import { Check } from "lucide-react";
 import { FieldError, useFieldInvalid } from "./FieldError.jsx";
 
-// Selection primitives (DS-12, CMP-03). State is always carried by
+// Selection primitives (UX-CMP-05–08). State is always carried by
 // aria-checked / aria-pressed, which the CSS styles directly.
 
 // 2-4 single choices. mode "radio" is a radio group with arrow-key movement;
@@ -60,28 +61,34 @@ export function SegmentedControl({
   );
 }
 
-// Multi-select chips with a leading check when selected.
-export function ChipGroup({
+// Checklist choices keep their existing toggle-button semantics.
+export function ChecklistGroup({
   legend,
   hint,
   options,
   selected,
   onToggle,
   field,
+  disabled = false,
 }) {
   const invalid = useFieldInvalid(field);
   return (
     <fieldset className="choice-field" {...invalid}>
       <legend>{legend}</legend>
-      <div className="chip-group">
+      <div className="checklist-group">
         {options.map(([value, label]) => (
           <button
             type="button"
             key={value}
+            className="checklist-row"
+            disabled={disabled}
             aria-pressed={selected.includes(value)}
             onClick={() => onToggle(value)}
           >
-            {label}
+            <span>{label}</span>
+            <span className="checklist-check" aria-hidden="true">
+              {selected.includes(value) && <Check size={20} strokeWidth={2} />}
+            </span>
           </button>
         ))}
       </div>
@@ -96,17 +103,28 @@ export function ChipGroup({
   );
 }
 
-// A labelled on/off switch (checkbox with role="switch").
-export function SwitchRow({ checked, onChange, label, hint, disabled }) {
+// Native checklist row for imports and independent on/off choices.
+export function ChecklistRow({ checked, onChange, label, hint, disabled }) {
   return (
-    <label className="check-row switch-row">
+    <label className="checklist-row">
+      <span>
+        {label}
+        {hint && <small>{hint}</small>}
+      </span>
       <input
         type="checkbox"
-        role="switch"
         checked={checked}
         disabled={disabled}
         onChange={(event) => onChange(event.target.checked)}
       />
+    </label>
+  );
+}
+
+// Label left, switch right. The label remains the full touch target.
+export function SwitchRow({ checked, onChange, label, hint, disabled }) {
+  return (
+    <label className="check-row switch-row">
       <span>
         {label}
         {hint && (
@@ -115,6 +133,13 @@ export function SwitchRow({ checked, onChange, label, hint, disabled }) {
           </small>
         )}
       </span>
+      <input
+        type="checkbox"
+        role="switch"
+        checked={checked}
+        disabled={disabled}
+        onChange={(event) => onChange(event.target.checked)}
+      />
     </label>
   );
 }

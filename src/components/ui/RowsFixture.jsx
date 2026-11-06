@@ -1,13 +1,15 @@
-import { Check, Pencil, Sunrise } from "lucide-react";
+import { Apple, Banana, Check, Pencil, Sandwich, Sunrise } from "lucide-react";
 import { useState } from "react";
 import { Row } from "./Row.jsx";
 import { Section } from "./Section.jsx";
 import { IconButton } from "./Button.jsx";
+import { Tiles } from "./Tiles.jsx";
 
 // Dev-only fixture (`?ui=rows`, U4-02): every Row variant on one page so
 // browser-visual.js can measure them before the screens use them.
 export default function RowsFixture() {
   const [on, setOn] = useState(true);
+  const [foods, setFoods] = useState(["bananas"]);
   return (
     <main id="main-content" className="shell" data-layout="reading">
       <header>
@@ -89,6 +91,24 @@ export default function RowsFixture() {
           />
           <Row as="li" title="Sport" value="Soccer, in season" chevron />
         </ul>
+      </Section>
+      <Section title="Food tiles">
+        <Tiles
+          label="Choose foods"
+          items={[
+            { id: "bananas", name: "Bananas", icon: Banana },
+            { id: "apples", name: "Apples", icon: Apple },
+            { id: "bread", name: "Bread", icon: Sandwich },
+          ]}
+          selected={foods}
+          onChoose={(item) =>
+            setFoods((current) =>
+              current.includes(item.id)
+                ? current.filter((id) => id !== item.id)
+                : [...current, item.id],
+            )
+          }
+        />
       </Section>
     </main>
   );

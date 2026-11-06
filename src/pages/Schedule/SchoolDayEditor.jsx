@@ -12,7 +12,7 @@ import {
 } from "../../components/ui/FieldError.jsx";
 import { schoolSheetProblem } from "../../domain/setup.js";
 import { formatDate } from "../../format.js";
-import { ChipGroup } from "../../components/ui/SelectionControls.jsx";
+import { ChecklistGroup } from "../../components/ui/SelectionControls.jsx";
 import { SCHOOL_ACCESS } from "../../domain/you.js";
 import { TimeRange, WeekdayPicker } from "./ScheduleFields.jsx";
 export function SchoolDayEditor({ model }) {
@@ -193,7 +193,7 @@ export function SchoolDayEditor({ model }) {
                 </label>
                 <FieldError field="commute" />
                 <h3>Food at school</h3>
-                <ChipGroup
+                <ChecklistGroup
                   legend="Food access at school"
                   options={SCHOOL_ACCESS}
                   selected={Object.keys(foodAccess).filter(

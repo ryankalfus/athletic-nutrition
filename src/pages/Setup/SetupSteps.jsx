@@ -2,7 +2,7 @@ import { DateField } from "../../components/ui/DateField.jsx";
 import { useState } from "react";
 import { Plus } from "lucide-react";
 import {
-  ChipGroup,
+  ChecklistGroup,
   SegmentedControl,
   SwitchRow,
 } from "../../components/ui/SelectionControls.jsx";
@@ -259,7 +259,7 @@ export function FoodAccessStep({ data, title, next }) {
       helper="Ideas use only what you can get to."
       onNext={() => next((d) => applyFoodAccess(d, draft))}
     >
-      <ChipGroup
+      <ChecklistGroup
         legend="At school I have"
         options={SCHOOL_FOOD_CHOICES}
         selected={draft.selected}
