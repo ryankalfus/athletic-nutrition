@@ -129,7 +129,12 @@ export function Menu({ label, title, items, className = "" }) {
       event.preventDefault();
       event.stopPropagation(); // keep an enclosing dialog open
       close(true);
-    } else if (event.key === "Tab") close(false);
+    } else if (event.key === "Tab") {
+      // The phone sheet is modal: closing it on Tab must hand focus back,
+      // or it lands on <body>.
+      if (phone) event.preventDefault();
+      close(phone);
+    }
   };
 
   const contents = (

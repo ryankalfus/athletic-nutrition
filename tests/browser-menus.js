@@ -73,6 +73,16 @@ async (page) => {
       await p.keyboard.press("Escape");
       if (!(await trigger.evaluate((node) => node === document.activeElement)))
         throw new Error("Escape did not return focus");
+      if (width < 768) {
+        await trigger.click();
+        await menu.getByRole("menuitem").first().waitFor();
+        await p.keyboard.press("Tab");
+        await menu.waitFor({ state: "hidden" });
+        if (
+          !(await trigger.evaluate((node) => node === document.activeElement))
+        )
+          throw new Error("Tab in the phone action sheet did not return focus");
+      }
       if (
         JSON.stringify(before) !==
         JSON.stringify(await p.locator("main").boundingBox())
@@ -80,7 +90,7 @@ async (page) => {
         throw new Error("Closing moved main");
       result.checks.push(
         width +
-          ": modal phone sheet or anchored desktop menu, item title, destructive last, Move second step and no shift",
+          ": modal phone sheet or anchored desktop menu, item title, destructive last, Move second step, Tab hands focus back on phones, and no shift",
       );
     } finally {
       await context.close();

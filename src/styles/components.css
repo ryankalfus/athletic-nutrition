@@ -1785,3 +1785,9 @@ fieldset:disabled .segmented {
 .app-dialog:has(.combobox-pushed) [inert] {
   visibility: hidden;
 }
+
+/* UX-CMP-20: the changed-elsewhere line is always in the sheet (an empty
+ * live region) and takes no room until it has text. */
+.dialog-changed:empty {
+  margin: 0;
+}

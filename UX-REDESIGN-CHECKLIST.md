@@ -407,6 +407,7 @@ The 11 open items there are built in this plan (UX-REDESIGN-PLAN.md §10.12). Ti
 - [x] **Plan approved by the owner** 2026.10.20.
 - [x] **UX-BUG-22 decision: Undo on settings saves, not on At home taps.** Decided 2026.10.20: the You settings sheets (and Rename) toast "<Thing> saved." with Undo; At home Have/Low/Out and count changes stay silent (audit 6.5): the control shows the change and tapping again is the undo. Accepted exception to the §13.8 line "every reversible write offers Undo", which REDESIGN-CHECKLIST.md now words with the exception. Built in U1-05.
 - [x] **U3-04 decision: page content scrolls under toasts.** Decided 2026.10.28: toasts float 8 px above the tab bar or the floating action (as on iOS), and page content scrolls under them, so a prompt that happens to sit in the toast band (Today's reminder offer at 390 × 844, `p126`) can be covered while the toast shows. U3-04's "does not intersect any visible button" therefore means the frame's buttons, the floating action and the control that raised the toast. No extra bottom padding. Built in U3-04.
+- [x] **U4-05 decision: title focus applies to pointer opens.** Decided 2026.11.06: a sheet opened by mouse or touch focuses its title with no ring (UX-BUG-16); a sheet opened by keyboard focuses its first control, and Log food opens with focus in the search field. Built in U4-05; `browser-a11y.js`, `browser-search.js` and `browser-log.js` keep those checks.
 
 ## Owner brief accepted (U10-01)
 

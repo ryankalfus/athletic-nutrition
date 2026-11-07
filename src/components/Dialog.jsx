@@ -308,11 +308,12 @@ export function Dialog({
                 />
               )}
             </header>
-            {changedElsewhere && (
-              <p role="status">
-                This item changed on another screen. Showing the latest version.
-              </p>
-            )}
+            {/* Always in the page, so screen readers announce the change
+                when the text arrives (UX-CMP-20). */}
+            <p role="status" className="dialog-changed">
+              {changedElsewhere &&
+                "This item changed on another screen. Showing the latest version."}
+            </p>
             {children}
             {!slots && <InlineError message={error} onRetry={retry} />}
           </DialogErrorSlot.Provider>

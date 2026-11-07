@@ -97,8 +97,30 @@ async (page) => {
       await p.keyboard.press("Escape");
       if (!(await sheet.isVisible()) || (await list.isVisible()))
         throw new Error("Escape closed sheet or left picker open");
+      if (width < 768) {
+        // A tap on the box itself opens the pushed page; a search that
+        // matches nothing offers the typed text as a row.
+        const field = sheet.getByRole("combobox", { name: /^Sport/ });
+        await field.click();
+        await sheet.getByRole("button", { name: "Back to form" }).waitFor();
+        if (!(await list.isVisible()))
+          throw new Error("Tapping the Sport box did not open the pushed page");
+        await field.fill("Pickleball");
+        const use = sheet.getByRole("option", { name: "Use “Pickleball”" });
+        await use.waitFor();
+        await use.click();
+        if (
+          (await field.inputValue()) !== "Pickleball" ||
+          (await list.isVisible())
+        )
+          throw new Error("Use “Pickleball” did not keep the typed sport");
+      }
       checks.push(
-        width + ": Sport picker geometry, selected check, Back and Escape",
+        width +
+          ": Sport picker geometry, selected check, Back and Escape" +
+          (width < 768
+            ? "; tap opens the page and no match offers the typed sport"
+            : ""),
       );
     } finally {
       await context.close();

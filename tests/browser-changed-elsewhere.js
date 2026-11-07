@@ -630,6 +630,58 @@ async (page) => {
     result.checks.push(
       "A conflict refresh preserves the visible error and Retry owned by a separate newer failed write.",
     );
+
+    // Same tab, not another screen: a count step is still waiting to write
+    // (600 ms) when Edit details opens. The sheet opens on the saved count,
+    // the draft is kept, and Save lands with the stepped count. The notice's
+    // live region is in the sheet before anything changes, so it is announced.
+    await p.goto(`${base}#/food/home`, { waitUntil: "domcontentloaded" });
+    const bananasRow = p.locator(".stock-row").filter({ hasText: "Bananas" });
+    if (!(await bananasRow.count())) {
+      await p.getByRole("button", { name: "Add Bananas", exact: true }).click();
+      await bananasRow.first().waitFor();
+    }
+    await p
+      .getByRole("button", { name: "Bananas options", exact: true })
+      .click();
+    await p.getByRole("menuitem", { name: "Edit details" }).click();
+    let details = p.getByRole("dialog", { name: /Edit Bananas/ });
+    await details.waitFor();
+    const region = details.locator('[role="status"].dialog-changed');
+    if ((await region.count()) !== 1 || (await region.textContent()).trim())
+      throw new Error(
+        "The changed-elsewhere live region is missing or not empty",
+      );
+    await details
+      .getByRole("combobox", { name: /Amount type/ })
+      .selectOption({ label: "Exact quantity" });
+    await details.getByRole("spinbutton").first().fill("3");
+    await details.getByRole("button", { name: "Save details" }).click();
+    await details.waitFor({ state: "hidden" });
+    await bananasRow.first().getByText("3 left").waitFor();
+    await bananasRow
+      .first()
+      .getByRole("button", { name: "Decrease Bananas", exact: true })
+      .click();
+    await p
+      .getByRole("button", { name: "Bananas options", exact: true })
+      .click();
+    await p.getByRole("menuitem", { name: "Edit details" }).click();
+    details = p.getByRole("dialog", { name: /Edit Bananas/ });
+    await details.waitFor();
+    await p.waitForTimeout(1000);
+    await details
+      .getByRole("textbox", { name: "Name" })
+      .fill("Bananas (green)");
+    await details.getByRole("button", { name: "Save details" }).click();
+    await details.waitFor({ state: "hidden", timeout: 5000 });
+    const renamed = p
+      .locator(".stock-row")
+      .filter({ hasText: "Bananas (green)" });
+    await renamed.first().getByText("2 left").waitFor();
+    result.checks.push(
+      "A count step still waiting to write when Edit details opens lands first: the rename saves, the row reads 2 left, and no changed-elsewhere notice appears; the notice's live region is in the sheet from the start (UX-CMP-20).",
+    );
     return result;
   } catch (e) {
     return {

@@ -136,16 +136,8 @@ export default function HomePage({ todayKey }) {
       `Added ${food.name}.`,
       {
         label: "Edit details",
-        onClick: () => {
-          const id = choice === "update" ? existing.id : record.id;
-          const item = currentPantry.current.find((row) => row.id === id);
-          if (!item) {
-            showToast("This item was removed on another screen.");
-            return;
-          }
-          setEdit(item);
-          setDirty(false);
-        },
+        onClick: () =>
+          openEdit({ id: choice === "update" ? existing.id : record.id }),
       },
     );
     if (ok) {
@@ -161,8 +153,9 @@ export default function HomePage({ todayKey }) {
   const step = (row, delta) => {
     const { quantity } = stepStockCount(row, delta, todayKey, counts[row.id]);
     setCounts((c) => ({ ...c, [row.id]: quantity }));
-    clearTimeout(timers.current[row.id]);
-    timers.current[row.id] = setTimeout(async () => {
+    clearTimeout(timers.current[row.id]?.timer);
+    const commit = async () => {
+      delete timers.current[row.id];
       await changeData((d) => {
         d.groceryState.pantry = d.groceryState.pantry.map((i) =>
           i.id === row.id ? stepStockCount(i, 0, todayKey, quantity) : i,
@@ -173,7 +166,27 @@ export default function HomePage({ todayKey }) {
         delete next[row.id];
         return next;
       });
-    }, 600);
+    };
+    timers.current[row.id] = { commit, timer: setTimeout(commit, 600) };
+  };
+  // A sheet on a row opens on the saved record: a count step still waiting
+  // to write lands first, so the sheet's draft is never refused later as
+  // "changed on another screen".
+  const settled = async (id) => {
+    const pending = timers.current[id];
+    if (!pending) return;
+    clearTimeout(pending.timer);
+    await pending.commit();
+  };
+  const openEdit = async (row) => {
+    await settled(row.id);
+    const latest = currentPantry.current.find((i) => i.id === row.id);
+    if (!latest) {
+      showToast("This item was removed on another screen.");
+      return;
+    }
+    setEdit(latest);
+    setDirty(false);
   };
   const close = () => {
     if (pending) return;
@@ -340,10 +353,7 @@ export default function HomePage({ todayKey }) {
                             },
                             {
                               label: "Edit details",
-                              onSelect: () => {
-                                setEdit(row);
-                                setDirty(false);
-                              },
+                              onSelect: () => openEdit(row),
                             },
                             // Every place except the one the food is in.
                             {

@@ -650,8 +650,10 @@ Bottom sheet (phone)                    Alert (every confirm)
   hairlines, sticky full-width primary, a Cancel text button only when there are unsaved edits.
   Closing = grabber drag, scrim tap or Escape. The X stays only on full-height sheets (Log food
   search, import) where the grabber is far from the thumb. Top radius 28, `--elev-sheet`.
-  Initial focus goes to the sheet title (`tabindex="-1"`), so no focus ring shows on open
-  (UX-BUG-16). Desktop: centered dialog, 520 px wide, radius 24.
+    Initial focus goes to the sheet title (`tabindex="-1"`), so no focus ring shows on open
+  (UX-BUG-16). Owner decision 2026.11.06: that is for pointer opens; a keyboard open focuses
+  the first control and Log food opens in its search field. Desktop: centered dialog, 520 px
+  wide, radius 24.
 - **UX-CMP-11 — Alert for every confirm.** Discard changes, delete, scope choices, overlap,
   undo trip, restore and data recovery confirms use a centered alert (max 320 px, radius 24,
   title + one sentence + stacked full-width buttons, safe action as the primary). Never a

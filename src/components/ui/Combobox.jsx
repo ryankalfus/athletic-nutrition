@@ -101,6 +101,10 @@ export function Combobox({
     query != null && shown.length === 1 && same(shown[0], query);
   const push = pushed && phone && open;
   const expanded = open && (push || (shown.length > 0 && !nothingToAdd));
+  // On the pushed page, text that matches nothing is offered as its own row
+  // ("Use “Pickleball”"), so the page is never blank and a tap keeps it.
+  const custom = push && query && shown.length === 0;
+  const listed = custom ? [query] : shown;
   useLayoutEffect(() => {
     if (!push) return undefined;
     input.current?.focus();
@@ -190,7 +194,7 @@ export function Combobox({
         });
         return;
       }
-      const count = shown.length;
+      const count = listed.length;
       if (!count) return;
       setActive((index) =>
         key === "ArrowDown" ? (index + 1) % count : (index - 1 + count) % count,
@@ -201,7 +205,7 @@ export function Combobox({
       input.current?.focus();
     } else if (key === "Enter" && expanded && active >= 0) {
       event.preventDefault();
-      pick(shown[active]);
+      pick(listed[active]);
     } else if (key === "Escape" && expanded) {
       event.preventDefault();
       event.stopPropagation(); // keep an enclosing dialog open
@@ -258,6 +262,12 @@ export function Combobox({
         onFocus={(event) => {
           inputProps.onFocus?.(event);
         }}
+        // On phones a tap on the box opens the pushed page at once, so the
+        // keyboard never covers a list that has not opened yet.
+        onClick={(event) => {
+          inputProps.onClick?.(event);
+          if (pushed && phone && !open) show(true, selectedIn);
+        }}
         onChange={(event) => {
           onChange(event.target.value);
           setQuery(event.target.value);
@@ -300,8 +310,8 @@ export function Combobox({
         className={`combobox-list${keyboard ? " keyboard" : ""}`}
       >
         {expanded &&
-          shown.map((option, index) => {
-            const selected = same(option, text);
+          listed.map((option, index) => {
+            const selected = !custom && same(option, text);
             return (
               <li
                 key={option}
@@ -316,7 +326,7 @@ export function Combobox({
                 }}
                 onClick={() => pick(option)}
               >
-                <span>{option}</span>
+                <span>{custom ? `Use “${option}”` : option}</span>
                 {selected && (
                   <Check size={20} strokeWidth={1.75} aria-hidden="true" />
                 )}
