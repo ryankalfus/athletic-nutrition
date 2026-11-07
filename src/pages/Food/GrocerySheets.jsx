@@ -71,14 +71,15 @@ export function PutAwaySheet({ items, pantry, pending, onDirty, onConfirm }) {
       </ul>
       <DialogError />
       <div className="sheet-footer">
-        <DialogCancel disabled={pending} />
         <button
           aria-busy={pending || undefined}
+          data-kind="primary"
           className="primary"
           disabled={pending}
         >
           {pending ? "Saving…" : "Add to At home"}
         </button>
+        <DialogCancel disabled={pending} />
       </div>
     </form>
   );
@@ -130,9 +131,9 @@ export function WeekIdeasSheet({ ideas, summary, pending, onDirty, onAdd }) {
       <div className="sheet-footer">
         {ideas.length ? (
           <>
-            <DialogCancel disabled={pending} />
             <button
               aria-busy={pending || undefined}
+              data-kind="primary"
               className="primary"
               disabled={!selected.length || pending}
             >
@@ -142,6 +143,7 @@ export function WeekIdeasSheet({ ideas, summary, pending, onDirty, onAdd }) {
                   ? `Add ${selected.length} to list`
                   : "Add to list"}
             </button>
+            <DialogCancel disabled={pending} />
           </>
         ) : (
           <DialogCancel variant="primary">Done</DialogCancel>

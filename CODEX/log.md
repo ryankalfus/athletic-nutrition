@@ -844,3 +844,11 @@ U4-04: At home and search use the shared food tiles; the existing development fi
 U4-04: Long food-needs checklists on phones scroll above the pinned Next bar so neither pointer targets nor keyboard focus disappear behind it. 2026.11.06
 U4-04: Updated the geometry, boundary, axe, keyboard and forced-colors checks and captured four views at 320, 390 and 1280 px under docs/ux-review/u4-04. 2026.11.06
 U4-04: Verified all six control families fail on the old source and pass on the new source; npm run check passed 214 tests and the build, and 27/27 browser scripts passed with live USDA skipped. Ticked U4-04 and its six components; roadmap step 11 remains open. 2026.11.06
+U4-05: Added the shared sheet grabber, guarded drag and scrim dismissal, borderless header and sticky primary with a text Cancel for unsaved edits. 2026.11.06
+U4-05: Centered confirmation alerts at every width, stacked their full-width actions, prioritized the safe choice and kept an underlying sheet inert. 2026.11.06
+U4-05: Moved phone row actions into item-titled sheets, grouped At home destinations under Move to… and kept anchored menus from 768 px. 2026.11.06
+U4-05: Pushed Sport suggestions inside the You sheet on phones and kept popovers for setup Sport, desktop Sport and TimeField. 2026.11.06
+U4-05: Set desktop dialogs to 520 px with 24 px corners, sized the scanner to its content and kept import preview controls together in one row. 2026.11.06
+U4-05: Reloaded changed records in open item editors and guarded writes against stale drafts, delayed notifications, deleted items and obsolete confirmations, including the At home duplicate alert. 2026.11.06
+U4-05: Added browser regression checks and captured eight review states at 320, 390 and 1280 px under docs/ux-review/u4-05. 2026.11.06
+U4-05: Verified every part with npm run check and the browser suite, demonstrated regressions on old source, closed STATE-15 and kept roadmap step 11 open. 2026.11.06

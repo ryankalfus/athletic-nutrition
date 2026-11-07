@@ -280,9 +280,9 @@ export function SchoolDayEditor({ model }) {
           </div>
           <DialogError />
           <div className="schedule-form-footer">
-            <DialogCancel />
             <button
               aria-busy={pending || undefined}
+              data-kind="primary"
               className="primary"
               type="submit"
               disabled={!!pending}
@@ -290,6 +290,7 @@ export function SchoolDayEditor({ model }) {
             >
               {pending ? "Saving…" : "Save school day"}
             </button>
+            <DialogCancel />
           </div>
         </form>
       </Dialog>

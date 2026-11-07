@@ -155,7 +155,7 @@ async (page) => {
     await scope.getByRole("button", { name: /^Change only / }).click();
     const edit = p.getByRole("dialog", { name: /^Edit .* practice$/ });
     await edit.getByText(/^Changing .* only\.$/).waitFor();
-    await edit.getByRole("button", { name: "Cancel" }).click();
+    await p.keyboard.press("Escape");
     await edit.waitFor({ state: "hidden" });
     result.checks.push(
       "Editing a repeating practice asks for scope; 'only this date' edits one day.",
@@ -176,7 +176,7 @@ async (page) => {
     await actions("Late practice");
     await today().getByRole("menuitem", { name: "Delete…" }).click();
     const del = p.getByRole("dialog", { name: "Delete repeating activity" });
-    await del.getByRole("button", { name: /^Close/ }).click();
+    await p.keyboard.press("Escape");
     await del.waitFor({ state: "hidden" });
     await today().getByText("Late practice").waitFor();
     await actions("Late practice");

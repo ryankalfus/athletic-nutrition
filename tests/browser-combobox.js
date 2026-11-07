@@ -146,7 +146,7 @@ async (page) => {
       s = await state(box);
       expect(
         s.expanded === "true" &&
-          s.options.length === 13 &&
+          s.options.length === (width < 768 ? 1 : 13) &&
           s.active === "Tennis",
         `${width}: ArrowDown did not open on Tennis: ${JSON.stringify(s)}`,
       );

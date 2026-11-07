@@ -9,7 +9,11 @@ import {
   shoppingDefaults,
 } from "../../domain/food.js";
 import { LabelCheck } from "../../components/ui/LabelCheck.jsx";
-import { DialogCancel, DialogError } from "../../components/Dialog.jsx";
+import {
+  DialogCancel,
+  DialogError,
+  useReportDirty,
+} from "../../components/Dialog.jsx";
 import {
   FieldError,
   FieldErrors,
@@ -64,7 +68,7 @@ function startDraft(mode, food, item) {
  *   item?: any,
  *   showPrices?: boolean,
  *   pending?: boolean,
- *   onDirty?: () => void,
+ *   onDirty?: (dirty: boolean) => void,
  *   onSave: (fields: any) => void,
  * }} props
  * `item` is the At home row or grocery item being edited; `food` is a food
@@ -82,13 +86,13 @@ export function FoodDetailsSheet({
   const home = mode === "home";
   const [draft, setDraft] = useState(() => startDraft(mode, food, item));
   const [error, setError] = useState(null);
+  useReportDirty(JSON.stringify(draft), onDirty);
   const set = (key, value) => {
     setDraft((d) =>
       home && key === "availability" && value === "out"
         ? setStockStatus(d, value, item.updatedDate)
         : { ...d, [key]: value },
     );
-    onDirty?.();
   };
   // A food chosen in search that already maps to an ingredient needs no
   // "Counts as" choice in Groceries.
@@ -280,14 +284,15 @@ export function FoodDetailsSheet({
       </FieldErrors>
       <DialogError />
       <div className="sheet-footer">
-        <DialogCancel disabled={!!pending} />
         <button
           aria-busy={pending || undefined}
+          data-kind="primary"
           className="primary"
           disabled={!!pending}
         >
           {pending ? "Saving…" : home ? "Save details" : "Save"}
         </button>
+        <DialogCancel disabled={!!pending} />
       </div>
     </form>
   );

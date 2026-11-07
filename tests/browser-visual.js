@@ -2,8 +2,8 @@
 // and Food reports, 2026.09.29) so they cannot regress. Each check measures
 // geometry or computed style: one-row segmented controls, a Discard confirm
 // that is its own sheet or centered dialog, 700 as the heaviest weight, one
-// title edge and row across tabs, 52 px inputs (U2-01), 64 px sheet headers, equal
-// footer buttons, a joined weekday bar, a centered tablet tab group, one rail
+// title edge and row across tabs, 52 px inputs (U2-01), borderless sheet headers, full-width
+// sticky primary buttons, a joined weekday bar, a centered tablet tab group, one rail
 // edge, a Now card above the tab bar, a Day rail whose times fit, and the
 // Schedule week switcher, day headers, top-bar add and month headers; U4-01
 // button kinds: no outlined buttons, data-kind, desktop hug width; U4-02 the
@@ -201,33 +201,72 @@ async (page) => {
     );
     if (docWidth > 390) fail(`Today scrolls sideways at 390 (${docWidth}px)`);
 
-    // You sheet: 64 px header, 52 px inputs, equal footer buttons, Discard.
+    // UX-CMP-10: plain sheet chrome and a full-width sticky primary.
     await p.goto(`${base}#/you/sport`);
     const sheet = p.getByRole("dialog", { name: "Sport & season" });
     await sheet.waitFor();
     await p.waitForTimeout(250);
-    const head = await box(sheet.locator("header"));
-    if (!near(head.h, 64)) fail(`Sheet header is ${head.h}px, not 64`);
+    const chrome = await sheet.evaluate((node) => {
+      const header = node.querySelector("header");
+      const footer = node.querySelector(".dialog-actions");
+      const save = footer.querySelector('[data-kind="primary"]');
+      const css = getComputedStyle(node);
+      const title = getComputedStyle(header.querySelector("h2"));
+      const ruled = [
+        header,
+        footer,
+        ...header.children,
+        ...footer.children,
+      ].some((el) =>
+        ["", "::before", "::after"].some((pseudo) => {
+          const s = getComputedStyle(el, pseudo || null);
+          return (
+            (s.content !== "none" || !pseudo) &&
+            (parseFloat(s.borderTopWidth) || parseFloat(s.borderBottomWidth))
+          );
+        }),
+      );
+      return {
+        radius: css.borderTopLeftRadius,
+        title: `${title.fontSize}/${title.lineHeight}`,
+        ruled,
+        primary: save.getBoundingClientRect().width,
+        content:
+          footer.clientWidth -
+          parseFloat(getComputedStyle(footer).paddingLeft) -
+          parseFloat(getComputedStyle(footer).paddingRight),
+        sticky: getComputedStyle(footer).position,
+        close: !!header.querySelector('[aria-label^="Close"]'),
+      };
+    });
+    if (
+      chrome.radius !== "28px" ||
+      chrome.title !== "22px/28px" ||
+      chrome.ruled ||
+      chrome.close ||
+      chrome.sticky !== "sticky" ||
+      !near(chrome.primary, chrome.content, 1)
+    )
+      fail(`Sheet chrome at 390: ${JSON.stringify(chrome)}`);
+    if (
+      await sheet.getByRole("button", { name: "Cancel", exact: true }).count()
+    )
+      fail("Clean sheet exposes Cancel");
     const field = await box(sheet.getByRole("combobox", { name: /^Sport/ }));
     if (!near(field.h, 52)) fail(`Sheet text input is ${field.h}px, not 52`);
-    const footer = await sheet
-      .locator(".dialog-actions > button")
-      .evaluateAll((all) =>
-        all.map((b) => Math.round(b.getBoundingClientRect().width)),
-      );
-    if (new Set(footer).size > 1)
-      fail(`Sheet footer buttons differ: ${footer.join(" vs ")}`);
     for (const m of await segmentsOnOneRow("Sport sheet @390")) fail(m);
-    await sheet.getByRole("combobox", { name: /^Sport/ }).fill("Hockey");
+    await sheet.getByRole("radio").first().click();
     await p.keyboard.press("Escape");
     const discard = p.getByRole("dialog", { name: "Discard changes?" });
     await discard.waitFor();
     await p.waitForTimeout(250);
     const d390 = await box(discard);
-    if (d390.x < 0 || d390.right > 390 + 0.5 || !near(d390.bottom, 844))
-      fail(
-        `Discard sheet at 390 is not a bottom sheet: ${JSON.stringify(d390)}`,
-      );
+    if (
+      !near(d390.w, 320) ||
+      !near(d390.x + d390.w / 2, 195) ||
+      !near(d390.y + d390.h / 2, 422)
+    )
+      fail(`Discard at 390 must be a centered alert: ${JSON.stringify(d390)}`);
     if (!(await discard.evaluate((d) => d.parentElement === document.body)))
       fail("The Discard confirm is nested inside the sheet");
     await discard.getByRole("button", { name: "Discard", exact: true }).click();
@@ -304,13 +343,17 @@ async (page) => {
     if (gap < 15)
       fail(`"Activity date" sits ${Math.round(gap)}px under Date or days`);
     result.checks.push(
-      "390: the Now card and the top of the Day rail fit above the tab bar, chips take one row, rail times fit and the marker reads Now, water buttons are equal; sheets have 64 px headers, 52 px inputs and equal footers; Discard is its own bottom sheet on <body>; no text is heavier than 700; Schedule's + Add is in the top bar, the week label and day headings stay on one row, and the activity sheet keeps 16 px between groups.",
+      "390: the Now card and the top of the Day rail fit above the tab bar, chips take one row, rail times fit and the marker reads Now, water buttons are equal; sheets have 28 px top corners, 22/28 titles, no hairlines or short-sheet X, 52 px inputs and full-width sticky Save; Discard is a centered 320 px alert on <body>; no text is heavier than 700; Schedule's + Add is in the top bar, the week label and day headings stay on one row, and the activity sheet keeps 16 px between groups.",
     );
     await context.close();
 
     // ---------- 1280: one title edge, rail edge, Discard centered ----------
     await open(1280);
     await setup();
+    // Finishing setup is a route change. Measure first-load focus on a reload.
+    await p.reload();
+    await p.locator("main h1").first().waitFor();
+    await p.evaluate(() => new Promise(requestAnimationFrame));
     if (await p.evaluate(() => document.activeElement?.tagName === "H1"))
       fail("A fresh load focuses the page H1");
     const titles = {};
@@ -357,7 +400,11 @@ async (page) => {
     await confirm.waitFor();
     await p.waitForTimeout(250);
     const d1280 = await box(confirm);
-    if (!near(d1280.x + d1280.w / 2, 640, 2) || d1280.y < 100)
+    if (
+      !near(d1280.w, 320) ||
+      !near(d1280.x + d1280.w / 2, 640, 1) ||
+      !near(d1280.y + d1280.h / 2, 450, 1)
+    )
       fail(`Discard dialog at 1280 is not centered: ${JSON.stringify(d1280)}`);
     result.checks.push(
       "1280: no H1 focus on load; Today, Schedule, Food, You and This device titles share one left edge and the tabs one title row; rail brand, icons and avatar share one edge; month headers are sentence case; the glance never says '1 games'; Discard is a centered dialog.",
@@ -432,7 +479,7 @@ async (page) => {
       fail(`At home rows wrap at 320: ${JSON.stringify(stock)}`);
     if (!(await p.getByRole("radiogroup", { name: "Stock filter" }).count()))
       fail("The At home filter is not a segmented control");
-    // A row menu near the bottom opens upward, clear of the tab bar.
+    // A low row opens a full-width action sheet at the viewport edge.
     await p.evaluate(() => window.scrollTo(0, 0));
     const last = p.locator(".stock-row").last();
     await last.evaluate((row) => {
@@ -458,10 +505,17 @@ async (page) => {
     );
     if (tops.includes(null) || new Set(tops).size !== 1)
       fail(`A row menu near the tab bar moves or closes (${tops})`);
-    const menu = await box(p.locator(".row-menu-items"));
-    const mobileNav = await box(p.locator(".frame-nav"));
-    if (menu.bottom > mobileNav.y - 8)
-      fail(`A row menu runs under the tab bar (${Math.round(menu.bottom)}px)`);
+    const actionSheet = p.getByRole("dialog");
+    const menu = await box(actionSheet);
+    if (
+      !near(menu.x, 0) ||
+      !near(menu.w, 320) ||
+      !near(menu.bottom, await p.evaluate(() => innerHeight)) ||
+      !(await actionSheet.evaluate((node) => node.matches(":modal")))
+    )
+      fail(
+        `A low row must open a modal bottom action sheet: ${JSON.stringify(menu)}`,
+      );
     await p.keyboard.press("Escape");
     await p.goto(`${base}#/food/log`);
     const arrows = await p.evaluate(() => {
@@ -477,7 +531,7 @@ async (page) => {
     if (arrows[2] && arrows[0] === arrows[1])
       fail("The disabled Next day arrow looks enabled");
     result.checks.push(
-      "320 Food: grocery checks and menus sit on the name line with one-line reason chips; the section bar is a full-width strip whose four links fit at 44 px or more; At home rows stay on one line with a segmented filter; a low row menu opens above the tab bar; a disabled day arrow is dimmed.",
+      "320 Food: grocery checks and menus sit on the name line with one-line reason chips; the section bar is a full-width strip whose four links fit at 44 px or more; At home rows stay on one line with a segmented filter; a low row opens a full-width modal bottom action sheet; a disabled day arrow is dimmed.",
     );
     await context.close();
 

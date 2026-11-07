@@ -83,7 +83,7 @@ async (page) => {
         if (/\b\d{4}-\d{2}-\d{2}\b/.test(text))
           problems.push(`${state}: ISO date in dialog`);
       }
-      await dialog.getByRole("button", { name: /close/i }).first().click();
+      await p.keyboard.press("Escape");
       await dialog.waitFor({ state: "hidden" });
       result.checks.push(
         `${expected}: "Why this?" shows its rule, ${rule?.sources.length} source link(s) and the checked date`,

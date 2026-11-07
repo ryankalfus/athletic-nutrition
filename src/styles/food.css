@@ -669,11 +669,6 @@
   width: auto;
 }
 
-.merge-prompt {
-  display: grid;
-  gap: var(--space-4);
-}
-
 /* Log › Day and Week (6.8, 6.11, 6.12) */
 .log-page {
   display: grid;

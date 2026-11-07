@@ -1,8 +1,10 @@
 import { useRef, useState } from "react";
-import { changeData, useStore } from "../../store.js";
+import { changeData, useStore, assertUnchangedItem } from "../../store.js";
+import { useItemChanges } from "../../hooks/useItemChanges.js";
 import { useAsyncAction } from "../../hooks/useAsyncAction.js";
 import { Dialog, DialogError } from "../../components/Dialog.jsx";
 import { ConfirmDialog } from "../../components/ui/ConfirmDialog.jsx";
+import { LabelCheck } from "../../components/ui/LabelCheck.jsx";
 import { Menu } from "../../components/ui/Menu.jsx";
 import { Button } from "../../components/ui/Button.jsx";
 import { FoodSearch } from "../../components/FoodSearch.jsx";
@@ -51,6 +53,7 @@ export default function GroceriesPage({ todayKey }) {
   const showPrices = Boolean(grocery.showPrices);
   const { pending, run } = useAsyncAction();
   const [sheet, setSheet] = useState(null);
+  const [merge, setMerge] = useState(null);
   const [confirm, setConfirm] = useState(null);
   const searchInput = useRef(null);
   const write = (key, fn, message, action) =>
@@ -77,6 +80,16 @@ export default function GroceriesPage({ todayKey }) {
   // The item form marks its sheet dirty; a new sheet starts clean (DS-15).
   const [dirtySheet, setDirtySheet] = useState(null);
   const formDirty = sheet !== null && dirtySheet === sheet;
+  const edited = useItemChanges(
+    ["edit", "swap"].includes(sheet?.type)
+      ? `${sheet.type}:${sheet.item.id}`
+      : null,
+    grocery.items.find((item) => item.id === sheet?.item?.id),
+    (item) => {
+      setSheet((value) => ({ ...value, item }));
+      setDirtySheet(null);
+    },
+  );
   const updateItem = (id, fn) => (d) => {
     const target = d.groceryState.items.find((i) => i.id === id);
     if (!target)
@@ -102,7 +115,7 @@ export default function GroceriesPage({ todayKey }) {
         (ingredientId(record) && ingredientId(i) === ingredientId(record)),
     );
     if (existing && !choice) {
-      setSheet({ ...sheet, merge: { existing, fields } });
+      setMerge({ existing, food, fields });
       return;
     }
     const ok = await write(
@@ -110,7 +123,7 @@ export default function GroceriesPage({ todayKey }) {
       (d) => {
         const target =
           choice === "merge" &&
-          d.groceryState.items.find((i) => i.id === existing.id);
+          d.groceryState.items.find((i) => i.id === merge.existing.id);
         if (choice === "merge" && !target)
           throw new Error("That item changed. Review the list and try again.");
         if (target)
@@ -119,13 +132,17 @@ export default function GroceriesPage({ todayKey }) {
       },
       `Added ${fields.name}.`,
     );
-    if (ok) setSheet(null);
+    if (ok) {
+      setMerge(null);
+      setSheet(null);
+    }
   }
 
   async function saveEdit(item, food, fields) {
     const ok = await write(
       "save-item",
       updateItem(item.id, (target) => {
+        assertUnchangedItem(target, edited.source);
         Object.assign(target, fields);
         if (food) {
           // GROC-07: a swap keeps the reason and remembers what was needed.
@@ -205,6 +222,7 @@ export default function GroceriesPage({ todayKey }) {
       </div>
       <Menu
         label={`${item.name} options`}
+        title={item.name}
         items={[
           {
             label: "Edit",
@@ -420,46 +438,21 @@ export default function GroceriesPage({ todayKey }) {
               ? `Swap ${sheet.item.name}`
               : "Add to groceries"
           }
+          changedElsewhere={edited.changed}
           initialFocusRef={searchInput}
-          className={sheet.food || sheet.merge ? "" : "food-search-dialog"}
+          className={sheet.food ? "" : "food-search-dialog"}
           onClose={closeSheet}
           dirty={formDirty}
         >
-          {sheet.merge ? (
-            <div className="merge-prompt">
-              <p>
-                {sheet.merge.existing.name} is already on your list. Add to it
-                or keep both?
-              </p>
-              <DialogError />
-              <div className="dialog-actions">
-                <button
-                  disabled={!!pending}
-                  onClick={() =>
-                    addFood(sheet.food, sheet.merge.fields, "both")
-                  }
-                >
-                  Keep both
-                </button>
-                <button
-                  className="primary"
-                  disabled={!!pending}
-                  onClick={() =>
-                    addFood(sheet.food, sheet.merge.fields, "merge")
-                  }
-                >
-                  Add to it
-                </button>
-              </div>
-            </div>
-          ) : sheet.food ? (
+          {sheet.food ? (
             <FoodDetailsSheet
+              key={edited.version}
               mode="grocery"
               food={sheet.food}
               item={sheet.type === "swap" ? sheet.item : null}
               showPrices={showPrices}
               pending={pending === "save-item"}
-              onDirty={() => setDirtySheet(sheet)}
+              onDirty={(dirty) => setDirtySheet(dirty ? sheet : null)}
               onSave={(fields) =>
                 sheet.type === "swap"
                   ? saveEdit(sheet.item, sheet.food, fields)
@@ -468,6 +461,7 @@ export default function GroceriesPage({ todayKey }) {
             />
           ) : (
             <FoodSearch
+              key={edited.version}
               searchInputRef={searchInput}
               initialQuery={sheet.type === "swap" ? sheet.item.name : ""}
               onChoose={(food) => setSheet({ ...sheet, food })}
@@ -475,18 +469,57 @@ export default function GroceriesPage({ todayKey }) {
           )}
         </Dialog>
       )}
+      {merge && (
+        <Dialog
+          alert
+          title="Food already on your list"
+          onClose={() => {
+            if (!pending) setMerge(null);
+          }}
+        >
+          <p>
+            {merge.existing.name} is already on your list. Add to it or keep
+            both?
+          </p>
+          <LabelCheck food={merge.food} />
+          <DialogError />
+          <div className="confirm-actions">
+            <Button
+              variant="primary"
+              disabled={!!pending}
+              onClick={() => setMerge(null)}
+            >
+              Keep editing
+            </Button>
+            <Button
+              disabled={!!pending}
+              onClick={() => addFood(merge.food, merge.fields, "merge")}
+            >
+              Add to it
+            </Button>
+            <Button
+              disabled={!!pending}
+              onClick={() => addFood(merge.food, merge.fields, "both")}
+            >
+              Keep both
+            </Button>
+          </div>
+        </Dialog>
+      )}
       {sheet?.type === "edit" && (
         <Dialog
           title={`Edit ${sheet.item.name}`}
+          changedElsewhere={edited.changed}
           onClose={closeSheet}
           dirty={formDirty}
         >
           <FoodDetailsSheet
+            key={edited.version}
             mode="grocery"
             item={sheet.item}
             showPrices={showPrices}
             pending={pending === "save-item"}
-            onDirty={() => setDirtySheet(sheet)}
+            onDirty={(dirty) => setDirtySheet(dirty ? sheet : null)}
             onSave={(fields) => saveEdit(sheet.item, null, fields)}
           />
         </Dialog>

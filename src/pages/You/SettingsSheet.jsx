@@ -49,8 +49,7 @@ export function SettingsSheet({
       if (result === true || undo) {
         onClose();
         // Closing changes the route, which clears toasts; show it after.
-        if (savedToast)
-          window.setTimeout(() => showToast(savedToast, undo), 0);
+        if (savedToast) window.setTimeout(() => showToast(savedToast, undo), 0);
       } else if (result) setError(result);
       return result === true || Boolean(undo);
     });
@@ -70,7 +69,6 @@ export function SettingsSheet({
         </FieldErrors>
         <DialogError />
         <div className="dialog-actions">
-          <DialogCancel />
           <Button
             type="submit"
             variant="primary"
@@ -79,6 +77,7 @@ export function SettingsSheet({
           >
             {saveLabel}
           </Button>
+          <DialogCancel />
         </div>
       </form>
     </Dialog>

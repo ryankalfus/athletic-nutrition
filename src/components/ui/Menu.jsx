@@ -1,5 +1,7 @@
 import { useEffect, useId, useLayoutEffect, useRef, useState } from "react";
-import { MoreHorizontal } from "lucide-react";
+import { SheetGrabber } from "../Dialog.jsx";
+import { createPortal } from "react-dom";
+import { ChevronLeft, MoreHorizontal } from "lucide-react";
 
 // Row menu (CMP-17, A11Y-05): a 44 px "…" button[aria-haspopup=menu] that
 // opens a role="menu" list. Enter, Space or ArrowDown opens on the first item,
@@ -11,18 +13,34 @@ import { MoreHorizontal } from "lucide-react";
 // divider above the item (before Remove). The panel opens upward when it
 // would cross the bottom of the screen or the phone tab bar, and closes when
 // the page scrolls, so it never floats over the sticky bars.
-export function Menu({ label, items, className = "" }) {
+export function Menu({ label, title, items, className = "" }) {
   const [open, setOpen] = useState(false);
   const [start, setStart] = useState("first");
   const [up, setUp] = useState(false);
+  const [phone, setPhone] = useState(
+    () => !window.matchMedia("(min-width: 768px)").matches,
+  );
+  const [step, setStep] = useState(null);
+  const sheet = useRef(null);
+  useEffect(() => {
+    const media = window.matchMedia("(min-width: 768px)");
+    const resize = () => {
+      setPhone(!media.matches);
+      setOpen(false);
+    };
+    media.addEventListener("change", resize);
+    return () => media.removeEventListener("change", resize);
+  }, []);
   const panel = useRef(null);
   const root = useRef(null);
   const trigger = useRef(null);
   const openedAt = useRef(0);
   const menuId = useId();
-  const list = items.filter(Boolean);
+  const list = (step?.items || items)
+    .filter(Boolean)
+    .sort((a, b) => Number(Boolean(a.danger)) - Number(Boolean(b.danger)));
   const enabled = () => [
-    ...(root.current?.querySelectorAll(
+    ...(panel.current?.querySelectorAll(
       ':is([role="menuitem"], [role="menuitemcheckbox"]):not(:disabled)',
     ) || []),
   ];
@@ -32,7 +50,7 @@ export function Menu({ label, items, className = "" }) {
   // tab bar, else the screen bottom) and there is room above. Nothing here
   // reads `up`, so it never re-measures or flips back and forth.
   useLayoutEffect(() => {
-    if (!open || !panel.current || !trigger.current) return;
+    if (!open || phone || !panel.current || !trigger.current) return;
     const box = panel.current.getBoundingClientRect();
     const spot = trigger.current.getBoundingClientRect();
     const tabBar = document.querySelector(".frame-nav");
@@ -46,24 +64,26 @@ export function Menu({ label, items, className = "" }) {
       barTop > spot.top ? barTop : Infinity,
     );
     openedAt.current = window.scrollY;
-    setUp(box.bottom > floor && spot.top - box.height > 0);
-  }, [open]);
+    setUp(spot.bottom + 4 + box.height > floor && spot.top - box.height > 0);
+  }, [open, step, phone]);
 
   useEffect(() => {
     if (!open) return undefined;
+    if (phone && !sheet.current.open) sheet.current.showModal();
     const choices = enabled();
     (start === "last" ? choices.at(-1) : choices[0])?.focus({
       preventScroll: true,
     });
     const outside = (event) => {
-      if (!root.current?.contains(event.target)) setOpen(false);
+      if (!phone && !root.current?.contains(event.target)) setOpen(false);
     };
     // Close only when the page really moved since the menu opened. The
     // scroll that brought the trigger into view (keyboard focus, a test
     // runner) fires its event a frame after the click; it must not close
     // the menu it just opened.
     const scrolled = () => {
-      if (Math.abs(window.scrollY - openedAt.current) >= 1) setOpen(false);
+      if (!phone && Math.abs(window.scrollY - openedAt.current) >= 1)
+        setOpen(false);
     };
     document.addEventListener("pointerdown", outside);
     window.addEventListener("scroll", scrolled, { passive: true });
@@ -71,14 +91,16 @@ export function Menu({ label, items, className = "" }) {
       document.removeEventListener("pointerdown", outside);
       window.removeEventListener("scroll", scrolled);
     };
-  }, [open]);
+  }, [open, step, phone]);
 
   const show = (from) => {
+    setStep(null);
     setStart(from);
     setUp(false);
     setOpen(true);
   };
   const close = (refocus) => {
+    sheet.current?.close();
     setOpen(false);
     if (refocus) trigger.current?.focus();
   };
@@ -110,6 +132,53 @@ export function Menu({ label, items, className = "" }) {
     } else if (event.key === "Tab") close(false);
   };
 
+  const contents = (
+    <div
+      ref={panel}
+      id={menuId}
+      role="menu"
+      aria-label={label}
+      className={`row-menu-items${up ? " opens-up" : ""}`}
+      onKeyDown={onMenuKey}
+    >
+      {step && (
+        <button
+          type="button"
+          role="menuitem"
+          tabIndex={-1}
+          onClick={() => setStep(null)}
+        >
+          <ChevronLeft size={20} aria-hidden="true" /> Back
+        </button>
+      )}
+      {list.map((item) => (
+        <button
+          key={item.key || item.label}
+          type="button"
+          role={item.checked == null ? "menuitem" : "menuitemcheckbox"}
+          aria-checked={item.checked == null ? undefined : item.checked}
+          aria-haspopup={item.items ? "menu" : undefined}
+          tabIndex={-1}
+          className={
+            [item.danger && "danger", item.separated && "separated"]
+              .filter(Boolean)
+              .join(" ") || undefined
+          }
+          disabled={item.disabled}
+          onClick={() => {
+            if (item.items) {
+              setStep(item);
+              return;
+            }
+            close(true);
+            item.onSelect();
+          }}
+        >
+          {item.label}
+        </button>
+      ))}
+    </div>
+  );
   return (
     <div className={`row-menu ${className}`.trim()} ref={root}>
       <button
@@ -125,38 +194,38 @@ export function Menu({ label, items, className = "" }) {
       >
         <MoreHorizontal size={20} strokeWidth={1.75} aria-hidden="true" />
       </button>
-      {open && (
-        <div
-          ref={panel}
-          id={menuId}
-          role="menu"
-          aria-label={label}
-          className={`row-menu-items${up ? " opens-up" : ""}`}
-          onKeyDown={onMenuKey}
-        >
-          {list.map((item) => (
-            <button
-              key={item.key || item.label}
-              type="button"
-              role={item.checked == null ? "menuitem" : "menuitemcheckbox"}
-              aria-checked={item.checked == null ? undefined : item.checked}
-              tabIndex={-1}
-              className={
-                [item.danger && "danger", item.separated && "separated"]
-                  .filter(Boolean)
-                  .join(" ") || undefined
-              }
-              disabled={item.disabled}
-              onClick={() => {
-                close(true);
-                item.onSelect();
-              }}
-            >
-              {item.label}
-            </button>
-          ))}
-        </div>
-      )}
+      {open &&
+        (phone
+          ? createPortal(
+              <dialog
+                ref={sheet}
+                className="menu-sheet"
+                aria-label={title}
+                onCancel={(event) => {
+                  event.preventDefault();
+                  close(true);
+                }}
+                onClick={(event) => {
+                  if (event.target !== event.currentTarget) return;
+                  const box = event.currentTarget.getBoundingClientRect();
+                  if (
+                    event.clientX < box.left ||
+                    event.clientX > box.right ||
+                    event.clientY < box.top ||
+                    event.clientY > box.bottom
+                  )
+                    close(true);
+                }}
+              >
+                <header>
+                  <SheetGrabber onDismiss={() => close(true)} />
+                  <h2>{title}</h2>
+                </header>
+                {contents}
+              </dialog>,
+              document.body,
+            )
+          : contents)}
     </div>
   );
 }

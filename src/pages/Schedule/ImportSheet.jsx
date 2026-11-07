@@ -1,6 +1,6 @@
 import { useRef, useState } from "react";
 import { useAsyncAction } from "../../hooks/useAsyncAction.js";
-import { Dialog, DialogError } from "../../components/Dialog.jsx";
+import { Dialog, DialogCancel, DialogError } from "../../components/Dialog.jsx";
 import { Button } from "../../components/ui/Button.jsx";
 import {
   FieldError,
@@ -174,9 +174,10 @@ export function ImportSheet({ events, subscriptions = [], todayKey, onClose }) {
   return (
     <Dialog
       title="Import team calendar"
+      fullHeight
       className="import-sheet"
       onClose={onClose}
-      dirty={Boolean(preview)}
+      dirty={!nothingNew && Boolean(preview || link.trim() || !keepUpdated)}
       discardMessage="The events you picked won't be added."
     >
       {!preview ? (
@@ -261,7 +262,6 @@ export function ImportSheet({ events, subscriptions = [], todayKey, onClose }) {
           </div>
           <DialogError />
           <div className="schedule-form-footer">
-            <Button onClick={onClose}>Cancel</Button>
             <Button
               variant="primary"
               type="submit"
@@ -270,6 +270,7 @@ export function ImportSheet({ events, subscriptions = [], todayKey, onClose }) {
             >
               {mode === "file" ? "Choose file" : "Preview"}
             </Button>
+            <DialogCancel />
           </div>
         </form>
       ) : (
@@ -332,7 +333,10 @@ export function ImportSheet({ events, subscriptions = [], todayKey, onClose }) {
                         disabled={locked}
                         onChange={(selected) => choose(row.key, { selected })}
                         label={
-                          <>
+                          <span
+                            className="import-event-summary"
+                            title={`${row.title}, ${when}${row.duplicate ? ", Already in your schedule" : row.allDay ? ", No start time" : ""}`}
+                          >
                             <strong>{row.title}</strong>
                             <small>{when}</small>
                             {row.duplicate && (
@@ -341,13 +345,13 @@ export function ImportSheet({ events, subscriptions = [], todayKey, onClose }) {
                             {!row.duplicate && row.allDay && (
                               <small>No start time</small>
                             )}
-                          </>
+                          </span>
                         }
                       />
                       {!locked && choice.selected && (
                         <div className="import-row-fields">
                           <label>
-                            Type
+                            <span className="import-field-label">Type</span>
                             <select
                               aria-label={`Type for ${named}`}
                               value={choice.type}
@@ -363,7 +367,7 @@ export function ImportSheet({ events, subscriptions = [], todayKey, onClose }) {
                             </select>
                           </label>
                           <label>
-                            Where
+                            <span className="import-field-label">Where</span>
                             <select
                               aria-label={`Where for ${named}`}
                               value={choice.place}
@@ -417,6 +421,7 @@ export function ImportSheet({ events, subscriptions = [], todayKey, onClose }) {
                 </Button>
               </>
             )}
+            <DialogCancel />
           </div>
         </form>
       )}

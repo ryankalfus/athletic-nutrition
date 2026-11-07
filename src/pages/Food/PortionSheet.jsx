@@ -200,14 +200,15 @@ export function PortionSheet({ food, entry, isToday, onSave, onDirty }) {
       </FieldErrors>
       <DialogError />
       <div className="sheet-footer">
-        <DialogCancel disabled={busy} />
         <button
           aria-busy={busy || undefined}
+          data-kind="primary"
           className="primary"
           disabled={busy}
         >
           {busy ? "Saving…" : "Save"}
         </button>
+        <DialogCancel disabled={busy} />
       </div>
     </form>
   );

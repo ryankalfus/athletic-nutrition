@@ -15,11 +15,11 @@ import { InlineError } from "./ui/InlineError.jsx";
 import { Button, IconButton } from "./ui/Button.jsx";
 
 const DialogClose = createContext(null);
+const DialogDirty = createContext(false);
 const DialogErrorSlot = createContext(null);
 const FIELDS =
   "input:not([type=hidden]):not(:disabled), select:not(:disabled), textarea:not(:disabled)";
-// A sheet whose job is typing (Log food and Add to groceries search) keeps
-// its field focused however it was opened (P1-08).
+// The full-height Log food search is ready to type however it was opened.
 const TYPING = 'input[type="search"], input[type="text"], textarea';
 
 // How the athlete last used the page. A sheet opened by pointer or by route
@@ -95,10 +95,38 @@ function firstStop(node) {
   return node.querySelector("button:not([aria-label^='Close'])");
 }
 
+export function SheetGrabber({ onDismiss }) {
+  const dragStart = useRef(null);
+  return (
+    <span
+      className="sheet-grabber"
+      aria-hidden="true"
+      onPointerDown={(event) => {
+        if (!event.isPrimary || event.button !== 0) return;
+        dragStart.current = event.clientY;
+        event.currentTarget.setPointerCapture(event.pointerId);
+      }}
+      onPointerCancel={() => {
+        dragStart.current = null;
+      }}
+      onPointerUp={(event) => {
+        if (
+          dragStart.current !== null &&
+          event.clientY - dragStart.current >= 40
+        )
+          onDismiss();
+        dragStart.current = null;
+      }}
+    />
+  );
+}
+
 export function DialogCancel({ children = "Cancel", ...props }) {
   const close = useDialogClose();
+  const dirty = useContext(DialogDirty);
+  if (children === "Cancel" && !dirty) return null;
   return (
-    <Button {...props} onClick={close}>
+    <Button variant="text" {...props} onClick={close}>
       {children}
     </Button>
   );
@@ -119,10 +147,14 @@ export function Dialog({
   children,
   initialFocusRef,
   className = "",
+  fullHeight = false,
   dirty = false,
+  alert = false,
+  changedElsewhere = false,
   discardMessage = "Your changes aren't saved yet.",
 }) {
   const ref = useRef(null);
+  const pressedBackdrop = useRef(false);
   const titleId = useId();
   const { error } = useStore();
   const [asking, setAsking] = useState(false);
@@ -142,12 +174,31 @@ export function Dialog({
     if (latest.current.dirty) setAsking(true);
     else latest.current.onClose();
   };
+  const outside = (event) => {
+    if (event.target !== event.currentTarget) return false;
+    const rect = event.currentTarget.getBoundingClientRect();
+    return (
+      event.clientX < rect.left ||
+      event.clientX >= rect.right ||
+      event.clientY < rect.top ||
+      event.clientY >= rect.bottom
+    );
+  };
   useEffect(() => {
     const node = ref.current;
     const previous = document.activeElement;
+    const underneath = alert
+      ? [...document.querySelectorAll("dialog[open]")].filter(
+          (dialog) => dialog !== node,
+        )
+      : [];
+    const inertStates = underneath.map((dialog) => dialog.inert);
+    underneath.forEach((dialog) => {
+      dialog.inert = true;
+    });
     node.showModal();
     const preferred = initialFocusRef?.current;
-    (lastInput === "keyboard" || preferred?.matches(TYPING)
+    (lastInput === "keyboard" || (fullHeight && preferred?.matches(TYPING))
       ? preferred ||
         node.querySelector(FIELDS) ||
         node.querySelector("button:not([aria-label^='Close'])")
@@ -173,12 +224,18 @@ export function Dialog({
       observer.disconnect();
       node.removeEventListener("focusin", track);
       node.close();
+      underneath.forEach((dialog, index) => {
+        dialog.inert = inertStates[index];
+      });
       // Only return focus to a control that is still on screen (a nested
       // confirm closes with its parent dialog).
       if (previous?.isConnected && !previous.closest("dialog:not([open])"))
         previous.focus();
     };
   }, []);
+  useLayoutEffect(() => {
+    if (!dirty) setAsking(false);
+  }, [dirty]);
   useEffect(() => {
     if (!dirty) return undefined;
     const warn = (event) => {
@@ -191,7 +248,22 @@ export function Dialog({
   return createPortal(
     <dialog
       ref={ref}
-      className={`app-dialog ${className}`.trim()}
+      className={[
+        "app-dialog",
+        alert && "alert-dialog",
+        fullHeight && "sheet-full-height",
+        className,
+      ]
+        .filter(Boolean)
+        .join(" ")}
+      onPointerDown={(event) => {
+        pressedBackdrop.current =
+          event.isPrimary && event.button === 0 && outside(event);
+      }}
+      onClick={(event) => {
+        if (pressedBackdrop.current && outside(event)) requestClose();
+        pressedBackdrop.current = false;
+      }}
       aria-labelledby={titleId}
       onKeyDown={(e) => {
         // showModal() makes the page inert but lets Tab reach the browser's
@@ -220,22 +292,32 @@ export function Dialog({
         if (!asking) requestClose();
       }}
     >
-      <DialogClose.Provider value={requestClose}>
-        <DialogErrorSlot.Provider value={{ error, retry, register }}>
-          <header>
-            <h2 id={titleId} tabIndex={-1}>
-              {title}
-            </h2>
-            <IconButton
-              label={`Close ${title}`}
-              icon={X}
-              onClick={requestClose}
-            />
-          </header>
-          {children}
-          {!slots && <InlineError message={error} onRetry={retry} />}
-        </DialogErrorSlot.Provider>
-      </DialogClose.Provider>
+      <DialogDirty.Provider value={dirty}>
+        <DialogClose.Provider value={requestClose}>
+          <DialogErrorSlot.Provider value={{ error, retry, register }}>
+            <header>
+              {!alert && <SheetGrabber onDismiss={requestClose} />}
+              <h2 id={titleId} tabIndex={-1}>
+                {title}
+              </h2>
+              {fullHeight && (
+                <IconButton
+                  label={`Close ${title}`}
+                  icon={X}
+                  onClick={requestClose}
+                />
+              )}
+            </header>
+            {changedElsewhere && (
+              <p role="status">
+                This item changed on another screen. Showing the latest version.
+              </p>
+            )}
+            {children}
+            {!slots && <InlineError message={error} onRetry={retry} />}
+          </DialogErrorSlot.Provider>
+        </DialogClose.Provider>
+      </DialogDirty.Provider>
       {asking && (
         <DiscardDialog
           message={discardMessage}
@@ -251,15 +333,14 @@ export function Dialog({
   );
 }
 
-// Like every Dialog it is portaled to <body>, so the confirm is not a child
-// of the sheet: the sheet's body margins (.app-dialog > *) never reach it,
-// and it opens as its own bottom sheet (phones) or centered dialog.
 function DiscardDialog({ message, onKeep, onDiscard }) {
   return (
-    <Dialog title="Discard changes?" onClose={onKeep}>
+    <Dialog title="Discard changes?" onClose={onKeep} alert>
       <p>{message}</p>
       <div className="confirm-actions">
-        <Button onClick={onKeep}>Keep editing</Button>
+        <Button variant="primary" onClick={onKeep}>
+          Keep editing
+        </Button>
         <Button variant="destructive" onClick={onDiscard}>
           Discard
         </Button>

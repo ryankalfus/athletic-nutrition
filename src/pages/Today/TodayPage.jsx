@@ -6,7 +6,7 @@ import { useState } from "react";
 import { advanceCompletedMoment, noIdeaReason } from "../../domain/ranking.js";
 import NowCard from "./NowCard.jsx";
 import { Shell } from "../../components/AppFrame.jsx";
-import { Dialog, DialogError } from "../../components/Dialog.jsx";
+import { Dialog, DialogCancel, DialogError } from "../../components/Dialog.jsx";
 import { useStore, changeData, setField } from "../../store.js";
 import { useActivityEditor } from "../Schedule/useActivityEditor.jsx";
 import { useSchoolEditor } from "../Schedule/useSchoolEditor.jsx";
@@ -452,10 +452,17 @@ export default function TodayPage({
                 onChange={(e) => setAmount(e.target.value)}
               />
             </label>
-            <DialogError />
-            <button className="primary" disabled={!!pending}>
-              Add water
-            </button>
+            <div className="dialog-actions">
+              <DialogError />
+              <button
+                data-kind="primary"
+                className="primary"
+                disabled={!!pending}
+              >
+                Add water
+              </button>
+              <DialogCancel />
+            </div>
           </form>
         </Dialog>
       )}

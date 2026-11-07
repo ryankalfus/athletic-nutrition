@@ -108,6 +108,11 @@
   gap: 0;
 }
 
+.import-event-summary {
+  display: grid;
+  min-width: 0;
+}
+
 .import-row small {
   color: var(--color-ink-muted);
   font-size: var(--text-small);
@@ -698,4 +703,54 @@
 
 .glance-counts .numeral {
   font-size: var(--text-time);
+}
+
+/* At desktop width each preview event and its controls share one line. */
+@media (min-width: 768px) {
+  .import-row {
+    grid-template-columns: minmax(0, 1fr) 192px;
+    align-items: center;
+    gap: var(--space-3);
+    padding-block: var(--space-1);
+  }
+  .import-row.is-locked .checklist-row {
+    grid-column: 1 / -1;
+  }
+  .import-row .checklist-row {
+    min-width: 0;
+    box-shadow: none;
+  }
+  .import-event-summary {
+    display: block;
+    min-width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+  .import-event-summary > :is(strong, small) {
+    display: inline;
+  }
+  .import-event-summary > small::before {
+    content: " · ";
+  }
+  .import-row-fields {
+    grid-template-columns: 104px minmax(0, 1fr);
+    gap: var(--space-2);
+  }
+  .import-row-fields > label {
+    min-width: 0;
+  }
+  .import-row-fields select {
+    padding-left: var(--space-2);
+    padding-right: var(--space-5);
+    font-size: var(--text-small);
+  }
+  .import-field-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
 }

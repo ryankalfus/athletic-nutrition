@@ -3,7 +3,12 @@ import { SPORT_SUGGESTIONS } from "../../domain/sport.js";
 import { FieldError } from "../../components/ui/FieldError.jsx";
 import { Combobox } from "../../components/ui/Combobox.jsx";
 
-export function SportField({ value, onChange, required = false }) {
+export function SportField({
+  value,
+  onChange,
+  required = false,
+  pushed = false,
+}) {
   const id = useId();
   // Field, then its error (DS-13): the message sits right under the box it
   // describes. Any sport can be typed; the list only suggests common ones.
@@ -14,6 +19,7 @@ export function SportField({ value, onChange, required = false }) {
         Sport {!required && <span className="optional-label">Optional</span>}
       </label>
       <Combobox
+        pushed={pushed}
         id={id}
         field="sport"
         value={value || ""}

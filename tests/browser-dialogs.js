@@ -3,7 +3,7 @@
 // - Content swaps inside a dialog (Log food and Add to groceries: a search
 //   result opens the next step) move focus to the new step's first field.
 // - "Add food for this week" and "Put these away?" ask "Discard changes?" on
-//   Escape, × and Cancel once something changed.
+//   Escape, scrim and Cancel once something changed.
 // - Schedule writes toast what happened ("Practice added.", "Day skipped.").
 // - A failed save shows its error just above the sheet's footer; "Try again"
 //   repeats only that write and closes the sheet (one practice, not two).
@@ -55,13 +55,14 @@ async (page) => {
     if (!(await sheet.isVisible()))
       throw new Error("Keep editing closed the sheet");
   };
-  // Each guarded close path: Escape, ×, Cancel, then Discard really closes.
+  // Each guarded close path: Escape, scrim, Cancel, then Discard really closes.
   const guarded = async (name) => {
     const sheet = p.getByRole("dialog", { name });
     await discardAsked(sheet, () => p.keyboard.press("Escape"));
-    await discardAsked(sheet, () =>
-      sheet.getByRole("button", { name: `Close ${name}` }).click(),
-    );
+    await discardAsked(sheet, async () => {
+      const box = await sheet.boundingBox();
+      await p.mouse.click(4, Math.max(4, box.y - 12));
+    });
     await discardAsked(sheet, () =>
       sheet.getByRole("button", { name: "Cancel", exact: true }).click(),
     );
@@ -116,7 +117,7 @@ async (page) => {
         const close = dialog.querySelector("header button");
         return {
           title: document.activeElement === dialog.querySelector("header h2"),
-          ring: close.matches(":focus-visible"),
+          ring: close?.matches(":focus-visible") || false,
           active: document.activeElement?.tagName,
         };
       });
@@ -326,6 +327,8 @@ async (page) => {
     await p.goto(`${base}#/food/groceries`);
     await p.getByRole("button", { name: "Add food", exact: true }).click();
     const groceries = p.getByRole("dialog", { name: "Add to groceries" });
+    await groceries.waitFor();
+    await titleFocus("Add to groceries");
     await groceries
       .getByRole("button", { name: "Add Bananas", exact: true })
       .click();
@@ -392,7 +395,7 @@ async (page) => {
       .selectOption({ label: "Bag" });
     await guarded("Put these away?");
     result.checks.push(
-      'Add food for this week and Put these away? close at once when clean, and ask "Discard changes?" on Escape, × and Cancel once changed (DLG-02); a failed Add 2 to list shows its error above the footer and Try again adds the items once and closes the sheet (STATE-02).',
+      'Add food for this week and Put these away? close at once when clean, and ask "Discard changes?" on Escape, scrim and Cancel once changed (DLG-02); a failed Add 2 to list shows its error above the footer and Try again adds the items once and closes the sheet (STATE-02).',
     );
 
     // DS-11: Undo trip shows the spinner and aria-busy while it saves.

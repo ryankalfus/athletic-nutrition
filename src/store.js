@@ -43,11 +43,17 @@ const read = () =>
     request.onsuccess = () => resolve(request.result);
     request.onerror = () => reject(request.error);
   });
-function publish(doc) {
+function publish(doc, external = false) {
   doc = validateDocument(doc);
   if (!doc.profiles[currentId]) currentId = doc.defaultProfileId;
   sessionStorage.setItem("nourally-profile-id", currentId);
-  emit({ loading: false, doc, current: doc.profiles[currentId], error: null });
+  emit({
+    loading: false,
+    doc,
+    current: doc.profiles[currentId],
+    error: null,
+    externalRevision: (snapshot.externalRevision || 0) + Number(external),
+  });
 }
 export async function initializeStore() {
   try {
@@ -91,8 +97,23 @@ export async function initializeStore() {
     });
   }
 }
+const HANDLED_CONFLICT = Symbol("handled item conflict");
+class ItemChangedError extends Error {}
+
+// Compare the render-time source with the record read by this writable
+// transaction. Notification delivery can lag behind another tab's commit.
+export function assertUnchangedItem(actual, expected) {
+  if (JSON.stringify(actual) !== JSON.stringify(expected))
+    throw new ItemChangedError("This item changed on another screen.");
+}
+
 export async function transaction(reducer) {
+  return (await writeTransaction(reducer)) === true;
+}
+
+async function writeTransaction(reducer) {
   const targetId = currentId;
+  const priorRetry = lastFailedWrite;
   try {
     const doc = await new Promise((resolve, reject) => {
       const tx = db.transaction("documents", "readwrite");
@@ -124,6 +145,25 @@ export async function transaction(reducer) {
     lastFailedWrite = null;
     return true;
   } catch (error) {
+    if (error instanceof ItemChangedError) {
+      // A rejected stale draft must never become a retry. A separate
+      // failure may install a newer retry while the latest read awaits.
+      try {
+        const latest = await read();
+        if (lastFailedWrite === priorRetry) lastFailedWrite = null;
+        const retryError = lastFailedWrite && snapshot.error;
+        publish(latest, true);
+        if (retryError) emit({ ...snapshot, error: retryError });
+      } catch {
+        if (lastFailedWrite === priorRetry) lastFailedWrite = null;
+        if (!lastFailedWrite)
+          emit({
+            ...snapshot,
+            error: "Could not load the latest item. Reopen it to try again.",
+          });
+      }
+      return HANDLED_CONFLICT;
+    }
     lastFailedWrite = () => transaction(reducer);
     const reason = String(error.message || "Could not save").replace(
       /[.!?]+$/,
@@ -144,12 +184,18 @@ export async function retryLastWrite() {
 // A settings sheet uses it directly: it closes first (a route change clears
 // toasts), then shows "<Thing> saved." with this Undo (UX-BUG-22).
 export async function changeDataUndoable(reducer) {
+  const result = await writeDataUndoable(reducer);
+  return result === HANDLED_CONFLICT ? false : result;
+}
+
+async function writeDataUndoable(reducer) {
   let before;
   const profileId = currentId;
-  const ok = await transaction((doc, id) => {
+  const ok = await writeTransaction((doc, id) => {
     before = structuredClone(doc.profiles[id].data);
     reducer(doc.profiles[id].data);
   });
+  if (ok === HANDLED_CONFLICT) return HANDLED_CONFLICT;
   if (!ok) {
     lastFailedWrite = () => changeData(reducer, null);
     return false;
@@ -164,7 +210,8 @@ export async function changeDataUndoable(reducer) {
   };
 }
 export async function changeData(reducer, message = "Saved.", action) {
-  const undo = await changeDataUndoable(reducer);
+  const undo = await writeDataUndoable(reducer);
+  if (undo === HANDLED_CONFLICT) return false;
   if (!undo) {
     lastFailedWrite = () => changeData(reducer, message, action);
     return false;
@@ -434,7 +481,7 @@ export async function deleteCurrentProfile() {
 channel &&
   (channel.onmessage = async () => {
     try {
-      publish(await read());
+      publish(await read(), true);
     } catch (error) {
       emit({ ...snapshot, error: error.message });
     }

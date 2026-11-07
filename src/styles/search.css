@@ -215,24 +215,20 @@
   margin-top: var(--space-2);
 }
 
-/* Search is a full-screen sheet on phones and a 640px dialog from 768px (DS-15). */
-.app-dialog.food-search-dialog {
+/* Long search and import flows use the full phone viewport. */
+.app-dialog.sheet-full-height {
   width: 100%;
   height: 100dvh;
   max-height: 100dvh;
   margin: 0;
-  border-radius: 0;
 }
 
 @media (min-width: 768px) {
-  /* Grows with its content from a 480px floor, up to 800px. */
-  .app-dialog.food-search-dialog {
-    width: min(640px, calc(100vw - 2 * var(--gutter)));
-    height: auto;
-    min-height: min(480px, 92dvh);
+  .app-dialog:is(.sheet-full-height, .food-search-dialog) {
+    width: min(520px, calc(100vw - 2 * var(--gutter)));
+    height: fit-content;
     max-height: min(92dvh, 800px);
     margin: auto;
-    border-radius: var(--radius-xl);
   }
 
   .camera-frame {

@@ -66,7 +66,6 @@ function RestDaysSheet({ restWeekdays, onClose }) {
         </div>
         <DialogError />
         <div className="schedule-form-footer">
-          <DialogCancel />
           <Button
             variant="primary"
             type="submit"
@@ -75,6 +74,7 @@ function RestDaysSheet({ restWeekdays, onClose }) {
           >
             Save
           </Button>
+          <DialogCancel />
         </div>
       </form>
     </Dialog>
@@ -158,6 +158,7 @@ export default function WeekSettings({ events, todayKey }) {
                   </span>
                   <Menu
                     label={`Actions for ${sub.name || "team calendar"}`}
+                    title={sub.name || "Team calendar"}
                     items={[
                       {
                         label: "Refresh",

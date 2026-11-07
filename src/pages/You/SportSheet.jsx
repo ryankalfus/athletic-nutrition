@@ -31,6 +31,7 @@ export function SportSheet({ profile, onClose }) {
       }
     >
       <SportField
+        pushed
         required
         value={draft.sport}
         onChange={(sport) => setDraft({ ...draft, sport })}

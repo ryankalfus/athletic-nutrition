@@ -239,6 +239,7 @@ export default function IdeasPage({ now, todayKey }) {
                 <h3>{idea.name}</h3>
                 <Menu
                   label={`${idea.name} options`}
+                  title={idea.name}
                   items={[
                     missing.length > 0 && {
                       label: "Add missing to groceries",
@@ -371,35 +372,44 @@ export default function IdeasPage({ now, todayKey }) {
         </p>
       )}
       {confirm && (
-        <Dialog title="Log what you ate" onClose={() => setConfirm(null)}>
+        <Dialog alert title="Log what you ate" onClose={() => setConfirm(null)}>
           <p>Did you eat {confirm.template.name} as planned?</p>
           <LabelCheck />
           {/* DLG-03: a failed save shows above the buttons. */}
           <DialogError />
-          <button
-            className="primary"
-            disabled={!!pending}
-            onClick={() =>
-              write(
-                "log",
-                (d) => logPlanAsEaten(d, confirm.id, now),
-                "Logged what you ate.",
-              ).then((ok) => {
-                if (ok) setConfirm(null);
-              })
-            }
-          >
-            Yes, as planned
-          </button>
-          <button
-            onClick={() => {
-              sessionStorage.setItem("nourally-log-plan", confirm.id);
-              navigate("food/log");
-              setConfirm(null);
-            }}
-          >
-            Edit what I ate
-          </button>
+          <div className="confirm-actions">
+            <button
+              className="primary"
+              data-kind="primary"
+              disabled={!!pending}
+              onClick={() => setConfirm(null)}
+            >
+              Cancel
+            </button>
+            <button
+              disabled={!!pending}
+              onClick={() =>
+                write(
+                  "log",
+                  (d) => logPlanAsEaten(d, confirm.id, now),
+                  "Logged what you ate.",
+                ).then((ok) => {
+                  if (ok) setConfirm(null);
+                })
+              }
+            >
+              Yes, as planned
+            </button>
+            <button
+              onClick={() => {
+                sessionStorage.setItem("nourally-log-plan", confirm.id);
+                navigate("food/log");
+                setConfirm(null);
+              }}
+            >
+              Edit what I ate
+            </button>
+          </div>
         </Dialog>
       )}
     </div>
@@ -434,6 +444,7 @@ export function MealPlanCard({
         {/* Change and Remove in a row menu; Remove reads as destructive. */}
         <Menu
           label={`${plan.template.name} plan options`}
+          title={plan.template.name}
           items={[
             plan.status !== "eaten" && {
               label: "Change idea",

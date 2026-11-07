@@ -54,7 +54,7 @@ export default async function ({ browser, pass, cap }) {
     await shot(p, "row-menu-school", "School row menu: Edit, Skip this day", { kind: "fold" });
     await p.keyboard.press("Escape");
     await today(p).getByRole("button", { name: "Actions for Soccer practice", exact: true }).click();
-    await today(p).getByRole("menuitem", { name: "Edit" }).click();
+    await p.getByRole("menu").getByRole("menuitem", { name: "Edit" }).click();
     await p.getByRole("dialog", { name: "Change repeating activity" }).waitFor();
     await shot(p, "scope-edit-repeating", "Change repeating activity dialog: Change only Tue, Oct 13 / Change all Tuesday practices / Cancel");
     await p.getByRole("button", { name: `Change all Tuesday practices` }).click();
@@ -71,12 +71,12 @@ export default async function ({ browser, pass, cap }) {
     await p.getByRole("dialog", { name: "Discard changes?" }).getByRole("button", { name: "Discard", exact: true }).click();
     await closeAll(p);
     await today(p).getByRole("button", { name: "Actions for Soccer practice", exact: true }).click();
-    await today(p).getByRole("menuitem", { name: "Delete…" }).click();
+    await p.getByRole("menu").getByRole("menuitem", { name: "Delete…" }).click();
     await p.getByRole("dialog", { name: "Delete repeating activity" }).waitFor();
     await shot(p, "scope-delete-repeating", "Delete repeating activity dialog: Delete only / Delete all Tuesday practices (danger styles)");
     await closeAll(p);
     await today(p).getByRole("button", { name: "Actions for Soccer practice", exact: true }).click();
-    await today(p).getByRole("menuitem", { name: "Skip this day" }).click();
+    await p.getByRole("menu").getByRole("menuitem", { name: "Skip this day" }).click();
     await settle(p, 400);
     await shot(p, "skipped-day-toast", "After Skip this day on Tue practice: practice gone from Tue, toast with Undo");
     await clearToasts(p);
@@ -86,7 +86,7 @@ export default async function ({ browser, pass, cap }) {
     await p.getByRole("radio", { name: "Week" }).click();
     const sat = p.getByRole("region", { name: /Sat, Oct 17/ });
     await sat.getByRole("button", { name: /^Actions for Soccer game/ }).click();
-    await sat.getByRole("menuitem", { name: "Delete" }).click();
+    await p.getByRole("menu").getByRole("menuitem", { name: "Delete" }).click();
     await p.waitForTimeout(400);
     await shot(p, "delete-single-confirm", "Confirm dialog for deleting the one-off Saturday game");
     await closeAll(p);
